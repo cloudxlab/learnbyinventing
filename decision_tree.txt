@@ -1,0 +1,90 @@
+You are a Machine Learning teacher who teaches the students by making them invent - giving them simple solvable exercises that gradually lead to the final learning outcome.
+
+Create a sequence of exercises to teach Decision Tree. Here is the rough outline of the steps:
+
+1. Given a set containing two types (Red & Black) of elements, come up with a function impurity() that takes fraction of Red & Black as argument and print a decimal number representing impurity. Here are some example results:
+>> impurity(0.5, 0.5)
+1
+>> impurity(0, 1)
+0
+>> impurity(1, 0)
+0
+
+The result of impurity(0.8, 0.2) should be somewhere between 0 and 1. impurity(0.8, 0.2) > impurity(0.7, 0.3) > impurity(0.6, 0.4)
+
+2. Now, you are given a list of Red & Blacks, ["R", "B", "B", "R", "R"], calculate its impurity. Try with some more examples.
+
+3. You are given a ordered list of Red & Blacks, ["R", "B", "B", "R", "R"]. Split it at a position into two sets. Calculate the total of impurities of the two set. Find the position to split at such that the total impurity of the two sets is minimum.
+
+4. You are given the dataset of a class, having two columns "height" and "gender", find the height at which we should split the dataset such that impurity of gender is minimum in resulting two sets.
+
+
+5. Build a Decision Tree to Choose a Job Offer
+
+## 1) Concept (Plain English)
+
+You’ll implement a very simple **binary decision tree** for yes/no decisions:
+
+* Each **internal node** has:
+
+  * a **criterion** (one of: `salary`, `distance`, `coffee`, `is_nightshift`)
+  * a **value** (the threshold)
+  * a rule:
+
+    * **go left** if `feature_value ≤ value`
+    * **go right** if `feature_value > value`
+* Each **leaf node** is a final **decision**: `YES` (accept) or `NO` (reject).
+
+You’ll then:
+
+1. Define a `DecisionTreeNode` class.
+2. Build the exact tree shown in the prompt (with minor fixes).
+3. Call `.check(job_description)` to get `True`/`False`.
+
+---
+
+## 2) Problem Statement
+
+### Your Task
+
+Write a class `DecisionTreeNode` that can act as either:
+
+* a **boundary node** with `boundary`, `boundary_value`, `left`, `right`, or
+* a **leaf** with a final `decision` (`True` for YES, `False` for NO).
+
+Implement:
+
+* `check(features: dict) -> bool`
+  Traverses from the current node down to a leaf using the rule
+  “go left if `features[boundary] ≤ boundary_value`, else right”,
+  and returns the leaf’s boolean decision.
+
+Also create two helpers:
+
+* `YES()` → returns a leaf node that decides `True`
+* `NO()`  → returns a leaf node that decides `False`
+
+Then **build this tree**:
+
+```
+If salary ≤ 1000 → NO
+Else (salary > 1000):
+    If distance ≤ 40 → YES
+    Else → NO
+```
+
+4. You are given the dataset of a class, having three columns "height", weight and "gender", find the height or weight at which we should split the dataset such that impurity of gender is minimum in resulting two sets. Print whether it was height or weight and the value of it that gave results. This is called the decision boundary.
+
+5. Extend problem 4, to repeat the splitting and create the tree of boundaries untill you are left with 1 or less elements in a set. Basically, prepare your decision tree.
+
+6. Stitch it call together to create a decisiontree which has two methods fit(X, y) in which you prepare the tree and predict() that returns the majority of the set.
+
+
+Don't tell the solution to the learner. Instead, let them derive everything.
+Make each step to be very granular and detail out the problem statement clearly at every step. Give more exercises at every step. 
+Make the learner code everything as much as possible. 
+
+Put everything into a jupyter notebook as markdown. Let the learner code in Jupyter notebook. For plotting give them python function to plot in Jupyter.
+
+
+
