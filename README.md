@@ -12,8 +12,9 @@ Do not read this book. Work with it. Keep your pen & paper, environment to code 
 
 ## Index
 
-1. [Learning to Count](learning_to_count.md)
-2. [Logrithm or Logs](logarithm.md)
-3. 
+1. [Learning to Count](learning_to_count/learning_to_count.md)
+3. [Linear Regression with Gradient Descent](gradient_descent/linear_regression_gradient_descent.ipynb)
+4. [Decision Trees](decision_tree/decision_tree.ipynb)
+5. [Convolutions](convolutions/convolutions.ipynb)
 
 References: http://github.com/vmsundaram1/python_sources

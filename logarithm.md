@@ -1,1 +1,0 @@
-# Logarithm or Log

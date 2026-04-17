@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning to Count — Learn By Inventing</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #fafaf8;
+      color: #1a1a1a;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+      line-height: 1.7;
+    }
+
+    nav { margin-bottom: 2rem; font-size: 0.9rem; }
+    nav a { color: #888; text-decoration: none; }
+    nav a:hover { color: #c8a96e; }
+
+    /* Progress dots */
+    .progress { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; align-items: center; }
+    .progress-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #ddd; cursor: pointer; transition: background 0.2s;
+    }
+    .progress-dot.done  { background: #c8a96e; }
+    .progress-dot.active { background: #1a1a1a; }
+    .progress-label { font-size: 0.8rem; color: #aaa; margin-left: 0.5rem; }
+
+    /* Step visibility */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* Step header */
+    .step-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .step-num {
+      background: #c8a96e; color: white;
+      width: 2.2rem; height: 2.2rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0; font-family: monospace;
+    }
+    h1 { font-size: 1.9rem; font-weight: normal; letter-spacing: -0.3px; }
+    h2 { font-size: 1.15rem; font-weight: normal; margin: 2rem 0 0.6rem; color: #333; }
+    p  { margin-bottom: 0.9rem; }
+
+    /* Callout */
+    .note {
+      background: #f0ede6; border-left: 4px solid #c8a96e;
+      padding: 0.8rem 1.1rem; margin: 1rem 0 1.4rem;
+      font-size: 0.95rem; color: #444;
+    }
+    code {
+      font-family: monospace; background: #ece9e2;
+      padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.92em;
+    }
+
+    /* ── Base picker ── */
+    .base-picker { text-align: center; margin: 2rem 0 1rem; }
+    .base-picker input[type=range] {
+      -webkit-appearance: none; width: 320px; height: 6px;
+      background: #ddd; border-radius: 3px; outline: none;
+    }
+    .base-picker input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px;
+      border-radius: 50%; background: #c8a96e; cursor: pointer;
+    }
+    .base-display {
+      font-size: 5rem; font-family: monospace; font-weight: bold;
+      color: #c8a96e; line-height: 1.1; margin: 0.3rem 0;
+    }
+    .symbols-row {
+      font-family: monospace; font-size: 1.4rem; letter-spacing: 0.2em;
+      color: #555; margin: 0.3rem 0 0.5rem;
+    }
+    .symbols-label { font-size: 0.85rem; color: #aaa; }
+
+    /* ── Counting Grid ── */
+    .grid-wrap { overflow-x: auto; margin: 1.2rem 0; }
+    table.grid {
+      border-collapse: collapse;
+      font-family: monospace; font-size: 1rem;
+    }
+    table.grid th, table.grid td {
+      border: 1px solid #ddd;
+      width: 3.2rem; height: 2.6rem;
+      text-align: center; padding: 0; vertical-align: middle;
+    }
+    table.grid thead th {
+      background: #f0ede6; color: #888;
+      font-size: 0.8rem; font-weight: normal;
+    }
+    table.grid td.row-lbl {
+      background: #f7f5f0; color: #bbb;
+      font-size: 0.75rem; width: 2.8rem;
+    }
+    table.grid td.pre { color: #777; font-weight: bold; background: #f7f5f0; }
+
+    table.grid input[type=text] {
+      width: 100%; height: 100%; border: none; outline: none;
+      text-align: center; font-family: monospace; font-size: 1rem;
+      background: transparent; text-transform: uppercase; padding: 0;
+    }
+    table.grid input.ok   { background: #edf7ee; color: #2e7d32; }
+    table.grid input.err  { background: #fff0f0; color: #c62828; }
+
+    /* ── Op table ── */
+    table.op-table {
+      border-collapse: collapse;
+      font-family: monospace; font-size: 1rem;
+    }
+    table.op-table th, table.op-table td {
+      border: 1px solid #ddd;
+      width: 3rem; height: 2.6rem;
+      text-align: center; padding: 0; vertical-align: middle;
+    }
+    table.op-table thead th, table.op-table td.row-hdr {
+      background: #f0ede6; color: #777;
+      font-size: 0.85rem; font-weight: normal;
+    }
+    table.op-table input[type=text] {
+      width: 100%; height: 100%; border: none; outline: none;
+      text-align: center; font-family: monospace; font-size: 1rem;
+      background: transparent; text-transform: uppercase; padding: 0;
+    }
+    table.op-table input.ok  { background: #edf7ee; color: #2e7d32; }
+    table.op-table input.err { background: #fff0f0; color: #c62828; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block; padding: 0.5rem 1.3rem;
+      border: none; border-radius: 4px; cursor: pointer;
+      font-size: 0.95rem; font-family: Georgia, serif;
+      transition: background 0.15s;
+    }
+    .btn-primary   { background: #1a1a1a; color: white; }
+    .btn-primary:hover   { background: #333; }
+    .btn-secondary { background: #e8e6e0; color: #333; }
+    .btn-secondary:hover { background: #d4d1ca; }
+    .btn-check  { background: #c8a96e; color: white; }
+    .btn-check:hover  { background: #b89860; }
+
+    .step-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e4e2dc;
+    }
+
+    /* ── Feedback ── */
+    .fb { margin-top: 0.6rem; font-size: 0.9rem; min-height: 1.3rem; }
+    .fb.good    { color: #2e7d32; }
+    .fb.partial { color: #bf6000; }
+    .fb.info    { color: #555; }
+
+    /* ── Questions ── */
+    .q-block {
+      margin: 1.4rem 0; padding: 1rem 1.1rem;
+      border: 1px solid #e4e2dc; border-radius: 5px;
+    }
+    .q-block label {
+      display: block; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.97rem;
+    }
+    .q-block textarea {
+      width: 100%; min-height: 72px; border: 1px solid #ddd; border-radius: 3px;
+      padding: 0.45rem 0.6rem; font-family: Georgia, serif; font-size: 0.95rem;
+      resize: vertical; background: #fdfdfc;
+    }
+    .q-block .inline-ans {
+      display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+      margin-bottom: 0.3rem;
+    }
+    .q-block input.ans-field {
+      border: 1px solid #ddd; border-radius: 3px;
+      padding: 0.35rem 0.6rem; font-family: monospace; font-size: 1rem; width: 160px;
+    }
+    .q-block input.ans-field.ok  { border-color: #2e7d32; background: #edf7ee; }
+    .q-block input.ans-field.err { border-color: #c62828; background: #fff0f0; }
+    .q-inline-fb { font-size: 0.88rem; }
+    .q-inline-fb.ok  { color: #2e7d32; }
+    .q-inline-fb.err { color: #c62828; }
+    .hint-toggle {
+      font-size: 0.78rem; color: #999; background: none;
+      border: 1px solid #ddd; border-radius: 3px;
+      padding: 0.15rem 0.5rem; cursor: pointer; margin-top: 0.5rem;
+    }
+    .hint-box {
+      display: none; margin-top: 0.5rem; font-size: 0.88rem;
+      color: #666; font-style: italic; padding: 0.4rem 0.7rem;
+      background: #f7f5f0; border-radius: 3px;
+    }
+    .hint-box.show { display: block; }
+
+    /* ── Arithmetic problems ── */
+    .prob-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1rem 0; }
+    .prob {
+      border: 1px solid #ddd; border-radius: 5px;
+      padding: 0.8rem 1rem; font-family: monospace;
+      min-width: 110px; background: #fdfdfc;
+    }
+    .prob .ops { text-align: right; line-height: 1.6; }
+    .prob .sep { border-top: 1px solid #555; margin: 0.3rem 0; }
+    .prob input[type=text] {
+      width: 100%; border: none; border-bottom: 1.5px solid #c8a96e;
+      font-family: monospace; font-size: 1rem; text-align: right;
+      outline: none; background: transparent; text-transform: uppercase;
+      padding: 0 0 1px;
+    }
+    .prob input.ok  { color: #2e7d32; border-color: #2e7d32; }
+    .prob input.err { color: #c62828; border-color: #c62828; }
+
+    /* ── Completion ── */
+    .congrats { font-size: 1.1rem; margin: 1.5rem 0; }
+    .tag {
+      display: inline-block; background: #e8f5e9; color: #2e7d32;
+      border-radius: 4px; padding: 0.2rem 0.6rem; font-size: 0.88rem;
+      margin: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav><a href="../index.html">← Learn By Inventing</a></nav>
+<div class="progress" id="progress-bar"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 0 — Welcome & Base Picker
+     ════════════════════════════════════════════════════════ -->
+<div class="step active" id="step-0">
+  <div class="step-header">
+    <div class="step-num">1</div>
+    <h1>Learning to Count</h1>
+  </div>
+
+  <p>We use <strong>base 10</strong> every day — ten symbols, and we carry over after 9. But computers store data in <strong>base 2</strong> (binary), display memory in <strong>base 16</strong> (hex), and send file attachments in <strong>base 64</strong>.</p>
+  <p>What makes a number system? Let's build one from scratch and find out.</p>
+
+  <div class="note">
+    In base 10 we have symbols <code>0–9</code>. After <code>9</code> we write <code>10</code>.
+    In base 7 we only have <code>0–6</code>. After <code>6</code> we write <code>10</code>.
+    In base 13 we need extra symbols: <code>0–9 A B C</code>.
+  </div>
+
+  <p>Pick any base from 2 to 15 — this will be <em>your</em> number system:</p>
+
+  <div class="base-picker">
+    <div class="symbols-label">drag to choose</div>
+    <input type="range" id="base-slider" min="2" max="15" value="7"
+           oninput="updateBase(+this.value)" />
+    <div id="base10-msg" style="font-size:0.82rem;color:#c62828;min-height:1.2rem;margin-top:0.2rem"></div>
+    <div class="base-display" id="base-display">7</div>
+    <div class="symbols-label">your symbols</div>
+    <div class="symbols-row" id="syms-row">0 1 2 3 4 5 6</div>
+  </div>
+
+  <div class="step-nav">
+    <span></span>
+    <button class="btn btn-primary" onclick="goTo(1)">Start Inventing →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 1 — Counting Grid
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-1">
+  <div class="step-header">
+    <div class="step-num">2</div>
+    <h1>Count to 50</h1>
+  </div>
+
+  <p>Fill in the first 50 numbers in <strong>base <span class="B"></span></strong>. Each row has <span class="B"></span> columns — one per symbol. The cell at position <em>n</em> should contain the value <em>n</em> written in your base.</p>
+
+  <div class="note">
+    You already know what <code>0</code> looks like. What comes right after your last symbol? That is your first two-digit number. Use only the symbols shown on the previous page.
+  </div>
+
+  <div class="grid-wrap">
+    <table class="grid" id="count-grid"></table>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.8rem;flex-wrap:wrap">
+    <button class="btn btn-check"     onclick="checkCount()">Check</button>
+    <button class="btn btn-secondary" onclick="revealCount()">Reveal</button>
+  </div>
+  <div class="fb" id="count-fb"></div>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(0)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(2)">Next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 2 — Questions
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-2">
+  <div class="step-header">
+    <div class="step-num">3</div>
+    <h1>Think About It</h1>
+  </div>
+
+  <p>You've counted in base <span class="B"></span>. Now think about the structure beneath the counting.</p>
+
+  <div class="q-block">
+    <label>Q1 — What is the smallest base possible, and why?</label>
+    <textarea placeholder="Think about what happens with only 1 symbol, or even 0 symbols…"></textarea>
+    <br/>
+    <button class="hint-toggle" onclick="toggleHint('h1')">show hint</button>
+    <div class="hint-box" id="h1">If you only have the symbol <code>0</code>, can you write a number greater than zero? What is the minimum number of distinct symbols you need to be able to "carry"?</div>
+  </div>
+
+  <div class="q-block">
+    <label>Q2 — In base 10, how many numbers can be represented with exactly 4 digits (counting leading zeros like <code>0007</code>)?</label>
+    <div class="inline-ans">
+      <input class="ans-field" type="text" id="q2" placeholder="?" oninput="checkQ('q2', 10000)" />
+      <span class="q-inline-fb" id="q2-fb"></span>
+    </div>
+    <button class="hint-toggle" onclick="toggleHint('h2')">show hint</button>
+    <div class="hint-box" id="h2">Each digit position can independently hold any of the 10 symbols. 4 independent choices of 10…</div>
+  </div>
+
+  <div class="q-block">
+    <label>Q3 — In base 10, how many numbers fit in <em>d</em> digits? Write a formula.</label>
+    <textarea placeholder="Formula using d…"></textarea>
+    <button class="hint-toggle" onclick="toggleHint('h3')">show hint</button>
+    <div class="hint-box" id="h3">Generalise Q2: replace the fixed 4 with d.</div>
+  </div>
+
+  <div class="q-block">
+    <label>Q4 — In base 7, how many numbers fit in <em>d</em> digits? Write a formula.</label>
+    <textarea placeholder="Formula using d…"></textarea>
+    <button class="hint-toggle" onclick="toggleHint('h4')">show hint</button>
+    <div class="hint-box" id="h4">Same idea as Q3, but now each digit has 7 choices instead of 10.</div>
+  </div>
+
+  <div class="q-block">
+    <label>Q5 — In base <em>b</em>, how many numbers fit in <em>d</em> digits? Write a formula.</label>
+    <textarea placeholder="Formula using b and d…"></textarea>
+    <button class="hint-toggle" onclick="toggleHint('h5')">show hint</button>
+    <div class="hint-box" id="h5">Combine Q3 and Q4: replace the fixed base with b.</div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(3)">Next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 3 — Addition
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-3">
+  <div class="step-header">
+    <div class="step-num">4</div>
+    <h1>Single-Digit Addition</h1>
+  </div>
+
+  <p>Fill in the addition table for base <span class="B"></span>. Add two single-digit numbers and write the sum <em>in your base</em>. The result might be a two-digit number when there is a carry.</p>
+
+  <div class="note">
+    Example in base 7: <code>4 + 5 = 9</code> in decimal, but <code>12</code> in base 7 — that's one <em>seven</em> plus two.
+  </div>
+
+  <div class="grid-wrap">
+    <table class="op-table" id="add-table"></table>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.8rem;flex-wrap:wrap">
+    <button class="btn btn-check"     onclick="checkTable('add-table','add-fb')">Check</button>
+    <button class="btn btn-secondary" onclick="revealTable('add-table','add-fb')">Reveal</button>
+  </div>
+  <div class="fb" id="add-fb"></div>
+
+  <h2>Multi-Digit Addition</h2>
+  <p>Now add larger numbers. Work on paper first — carry just like in base 10, but in your base.</p>
+  <div class="prob-row" id="add-probs"></div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;flex-wrap:wrap">
+    <button class="btn btn-check" onclick="checkProbs('add-probs','add-probs-fb')">Check</button>
+  </div>
+  <div class="fb" id="add-probs-fb"></div>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(4)">Next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 4 — Subtraction
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-4">
+  <div class="step-header">
+    <div class="step-num">5</div>
+    <h1>Subtraction</h1>
+  </div>
+
+  <p>Subtraction in base <span class="B"></span> works like base 10 — but when you need to borrow, you borrow a group of <span class="B"></span>, not 10.</p>
+
+  <div class="note">
+    Example in base 7: <code>20 − 4</code>. You can't subtract 4 from 0, so you borrow: the left digit decreases by 1, the right digit becomes <code>0 + 7 − 4 = 3</code>. Answer: <code>13</code>.
+  </div>
+
+  <h2>Single-Digit Subtraction</h2>
+  <p>Subtract smaller from larger. Write the result in your base.</p>
+  <div class="prob-row" id="sub-single-probs"></div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;flex-wrap:wrap">
+    <button class="btn btn-check" onclick="checkProbs('sub-single-probs','sub-single-fb')">Check</button>
+  </div>
+  <div class="fb" id="sub-single-fb"></div>
+
+  <h2>Multi-Digit Subtraction</h2>
+  <p>Use borrowing. Write the result in your base.</p>
+  <div class="prob-row" id="sub-probs"></div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;flex-wrap:wrap">
+    <button class="btn btn-check" onclick="checkProbs('sub-probs','sub-fb')">Check</button>
+  </div>
+  <div class="fb" id="sub-fb"></div>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(3)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(5)">Next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 5 — Multiplication
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-5">
+  <div class="step-header">
+    <div class="step-num">6</div>
+    <h1>Multiplication</h1>
+  </div>
+
+  <p>Fill in the multiplication table for base <span class="B"></span>. Multiply two single-digit numbers and write the product in your base.</p>
+
+  <div class="grid-wrap">
+    <table class="op-table" id="mul-table"></table>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.8rem;flex-wrap:wrap">
+    <button class="btn btn-check"     onclick="checkTable('mul-table','mul-fb')">Check</button>
+    <button class="btn btn-secondary" onclick="revealTable('mul-table','mul-fb')">Reveal</button>
+  </div>
+  <div class="fb" id="mul-fb"></div>
+
+  <h2>Multi-Digit Multiplication</h2>
+  <p>Use your multiplication and addition tables. Work column by column, just like long multiplication in base 10.</p>
+  <div class="prob-row" id="mul-probs"></div>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;flex-wrap:wrap">
+    <button class="btn btn-check" onclick="checkProbs('mul-probs','mul-probs-fb')">Check</button>
+  </div>
+  <div class="fb" id="mul-probs-fb"></div>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(4)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(6)">Next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Step 6 — Done
+     ════════════════════════════════════════════════════════ -->
+<div class="step" id="step-6">
+  <div class="step-header">
+    <div class="step-num">✓</div>
+    <h1>You Invented It!</h1>
+  </div>
+
+  <p class="congrats">You built a complete working number system in base <strong><span class="B"></span></strong> from first principles. Here is what you derived:</p>
+
+  <p>
+    <span class="tag">Symbol set</span>
+    <span class="tag">Positional place-value rule</span>
+    <span class="tag">Carry in addition</span>
+    <span class="tag">Borrow in subtraction</span>
+    <span class="tag">Multiplication table</span>
+    <span class="tag">b<sup>d</sup> capacity formula</span>
+  </p>
+
+  <div class="note" style="margin-top:1.5rem">
+    The rules you found — carry, borrow, b<sup>d</sup> combinations — are exactly how binary, octal, and hexadecimal work inside every computer. The only thing that changes is the base.
+  </div>
+
+  <p style="margin-top:1.2rem">Try a different base and see how the tables reshape.</p>
+
+  <div class="step-nav">
+    <button class="btn btn-secondary" onclick="goTo(5)">← Back</button>
+    <button class="btn btn-primary"   onclick="goTo(0)">Try Another Base</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════  JS  ════ -->
+<script>
+const SYM = '0123456789ABCDEF';
+let base = 7;
+let step = 0;
+const STEPS = 7;
+
+/* ── core helpers ─────────────────────────────────────── */
+function syms()       { return SYM.slice(0, base); }
+function symList()    { return syms().split(''); }
+
+function toB(n) {
+  if (n === 0) return '0';
+  let r = '';
+  while (n > 0) { r = SYM[n % base] + r; n = Math.floor(n / base); }
+  return r;
+}
+
+function nav(input, tableEl) {
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const all = [...tableEl.querySelectorAll('input[type=text]')];
+    const i   = all.indexOf(e.target);
+    if (i < all.length - 1) all[i + 1].focus();
+  });
+}
+
+/* ── base picker ──────────────────────────────────────── */
+function updateBase(v) {
+  const msg = document.getElementById('base10-msg');
+  if (v === 10) {
+    // snap to 11 and warn
+    v = 11;
+    document.getElementById('base-slider').value = 11;
+    msg.textContent = 'Base 10 is your everyday system — pick something unfamiliar to truly invent!';
+  } else {
+    msg.textContent = '';
+  }
+  base = v;
+  document.getElementById('base-display').textContent = v;
+  document.getElementById('syms-row').textContent = symList().join(' ');
+}
+
+/* ── progress bar ─────────────────────────────────────── */
+function renderProgress() {
+  const bar = document.getElementById('progress-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < STEPS; i++) {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' +
+      (i < step ? ' done' : i === step ? ' active' : '');
+    d.onclick = () => goTo(i);
+    bar.appendChild(d);
+  }
+  const lbl = document.createElement('span');
+  lbl.className = 'progress-label';
+  lbl.textContent = step + 1 + ' / ' + STEPS;
+  bar.appendChild(lbl);
+}
+
+/* ── step navigation ──────────────────────────────────── */
+function goTo(n) {
+  document.getElementById('step-' + step).classList.remove('active');
+  step = n;
+  document.getElementById('step-' + step).classList.add('active');
+  renderProgress();
+  document.querySelectorAll('.B').forEach(el => el.textContent = base);
+
+  if (n === 1) buildCountGrid();
+  if (n === 3) { buildOpTable('add-table', (a,b) => a+b); buildProbs('add-probs',  addPairs(),  '+'); }
+  if (n === 4) { buildSubProbs(); }
+  if (n === 5) { buildOpTable('mul-table', (a,b) => a*b); buildProbs('mul-probs',  mulPairs(),  '*'); }
+  window.scrollTo(0, 0);
+}
+
+/* ── Q2 inline check ──────────────────────────────────── */
+function checkQ(id, answer) {
+  const input = document.getElementById(id);
+  const fb    = document.getElementById(id + '-fb');
+  const v     = parseInt(input.value.trim());
+  if (isNaN(v)) { input.className = 'ans-field'; fb.textContent = ''; return; }
+  if (v === answer) {
+    input.className = 'ans-field ok';
+    fb.textContent  = '✓ Correct'; fb.className = 'q-inline-fb ok';
+  } else {
+    input.className = 'ans-field err';
+    fb.textContent  = '✗ Try again'; fb.className = 'q-inline-fb err';
+  }
+}
+
+/* ── hint toggle ──────────────────────────────────────── */
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+
+/* ── counting grid ────────────────────────────────────── */
+function buildCountGrid() {
+  const tbl  = document.getElementById('count-grid');
+  tbl.innerHTML = '';
+  const cols = base, total = 50, rows = Math.ceil(total / cols);
+
+  // thead
+  const thead = tbl.createTHead();
+  const hr    = thead.insertRow();
+  addTh(hr, '');
+  for (let c = 0; c < cols; c++) addTh(hr, '+' + SYM[c]);
+
+  // tbody
+  const tbody = tbl.createTBody();
+  for (let r = 0; r < rows; r++) {
+    const tr = tbody.insertRow();
+    const lbl = tr.insertCell();
+    lbl.className = 'row-lbl';
+    lbl.textContent = toB(r * cols) + '…';
+
+    for (let c = 0; c < cols; c++) {
+      const n  = r * cols + c;
+      const td = tr.insertCell();
+      if (n >= total) continue;
+      if (n === 0) { td.className = 'pre'; td.textContent = '0'; continue; }
+      const inp = mkInput(4);
+      inp.dataset.exp = toB(n).toUpperCase();
+      nav(inp, tbl);
+      td.appendChild(inp);
+    }
+  }
+}
+
+function checkCount() {
+  const res = checkInputs('#count-grid input', 'count-fb');
+  if (res.filled === 0) return;
+}
+
+function revealCount() {
+  revealInputs('#count-grid input');
+  setFb('count-fb', 'Answers revealed.', 'info');
+}
+
+/* ── op table (add / mul) ─────────────────────────────── */
+function buildOpTable(id, op) {
+  const tbl = document.getElementById(id);
+  tbl.innerHTML = '';
+  const s = symList();
+
+  const thead = tbl.createTHead();
+  const hr    = thead.insertRow();
+  addTh(hr, '×/+');
+  s.forEach(sym => addTh(hr, sym));
+
+  const tbody = tbl.createTBody();
+  s.forEach((rs, r) => {
+    const tr = tbody.insertRow();
+    const rh = tr.insertCell(); rh.className = 'row-hdr'; rh.textContent = rs;
+    s.forEach((cs, c) => {
+      const td  = tr.insertCell();
+      const inp = mkInput(4);
+      inp.dataset.exp = toB(op(r, c)).toUpperCase();
+      nav(inp, tbl);
+      td.appendChild(inp);
+    });
+  });
+}
+
+function checkTable(tblId, fbId) {
+  checkInputs('#' + tblId + ' input', fbId);
+}
+function revealTable(tblId, fbId) {
+  revealInputs('#' + tblId + ' input');
+  setFb(fbId, 'Answers revealed.', 'info');
+}
+
+/* ── arithmetic practice problems ────────────────────── */
+function addPairs() {
+  const b = base;
+  return [
+    [b + 1,          b - 1],
+    [b * b - 1,      b],
+    [b * 3 + 2,      b * 2 + b - 1],
+    [b * b + b,      b * b - 1],
+    [b * b * 2 + 1,  b * b + b - 1],
+    [Math.floor(b**3 * 0.4), Math.floor(b**3 * 0.3)],
+  ];
+}
+
+function mulPairs() {
+  const b = base;
+  return [
+    [b + 1,     b - 1],
+    [b + 2,     b + 1],
+    [b * 2 + 1, b - 1],
+    [b * 3 - 1, b + 2],
+    [b * 2 + b - 1, b + 1],
+    [b ** 2 - 1,    b - 1],
+  ];
+}
+
+function subSinglePairs() {
+  const b = base;
+  const pairs = [];
+  for (let a = 1; a < b; a++)
+    for (let c = 0; c < a; c++) pairs.push([a, c]);
+  // shuffle deterministically, pick 8
+  return pairs.filter((_, i) => i % Math.max(1, Math.floor(pairs.length / 8)) === 0).slice(0, 8);
+}
+
+function subMultiPairs() {
+  const b = base;
+  return [
+    [b * 2,         b + 1],
+    [b * b - 1,     b + b - 1],
+    [b * b * 2,     b * b - b],
+    [b * b + b,     b * b - 1],
+    [b ** 3 - 1,    b ** 2 + b],
+    [b ** 3,        b ** 2 - 1],
+  ];
+}
+
+function buildProbs(containerId, pairs, op) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  pairs.forEach(([a, b]) => c.appendChild(makeProblem(a, b, op)));
+}
+
+function buildSubProbs() {
+  buildProbs('sub-single-probs', subSinglePairs(), '-');
+  buildProbs('sub-probs',        subMultiPairs(),  '-');
+}
+
+function makeProblem(a, b, op) {
+  const aS = toB(a).toUpperCase();
+  const bS = toB(b).toUpperCase();
+  const result = op === '+' ? a + b : op === '*' ? a * b : a - b;
+  const resS   = toB(result).toUpperCase();
+  const len    = Math.max(aS.length, bS.length);
+  const pad    = s => s.padStart(len, '\u00a0'); // nbsp padding
+
+  const div = document.createElement('div');
+  div.className = 'prob';
+  div.innerHTML = `
+    <div class="ops">
+      <div>${pad(aS)}</div>
+      <div>${op}\u00a0${pad(bS)}</div>
+    </div>
+    <div class="sep"></div>
+    <input type="text" maxlength="8" data-exp="${resS}" placeholder="${'?'.repeat(resS.length)}" />
+  `;
+  return div;
+}
+
+function checkProbs(containerId, fbId) {
+  checkInputs('#' + containerId + ' input', fbId);
+}
+
+/* ── shared check/reveal helpers ─────────────────────── */
+function checkInputs(selector, fbId) {
+  const inputs = [...document.querySelectorAll(selector)];
+  let ok = 0, filled = 0;
+  inputs.forEach(inp => {
+    const val = inp.value.trim().toUpperCase();
+    if (!val) { inp.className = ''; return; }
+    filled++;
+    if (val === inp.dataset.exp) { inp.className = 'ok'; ok++; }
+    else                          inp.className = 'err';
+  });
+  const fb = document.getElementById(fbId);
+  if (!fb) return { ok, filled };
+  if (filled === 0) { setFb(fbId, 'Fill in some cells first.', 'info'); return { ok, filled }; }
+  if (ok === inputs.length) setFb(fbId, '✓ All ' + inputs.length + ' correct!', 'good');
+  else setFb(fbId, ok + ' of ' + filled + ' filled cells correct.', 'partial');
+  return { ok, filled };
+}
+
+function revealInputs(selector) {
+  document.querySelectorAll(selector).forEach(inp => {
+    inp.value = inp.dataset.exp; inp.className = 'ok';
+  });
+}
+
+function setFb(id, msg, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className   = 'fb ' + (cls || '');
+}
+
+/* ── DOM helpers ──────────────────────────────────────── */
+function addTh(row, text) {
+  const th = document.createElement('th'); th.textContent = text; row.appendChild(th);
+}
+
+function mkInput(maxLen) {
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.maxLength = maxLen;
+  inp.autocomplete = 'off'; inp.spellcheck = false;
+  return inp;
+}
+
+/* ── init ─────────────────────────────────────────────── */
+updateBase(7);
+renderProgress();
+</script>
+</body>
+</html>
