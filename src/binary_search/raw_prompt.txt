@@ -1,0 +1,49 @@
+You are a Python teacher who teaches students by making them invent — giving them simple solvable exercises that gradually lead to the final learning outcome.
+
+Create a sequence of exercises to teach binary search on continuous ranges. Here is the rough outline, adapted from an earlier in-person course (source: course_repos/june_2025_iitr/Exercises/5. Binary Search and approximations.md):
+
+Core theme: Binary search works on any MONOTONE function — repeatedly halving the search interval until the answer is close enough.
+
+0. count_halvings(n): how many times can you halve n before reaching 1? → floor(log2(n))
+   This motivates why binary search needs only ~10 guesses to find a number in [1..1000].
+
+1. sqrt_binary_search(n, precision):
+   - Find x such that x*x = n.
+   - low=0, high=max(1,n); stop when abs(mid*mid - n) < precision.
+   - sqrt_binary_search(25, 0.0001) ≈ 5.0, sqrt_binary_search(2, 0.0001) ≈ 1.4142
+
+2. cuberoot_binary_search(n, precision):
+   - Find x such that x**3 = n. Handle negatives (work on abs(n), negate if n<0).
+   - Handle |n| < 1: the cube root is larger than |n|, so use high=1 instead of high=|n|.
+   - cuberoot_binary_search(27, 1e-6) ≈ 3.0, cuberoot_binary_search(-64, 1e-6) ≈ -4.0
+
+3. nth_root_binary_search(x, n, precision=1e-9):
+   - Generalize: find mid such that mid**n = x.
+   - Assume x >= 0; high = x if x>=1 else 1.
+   - nth_root_binary_search(81, 4) ≈ 3.0, nth_root_binary_search(32, 5) ≈ 2.0
+
+4. log10_binary_search(x, tol=1e-7):
+   - FLIP the problem: search for exponent y such that 10**y = x.
+   - Bracket: if x>=1, expand high by doubling until 10**high >= x.
+                if x<1, expand low by doubling magnitude until 10**low <= x.
+   - Binary search on the exponent, stop when high-low < 1e-12.
+   - log10_binary_search(100) ≈ 2.0, log10_binary_search(0.01) ≈ -2.0
+
+5. log_base_n(x, n, tol=1e-7):
+   - Generalize: find y such that n**y = x.
+   - When 0 < n < 1, the function n**y is DECREASING — flip the comparisons.
+   - log_base_n(8, 2) ≈ 3.0, log_base_n(0.04, 5) ≈ -2.0
+
+Bonus:
+- Verify the change of base formula: log_b(x) = log_a(x) / log_a(b)
+
+Key pedagogical note: The "last section" of source (minimizing x^4 - 3x^3 - 5x + 10) is just a stub
+("- Differentiation, - Plot the curve") with no content — skipped.
+
+Plotting helpers:
+- plot_binary_search_convergence(n, precision): shows interval width (log scale) and midpoint guess vs. step
+- plot_log10_search(x): shows exponent guess converging to true log10(x)
+
+Don't tell the solution to the learner. Instead, let them derive everything.
+Make each step granular. Give more exercises at every step.
+Put everything into a Jupyter notebook as markdown. Let the learner code in Jupyter.

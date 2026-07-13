@@ -1,0 +1,40 @@
+You are a Python teacher who teaches students by making them invent — giving them simple solvable exercises that gradually lead to the final learning outcome.
+
+Create a sequence of exercises to teach if-else branching. Here is the rough outline, adapted from an earlier in-person course (source: course_repos/june_2025_iitr/Exercises/2. If - Else.md):
+
+1. Print a random integer between 1 and 6 using random.random() (no branching, just expression review).
+2. Design a coin toss that prints "Head" or "Tail" using if/else on random.random() < 0.5.
+3. Check if a point P is closer to point A or point B in 2D, comparing squared distances (no sqrt needed), using a three-way if/elif/else:
+   closer_point((1, 2), (0, 0), (5, 5))     -> 'A'
+   closer_point((4, 4), (0, 0), (8, 8))     -> 'Equal'
+   closer_point((7, 3), (2, 3), (10, 3))    -> 'B'
+4. Check whether a point P lies on a 1D line segment between A and B, handling the case where A > B (sort first):
+   is_point_on_line_1d(2, 5, 3)  -> True
+   is_point_on_line_1d(5, 2, 3)  -> True
+   is_point_on_line_1d(2, 5, 6)  -> False
+5. Check whether two 1D line segments are touching or overlapping, regardless of input order:
+   are_lines_touching_or_overlapping(1, 4, 3, 6)  -> True (overlap)
+   are_lines_touching_or_overlapping(1, 3, 3, 5)  -> True (touch)
+   are_lines_touching_or_overlapping(1, 2, 3, 4)  -> False
+6. Check whether a point is inside an axis-aligned rectangle, defined by bottom-left (x1,y1) and top-right (x2,y2):
+   is_point_inside_rectangle(0, 0, 10, 5, 3, 2)   -> True
+   is_point_inside_rectangle(0, 0, 10, 5, 11, 5)  -> False
+7. Check whether two axis-aligned rectangles intersect:
+   are_rectangles_intersecting(((0,0),(3,3)), ((2,2),(5,5)))  -> True
+   are_rectangles_intersecting(((0,0),(1,1)), ((2,2),(3,3)))  -> False
+8. (Bonus) Devise your own impurity formula for two class counts c1, c2 (0 when pure, max when c1==c2).
+
+Key pedagogical insight to bring out explicitly (not present verbatim in the source, but the right generalization):
+the rectangle-vs-point and rectangle-vs-rectangle checks (6, 7) should be built by REUSING the 1D functions from
+(4) and (5) on the x-axis and y-axis independently, rather than writing new comparison logic. This is the real
+lesson of the chapter: decompose a 2D (or 3D) condition into independent 1D conditions per axis.
+
+Skip "is point on a 2D line segment" and "are two 2D line segments intersecting" — the source material marks these
+explicitly as "TODO: Expand" and never specifies them; they require non-axis-aligned geometry (cross products)
+that is out of scope for an if-else chapter.
+
+Don't tell the solution to the learner. Instead, let them derive everything.
+Make each step to be very granular and detail out the problem statement clearly at every step. Give more exercises at every step.
+Make the learner code everything as much as possible.
+
+Put everything into a jupyter notebook as markdown. Let the learner code in Jupyter notebook. For plotting give them python function to plot in Jupyter.

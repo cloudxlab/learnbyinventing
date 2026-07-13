@@ -33,9 +33,16 @@ Notebooks are the learner-facing artifact. When creating or editing them:
 
 - `learning_to_count/learning_to_count.md` — number systems, bases, arithmetic (conceptual/Markdown)
 - `logarithm/logarithm.md` — logarithms stub
+- `expressions_and_functions/expressions_and_functions.ipynb` — digit math, formulas as functions, distance formulas, line predict/fit, numerical derivative
+- `if_else/if_else.ipynb` — branching, multi-way comparisons, 1D→2D axis decomposition (point-in-rectangle, rectangle intersection)
+- `recursion/recursion.ipynb` — factorial, recursive multiply/power/divide, Euclid's HCF, Tower of Hanoi, Fibonacci + memoization
+- `dictionaries/dictionaries.ipynb` — dict basics, word count, top-N words, anagram grouping, expense tracker, invert dict, group_by pattern
+- `binary_search/binary_search.ipynb` — binary search on continuous ranges: sqrt, cube root, nth root, log₁₀, log base n; change of base formula
+- `loops_and_array/loops_and_array.ipynb` — statistics (min/max/mean/SD/IQR), error metrics (RMSE/MAE/Huber), nearest neighbor (1-D→N-D→custom distance), polynomials, linear equation solver, probability/sampling (softmax/temperature), recursion on nested structures
 - `gradient_descent/linear_regression_gradient_descent.ipynb` — gradient descent → linear regression
 - `decision_tree/decision_tree.ipynb` — impurity → splitting → decision tree fitting
 - `convolutions/convolutions.ipynb` — images → convolution (computer vision)
+- `information_theory/information_theory.ipynb` — prefix-free binary codes, variable-length encoding, avg bits per symbol, Huffman coding (greedy tree construction), Shannon entropy, generalized encode/decode
 
 ## Building for GitHub Pages
 

@@ -1,0 +1,41 @@
+You are a Python teacher who teaches students by making them invent — giving them simple solvable exercises that gradually lead to the final learning outcome.
+
+Create a sequence of exercises to teach recursion. Here is the rough outline, adapted from an earlier in-person course (source: course_repos/june_2025_iitr/Exercises/3. Recursion.md):
+
+1. factorial_recursive(n): n! using recursion, base case n==0 -> 1.
+   factorial_recursive(5) -> 120, factorial_recursive(0) -> 1
+
+2. multiply_recursive(a, b): multiply without using *, via repeated addition. Handle b==0, b>0, and b<0
+   (convert to positive, negate the result):
+   multiply_recursive(4, 3) -> 12, multiply_recursive(7, -2) -> -14, multiply_recursive(-3, -3) -> 9
+
+3. power(x, n): x**n via recursion for positive integer n, base case n==1 -> x.
+   power(2, 3) -> 8
+
+4. compute_power(x, n): extend power to handle n==0 (-> 1) and negative n (-> 1 / compute_power(x, -n)).
+   compute_power(2, -3) -> 0.125, compute_power(5, 0) -> 1
+
+5. recursive_divide(dividend, divisor): (quotient, remainder) via repeated subtraction, no // or %.
+   recursive_divide(17, 5) -> (3, 2)
+
+6. compute_hcf(a, b): Euclid's method, hcf(a,b) = a if b==0 else hcf(b, a % b).
+   compute_hcf(12, 18) -> 6, compute_hcf(0, 5) -> 5
+
+7. solve_hanoi(n, source='A', auxiliary='B', target='C'): Tower of Hanoi, print each move as
+   "Moving <disc> from <source> to <target>.", return total move count.
+   solve_hanoi(3) prints 7 moves and returns 7.
+
+Key pedagogical insight to bring out explicitly (not present verbatim in the source, but the right generalization):
+step 6 (Euclid's HCF) normally uses `a % b`, but the learner just built `recursive_divide` in step 5 which already
+returns a remainder — have them reuse that instead of `%`. This continues the "reuse what you built" composition
+pattern used in the if_else chapter (1D checks composed into 2D checks).
+
+Also use the Tower of Hanoi total-move count (2**n - 1) as a callback to the power/compute_power functions from
+steps 3-4, and add a bonus on Fibonacci with naive recursion vs. memoization, since exponential blowup and its fix
+are a standard and important complement to a recursion unit even though not in the original source material.
+
+Don't tell the solution to the learner. Instead, let them derive everything.
+Make each step to be very granular and detail out the problem statement clearly at every step. Give more exercises at every step.
+Make the learner code everything as much as possible.
+
+Put everything into a jupyter notebook as markdown. Let the learner code in Jupyter notebook.

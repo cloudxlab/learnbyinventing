@@ -1,0 +1,62 @@
+You are a Python teacher who teaches students by making them invent — giving them simple solvable exercises that gradually lead to the final learning outcome.
+
+Create a sequence of exercises to teach loops and arrays. Here is the rough outline, adapted from an earlier in-person course (source: course_repos/june_2025_iitr/Exercises/4. Loops and Array.md):
+
+Seven thematic parts, each building on the previous:
+
+PART 1 — STATISTICS
+1. find_min_max(numbers) → (min, max) via a single scan
+2. min_max_normalize(value, data) → rescale to [0,1] using find_min_max
+3. compute_mean(numbers) → average; return 0 for empty list
+4. compute_sd(numbers) → standard deviation; reuses compute_mean
+5. find_outliers(nums, threshold) → values with |z-score| > threshold; reuses compute_mean and compute_sd
+6. compute_iqr(data) → Q3 - Q1 using Tukey hinge method (split into halves, take medians)
+7. standardize(data) → z-scores; reuses compute_mean and compute_sd
+
+PART 2 — ERROR METRICS
+8. compute_rmse(actual, predicted) → root mean square error
+9. compute_mae(actual, predicted) → mean absolute error; handles N-D points (each element can be a list)
+10. compute_huber_loss(y_true, y_pred, delta) → hybrid squared/absolute error; returns average
+
+PART 3 — NEAREST NEIGHBOR
+11. closer_point(P, A, B) → "A"/"B"/"Equal" for N-D points using squared distance
+12. find_nearest_1d(numbers, target) → closest number in 1-D list
+13. find_nearest_2d(points, target) → closest (x,y) tuple
+14. find_nearest_nd(point, points) → closest N-D point
+15. euclidean_distance(p1, p2), manhattan_distance(p1, p2), find_nearest_neighbour(target, points, distance_func)
+
+PART 4 — POLYNOMIALS
+16. multiply_polynomial(poly, num) → scale each coefficient
+17. add_polynomials(p1, p2) → align from right (constant terms), pad shorter with zeros
+18. multiply_polynomials(p1, p2) → term-by-term: scale p2 by each coeff, shift, sum using add_polynomials
+
+PART 5 — LINEAR EQUATIONS
+19. solve_for_first_variable(equation, vars) → rearrange: x1 = (b - sum(ai*vi)) / a1
+20. eliminate_variable_pair(eq1, eq2, var_index) → c2*eq1 - c1*eq2, drop the eliminated column
+21. eliminate_variable(equations, var_index) → apply pairwise elimination using pivot (first equation) vs. all others
+22. solve_equations(equations) → recursive: base case 1 equation; else eliminate var 0 → recurse → back-substitute
+
+PART 6 — PROBABILITY AND SAMPLING
+23. fair_coin_toss() → HEAD/TAIL 50/50 via random.random()
+24. biased_coin_toss() → HEAD 70% hardcoded
+25. biased_coin_toss(p) → generalised; parametric p
+26. weighted_choice(probabilities) → sample index by cumulative boundaries
+27. normalize_to_probabilities(numbers) → divide by total sum
+28. softmax(values) → naive exponential normalization
+29. softmax(values) → stable version: subtract max before exp
+30. softmax_with_temperature(values, T) → scale values by 1/T then stable softmax
+31. weighted_choice_with_temperature(weights, T) → w^(1/T), normalize, weighted_choice
+
+PART 7 — RECURSION ON NESTED STRUCTURES
+32. flatten_list(nested_list) → recursive: isinstance check, extend with recursive calls
+33. solve_expression(expr) → recursive: base case is number, else solve left+right and apply operator
+
+Key pedagogical notes:
+- Composition arc: each function reuses previously built functions (compute_sd reuses compute_mean; find_outliers reuses both; find_nearest_neighbour generalises find_nearest_nd; multiply_polynomials reuses multiply_polynomial + add_polynomials; solve_equations reuses all of Parts 5.1–5.3)
+- Source note on IQR: source claims Q1=20, Q3=50 for [10,20,30,40,50,60]. This is the Tukey hinge method (split into halves [10,20,30] and [40,50,60], take medians), not numpy's linear interpolation method.
+- Source note on closer_point: source's example [10,10] vs A=[2,2] and B=[20,20] claiming B is closer is WRONG (actual distance to A is sqrt(128)≈11.3 vs distance to B=sqrt(200)≈14.1). Fixed to use P=[15,15].
+- Source note on MAE 2-D example: source's expected value of 0.8888 for [[1,2],[3,4],[5,6]] vs [[2,2],[2,5],[5,7]] is incorrect (actual = 4/6 = 0.667). Replaced with a verified example: [[0,0],[2,0]] vs [[1,0],[2,1]] → 0.5.
+
+Don't tell the solution to the learner. Instead, let them derive everything.
+Make each step granular and detail the problem statement clearly. Give more exercises at every step.
+Put everything into a Jupyter notebook as markdown. Let the learner code in Jupyter.
