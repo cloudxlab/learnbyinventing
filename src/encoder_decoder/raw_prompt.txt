@@ -1,0 +1,29 @@
+Encoder-Decoder Pipeline chapter — from python_iitr_apr_24 problem.pdf
+(+ input_email.txt / input_nums_ids.txt sample data).
+
+Source problem (problem.pdf):
+We need to build a recommendations system. We already have an engine that takes a CSV
+(user_id, product_id, score) and writes a CSV (user_id, product_id, recommendation_score).
+It requires INTEGER user_id. Our data has user_email_id (string). Write two programs —
+an Encoder (email → int, produce engine input) and a Decoder (engine output → email).
+Both must communicate through files.
+
+Sample data (input_email.txt):
+    sandeep,1, 1.0
+    nitin, 2, 3.0
+    subodh, 2, 1.0
+    sandeep, 2, 2.0
+    nitin, 1, 2.0
+Expected encoded (input_nums_ids.txt): first-seen order, IDs starting at 1.
+
+Pedagogical arc:
+- Part 1: parse_line (strip + typed tuple), read_data
+- Part 2: build_mapping (first-seen int IDs), save_mapping/load_mapping (file round trip —
+  encoder and decoder are separate programs), encode_file (complete encoder)
+- Part 3: run_recommender provided as an untouchable black box (recommends unrated
+  products scored by average rating)
+- Part 4: invert (from Dictionaries chapter), decode_file (complete decoder)
+- Part 5: bigger random dataset, check_pipeline end-to-end verification
+  (no invented users, no leaked integer IDs)
+- Closing: this is label encoding (sklearn LabelEncoder); encode → black box → decode
+  pattern generalizes to one-hot, tokenizers, compression

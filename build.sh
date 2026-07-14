@@ -8,6 +8,10 @@ jupyter nbconvert --to html loops_and_array/loops_and_array.ipynb
 jupyter nbconvert --to html expressions_and_functions/expressions_and_functions.ipynb
 jupyter nbconvert --to html if_else/if_else.ipynb
 jupyter nbconvert --to html recursion/recursion.ipynb
+jupyter nbconvert --to html sorting/sorting.ipynb
+jupyter nbconvert --to html trees_and_heaps/trees_and_heaps.ipynb
+jupyter nbconvert --to html pattern_matching/pattern_matching.ipynb
+jupyter nbconvert --to html encoder_decoder/encoder_decoder.ipynb
 jupyter nbconvert --to html gradient_descent/linear_regression_gradient_descent.ipynb
 jupyter nbconvert --to html decision_tree/decision_tree.ipynb
 jupyter nbconvert --to html convolutions/convolutions.ipynb

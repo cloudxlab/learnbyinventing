@@ -23,10 +23,14 @@ After teaching about 20 courses on machine learning, I have evolved these exerci
 | 5 | [Dictionaries](dictionaries/dictionaries.ipynb) | Word counts, top-N, anagram grouping, expense tracker, group-by pattern |
 | 6 | [Binary Search & Approximations](binary_search/binary_search.ipynb) | Bisection on continuous ranges: sqrt, nth root, log base n, change of base |
 | 7 | [Loops and Arrays](loops_and_array/loops_and_array.ipynb) | Stats (mean/SD/IQR), error metrics (RMSE/MAE/Huber), nearest neighbor, polynomials, softmax |
-| 8 | [Linear Regression & Gradient Descent](gradient_descent/linear_regression_gradient_descent.ipynb) | Gradient descent → linear regression |
-| 9 | [Decision Trees](decision_tree/decision_tree.ipynb) | Impurity → splitting → decision tree fitting |
-| 10 | [Convolutions](convolutions/convolutions.ipynb) | Images → convolution (computer vision) |
-| 11 | [Information Theory & Compression](information_theory/information_theory.ipynb) | Prefix-free codes → variable-length encoding → Huffman coding → Shannon entropy |
+| 8 | [Sorting](sorting/sorting.ipynb) | Bubble → insertion → merge → quick → counting sort; O(n²) vs O(n·log n) measured |
+| 9 | [Trees & Heaps](trees_and_heaps/trees_and_heaps.ipynb) | Expression trees, BST insert/find/delete, scheduler → min-heap |
+| 10 | [Pattern Matching](pattern_matching/pattern_matching.ipynb) | Wildcard matcher via backtracking → regex → mining a real server log |
+| 11 | [The Encoder-Decoder Pipeline](encoder_decoder/encoder_decoder.ipynb) | Label encoding, file-based pipeline around a black-box recommender |
+| 12 | [Linear Regression & Gradient Descent](gradient_descent/linear_regression_gradient_descent.ipynb) | Gradient descent → linear regression |
+| 13 | [Decision Trees](decision_tree/decision_tree.ipynb) | Impurity → splitting → decision tree fitting |
+| 14 | [Convolutions](convolutions/convolutions.ipynb) | Images → convolution (computer vision) |
+| 15 | [Information Theory & Compression](information_theory/information_theory.ipynb) | Prefix-free codes → variable-length encoding → Huffman coding → Shannon entropy |
 
 ## How to Use
 
@@ -34,7 +38,7 @@ After teaching about 20 courses on machine learning, I have evolved these exerci
 
 **Classroom / workshop:** One chapter per ~90-minute session. Instructor projects the notebook; learners work in parallel. Natural pause points between exercises.
 
-**ML onboarding:** Chapters 8–11 form a self-contained ML foundations sequence for engineers who can code but are new to ML.
+**ML onboarding:** Chapters 12–15 form a self-contained ML foundations sequence for engineers who can code but are new to ML.
 
 ## Running Locally
 

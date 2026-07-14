@@ -39,6 +39,10 @@ Notebooks are the learner-facing artifact. When creating or editing them:
 - `dictionaries/dictionaries.ipynb` — dict basics, word count, top-N words, anagram grouping, expense tracker, invert dict, group_by pattern
 - `binary_search/binary_search.ipynb` — binary search on continuous ranges: sqrt, cube root, nth root, log₁₀, log base n; change of base formula
 - `loops_and_array/loops_and_array.ipynb` — statistics (min/max/mean/SD/IQR), error metrics (RMSE/MAE/Huber), nearest neighbor (1-D→N-D→custom distance), polynomials, linear equation solver, probability/sampling (softmax/temperature), recursion on nested structures
+- `sorting/sorting.ipynb` — bubble/insertion/merge/quick sort, in-place 0/1 partition, counting sort (billion ages), comparison counting → O(n²) vs O(n·log n), timing race
+- `trees_and_heaps/trees_and_heaps.ipynb` — expression trees (recursive eval), BST insert/find/in-order/delete, balance problem, scheduler → min-heap (push/pop/heap sort), heapq
+- `pattern_matching/pattern_matching.ipynb` — exact match → `?` wildcard → `*` via backtracking (glob), then `re`: dates, credit cards, emails, URL extraction from real server log
+- `encoder_decoder/encoder_decoder.ipynb` — label-encoding pipeline from problem.pdf: parse CSV, email→int mapping persisted to file, black-box recommender, decoder, end-to-end verification
 - `gradient_descent/linear_regression_gradient_descent.ipynb` — gradient descent → linear regression
 - `decision_tree/decision_tree.ipynb` — impurity → splitting → decision tree fitting
 - `convolutions/convolutions.ipynb` — images → convolution (computer vision)

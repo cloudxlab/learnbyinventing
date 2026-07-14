@@ -1,0 +1,26 @@
+Pattern Matching chapter — from python_iitr_apr_24 (18 May - ML.ipynb, jul 20.ipynb, access.log.41).
+
+Source exercises:
+- Wild card character matcher: * matches 0 or more chars, ? matches exactly one char.
+    a* -> abc, ab, ax, a
+    a? -> a1, a2, aa
+    a*b -> axyzb, a123b, ab
+    a*b*c -> abc, abbbc, a1b1c
+    aa?b*: match aa1b, aaxby, aa1bcdeffgshshshsh; not aab, ab
+  def ismatch(pat, text): return True/False
+- Simple pattern matcher: . matches single char, * matches any number of any chars.
+  Recursive strategy sketch given in the source (try text[1:], text[2:], ...).
+- Regex table (^ $ . \s \S * *? + +? [aeiou] [^XYZ] [a-z0-9] parentheses).
+- Date matching: [0-9][0-9][-/][0-9][0-9][/-][0-9]{4}; stricter day 0[1-9]|[12][0-9]|30|31
+  and month 0[1-9]|1[0-2]. Valid/invalid date test lines in source.
+- Credit card numbers with dashes/spaces/nothing.
+- Q1: regex for email address. Q2: URL. Q3: extract URLs from server logs access.log.41.
+
+Pedagogical arc:
+- Part 1: match_exact — char-by-char recursion (base cases)
+- Part 2: match_q — add ? (one char)
+- Part 3: match — add * via backtracking (swallow nothing OR one more, recurse both);
+  find_matching = shell globbing
+- Part 4: re module — DATE_PATTERN, STRICT_DATE (alternation), find_card_numbers,
+  find_emails, find_urls + domain_counts over embedded real access.log.41 lines
+- Closing: backtracking generalizes to mazes/Sudoku/N-Queens; regex engines work this way
