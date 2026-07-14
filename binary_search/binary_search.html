@@ -8167,6 +8167,228 @@ For <code>0 &lt; n &lt; 1</code>, you will need to flip the comparison in the bi
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=722ec9b2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
+<h1 id="Part-6-%E2%80%94-Bonus:-Binary-Search-on-Sorted-Arrays">Part 6 — Bonus: Binary Search on Sorted Arrays<a class="anchor-link" href="#Part-6-%E2%80%94-Bonus:-Binary-Search-on-Sorted-Arrays">¶</a></h1><p>Everything so far searched a <strong>continuous range</strong> of numbers. But the same
+halving idea works on a <strong>sorted array</strong> — and this is the version you'll meet
+everywhere, from databases to <code>bisect</code> in the standard library.</p>
+<p>The setup changes slightly:</p>
+<ul>
+<li>Instead of <code>lo</code> and <code>hi</code> being numbers, they are <strong>indices</strong> into the array.</li>
+<li>Instead of stopping at a precision, you stop when the indices cross.</li>
+</ul>
+<h3 id="Exercise-6.1-%E2%80%94-Is-It-There?">Exercise 6.1 — Is It There?<a class="anchor-link" href="#Exercise-6.1-%E2%80%94-Is-It-There?">¶</a></h3><p>Write <code>contains(arr, x)</code> that returns <code>True</code> if <code>x</code> occurs in the <strong>sorted</strong>
+list <code>arr</code>. Look at the middle element, decide which half could contain <code>x</code>,
+and repeat. No <code>in</code>, no walking the whole list: for a million items your
+function should look at ~20 elements at most.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5a359c6f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">arr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="k">assert</span> <span class="n">contains</span><span class="p">([],</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"contains: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cbdadc4d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-6.2-%E2%80%94-First-and-Last">Exercise 6.2 — First and Last<a class="anchor-link" href="#Exercise-6.2-%E2%80%94-First-and-Last">¶</a></h3><p>If the array has <strong>duplicates</strong>, "is it there" isn't enough — you often need
+<em>where does it start</em> and <em>where does it end</em>.</p>
+<p>Write <code>find_first(arr, x)</code> and <code>find_last(arr, x)</code> that return the index of the
+first / last occurrence of <code>x</code> in the sorted list <code>arr</code>, or <code>-1</code> if it's absent.</p>
+<p>Hint: when you find a match, don't stop — remember the index, then keep
+searching the half where an even earlier (or later) match could still hide.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=59eb77d8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_first</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">find_last</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">arr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">find_first</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="n">find_last</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="k">assert</span> <span class="n">find_first</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>
+<span class="k">assert</span> <span class="n">find_last</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="k">assert</span> <span class="n">find_first</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+<span class="k">assert</span> <span class="n">find_last</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+<span class="k">assert</span> <span class="n">find_first</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">find_last</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"find_first / find_last: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b283cc35">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-6.3-%E2%80%94-Counting-Without-Counting">Exercise 6.3 — Counting Without Counting<a class="anchor-link" href="#Exercise-6.3-%E2%80%94-Counting-Without-Counting">¶</a></h3><p>A sensor logs a <strong>billion</strong> readings, each one <code>0</code>, <code>1</code> or <code>2</code>, and the log is
+sorted. Your boss wants to know how many <code>1</code>s there are. Walking the array is a
+billion steps; you can answer it in about sixty.</p>
+<p>Write <code>count_val(arr, x)</code> that returns how many times <code>x</code> occurs in the sorted
+list <code>arr</code>, by combining <code>find_first</code> and <code>find_last</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a59d9376">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">count_val</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">readings</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">5</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span>
+<span class="k">assert</span> <span class="n">count_val</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>
+<span class="k">assert</span> <span class="n">count_val</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="k">assert</span> <span class="n">count_val</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="n">count_val</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+<span class="n">big</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">400000</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">300000</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">300000</span>
+<span class="k">assert</span> <span class="n">count_val</span><span class="p">(</span><span class="n">big</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">300000</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"count_val: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=95c253c6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-6.4-%E2%80%94-Common-Elements,-Small-vs-Huge">Exercise 6.4 — Common Elements, Small vs Huge<a class="anchor-link" href="#Exercise-6.4-%E2%80%94-Common-Elements,-Small-vs-Huge">¶</a></h3><p>You have a small list of IDs and a <strong>huge sorted</strong> list of registered IDs, and
+you want the ones that appear in both. Checking each small ID against every
+huge ID costs m × n comparisons; binary-searching each small ID costs only
+m × log(n).</p>
+<p>Write <code>commons(small, huge)</code> that returns the elements of <code>small</code> (in order)
+that occur in the sorted list <code>huge</code>. Reuse your <code>contains</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e52251b4">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">commons</span><span class="p">(</span><span class="n">small</span><span class="p">,</span> <span class="n">huge</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">big</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2_000_000</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>   <span class="c1"># a million even numbers</span>
+<span class="k">assert</span> <span class="n">commons</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">999_999</span><span class="p">,</span> <span class="mi">1_000_000</span><span class="p">],</span> <span class="n">big</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1_000_000</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">commons</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">big</span><span class="p">)</span> <span class="o">==</span> <span class="p">[]</span>
+<span class="k">assert</span> <span class="n">commons</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">big</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"commons: OK — 4 lookups x ~20 steps beats 4 x 1,000,000"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e1c683f0">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-6.5-%E2%80%94-Finding-the-Bottom-of-a-Valley">Exercise 6.5 — Finding the Bottom of a Valley<a class="anchor-link" href="#Exercise-6.5-%E2%80%94-Finding-the-Bottom-of-a-Valley">¶</a></h3><p>One last twist. This array isn't sorted — it goes <strong>down, then up</strong>, like a
+valley:</p>
+<pre><code>[10, 9, 8, 6.5, 4.1, 3.2, 2, 4, 4.5, 6]
+</code></pre>
+<p>Binary search still works! Compare <code>arr[mid]</code> with <code>arr[mid + 1]</code>:</p>
+<ul>
+<li>if <code>arr[mid] &gt; arr[mid + 1]</code>, you are on the <strong>downhill</strong> slope — the minimum
+must be to the right;</li>
+<li>otherwise you are on the <strong>uphill</strong> slope (or at the bottom) — the minimum is
+at <code>mid</code> or to its left.</li>
+</ul>
+<p>Write <code>find_min_convex(arr)</code> that returns the <strong>minimum value</strong> of such a
+valley-shaped array.</p>
+<p>Hold on to this idea: "walk downhill until it stops going down" is exactly how
+<strong>gradient descent</strong> trains machine-learning models — you'll meet it again in
+the Gradient Descent chapter.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9c706ab6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_min_convex</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="k">assert</span> <span class="n">find_min_convex</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="n">find_min_convex</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="n">find_min_convex</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>      <span class="c1"># all downhill</span>
+<span class="k">assert</span> <span class="n">find_min_convex</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>      <span class="c1"># all uphill</span>
+<span class="k">assert</span> <span class="n">find_min_convex</span><span class="p">([</span><span class="mi">7</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"find_min_convex: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=347b8dbd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -8213,6 +8435,9 @@ For <code>0 &lt; n &lt; 1</code>, you will need to flip the comparison in the bi
 </table>
 <p><strong>Binary search works whenever the function is monotone</strong> — that single property
 guarantees the interval always shrinks and the answer is always inside it.</p>
+<p>In the bonus part you moved the same idea onto <strong>sorted arrays</strong> — <code>contains</code>,
+<code>find_first</code> / <code>find_last</code>, <code>count_val</code>, <code>commons</code> — plus one valley-shaped
+twist, <code>find_min_convex</code>, that points straight at gradient descent.</p>
 </div>
 </div>
 </div>

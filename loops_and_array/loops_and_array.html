@@ -9168,6 +9168,66 @@ Each operand is either a number or another such array.</p>
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=de34fcbe">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-7.3-%E2%80%94-A-Calculator-with-Rules">Exercise 7.3 — A Calculator with Rules<a class="anchor-link" href="#Exercise-7.3-%E2%80%94-A-Calculator-with-Rules">¶</a></h3><p><code>solve_expression</code> assumed every operator takes exactly two operands. Real
+calculators are pickier <em>and</em> more flexible: <code>+</code> happily sums ten numbers,
+but <code>sqrt</code> of two numbers is nonsense.</p>
+<p>Write <code>calculate(expr)</code> — an upgraded evaluator:</p>
+<ul>
+<li>New operators: <code>"sqrt"</code> (use <code>x ** 0.5</code>) and <code>"log"</code> (base 10 —
+<code>math.log10</code>).</li>
+<li><strong>Arity rules:</strong> <code>+</code> and <code>*</code> accept <strong>two or more</strong> operands; <code>-</code> and <code>/</code>
+accept <strong>exactly two</strong>; <code>sqrt</code> and <code>log</code> accept <strong>exactly one</strong>. Wrong
+count → <code>raise ValueError</code> with a message naming the operator.</li>
+<li>Unknown operator → <code>ValueError</code> too.</li>
+<li>Operands may be numbers or nested expressions, as before.</li>
+</ul>
+<p>Hint: evaluate all operands first (<code>args = [calculate(a) for a in expr[1:]]</code>),
+<em>then</em> check <code>len(args)</code> against the operator's rule before applying it.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ecd83153">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"+"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"*"</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span> <span class="o">==</span> <span class="mi">24</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"-"</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"sqrt"</span><span class="p">,</span> <span class="mi">16</span><span class="p">])</span> <span class="o">==</span> <span class="mi">4</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"log"</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="n">calculate</span><span class="p">([</span><span class="s2">"+"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"sqrt"</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="s2">"log"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="mi">9</span>
+
+<span class="k">for</span> <span class="n">bad</span> <span class="ow">in</span> <span class="p">([</span><span class="s2">"-"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="s2">"sqrt"</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="p">[</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="s2">"@"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">calculate</span><span class="p">(</span><span class="n">bad</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bad</span><span class="si">}</span><span class="s2"> should have raised ValueError"</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">pass</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"calculate: OK — operators now enforce their own rules"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0544e68d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -9199,6 +9259,185 @@ Each operand is either a number or another such array.</p>
 
 <span class="n">nested</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Flattened:"</span><span class="p">,</span> <span class="n">flatten_list</span><span class="p">(</span><span class="n">nested</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b30d621d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
+<h1 id="Part-8-%E2%80%94-Bonus:-In-Place-Array-Moves">Part 8 — Bonus: In-Place Array Moves<a class="anchor-link" href="#Part-8-%E2%80%94-Bonus:-In-Place-Array-Moves">¶</a></h1><p>Some array jobs come with a hard constraint: <strong>no second array allowed</strong>. A
+billion-element list won't fit in memory twice, so you must rearrange it <em>in
+place</em>, using only a spare variable or two.</p>
+<h3 id="Exercise-8.1-%E2%80%94-Three-Way-XOR">Exercise 8.1 — Three-Way XOR<a class="anchor-link" href="#Exercise-8.1-%E2%80%94-Three-Way-XOR">¶</a></h3><p>First, meet a new operator. <code>^</code> is <strong>XOR</strong> (exclusive or): for each bit of the
+two numbers, the result bit is <code>1</code> exactly when the input bits <em>differ</em>.</p>
+<pre><code>1 ^ 2  -&gt;  3      (01 ^ 10 = 11)
+5 ^ 5  -&gt;  0      (a number XOR itself is always 0)
+5 ^ 0  -&gt;  5      (XOR with 0 changes nothing)
+</code></pre>
+<p>Write <code>xors(a, b, c)</code> that takes three equal-length lists and returns a new
+list where element <code>i</code> is <code>a[i] ^ b[i] ^ c[i]</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cca10340">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xors</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="k">assert</span> <span class="n">xors</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">xors</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">xors</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"xors: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c1d3910b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-8.2-%E2%80%94-Reverse,-In-Place">Exercise 8.2 — Reverse, In Place<a class="anchor-link" href="#Exercise-8.2-%E2%80%94-Reverse,-In-Place">¶</a></h3><p>Write <code>reverse_in_place(arr)</code> that reverses the list <strong>without creating a new
+list</strong> — no <code>arr[::-1]</code>, no <code>reversed()</code>, no second list. Walk two indices
+toward each other from the ends, swapping as you go. The function should
+modify <code>arr</code> and return nothing.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d1418acd">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">reverse_in_place</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">reverse_in_place</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>      <span class="c1"># modifies in place, returns nothing</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+<span class="n">reverse_in_place</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">b</span> <span class="o">==</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+<span class="n">reverse_in_place</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"reverse_in_place: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=baef7d9a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-8.3-%E2%80%94-Circular-Shift-by-One">Exercise 8.3 — Circular Shift by One<a class="anchor-link" href="#Exercise-8.3-%E2%80%94-Circular-Shift-by-One">¶</a></h3><p>Write <code>shift_left(arr)</code> that moves every element one position to the left, with
+the first element wrapping around to the end — in place, with only one
+temporary variable: <code>[10, 20, 30]</code> becomes <code>[20, 30, 10]</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=07477340">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">shift_left</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">]</span>
+<span class="n">shift_left</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">shift_left</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+
+<span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">shift_left</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">b</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"shift_left: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=26671d9b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-8.4-%E2%80%94-Circular-Shift-by-k:-the-Triple-Reversal-Trick">Exercise 8.4 — Circular Shift by k: the Triple-Reversal Trick<a class="anchor-link" href="#Exercise-8.4-%E2%80%94-Circular-Shift-by-k:-the-Triple-Reversal-Trick">¶</a></h3><p>Shifting left by <code>k</code> could be done by calling <code>shift_left</code> k times — but that's
+O(n·k). There is a beautiful O(n) trick that uses <em>reversal</em> three times.
+Watch <code>[1, 2, 3, 4, 5]</code> with <code>k = 2</code>:</p>
+<ol>
+<li>Reverse the first <code>k</code> elements: <code>[2, 1, 3, 4, 5]</code></li>
+<li>Reverse the remaining elements: <code>[2, 1, 5, 4, 3]</code></li>
+<li>Reverse the whole array: <code>[3, 4, 5, 1, 2]</code> — done!</li>
+</ol>
+<p>Write <code>shift_left_k(arr, k)</code> using this trick. You'll want a helper that
+reverses just the slice between indices <code>i</code> and <code>j</code> in place.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6bc3e058">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">shift_left_k</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">shift_left_k</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+<span class="n">shift_left_k</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">b</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">shift_left_k</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="n">shift_left_k</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">d</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"shift_left_k: OK"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -9248,6 +9487,10 @@ Each operand is either a number or another such array.</p>
 <tr>
 <td>7 Nested Structures</td>
 <td><code>flatten_list</code>, <code>solve_expression</code></td>
+</tr>
+<tr>
+<td>8 In-Place Moves</td>
+<td><code>xors</code>, <code>reverse_in_place</code>, <code>shift_left</code>, <code>shift_left_k</code></td>
 </tr>
 </tbody>
 </table>

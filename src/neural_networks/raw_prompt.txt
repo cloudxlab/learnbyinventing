@@ -1,0 +1,30 @@
+Neural Networks chapter — from june_2025_iitr (Notebook_Exercises_Consolidated.md
+Exercise 10 "Computation Graphs & Tiny Neural Nets", 36_mar14_logistic_regression.ipynb,
+income_tax.ipynb; Exercise 15.1 attention comparison folded into the closing pointer).
+
+Source material:
+- 36_mar14: heights [171,173,163,162,160] labels [1,1,0,0,0]; lin_error vs
+  lin_error_sigmoid; finite-diff grad; find_m_c loops. The class notebook's
+  sigmoid fit on raw heights STALLED (ended with "TODO: Fix this code") —
+  turned into the chapter's saturation lesson: raw heights -> sigmoid(20.8)≈1
+  -> zero gradient -> stuck at error 0.6; centering (x-165) fixes it.
+- Ex 10.1/10.2: computation graph y1=step(w11*x+w10); y2=sigmoid(y1*w21+w20);
+  y3=x*y2; y=w31*y3+w30; plot for different weight sets; invent your own graph.
+- Ex 10.3/10.4/10.5 + income_tax.ipynb: tax = 30% of (income-5000) if
+  income>5000 else 0 (generate_data, seed 42, uniform 0..10000);
+  classifier is_taxable + conditional regressor pipeline; 2-neuron net
+  tax = w1*sigmoid(m*x+c)+w0; explorations (tanh, relu, more neurons,
+  feed x again = residual).
+
+Design decisions:
+- Inputs/targets scaled to 0..1 (income/10000, tax/1500) — ties back to the
+  Part 1 saturation lesson; taxable-only line is exactly m=2, c=-1 scaled.
+- np.polyfit allowed for plain line fits (least squares derived in ch14).
+- fit_net(err_fn, params, ...) generalizes ch15's gradient descent to a
+  parameter list; sigmoid net lands RMSE≈0.049 (line 0.139, pipeline 0.00015)
+  — honest middle result, sigmoid flattens while tax keeps climbing.
+- Punchline: the tax rule IS a ReLU; relu net fits near-exactly (RMSE<0.02
+  asserted, actual ≈1e-5). Reveals: perceptron, logistic regression = one
+  neuron, saturation, mixture of experts (gated pipeline), ReLU.
+- Closing pointer: GPT-from-scratch repo, attention = uM.T@uM from recommender.
+- All assert thresholds validated by scratchpad solved_neural_networks.py.

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Provider Setup</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Provider Setup</h1>
+</header>
+<h1 id="provider-setup-guide-anthropic-and-openai">Provider Setup Guide
+— Anthropic and OpenAI</h1>
+<p>This guide covers everything you need to run the curriculum with
+either provider. All exercises in the curriculum are written for
+Anthropic by default. This file shows you the exact code changes needed
+to switch to OpenAI.</p>
+<hr />
+<h2 id="part-1-installation-and-api-keys">Part 1 — Installation and API
+Keys</h2>
+<h3 id="step-1-install-the-libraries">Step 1: Install the libraries</h3>
+<p>Open your terminal and run:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For Anthropic</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install anthropic</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># For OpenAI</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install openai</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># For embeddings (used in both tracks — same library either way)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install sentence-transformers</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify everything installed</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-c</span> <span class="st">&quot;import anthropic; import openai; import sentence_transformers; print(&#39;All good.&#39;)&quot;</span></span></code></pre></div>
+<h3 id="step-2-get-your-api-key">Step 2: Get your API key</h3>
+<p><strong>Anthropic</strong></p>
+<ol type="1">
+<li>Go to <a
+href="https://console.anthropic.com">console.anthropic.com</a></li>
+<li>Sign up or log in.</li>
+<li>Click <strong>API Keys</strong> in the left sidebar.</li>
+<li>Click <strong>Create Key</strong>, give it a name
+(e.g. <code>rag-curriculum</code>), copy it.</li>
+<li>New accounts receive free credits to start. Usage-based billing
+after that.</li>
+<li>Pricing reference: Haiku (the model used in exercises) costs
+approximately $0.25 per million input tokens — running all 11 exercises
+will cost well under $0.10 total.</li>
+</ol>
+<p><strong>OpenAI</strong></p>
+<ol type="1">
+<li>Go to <a
+href="https://platform.openai.com">platform.openai.com</a></li>
+<li>Sign up or log in.</li>
+<li>Click your profile → <strong>API keys</strong> → <strong>Create new
+secret key</strong>.</li>
+<li>Copy it immediately — OpenAI does not show it again.</li>
+<li>You may need to add a payment method before your key becomes
+active.</li>
+<li>Pricing reference: GPT-4o-mini (the model used in exercises) costs
+approximately $0.15 per million input tokens — similarly cheap for this
+curriculum.</li>
+</ol>
+<h3 id="step-3-store-your-key-as-an-environment-variable">Step 3: Store
+your key as an environment variable</h3>
+<p>Never paste your API key directly into code. Store it as an
+environment variable instead.</p>
+<p><strong>macOS / Linux</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add to your shell config so it persists across sessions</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;export ANTHROPIC_API_KEY=&quot;sk-ant-your-key-here&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.zshrc</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;export OPENAI_API_KEY=&quot;sk-your-key-here&quot;&#39;</span> <span class="op">&gt;&gt;</span> ~/.zshrc</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ~/.zshrc</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$ANTHROPIC_API_KEY</span></span></code></pre></div>
+<p><strong>Windows (Command Prompt)</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cmd"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>setx ANTHROPIC_API_KEY <span class="st">&quot;sk-ant-your-key-here&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>setx OPENAI_API_KEY <span class="st">&quot;sk-your-key-here&quot;</span></span></code></pre></div>
+<p>Restart your terminal after running <code>setx</code>.</p>
+<p><strong>Windows (PowerShell)</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>System<span class="op">.</span><span class="fu">Environment</span><span class="op">]::</span>SetEnvironmentVariable<span class="op">(</span><span class="st">&quot;ANTHROPIC_API_KEY&quot;</span><span class="op">,</span> <span class="st">&quot;sk-ant-your-key-here&quot;</span><span class="op">,</span> <span class="st">&quot;User&quot;</span><span class="op">)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>System<span class="op">.</span><span class="fu">Environment</span><span class="op">]::</span>SetEnvironmentVariable<span class="op">(</span><span class="st">&quot;OPENAI_API_KEY&quot;</span><span class="op">,</span> <span class="st">&quot;sk-your-key-here&quot;</span><span class="op">,</span> <span class="st">&quot;User&quot;</span><span class="op">)</span></span></code></pre></div>
+<p><strong>In a Jupyter notebook or Google Colab</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">&quot;ANTHROPIC_API_KEY&quot;</span>] <span class="op">=</span> <span class="st">&quot;sk-ant-your-key-here&quot;</span>  <span class="co"># temporary, this session only</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">&quot;OPENAI_API_KEY&quot;</span>] <span class="op">=</span> <span class="st">&quot;sk-your-key-here&quot;</span></span></code></pre></div>
+<p>For Colab, use the Secrets panel (the key icon in the left sidebar) —
+it is more secure than pasting keys into cells.</p>
+<hr />
+<h2 id="part-2-model-reference">Part 2 — Model Reference</h2>
+<p>Use these model names in the exercises. Swap the string in
+<code>model=</code> to change provider.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Task</th>
+<th>Anthropic model</th>
+<th>OpenAI model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All exercises (fast, cheap)</td>
+<td><code>claude-haiku-4-5-20251001</code></td>
+<td><code>gpt-4o-mini</code></td>
+</tr>
+<tr>
+<td>Better reasoning (optional)</td>
+<td><code>claude-sonnet-4-6</code></td>
+<td><code>gpt-4o</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-3-code-translation-table">Part 3 — Code Translation
+Table</h2>
+<p>Every API call in the curriculum maps directly between providers. The
+pattern is always the same: find the four moving parts and swap
+them.</p>
+<h3 id="the-four-moving-parts">The four moving parts</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Part</th>
+<th>Anthropic</th>
+<th>OpenAI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Import</td>
+<td><code>import anthropic</code></td>
+<td><code>from openai import OpenAI</code></td>
+</tr>
+<tr>
+<td>Client</td>
+<td><code>anthropic.Anthropic()</code></td>
+<td><code>OpenAI()</code></td>
+</tr>
+<tr>
+<td>Call method</td>
+<td><code>client.messages.create(...)</code></td>
+<td><code>client.chat.completions.create(...)</code></td>
+</tr>
+<tr>
+<td>Extract text</td>
+<td><code>response.content[0].text</code></td>
+<td><code>response.choices[0].message.content</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="side-by-side-examples">Side-by-side examples</h3>
+<p><strong>Basic ask function</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- ANTHROPIC ---</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anthropic</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> anthropic.Anthropic()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask(question):</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># --- OPENAI ---</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI()</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask(question):</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.chat.completions.create(</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;gpt-4o-mini&quot;</span>,</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span></code></pre></div>
+<p><strong>Ask with a system prompt</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- ANTHROPIC ---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.messages.create(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    system<span class="op">=</span><span class="st">&quot;You are a helpful HR assistant.&quot;</span>,          <span class="co"># &lt;-- separate system param</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># --- OPENAI ---</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.chat.completions.create(</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;gpt-4o-mini&quot;</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;system&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;You are a helpful HR assistant.&quot;</span>},  <span class="co"># &lt;-- inside messages list</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span></code></pre></div>
+<p><strong>Multi-turn conversation (used in Module 5 agent
+loop)</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- ANTHROPIC ---</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;Hello&quot;</span>},</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;assistant&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;Hi! How can I help?&quot;</span>},</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;What is 2 + 2?&quot;</span>},</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.messages.create(</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>messages</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>reply <span class="op">=</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># --- OPENAI ---</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>messages <span class="op">=</span> [</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;Hello&quot;</span>},</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;assistant&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;Hi! How can I help?&quot;</span>},</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: <span class="st">&quot;What is 2 + 2?&quot;</span>},</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.chat.completions.create(</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;gpt-4o-mini&quot;</span>,</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>messages</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>reply <span class="op">=</span> response.choices[<span class="dv">0</span>].message.content</span></code></pre></div>
+<p>The message list format (<code>role</code> / <code>content</code>
+dicts) is identical between providers — only the client method and
+response extraction differ.</p>
+<hr />
+<h2 id="part-4-provider-agnostic-wrapper">Part 4 — Provider-Agnostic
+Wrapper</h2>
+<p>Rather than rewriting every exercise, add this block at the top of
+your script. Set <code>PROVIDER = "anthropic"</code> or
+<code>PROVIDER = "openai"</code> and the rest of your code stays
+unchanged.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ── provider_setup.py ──────────────────────────────────────────────────────</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Paste this at the top of any exercise file, then use `llm_call()` throughout.</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>PROVIDER <span class="op">=</span> <span class="st">&quot;anthropic&quot;</span>  <span class="co"># change to &quot;openai&quot; to switch providers</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> PROVIDER <span class="op">==</span> <span class="st">&quot;anthropic&quot;</span>:</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> anthropic</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    _client <span class="op">=</span> anthropic.Anthropic()</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> llm_call(messages, system<span class="op">=</span><span class="va">None</span>, max_tokens<span class="op">=</span><span class="dv">512</span>):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">        Send a list of messages and return the reply as a plain string.</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">        messages: list of {&quot;role&quot;: ..., &quot;content&quot;: ...} dicts</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">        system:   optional system prompt string</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">        &quot;&quot;&quot;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        kwargs <span class="op">=</span> <span class="bu">dict</span>(</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            max_tokens<span class="op">=</span>max_tokens,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            messages<span class="op">=</span>messages,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> system:</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>            kwargs[<span class="st">&quot;system&quot;</span>] <span class="op">=</span> system</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> _client.messages.create(<span class="op">**</span>kwargs)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> PROVIDER <span class="op">==</span> <span class="st">&quot;openai&quot;</span>:</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    _client <span class="op">=</span> OpenAI()</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> llm_call(messages, system<span class="op">=</span><span class="va">None</span>, max_tokens<span class="op">=</span><span class="dv">512</span>):</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">        Send a list of messages and return the reply as a plain string.</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">        messages: list of {&quot;role&quot;: ..., &quot;content&quot;: ...} dicts</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">        system:   optional system prompt string</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">        &quot;&quot;&quot;</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>        full_messages <span class="op">=</span> messages</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> system:</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>            full_messages <span class="op">=</span> [{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;system&quot;</span>, <span class="st">&quot;content&quot;</span>: system}] <span class="op">+</span> messages</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> _client.chat.completions.create(</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span><span class="st">&quot;gpt-4o-mini&quot;</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>            max_tokens<span class="op">=</span>max_tokens,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>            messages<span class="op">=</span>full_messages,</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> response.choices[<span class="dv">0</span>].message.content</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f&quot;Unknown provider: </span><span class="sc">{</span>PROVIDER<span class="sc">}</span><span class="ss">. Choose &#39;anthropic&#39; or &#39;openai&#39;.&quot;</span>)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="co"># ── End of wrapper ──────────────────────────────────────────────────────────</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Example usage (same code works for both providers):</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask(question):</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> llm_call([{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}])</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask_with_system(question, system_prompt):</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> llm_call([{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}], system<span class="op">=</span>system_prompt)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask_with_history(messages):</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> llm_call(messages)</span></code></pre></div>
+<h3 id="how-to-use-the-wrapper-in-each-exercise">How to use the wrapper
+in each exercise</h3>
+<p>Replace every <code>client.messages.create(...)</code> call in the
+curriculum with <code>llm_call(...)</code>.</p>
+<p><strong>Exercise 1.1 — before and after</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before (Anthropic-specific)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.messages.create(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># After (works with both providers)</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> llm_call([{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}], max_tokens<span class="op">=</span><span class="dv">256</span>)</span></code></pre></div>
+<p><strong>Exercise 5.1 agent loop — before and after</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Before</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> client.messages.create(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    max_tokens<span class="op">=</span><span class="dv">150</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">=</span>messages</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>model_text <span class="op">=</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># After</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>model_text <span class="op">=</span> llm_call(messages, system<span class="op">=</span>TOOL_PROMPT, max_tokens<span class="op">=</span><span class="dv">150</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: move your TOOL_PROMPT into the system= argument to keep messages clean</span></span></code></pre></div>
+<hr />
+<h2 id="part-5-embeddings">Part 5 — Embeddings</h2>
+<p>The curriculum uses <code>sentence-transformers</code> for embeddings
+— a local, free library that runs entirely on your machine with no API
+calls. This is the same regardless of whether you use Anthropic or
+OpenAI for the language model.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>embed_model <span class="op">=</span> SentenceTransformer(<span class="st">&quot;all-MiniLM-L6-v2&quot;</span>)  <span class="co"># downloads ~80MB on first run</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Embed a list of strings — returns a numpy array of shape (n, 384)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>vectors <span class="op">=</span> embed_model.encode([<span class="st">&quot;Hello world&quot;</span>, <span class="st">&quot;How are you?&quot;</span>])</span></code></pre></div>
+<p>If you want to use OpenAI’s embedding API instead (for consistency,
+or if you cannot install sentence-transformers), here is the
+equivalent:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> openai <span class="im">import</span> OpenAI</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> OpenAI()</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> embed(texts):</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    texts: a list of strings</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">    returns: list of embedding vectors (each a list of 1536 floats)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.embeddings.create(</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;text-embedding-3-small&quot;</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">input</span><span class="op">=</span>texts</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [item.embedding <span class="cf">for</span> item <span class="kw">in</span> response.data]</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>vectors <span class="op">=</span> embed([<span class="st">&quot;Hello world&quot;</span>, <span class="st">&quot;How are you?&quot;</span>])</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Each vector has </span><span class="sc">{</span><span class="bu">len</span>(vectors[<span class="dv">0</span>])<span class="sc">}</span><span class="ss"> dimensions&quot;</span>)  <span class="co"># 1536</span></span></code></pre></div>
+<p>Note that OpenAI embeddings have 1536 dimensions vs 384 for
+sentence-transformers. Your dot-product similarity function works
+identically — just more numbers to multiply.</p>
+<hr />
+<h2 id="part-6-troubleshooting">Part 6 — Troubleshooting</h2>
+<p><strong><code>AuthenticationError</code> or
+<code>401 Unauthorized</code></strong> Your API key is wrong or not
+loaded. Run
+<code>python -c "import os; print(os.environ.get('ANTHROPIC_API_KEY', 'NOT SET'))"</code>
+to check. If it prints <code>NOT SET</code>, your environment variable
+was not saved. Re-run the Step 3 commands and restart your terminal.</p>
+<p><strong><code>RateLimitError</code> or
+<code>429 Too Many Requests</code></strong> You are sending too many
+requests too fast. Add <code>import time; time.sleep(1)</code> between
+API calls in loops.</p>
+<p><strong><code>sentence_transformers</code> is slow on first
+run</strong> The model downloads about 80MB on first use. This is
+normal. It is cached locally after that.</p>
+<p><strong>Responses are cut off mid-sentence</strong> Increase
+<code>max_tokens</code>. The exercises use 256 for simple questions and
+512 for agent steps. Try 1024 if needed.</p>
+<p><strong>OpenAI returns <code>None</code> for content</strong> This
+happens when the model triggers a content filter. Try rephrasing your
+test question — the fake Acme Corp documents are safe, but unusual
+phrasings can occasionally trigger filters.</p>
+<p><strong><code>ModuleNotFoundError: No module named 'anthropic'</code></strong>
+Run <code>pip install anthropic</code> in the same Python environment
+your script uses. If you are in a virtual environment, make sure it is
+activated.</p>
+</body>
+</html>

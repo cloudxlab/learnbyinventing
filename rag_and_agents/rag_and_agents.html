@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>RAG &amp; Agentic AI</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">RAG &amp; Agentic AI</h1>
+</header>
+<h1 id="learning-by-inventing-rag-and-agentic-ai">Learning by Inventing:
+RAG and Agentic AI</h1>
+<blockquote>
+<p><strong>Philosophy.</strong> Every concept in this curriculum is
+something you will build before it is named. You will hit a wall, feel
+the frustration of a broken approach, and then invent the fix yourself.
+Only after you have invented it will you learn what the field calls
+it.</p>
+<p><strong>Prerequisites.</strong> Basic Python (functions, lists,
+dicts, loops). High school maths (averages, basic probability). No ML
+background required.</p>
+<p><strong>Companion files</strong> — download these alongside the
+curriculum: - <code>acme_datasets.py</code> — all datasets used across
+every exercise. Import what you need:
+<code>from acme_datasets import DOCUMENTS, STRUCTURED_DOCUMENTS, QA_EVAL_SET</code>
+- <code>provider_setup.md</code> — step-by-step instructions for setting
+up Anthropic or OpenAI, plus a drop-in wrapper so the same code runs on
+either provider without changes.</p>
+<p><strong>How each exercise works.</strong> Each exercise has four
+parts: 1. <strong>Observe</strong> — run the starter code and see what
+happens 2. <strong>The problem</strong> — a prompt that breaks the
+starter code 3. <strong>Your task</strong> — fix it using only the hints
+given 4. <strong>Reveal</strong> — what you just invented, and what the
+field calls it</p>
+</blockquote>
+<hr />
+<h2 id="module-1-the-knowledge-gap">Module 1 — The Knowledge Gap</h2>
+<p><em>The central question: what does an LLM actually know, and what
+happens when it doesn’t?</em></p>
+<hr />
+<h3 id="exercise-1.1-the-amnesiac-oracle">Exercise 1.1 — The Amnesiac
+Oracle</h3>
+<p><strong>Difficulty:</strong> ★☆☆☆☆</p>
+<p><strong>Observe.</strong> Install the Anthropic SDK and run this
+code.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anthropic</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> anthropic.Anthropic()  <span class="co"># reads ANTHROPIC_API_KEY from env</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask(question):</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="st">&quot;What is the capital of France?&quot;</span>))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="st">&quot;Who wrote Hamlet?&quot;</span>))</span></code></pre></div>
+<p>Both answers come back instantly and correctly.</p>
+<p><strong>The problem.</strong> Now ask it something the model cannot
+possibly know.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is a made-up internal document. The model has never seen it.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="st">&quot;According to Acme Corp&#39;s Q3 2024 internal memo, what is the new expense policy for travel?&quot;</span>))</span></code></pre></div>
+<p>Run it. Read the answer carefully.</p>
+<p><strong>Your task.</strong></p>
+<ol type="1">
+<li>The model answered confidently. Is that answer trustworthy? How
+would you know?</li>
+<li>Now write a new version of <code>ask()</code> called
+<code>honest_ask()</code>. Before calling the API, check whether the
+question contains the phrase <code>"internal memo"</code> or
+<code>"Q3 2024"</code>. If it does, return a plain Python string — no
+API call — that says something like:
+<code>"I don't have access to that document."</code> Otherwise, call the
+API normally.</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> honest_ask(question):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your code here</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(honest_ask(<span class="st">&quot;What is the capital of France?&quot;</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(honest_ask(<span class="st">&quot;According to the Q3 2024 memo, what is the travel policy?&quot;</span>))</span></code></pre></div>
+<ol start="3" type="1">
+<li>This keyword check is brittle. In one sentence, describe
+<em>why</em> it will fail for most real questions.</li>
+</ol>
+<p><strong>Reflect.</strong> You have just felt the core problem: a
+language model’s knowledge is frozen at training time. It cannot know
+what happened yesterday, or what is in your company’s private database.
+Your keyword check is a crude patch. The real fix requires giving the
+model the document at the moment it is asked. That is what the next
+exercises build toward.</p>
+<p><strong>What you invented:</strong> the intuition behind
+<em>retrieval-augmented generation</em> — the idea that knowledge should
+come from outside the model, not from inside it.</p>
+<hr />
+<h3 id="exercise-1.2-stuffing-the-prompt">Exercise 1.2 — Stuffing the
+Prompt</h3>
+<p><strong>Difficulty:</strong> ★★☆☆☆</p>
+<p><strong>Setup.</strong> Import the Acme Corp policy documents from
+the companion dataset file.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> acme_datasets <span class="im">import</span> DOCUMENTS, DOC_A, DOC_B, DOC_C</span></code></pre></div>
+<p><code>DOCUMENTS</code> is a list of six policy documents (travel,
+remote work, onboarding, IT security, performance reviews, parental
+leave). <code>DOC_A</code>, <code>DOC_B</code>, <code>DOC_C</code> are
+the first three — travel, remote work, and onboarding — which are enough
+for this exercise. The full set of six is there for you to experiment
+with once you have the basics working.</p>
+<p><strong>Observe.</strong> Try this approach — put all three documents
+directly into the prompt.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask_with_docs(question, docs):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    combined <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\n\n</span><span class="st">---</span><span class="ch">\n\n</span><span class="st">&quot;</span>.join(docs)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> <span class="ss">f&quot;&quot;&quot;You are a helpful assistant. Use only the documents below to answer the question.</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ss">If the answer is not in the documents, say &quot;I don&#39;t know.&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ss">DOCUMENTS:</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="sc">{</span>combined<span class="sc">}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ss">QUESTION: </span><span class="sc">{</span>question<span class="sc">}</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ss">&quot;&quot;&quot;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">256</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: prompt}]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>all_docs <span class="op">=</span> [DOC_A, DOC_B, DOC_C]</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask_with_docs(<span class="st">&quot;What is the hotel allowance?&quot;</span>, all_docs))</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask_with_docs(<span class="st">&quot;How many days can I work remotely?&quot;</span>, all_docs))</span></code></pre></div>
+<p>It works. The model answers correctly from the documents.</p>
+<p><strong>The problem.</strong> Now imagine you have 10,000 documents
+instead of 3. Each document is 500 words. Write a short calculation:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>words_per_doc <span class="op">=</span> <span class="dv">500</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>num_docs <span class="op">=</span> <span class="dv">10_000</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>total_words <span class="op">=</span> words_per_doc <span class="op">*</span> num_docs</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>approx_tokens <span class="op">=</span> total_words <span class="op">/</span> <span class="fl">0.75</span>  <span class="co"># rough conversion</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Total tokens needed: </span><span class="sc">{</span>approx_tokens<span class="sc">:,.0f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;That is roughly </span><span class="sc">{</span>approx_tokens <span class="op">/</span> <span class="dv">200_000</span><span class="sc">:.1f}</span><span class="ss">x a 200k context window&quot;</span>)</span></code></pre></div>
+<p>Run it. What do you get?</p>
+<p><strong>Your task.</strong></p>
+<p>You cannot stuff all 10,000 documents into the prompt. You need a
+smarter approach: instead of sending <em>all</em> documents, send only
+the <em>relevant</em> ones.</p>
+<p>Write a function <code>find_relevant_docs(question, docs)</code> that
+uses simple keyword matching to pick the most relevant document. It
+should:</p>
+<ol type="1">
+<li>Split the question into individual words (lowercase).</li>
+<li>For each document, count how many of those words appear in the
+document text (lowercase).</li>
+<li>Return only the single document with the highest count.</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> find_relevant_docs(question, docs):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your code here</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>question <span class="op">=</span> <span class="st">&quot;What is the hotel allowance for travel?&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>best_doc <span class="op">=</span> find_relevant_docs(question, all_docs)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask_with_docs(question, [best_doc]))</span></code></pre></div>
+<p>Test it with at least two different questions. Does it always pick
+the right document?</p>
+<p><strong>Reflect.</strong> You have just reinvented keyword-based
+retrieval. It is fast and requires no ML. But try this question:
+<code>"What is the per-night accommodation limit?"</code> — does it
+still pick DOC_A? The word “hotel” does not appear in that question, and
+“accommodation” appears in both the question and DOC_A. But what if a
+document used the word “lodging” instead? You would miss it
+entirely.</p>
+<p><strong>What you invented:</strong> the idea of <em>retrieval as a
+preprocessing step</em> — only sending relevant context to the model.
+This is the skeleton of RAG. The next module fixes the keyword-matching
+weakness.</p>
+<hr />
+<h2 id="module-2-the-search-problem">Module 2 — The Search Problem</h2>
+<p><em>The central question: how do you find a document that means the
+same thing, even when it uses different words?</em></p>
+<hr />
+<h3 id="exercise-2.1-when-words-lie">Exercise 2.1 — When Words Lie</h3>
+<p><strong>Difficulty:</strong> ★★☆☆☆</p>
+<p><strong>Observe.</strong> Build a tiny search engine using your
+keyword matching function from Exercise 1.2.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> acme_datasets <span class="im">import</span> MINI_CORPUS</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mini_corpus <span class="op">=</span> MINI_CORPUS  <span class="co"># 8 sentences — 3 synonymous hotel-rate sentences, 1 unrelated decoy, 4 other policy sentences</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> keyword_search(query, corpus):</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    query_words <span class="op">=</span> <span class="bu">set</span>(query.lower().split())</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> []</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> doc <span class="kw">in</span> corpus:</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        doc_words <span class="op">=</span> <span class="bu">set</span>(doc.lower().split())</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        overlap <span class="op">=</span> <span class="bu">len</span>(query_words <span class="op">&amp;</span> doc_words)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        scores.append((overlap, doc))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    scores.sort(reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> scores</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> keyword_search(<span class="st">&quot;what is the hotel allowance&quot;</span>, mini_corpus)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> score, doc <span class="kw">in</span> results:</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Score </span><span class="sc">{</span>score<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>doc[:<span class="dv">60</span>]<span class="sc">}</span><span class="ss">...&quot;</span>)</span></code></pre></div>
+<p><strong>The problem.</strong> The first sentence scores highest
+because it shares the word “hotel.” The second and third sentences mean
+<em>exactly the same thing</em> but score zero — they share no words
+with the query.</p>
+<p><strong>Your task.</strong> You are going to measure meaning using
+numbers instead of words. Here is the key idea: words that appear in
+similar contexts tend to mean similar things. We will use a shortcut — a
+pre-built table of word vectors.</p>
+<p>Install the <code>sentence-transformers</code> library.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install sentence-transformers</span></code></pre></div>
+<p>Now run this code and study what it produces.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> SentenceTransformer(<span class="st">&quot;all-MiniLM-L6-v2&quot;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>sentences <span class="op">=</span> [</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;The hotel rate is capped at $250 per night.&quot;</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Accommodation costs must not exceed two hundred and fifty dollars.&quot;</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Python is a programming language.&quot;</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>embeddings <span class="op">=</span> model.encode(sentences)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Each sentence becomes a vector of </span><span class="sc">{</span>embeddings<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> numbers.&quot;</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">First 5 numbers for sentence 1: </span><span class="sc">{</span>embeddings[<span class="dv">0</span>][:<span class="dv">5</span>]<span class="sc">.</span><span class="bu">round</span>(<span class="dv">3</span>)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;First 5 numbers for sentence 2: </span><span class="sc">{</span>embeddings[<span class="dv">1</span>][:<span class="dv">5</span>]<span class="sc">.</span><span class="bu">round</span>(<span class="dv">3</span>)<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>Each sentence is now a list of 384 numbers. Two sentences that mean
+the same thing should produce similar lists of numbers. But how do you
+measure “similar”?</p>
+<p><strong>Implement dot-product similarity</strong> between two
+vectors. Given two vectors <code>a</code> and <code>b</code> of the same
+length, their dot product is: sum of <code>a[i] * b[i]</code> for all
+<code>i</code>.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dot_product(vec_a, vec_b):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># implement without numpy (use a loop)</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># hint: zip(vec_a, vec_b) gives you pairs</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Test it</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> embeddings[<span class="dv">0</span>]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> embeddings[<span class="dv">1</span>]</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> embeddings[<span class="dv">2</span>]</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Similarity (sentence 1 vs 2): </span><span class="sc">{</span>dot_product(a, b)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)  <span class="co"># should be high</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Similarity (sentence 1 vs 3): </span><span class="sc">{</span>dot_product(a, c)<span class="sc">:.3f}</span><span class="ss">&quot;</span>)  <span class="co"># should be low</span></span></code></pre></div>
+<p>Now build a <code>semantic_search</code> function:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> semantic_search(query, corpus):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    query_vec <span class="op">=</span> model.encode([query])[<span class="dv">0</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    corpus_vecs <span class="op">=</span> model.encode(corpus)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> []</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, doc_vec <span class="kw">in</span> <span class="bu">enumerate</span>(corpus_vecs):</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        score <span class="op">=</span> dot_product(query_vec, doc_vec)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        scores.append((score, corpus[i]))</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    scores.sort(reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> scores</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> semantic_search(<span class="st">&quot;what is the hotel allowance&quot;</span>, mini_corpus)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> score, doc <span class="kw">in</span> results:</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Score </span><span class="sc">{</span>score<span class="sc">:.3f}</span><span class="ss">: </span><span class="sc">{</span>doc<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>Do the accommodation and lodging sentences now rank above the Python
+sentence?</p>
+<p><strong>Reflect.</strong> You have just used <em>embeddings</em> —
+dense numerical representations of meaning. The dot product between two
+embedding vectors is a measure of how semantically similar the two
+pieces of text are. This is the engine inside every modern search
+system.</p>
+<p><strong>What you invented:</strong> <em>semantic search using vector
+embeddings</em> — the retrieval backbone of production RAG systems.</p>
+<hr />
+<h3 id="exercise-2.2-building-a-document-index">Exercise 2.2 — Building
+a Document Index</h3>
+<p><strong>Difficulty:</strong> ★★★☆☆</p>
+<p><strong>The goal.</strong> In the real world, you embed documents
+<em>once</em> (when they are added to the system) and store those
+embeddings. At query time, you only embed the question — not all the
+documents again. This is what makes semantic search fast.</p>
+<p><strong>Your task.</strong> Build a simple in-memory vector
+store.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> acme_datasets <span class="im">import</span> STRUCTURED_DOCUMENTS <span class="im">as</span> documents</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 22 policy passages across travel, remote work, IT security, performance, and parental leave</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> SentenceTransformer(<span class="st">&quot;all-MiniLM-L6-v2&quot;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Loaded </span><span class="sc">{</span><span class="bu">len</span>(documents)<span class="sc">}</span><span class="ss"> documents&quot;</span>)</span></code></pre></div>
+<p>Step 1 — Write an <code>index_documents</code> function that takes
+the list of documents and returns a list of
+<code>(document, embedding)</code> pairs. This simulates the “indexing”
+phase that happens once.</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> index_documents(docs):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your code here</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># hint: model.encode([d[&quot;text&quot;] for d in docs]) gives you all embeddings at once</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>index <span class="op">=</span> index_documents(documents)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Indexed </span><span class="sc">{</span><span class="bu">len</span>(index)<span class="sc">}</span><span class="ss"> documents.&quot;</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Each embedding has </span><span class="sc">{</span><span class="bu">len</span>(index[<span class="dv">0</span>][<span class="dv">1</span>])<span class="sc">}</span><span class="ss"> dimensions.&quot;</span>)</span></code></pre></div>
+<p>Step 2 — Write a <code>retrieve</code> function that takes a query
+string and the index, and returns the top-k most relevant documents.</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> retrieve(query, index, top_k<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your code here</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. embed the query</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. compute dot product with every indexed embedding</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. sort and return top_k documents (just the text and source)</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> retrieve(<span class="st">&quot;How much can I spend on food while travelling?&quot;</span>, index, top_k<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> doc, score <span class="kw">in</span> results:</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;[</span><span class="sc">{</span>score<span class="sc">:.3f}</span><span class="ss">] (</span><span class="sc">{</span>doc[<span class="st">&#39;source&#39;</span>]<span class="sc">}</span><span class="ss">) </span><span class="sc">{</span>doc[<span class="st">&#39;text&#39;</span>]<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>Step 3 — Think about this: if you had 1 million documents, computing
+a dot product with each one for every query would be slow. In one or two
+sentences, describe what you might do to speed this up. (You do not need
+to implement anything — just reason about it.)</p>
+<p><strong>What you invented:</strong> a <em>vector index</em> — the
+data structure at the heart of systems like Pinecone, Weaviate, and
+pgvector.</p>
+<hr />
+<h2 id="module-3-inventing-rag">Module 3 — Inventing RAG</h2>
+<p><em>The central question: how do you combine retrieval with
+generation to get answers that are grounded in your documents?</em></p>
+<hr />
+<h3 id="exercise-3.1-the-grounded-answer">Exercise 3.1 — The Grounded
+Answer</h3>
+<p><strong>Difficulty:</strong> ★★★☆☆</p>
+<p><strong>Observe.</strong> You now have two working pieces: a
+retrieval system and a language model. Try connecting them naively.</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anthropic</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> anthropic.Anthropic()</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> SentenceTransformer(<span class="st">&quot;all-MiniLM-L6-v2&quot;</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the index from Exercise 2.2</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (paste your index_documents and retrieve functions here)</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> naive_rag(question):</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Step 1: retrieve</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> retrieve(question, index, top_k<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join([doc[<span class="st">&quot;text&quot;</span>] <span class="cf">for</span> doc, score <span class="kw">in</span> results])</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Step 2: generate</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> <span class="ss">f&quot;Context:</span><span class="ch">\n</span><span class="sc">{</span>context<span class="sc">}</span><span class="ch">\n\n</span><span class="ss">Question: </span><span class="sc">{</span>question<span class="sc">}</span><span class="ch">\n</span><span class="ss">Answer:&quot;</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: prompt}]</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(naive_rag(<span class="st">&quot;How much can I spend on a hotel?&quot;</span>))</span></code></pre></div>
+<p>It works. But there is a subtle problem.</p>
+<p><strong>The problem.</strong> Ask a question that is completely
+outside the documents.</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(naive_rag(<span class="st">&quot;What is the boiling point of water?&quot;</span>))</span></code></pre></div>
+<p>What happens? Does the model say “I don’t know” or does it answer
+from general knowledge, ignoring the retrieved context?</p>
+<p><strong>Your task.</strong> Improve <code>naive_rag</code> into
+<code>grounded_rag</code> with two changes:</p>
+<ol type="1">
+<li><p>Improve the prompt. Add a clear instruction: <em>“Answer only
+using the context provided. If the context does not contain the answer,
+respond with exactly: I cannot answer this from the provided
+documents.”</em></p></li>
+<li><p>Add a <em>confidence gate</em>: after retrieval, check the top
+similarity score. If the best-matching document scores below
+<code>0.35</code>, skip the API call entirely and return the fallback
+string directly. This saves money and is faster.</p></li>
+</ol>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> grounded_rag(question, confidence_threshold<span class="op">=</span><span class="fl">0.35</span>):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> retrieve(question, index, top_k<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your confidence gate here</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    top_score <span class="op">=</span> results[<span class="dv">0</span>][<span class="dv">1</span>]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> top_score <span class="op">&lt;</span> confidence_threshold:</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;I cannot answer this from the provided documents.&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># your improved prompt here</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    context <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join([doc[<span class="st">&quot;text&quot;</span>] <span class="cf">for</span> doc, score <span class="kw">in</span> results])</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    prompt <span class="op">=</span> <span class="co"># your prompt here</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: prompt}]</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Test both cases</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(grounded_rag(<span class="st">&quot;How much can I spend on a hotel?&quot;</span>))</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(grounded_rag(<span class="st">&quot;What is the boiling point of water?&quot;</span>))</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(grounded_rag(<span class="st">&quot;Who invented the telephone?&quot;</span>))</span></code></pre></div>
+<p><strong>Reflect.</strong> You have just built a complete RAG
+pipeline: retrieve relevant chunks, gate on confidence, generate a
+grounded answer. The confidence gate is a simple but important
+production pattern — it prevents the model from hallucinating when
+retrieval fails.</p>
+<p><strong>What you invented:</strong> <em>Retrieval-Augmented
+Generation (RAG)</em> — the dominant architecture for grounding LLMs in
+private or recent knowledge.</p>
+<hr />
+<h3 id="exercise-3.2-chunking-and-the-goldilocks-problem">Exercise 3.2 —
+Chunking and the Goldilocks Problem</h3>
+<p><strong>Difficulty:</strong> ★★★★☆</p>
+<p><strong>The problem.</strong> Real documents are long. If you embed
+an entire 10-page PDF as one vector, you lose precision — the embedding
+averages out over too many topics. But if you split every sentence into
+its own chunk, each chunk loses context. There is a Goldilocks size.</p>
+<p><strong>Observe.</strong> Here is a longer fake document.</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>long_doc <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="st">ACME CORP TRAVEL POLICY — FULL VERSION</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">Section 1: Flights</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">All domestic flights must be booked at economy class. </span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="st">Business class is permitted only for flights exceeding 6 hours.</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="st">All flights must be booked at least 14 days in advance to qualify for reimbursement.</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="st">Last-minute bookings require VP approval and a written justification.</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">Section 2: Hotels</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="st">Employees are entitled to a maximum of $250 per night for hotel accommodation.</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="st">The company has preferred rates with Marriott and Hilton chains.</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="st">Extended stays of more than 7 nights require manager sign-off.</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="st">Airbnb and similar platforms are not approved for reimbursement.</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="st">Section 3: Meals</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="st">The daily meal allowance is $60. This covers breakfast, lunch, and dinner.</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="st">Alcohol is not reimbursable under any circumstances.</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="st">Receipts are required for any single meal exceeding $25.</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="st">Team dinners with clients may be expensed separately under the entertainment budget.</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="st">Section 4: Ground Transport</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a><span class="st">Taxis and rideshare are reimbursable for airport transfers.</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="st">Personal vehicle use is reimbursed at $0.22 per kilometre.</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="st">Car rentals require pre-approval and must use the corporate Avis account.</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;&quot;&quot;</span></span></code></pre></div>
+<p><strong>Your task.</strong> Write a <code>chunk_document</code>
+function that splits this document into overlapping chunks.</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chunk_document(text, chunk_size<span class="op">=</span><span class="dv">100</span>, overlap<span class="op">=</span><span class="dv">20</span>):</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Split text into chunks of approximately `chunk_size` words,</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">    with `overlap` words of overlap between consecutive chunks.</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co">        text: the full document string</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co">        chunk_size: target number of words per chunk</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">        overlap: number of words to repeat at the start of each new chunk</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co">        list of strings (chunks)</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    words <span class="op">=</span> text.split()</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    chunks <span class="op">=</span> []</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> start <span class="op">&lt;</span> <span class="bu">len</span>(words):</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>        end <span class="op">=</span> start <span class="op">+</span> chunk_size</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        chunk <span class="op">=</span> <span class="st">&quot; &quot;</span>.join(words[start:end])</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>        chunks.append(chunk)</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>        start <span class="op">+=</span> chunk_size <span class="op">-</span> overlap  <span class="co"># slide forward, but overlap</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> chunks</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>chunks <span class="op">=</span> chunk_document(long_doc, chunk_size<span class="op">=</span><span class="dv">60</span>, overlap<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Created </span><span class="sc">{</span><span class="bu">len</span>(chunks)<span class="sc">}</span><span class="ss"> chunks&quot;</span>)</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, chunk <span class="kw">in</span> <span class="bu">enumerate</span>(chunks):</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">--- Chunk </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss"> ---</span><span class="ch">\n</span><span class="sc">{</span>chunk<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>Now index the chunks and test retrieval:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>chunked_docs <span class="op">=</span> [{<span class="st">&quot;id&quot;</span>: i, <span class="st">&quot;text&quot;</span>: chunk, <span class="st">&quot;source&quot;</span>: <span class="st">&quot;travel_policy_full.txt&quot;</span>} </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> i, chunk <span class="kw">in</span> <span class="bu">enumerate</span>(chunks)]</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>chunk_index <span class="op">=</span> index_documents(chunked_docs)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>questions <span class="op">=</span> [</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Can I fly business class?&quot;</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Can I use Airbnb?&quot;</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;How much per kilometre for my own car?&quot;</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Is alcohol reimbursable?&quot;</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> q <span class="kw">in</span> questions:</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> retrieve(q, chunk_index, top_k<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    doc, score <span class="op">=</span> results[<span class="dv">0</span>]</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">Q: </span><span class="sc">{</span>q<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Score </span><span class="sc">{</span>score<span class="sc">:.3f}</span><span class="ss">: </span><span class="sc">{</span>doc[<span class="st">&#39;text&#39;</span>][:<span class="dv">100</span>]<span class="sc">}</span><span class="ss">...&quot;</span>)</span></code></pre></div>
+<p><strong>Experiment.</strong> Change <code>chunk_size</code> to 20
+(very small) and then to 200 (very large). How does retrieval quality
+change? Write down your observations as a comment in the code.</p>
+<p><strong>What you invented:</strong> <em>document chunking with
+overlap</em> — a standard preprocessing step in all production RAG
+systems. The overlap prevents relevant sentences from being split across
+chunk boundaries.</p>
+<hr />
+<h2 id="module-4-the-single-step-limit">Module 4 — The Single-Step
+Limit</h2>
+<p><em>The central question: what happens when answering a question
+requires doing something — not just knowing something?</em></p>
+<hr />
+<h3 id="exercise-4.1-the-model-that-cannot-act">Exercise 4.1 — The Model
+That Cannot Act</h3>
+<p><strong>Difficulty:</strong> ★★☆☆☆</p>
+<p><strong>Observe.</strong> Ask the model something that requires a
+real-time action.</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anthropic</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>client <span class="op">=</span> anthropic.Anthropic()</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask(question):</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[{<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: question}]</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="st">&quot;What time is it right now?&quot;</span>))</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="st">&quot;What is 10</span><span class="sc">% o</span><span class="st">f 847.33?&quot;</span>))</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask(<span class="ss">f&quot;Today is </span><span class="sc">{</span>datetime<span class="sc">.</span>date<span class="sc">.</span>today()<span class="sc">}</span><span class="ss">. How many days until Christmas?&quot;</span>))</span></code></pre></div>
+<p>Run these. Notice: - The time question: the model either guesses or
+refuses. It cannot actually check a clock. - The calculator question: it
+probably gets it right, but could it get a harder one wrong? - The date
+question: once you give it the date, it can reason.</p>
+<p><strong>The problem.</strong> The model is stateless and sandboxed.
+It cannot call your system clock, run a calculator, search the web, or
+write a file. It can only process text and return text.</p>
+<p><strong>Your task.</strong> Build a small toolkit of Python functions
+— things the model <em>cannot</em> do but you <em>can</em>.</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_current_date():</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Returns today&#39;s date as a string.&quot;&quot;&quot;</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">str</span>(datetime.date.today())</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate(expression):</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Safely evaluate a mathematical expression string.</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Only allows numbers and basic operators.</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns the result as a string.</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Safety: only allow digits, spaces, and basic operators</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    allowed <span class="op">=</span> <span class="bu">set</span>(<span class="st">&quot;0123456789+-*/()., &quot;</span>)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> <span class="bu">all</span>(c <span class="kw">in</span> allowed <span class="cf">for</span> c <span class="kw">in</span> expression):</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;Error: invalid expression&quot;</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="bu">eval</span>(expression)  <span class="co"># safe because we filtered the input</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">str</span>(<span class="bu">round</span>(result, <span class="dv">4</span>))</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f&quot;Error: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> days_until(target_date_str):</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns the number of days from today until a target date.</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="co">    target_date_str format: &#39;YYYY-MM-DD&#39;</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>    today <span class="op">=</span> datetime.date.today()</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> datetime.date.fromisoformat(target_date_str)</span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">str</span>((target <span class="op">-</span> today).days)</span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Test your tools</span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(get_current_date())</span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(calculate(<span class="st">&quot;847.33 * 0.1&quot;</span>))</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(days_until(<span class="st">&quot;2024-12-25&quot;</span>))</span></code></pre></div>
+<p>Now the question is: how does the model <em>call</em> these tools? It
+cannot — it only produces text. So you need to make the model produce
+text that <em>describes</em> a tool call, and then you run the tool
+yourself.</p>
+<p><strong>Invent a simple protocol.</strong> Ask the model to output
+tool calls in a structured format. Write a prompt that instructs the
+model to respond in this format when it needs a tool:</p>
+<pre><code>TOOL: tool_name
+INPUT: the input to the tool</code></pre>
+<p>And to give a final answer in this format when it is done:</p>
+<pre><code>ANSWER: the final response to the user</code></pre>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>TOOL_PROMPT <span class="op">=</span> <span class="st">&quot;&quot;&quot;You are a helpful assistant. You have access to these tools:</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="st">- get_current_date(): returns today&#39;s date</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="st">- calculate(expression): evaluates a math expression, e.g. calculate(2 + 2)</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="st">- days_until(YYYY-MM-DD): returns number of days from today until that date</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="st">When you need a tool, respond ONLY with:</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="st">TOOL: tool_name</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="st">INPUT: the input</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="st">When you have a final answer, respond ONLY with:</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="st">ANSWER: your answer</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="st">Do not include any other text.</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ask_with_tools(question):</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> client.messages.create(</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>        max_tokens<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>        messages<span class="op">=</span>[</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>            {<span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, <span class="st">&quot;content&quot;</span>: TOOL_PROMPT <span class="op">+</span> <span class="st">&quot;</span><span class="ch">\n\n</span><span class="st">Question: &quot;</span> <span class="op">+</span> question}</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response.content[<span class="dv">0</span>].text</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask_with_tools(<span class="st">&quot;What is today&#39;s date?&quot;</span>))</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ask_with_tools(<span class="st">&quot;What is 15</span><span class="sc">% o</span><span class="st">f 1247?&quot;</span>))</span></code></pre></div>
+<p>Does the model follow the protocol? Does it output <code>TOOL:</code>
+and <code>INPUT:</code> correctly?</p>
+<p><strong>Reflect.</strong> The model produces a structured text
+response that <em>describes</em> what tool to call. You have to parse
+that text and actually run the tool. This is the key insight: the model
+is a reasoning engine, not an execution engine. You are the
+executor.</p>
+<p><strong>What you invented:</strong> the concept of <em>tool use</em>
+(also called <em>function calling</em>) — the mechanism that allows
+language models to request external actions.</p>
+<hr />
+<h3 id="exercise-4.2-parsing-and-executing-tool-calls">Exercise 4.2 —
+Parsing and Executing Tool Calls</h3>
+<p><strong>Difficulty:</strong> ★★★☆☆</p>
+<p><strong>Your task.</strong> Complete the loop: parse the model’s text
+output, run the right tool, and feed the result back.</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> parse_response(text):</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Parse the model&#39;s text output.</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns either:</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co">      (&quot;tool&quot;, tool_name, tool_input)   — if the model wants a tool</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="co">      (&quot;answer&quot;, final_answer)          — if the model has a final answer</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co">      (&quot;unknown&quot;, raw_text)             — if parsing fails</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    text <span class="op">=</span> text.strip()</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> text.split(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> lines[<span class="dv">0</span>].startswith(<span class="st">&quot;TOOL:&quot;</span>):</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>        tool_name <span class="op">=</span> lines[<span class="dv">0</span>].replace(<span class="st">&quot;TOOL:&quot;</span>, <span class="st">&quot;&quot;</span>).strip()</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>        tool_input <span class="op">=</span> lines[<span class="dv">1</span>].replace(<span class="st">&quot;INPUT:&quot;</span>, <span class="st">&quot;&quot;</span>).strip() <span class="cf">if</span> <span class="bu">len</span>(lines) <span class="op">&gt;</span> <span class="dv">1</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (<span class="st">&quot;tool&quot;</span>, tool_name, tool_input)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> lines[<span class="dv">0</span>].startswith(<span class="st">&quot;ANSWER:&quot;</span>):</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>        answer <span class="op">=</span> lines[<span class="dv">0</span>].replace(<span class="st">&quot;ANSWER:&quot;</span>, <span class="st">&quot;&quot;</span>).strip()</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (<span class="st">&quot;answer&quot;</span>, answer)</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (<span class="st">&quot;unknown&quot;</span>, text)</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_tool(tool_name, tool_input):</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Dispatch to the right Python function.&quot;&quot;&quot;</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tool_name <span class="op">==</span> <span class="st">&quot;get_current_date&quot;</span>:</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> get_current_date()</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name <span class="op">==</span> <span class="st">&quot;calculate&quot;</span>:</span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> calculate(tool_input)</span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name.startswith(<span class="st">&quot;days_until&quot;</span>):</span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> days_until(tool_input)</span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f&quot;Unknown tool: </span><span class="sc">{</span>tool_name<span class="sc">}</span><span class="ss">&quot;</span></span></code></pre></div>
+<p>Now write a <code>one_step_agent</code> function that: 1. Asks the
+model a question. 2. Parses the response. 3. If it is a tool call, runs
+the tool and prints the result. 4. If it is an answer, returns it.</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> one_step_agent(question):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    raw <span class="op">=</span> ask_with_tools(question)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Model said: </span><span class="sc">{</span>raw<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> parse_response(raw)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> result[<span class="dv">0</span>] <span class="op">==</span> <span class="st">&quot;tool&quot;</span>:</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>        _, tool_name, tool_input <span class="op">=</span> result</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>        tool_result <span class="op">=</span> run_tool(tool_name, tool_input)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;Tool result: </span><span class="sc">{</span>tool_result<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f&quot;Tool was called. Result: </span><span class="sc">{</span>tool_result<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> result[<span class="dv">0</span>] <span class="op">==</span> <span class="st">&quot;answer&quot;</span>:</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result[<span class="dv">1</span>]</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f&quot;Could not parse: </span><span class="sc">{</span>result[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(one_step_agent(<span class="st">&quot;What is today&#39;s date?&quot;</span>))</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(one_step_agent(<span class="st">&quot;Calculate 18</span><span class="sc">% o</span><span class="st">f 350.&quot;</span>))</span></code></pre></div>
+<p><strong>The limitation.</strong> Try this question:</p>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(one_step_agent(<span class="st">&quot;How many days from today until New Year&#39;s Day next year?&quot;</span>))</span></code></pre></div>
+<p>This question requires <em>two</em> tool calls: first
+<code>get_current_date()</code> to know today’s date, then
+<code>days_until()</code> to compute the gap. Your
+<code>one_step_agent</code> can only do one. What would it take to
+handle this?</p>
+<p><strong>Reflect.</strong> A single tool call is not enough for
+complex questions. You need a loop — the model calls a tool, gets a
+result, decides if it needs another tool, calls again, and so on. That
+loop is an agent.</p>
+<p><strong>What you invented:</strong> the <em>tool execution loop</em>
+— the bridge between a model’s text output and real-world actions.</p>
+<hr />
+<h2 id="module-5-inventing-agents">Module 5 — Inventing Agents</h2>
+<p><em>The central question: how do you give a model the ability to act
+repeatedly until a task is complete?</em></p>
+<hr />
+<h3 id="exercise-5.1-the-reasoning-loop">Exercise 5.1 — The Reasoning
+Loop</h3>
+<p><strong>Difficulty:</strong> ★★★★☆</p>
+<p><strong>The key idea.</strong> An agent is not a single API call. It
+is a <em>loop</em> where: 1. The model receives the question and any
+previous tool results. 2. The model decides: do I have enough
+information to answer, or do I need a tool? 3. If it needs a tool, run
+it, add the result to the conversation, go to step 1. 4. If it has an
+answer, return it.</p>
+<p><strong>Your task.</strong> Build a multi-turn agent using a
+conversation history list.</p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_agent(question, max_steps<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A simple agent loop that can call tools multiple times before answering.</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The conversation starts with the system prompt and the user&#39;s question</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    messages <span class="op">=</span> [</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>, </span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;content&quot;</span>: TOOL_PROMPT <span class="op">+</span> <span class="st">&quot;</span><span class="ch">\n\n</span><span class="st">Question: &quot;</span> <span class="op">+</span> question</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(max_steps):</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">--- Step </span><span class="sc">{</span>step <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss"> ---&quot;</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Ask the model what to do next</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> client.messages.create(</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span><span class="st">&quot;claude-haiku-4-5-20251001&quot;</span>,</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>            max_tokens<span class="op">=</span><span class="dv">150</span>,</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>            messages<span class="op">=</span>messages</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>        model_text <span class="op">=</span> response.content[<span class="dv">0</span>].text.strip()</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;Model: </span><span class="sc">{</span>model_text<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Add model&#39;s response to conversation history</span></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>        messages.append({<span class="st">&quot;role&quot;</span>: <span class="st">&quot;assistant&quot;</span>, <span class="st">&quot;content&quot;</span>: model_text})</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Parse what the model said</span></span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> parse_response(model_text)</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> result[<span class="dv">0</span>] <span class="op">==</span> <span class="st">&quot;answer&quot;</span>:</span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">Final answer: </span><span class="sc">{</span>result[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> result[<span class="dv">1</span>]</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> result[<span class="dv">0</span>] <span class="op">==</span> <span class="st">&quot;tool&quot;</span>:</span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a>            _, tool_name, tool_input <span class="op">=</span> result</span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a>            tool_result <span class="op">=</span> run_tool(tool_name, tool_input)</span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f&quot;Tool result: </span><span class="sc">{</span>tool_result<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb30-41"><a href="#cb30-41" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Feed the tool result back into the conversation</span></span>
+<span id="cb30-42"><a href="#cb30-42" aria-hidden="true" tabindex="-1"></a>            <span class="co"># so the model can use it in the next step</span></span>
+<span id="cb30-43"><a href="#cb30-43" aria-hidden="true" tabindex="-1"></a>            messages.append({</span>
+<span id="cb30-44"><a href="#cb30-44" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;role&quot;</span>: <span class="st">&quot;user&quot;</span>,</span>
+<span id="cb30-45"><a href="#cb30-45" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;content&quot;</span>: <span class="ss">f&quot;Tool result: </span><span class="sc">{</span>tool_result<span class="sc">}</span><span class="ch">\n\n</span><span class="ss">Continue. If you have enough information, provide the ANSWER. Otherwise, call another tool.&quot;</span></span>
+<span id="cb30-46"><a href="#cb30-46" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb30-47"><a href="#cb30-47" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb30-48"><a href="#cb30-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb30-49"><a href="#cb30-49" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f&quot;Parse failed: </span><span class="sc">{</span>result[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb30-50"><a href="#cb30-50" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb30-51"><a href="#cb30-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-52"><a href="#cb30-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">&quot;Agent exceeded maximum steps without finding an answer.&quot;</span></span>
+<span id="cb30-53"><a href="#cb30-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-54"><a href="#cb30-54" aria-hidden="true" tabindex="-1"></a><span class="co"># Test the multi-step case</span></span>
+<span id="cb30-55"><a href="#cb30-55" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;How many days from today until New Year&#39;s Day next year?&quot;</span>)</span></code></pre></div>
+<p>Does it now correctly call <code>get_current_date</code> first, then
+<code>days_until</code>?</p>
+<p><strong>Experiment.</strong> Try these questions and count how many
+steps each one takes:</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;What is today&#39;s date?&quot;</span>)                               <span class="co"># 1 step</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;What is 22</span><span class="sc">% o</span><span class="st">f 4500?&quot;</span>)                               <span class="co"># 1 step</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;How many days until July 4th from today?&quot;</span>)           <span class="co"># 2 steps</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;What is 15</span><span class="sc">% o</span><span class="st">f the number of days until New Year?&quot;</span>)  <span class="co"># 3 steps — chain!</span></span></code></pre></div>
+<p><strong>What you invented:</strong> the <em>agentic loop</em> — the
+core architecture of every AI agent, from simple assistants to
+autonomous research systems.</p>
+<hr />
+<h3 id="exercise-5.2-giving-the-agent-memory">Exercise 5.2 — Giving the
+Agent Memory</h3>
+<p><strong>Difficulty:</strong> ★★★★☆</p>
+<p><strong>The problem.</strong> Your current agent has no memory
+between separate <code>run_agent</code> calls. Each call starts fresh.
+Try this:</p>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;My monthly budget is $3000.&quot;</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;How much is 40</span><span class="sc">% o</span><span class="st">f my budget?&quot;</span>)  <span class="co"># it does not know the budget</span></span></code></pre></div>
+<p>The second call fails because the agent has no memory of the
+first.</p>
+<p><strong>Your task.</strong> Add a simple external memory store. The
+agent gets two new tools:</p>
+<ul>
+<li><code>remember(key, value)</code> — store a piece of
+information</li>
+<li><code>recall(key)</code> — retrieve a stored piece of
+information</li>
+</ul>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple in-memory key-value store</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>memory_store <span class="op">=</span> {}</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> remember(key_value):</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Store a value. Input format: &quot;key=value&quot;</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Example: &quot;monthly_budget=3000&quot;</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">&quot;=&quot;</span> <span class="kw">not</span> <span class="kw">in</span> key_value:</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;Error: format must be key=value&quot;</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    key, value <span class="op">=</span> key_value.split(<span class="st">&quot;=&quot;</span>, <span class="dv">1</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>    memory_store[key.strip()] <span class="op">=</span> value.strip()</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f&quot;Remembered: </span><span class="sc">{</span>key<span class="sc">.</span>strip()<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span>value<span class="sc">.</span>strip()<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> recall(key):</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a><span class="co">    Retrieve a stored value by key.</span></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> key.strip()</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> key <span class="kw">in</span> memory_store:</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> memory_store[key]</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f&quot;Nothing stored under &#39;</span><span class="sc">{</span>key<span class="sc">}</span><span class="ss">&#39;&quot;</span></span></code></pre></div>
+<p>Update your <code>TOOL_PROMPT</code> to include these two new tools,
+and update <code>run_tool</code> to dispatch to them.</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>TOOL_PROMPT_V2 <span class="op">=</span> <span class="st">&quot;&quot;&quot;You are a helpful assistant with access to these tools:</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="st">- get_current_date(): returns today&#39;s date</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="st">- calculate(expression): evaluates a math expression</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="st">- days_until(YYYY-MM-DD): returns days from today to target date</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="st">- remember(key=value): stores information for later, e.g. remember(budget=3000)</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="st">- recall(key): retrieves stored information, e.g. recall(budget)</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="st">When you need a tool, respond ONLY with:</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="st">TOOL: tool_name</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="st">INPUT: the input</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="st">When you have a final answer, respond ONLY with:</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="st">ANSWER: your answer</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;&quot;&quot;</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_tool_v2(tool_name, tool_input):</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tool_name <span class="op">==</span> <span class="st">&quot;get_current_date&quot;</span>:</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> get_current_date()</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name <span class="op">==</span> <span class="st">&quot;calculate&quot;</span>:</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> calculate(tool_input)</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name.startswith(<span class="st">&quot;days_until&quot;</span>):</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> days_until(tool_input)</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name <span class="op">==</span> <span class="st">&quot;remember&quot;</span>:</span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> remember(tool_input)</span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> tool_name <span class="op">==</span> <span class="st">&quot;recall&quot;</span>:</span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> recall(tool_input)</span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f&quot;Unknown tool: </span><span class="sc">{</span>tool_name<span class="sc">}</span><span class="ss">&quot;</span></span></code></pre></div>
+<p>Now update <code>run_agent</code> to use <code>TOOL_PROMPT_V2</code>
+and <code>run_tool_v2</code>. Then test:</p>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>memory_store.clear()</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;Remember that my monthly budget is 3000.&quot;</span>, max_steps<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;How much is 40</span><span class="sc">% o</span><span class="st">f my monthly budget?&quot;</span>, max_steps<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div>
+<p>The agent should now call <code>recall(monthly_budget)</code>, get
+<code>3000</code>, then call <code>calculate(3000 * 0.4)</code>.</p>
+<p><strong>Reflect.</strong> You have added persistent state to a
+stateless model. The model itself still forgets between calls — but the
+<em>system</em> around it remembers. This pattern (external memory +
+stateless model) is how real production agents are built.</p>
+<p><strong>What you invented:</strong> <em>external agent memory</em> —
+the pattern used in systems like LangChain’s memory modules, AutoGPT’s
+file-based memory, and enterprise AI assistants.</p>
+<hr />
+<h3 id="exercise-5.3-rag-agent-combining-everything">Exercise 5.3 — RAG
+Agent: Combining Everything</h3>
+<p><strong>Difficulty:</strong> ★★★★★</p>
+<p><strong>The goal.</strong> Your final exercise is to combine
+everything you have built: - The vector index from Module 2 - The
+grounded generation from Module 3 - The agentic loop from Module 5</p>
+<p>You will build an agent that can both <em>retrieve information from
+documents</em> and <em>use tools</em> to perform calculations and
+remember context — and decide which it needs at each step.</p>
+<p><strong>Add one final tool</strong> to your toolkit:</p>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rebuild your index from Exercise 2.2 (paste your index and retrieve functions here)</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Then wrap retrieval as a tool the agent can call</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> search_docs(query):</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Search the internal document index and return the most relevant passage.</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> retrieve(query, index, top_k<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> results:</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;No relevant documents found.&quot;</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    doc, score <span class="op">=</span> results[<span class="dv">0</span>]</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> score <span class="op">&lt;</span> <span class="fl">0.30</span>:</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;No sufficiently relevant documents found.&quot;</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f&quot;[Source: </span><span class="sc">{</span>doc[<span class="st">&#39;source&#39;</span>]<span class="sc">}</span><span class="ss">] </span><span class="sc">{</span>doc[<span class="st">&#39;text&#39;</span>]<span class="sc">}</span><span class="ss">&quot;</span></span></code></pre></div>
+<p>Update your tool prompt to include <code>search_docs(query)</code>,
+and add it to your dispatch function.</p>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>TOOL_PROMPT_FINAL <span class="op">=</span> <span class="st">&quot;&quot;&quot;You are a helpful assistant for Acme Corp employees.</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="st">You have access to these tools:</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="st">- search_docs(query): searches the internal policy documents</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="st">- calculate(expression): evaluates a math expression</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="st">- get_current_date(): returns today&#39;s date</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="st">- days_until(YYYY-MM-DD): returns days from today to a date</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a><span class="st">- remember(key=value): stores a fact for later</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="st">- recall(key): retrieves a stored fact</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="st">Use search_docs first when the question is about company policy.</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a><span class="st">Use calculate for any arithmetic.</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a><span class="st">Chain tools as needed — you can call multiple tools before giving a final answer.</span></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a><span class="st">When you need a tool:</span></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a><span class="st">TOOL: tool_name</span></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a><span class="st">INPUT: the input</span></span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a><span class="st">When you have a final answer:</span></span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a><span class="st">ANSWER: your answer</span></span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;&quot;&quot;</span></span></code></pre></div>
+<p>Test your complete RAG agent:</p>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These questions require document retrieval</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;What is the hotel allowance per night?&quot;</span>, max_steps<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;Can I expense alcohol at a client dinner?&quot;</span>, max_steps<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co"># This requires retrieval AND calculation</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;I have a 5-day business trip. What is the maximum I can claim for meals?&quot;</span>, max_steps<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co"># This requires retrieval, memory, and calculation</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>memory_store.clear()</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;Remember that my trip has 5 nights and 4 full travel days.&quot;</span>, max_steps<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>run_agent(<span class="st">&quot;Based on my trip, what is the total maximum I can claim for hotel and meals combined?&quot;</span>, max_steps<span class="op">=</span><span class="dv">7</span>)</span></code></pre></div>
+<p><strong>Bonus: measure your agent’s accuracy.</strong> The companion
+dataset includes 15 question-answer pairs for evaluating your completed
+RAG agent.</p>
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> acme_datasets <span class="im">import</span> QA_EVAL_SET</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>correct <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> qa <span class="kw">in</span> QA_EVAL_SET:</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="ch">\n</span><span class="ss">Q: </span><span class="sc">{</span>qa[<span class="st">&#39;question&#39;</span>]<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Expected: </span><span class="sc">{</span>qa[<span class="st">&#39;expected_answer&#39;</span>]<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    agent_answer <span class="op">=</span> run_agent(qa[<span class="st">&#39;question&#39;</span>], max_steps<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Agent:    </span><span class="sc">{</span>agent_answer<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Manual check — did the agent get the key facts right?</span></span></code></pre></div>
+<p>Run this after you have completed the full agent. Grade each answer
+yourself: does it contain the key fact in <code>expected_answer</code>?
+A score of 10/15 or higher means your RAG agent is working well.</p>
+<p><strong>Reflect on what you built.</strong> Walk through the last
+question step by step and label each action your agent took: - Which
+steps used <code>recall</code>? - Which used <code>search_docs</code>? -
+Which used <code>calculate</code>? - How many total steps did it
+take?</p>
+<p><strong>What you invented:</strong> a <em>RAG-powered tool-using
+agent</em> — an architecture that appears in production systems like
+Perplexity, enterprise knowledge assistants, and AI copilots. You built
+it from scratch, from first principles.</p>
+<hr />
+<h2 id="epilogue-what-you-invented-and-what-it-is-called">Epilogue —
+What You Invented, and What It Is Called</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Exercise</th>
+<th>What you built</th>
+<th>Industry name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Detected unanswerable questions</td>
+<td>Hallucination detection</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Selected relevant docs before prompting</td>
+<td>Context injection / prompt stuffing</td>
+</tr>
+<tr>
+<td>2.1</td>
+<td>Measured meaning with dot products</td>
+<td>Semantic similarity / cosine similarity</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Stored embeddings once, queried many times</td>
+<td>Vector index</td>
+</tr>
+<tr>
+<td>3.1</td>
+<td>Retrieved then generated, with a fallback</td>
+<td>Retrieval-Augmented Generation (RAG)</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Split long docs into overlapping windows</td>
+<td>Chunking with overlap</td>
+</tr>
+<tr>
+<td>4.1</td>
+<td>Made the model describe actions as text</td>
+<td>Tool use / function calling</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Parsed model text and ran the right function</td>
+<td>Tool dispatcher</td>
+</tr>
+<tr>
+<td>5.1</td>
+<td>Looped model + tools until task complete</td>
+<td>Agentic loop / ReAct pattern</td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>Added persistent storage outside the model</td>
+<td>External agent memory</td>
+</tr>
+<tr>
+<td>5.3</td>
+<td>Combined retrieval, tools, memory, and loop</td>
+<td>RAG agent</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="going-further">Going Further</h2>
+<p>Once you have completed all exercises, the natural next steps
+are:</p>
+<ul>
+<li><strong>Proper vector databases.</strong> Replace your in-memory
+index with ChromaDB or Qdrant — both have free local modes and Python
+clients.</li>
+<li><strong>The ReAct paper.</strong> Read <em>ReAct: Synergizing
+Reasoning and Acting in Language Models</em> (Yao et al., 2022). It
+formalises the loop you built in Exercise 5.1.</li>
+<li><strong>Anthropic’s native tool use.</strong> The Anthropic API
+supports tool/function calling natively — the model returns structured
+JSON instead of the text protocol you invented. Rewrite your agent using
+it.</li>
+<li><strong>Evaluation.</strong> How do you know your RAG system gives
+good answers? Build a tiny evaluation set: 10 questions with known
+correct answers from the documents, and measure how often your agent
+gets them right.</li>
+<li><strong>Multi-agent systems.</strong> What if one agent specialised
+in retrieval and another in calculation, and a coordinator agent decided
+which to call? That is a multi-agent system — the current frontier.</li>
+</ul>
+</body>
+</html>

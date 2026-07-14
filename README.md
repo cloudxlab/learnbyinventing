@@ -26,11 +26,19 @@ After teaching about 20 courses on machine learning, I have evolved these exerci
 | 8 | [Sorting](sorting/sorting.ipynb) | Bubble → insertion → merge → quick → counting sort; O(n²) vs O(n·log n) measured |
 | 9 | [Trees & Heaps](trees_and_heaps/trees_and_heaps.ipynb) | Expression trees, BST insert/find/delete, scheduler → min-heap |
 | 10 | [Pattern Matching](pattern_matching/pattern_matching.ipynb) | Wildcard matcher via backtracking → regex → mining a real server log |
-| 11 | [The Encoder-Decoder Pipeline](encoder_decoder/encoder_decoder.ipynb) | Label encoding, file-based pipeline around a black-box recommender |
-| 12 | [Linear Regression & Gradient Descent](gradient_descent/linear_regression_gradient_descent.ipynb) | Gradient descent → linear regression |
-| 13 | [Decision Trees](decision_tree/decision_tree.ipynb) | Impurity → splitting → decision tree fitting |
-| 14 | [Convolutions](convolutions/convolutions.ipynb) | Images → convolution (computer vision) |
-| 15 | [Information Theory & Compression](information_theory/information_theory.ipynb) | Prefix-free codes → variable-length encoding → Huffman coding → Shannon entropy |
+| 11 | [Backtracking](backtracking/backtracking.ipynb) | Systematic enumeration → permutations → validity checks → Sudoku solver |
+| 12 | [The Encoder-Decoder Pipeline](encoder_decoder/encoder_decoder.ipynb) | Label encoding, file-based pipeline around a black-box recommender |
+| 13 | [Classes & Objects](classes_and_objects/classes_and_objects.ipynb) | Data + behavior, the fit/predict API, inheritance, decision tree as objects, serialization |
+| 14 | [The Ancient Secrets of Prediction](secrets_of_prediction/secrets_of_prediction.ipynb) | Vectors & dot product, prediction = solving equations, polynomial fitting, least squares |
+| 15 | [Linear Regression & Gradient Descent](gradient_descent/linear_regression_gradient_descent.ipynb) | Gradient descent → linear regression |
+| 16 | [Decision Trees](decision_tree/decision_tree.ipynb) | Impurity → splitting → decision tree fitting |
+| 17 | [Random Forests](random_forest/random_forest.ipynb) | Variance impurity → regression trees → bootstrap + feature randomness → forest |
+| 18 | [Recommender Systems](recommender/recommender.ipynb) | Real ratings data → scaling → cosine similarity → uMᵀuM → recommendations → MapReduce |
+| 19 | [Neural Networks](neural_networks/neural_networks.ipynb) | Neurons → saturation lesson → computation graphs → income-tax problem → ReLU |
+| 20 | [Convolutions](convolutions/convolutions.ipynb) | Images → convolution (computer vision) |
+| 21 | [Information Theory & Compression](information_theory/information_theory.ipynb) | Prefix-free codes → variable-length encoding → Huffman coding → Shannon entropy |
+| 22 | [RAG & Agentic AI](rag_and_agents/rag_and_agents.md) | Knowledge gap → search → inventing RAG → tool use → inventing agents |
+| 23 | [Capstone Projects](projects/projects.md) | Open-ended end-to-end projects: EDA, housing pipeline, Keras, time series, NLP, GANs, RL |
 
 ## How to Use
 
@@ -38,7 +46,7 @@ After teaching about 20 courses on machine learning, I have evolved these exerci
 
 **Classroom / workshop:** One chapter per ~90-minute session. Instructor projects the notebook; learners work in parallel. Natural pause points between exercises.
 
-**ML onboarding:** Chapters 12–15 form a self-contained ML foundations sequence for engineers who can code but are new to ML.
+**ML onboarding:** Chapters 13–23 form a self-contained ML foundations sequence for engineers who can code but are new to ML.
 
 ## Running Locally
 

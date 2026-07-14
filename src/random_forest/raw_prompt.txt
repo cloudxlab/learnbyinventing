@@ -1,0 +1,31 @@
+Random Forests chapter — from jan2026_ml_dl (Decision_Tree_from_scratch.ipynb,
+Random_Forest_from_scratch.ipynb, decision_tree.py, Notebook_Exercises_Consolidated.md
+Exercise 11).
+
+Source exercises:
+- Part 1 impurity for numbers: variance ([10,10,10,10,10] vs [1,50,3,80]);
+  "can we force it into 0-1?" aside (yes but trees only compare, keep raw);
+  weighted total variance of a split (values=[10,9,11,8,10,1] -> [10,9,11,8,10]+[1]);
+  variance_reduction = parent - weighted children; good vs mid split comparison.
+- Part 2: house data (Size/Bedrooms -> Price, 6 rows 50..170): split Size<1000 vs
+  Bedrooms<3 by hand; find_best_split(X, y) automatically (every feature, every
+  threshold); max_depth and min_samples_split as "brakes" against memorization.
+- Part 3: Node class (feature/threshold/left/right/value, is_leaf);
+  DecisionTreeRegressor(max_depth, min_samples_split) fit (recursive grow,
+  leaf=mean) / predict (walk); RMSE evaluation, train vs test on 16-row housing.
+- Random forest: "if all trees see the same data won't they be identical?" ->
+  bootstrap sampling (with replacement, rows repeat/missing) -> feature randomness
+  (random subset of features per tree, max_features) -> RandomForestRegressor
+  (n_estimators, fit=bootstrap+subset+train each, predict=average).
+- Test data from source: X16 housing rows, y16 prices, test [[575,1],...] etc.
+
+Design decisions for the LBI notebook:
+- find_best_split takes feature_indices=None param so the same function powers
+  both the plain tree and the forest's feature randomness.
+- Feature subset chosen per tree (not per split) to keep learner burden low;
+  trees store global feature indices so predict needs no re-mapping.
+- Candidate thresholds = midpoints of consecutive sorted unique values; ties keep
+  first; left = x[f] <= t.
+- Honest framing: on the tiny clean dataset a single deep tree can beat the
+  forest on test RMSE — Ex 5.2 think-question explores when ensembles win
+  (noise, stability, many features). Closes with pointer to gradient boosting.

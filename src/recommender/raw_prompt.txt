@@ -1,0 +1,31 @@
+Recommender Systems chapter — from jan2026_ml_dl (18_mar_28.ipynb,
+19_march_29_apr4.ipynb, movies_ratings.csv, Notebook_Exercises_Consolidated.md
+recommender exercises).
+
+Source material:
+- Real class data: movies_ratings.csv, 25 Bollywood movies x 18 people, 0-5
+  ratings, many NaN. Yukta/Priya/Harshita rated nothing; Prabha 12,
+  SandeepGiri 15 ratings. Bhaskar mean 1.71 (stingy) vs Venu 4.10 (generous).
+- Class flow: drop sparse raters -> per-person min-max scaling (generous vs
+  stingy discussion) -> fill NaN with person's mean -> cosine similarity
+  (dot product / lengths) -> unit vectors -> whole similarity matrix as
+  uM.T @ uM -> nearest person -> recommend unrated movies.
+- 19_march notebook also covers MapReduce sparse matrix multiplication with
+  (row, col, value) triples — ported as bonus Part 4.
+
+Design decisions for the LBI notebook:
+- Provided loader tries local movies_ratings.csv, falls back to GitHub raw URL
+  so the notebook works in Colab.
+- Threshold "at least 3 ratings" -> shape (25, 15). All data-dependent assert
+  values verified by running a reference solution against the shipped CSV:
+  fill value for SandeepGiri = his scaled mean 0.3538;
+  sim(SandeepGiri, Abhishek) = 0.8198; most_similar("SandeepGiri") = "Madhuri"
+  (0.9109); SandeepGiri has 10 unrated movies; top recommendation "Dangal".
+- Division-by-zero guard framed as a check exercise (no constant columns in
+  this data), not a code branch, to keep the scaling one-liner clean.
+- unrated_movies uses `ratings` (not `filled`) — deliberate teaching point
+  that filling NaN destroys the "was it rated?" information.
+- recommend() scores = filled.loc[candidates] @ sim[person] — the weighted-vote
+  sum revealed to be a dot product, echoing the uM.T @ uM insight.
+- Summary connects uM.T @ uM to transformer attention; mentions cold-start
+  problem and content-based filtering.

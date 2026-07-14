@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>dictionaries</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>random_forest</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7511,546 +7511,44 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c279aa9a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=655ca0c9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Dictionaries">Dictionaries<a class="anchor-link" href="#Dictionaries">¶</a></h1><p>A <strong>dictionary</strong> maps <em>keys</em> to <em>values</em> — like an index at the back of a book.
-You look up a key in O(1) time, regardless of how many entries exist.</p>
-<p>In this chapter you will use dictionaries to:</p>
+<h1 id="Random-Forests-%E2%80%94-Inventing-Ensemble-Learning">Random Forests — Inventing Ensemble Learning<a class="anchor-link" href="#Random-Forests-%E2%80%94-Inventing-Ensemble-Learning">¶</a></h1><p>In the <strong>Decision Trees</strong> chapter you invented a tree that predicts <em>categories</em>
+(male/female, yes/no) by minimizing impurity. Two questions remain open:</p>
 <ol>
-<li>Count word frequencies in text</li>
-<li>Group words that are anagrams of each other</li>
-<li>Track and query expenses by category</li>
+<li>What if the thing you want to predict is a <strong>number</strong> — a house price, a
+salary, a temperature?</li>
+<li>A single tree happily <em>memorizes</em> its training data. Can we do better?</li>
 </ol>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d80fdc33">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># No imports needed for this chapter — only built-in Python</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e006b53c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>In this chapter you will invent the answers: first a <strong>regression tree</strong>, then
+the idea that powers many production ML systems to this day — <strong>combine many
+imperfect trees into one strong model</strong>. That is a Random Forest.</p>
+<p>Everything is plain Python. You'll reuse ideas (mean, variance) you built in
+<strong>Loops and Arrays</strong>.</p>
 <hr/>
-<h2 id="Part-0-%E2%80%94-Dictionary-Basics">Part 0 — Dictionary Basics<a class="anchor-link" href="#Part-0-%E2%80%94-Dictionary-Basics">¶</a></h2><p>Before coding the exercises, make sure you are comfortable with the four core operations.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=20f8bdb7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-0.1-%E2%80%94-Create-and-Access">Exercise 0.1 — Create and Access<a class="anchor-link" href="#Exercise-0.1-%E2%80%94-Create-and-Access">¶</a></h3><p>A dictionary literal looks like <code>{key: value, key: value, ...}</code>.</p>
-<div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"apple"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"banana"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"cherry"</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
-<span class="n">d</span><span class="p">[</span><span class="s2">"apple"</span><span class="p">]</span>    <span class="c1"># 3</span>
-<span class="n">d</span><span class="p">[</span><span class="s2">"banana"</span><span class="p">]</span>   <span class="c1"># 1</span>
-</pre></div>
-<p><strong>Task:</strong> Create a dictionary <code>scores</code> with three student names and their exam scores.
-Then print the score for one student.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=156375e2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="c1"># Create the scores dictionary</span>
-<span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># replace {} with your dict literal</span>
-
-<span class="c1"># Print one student's score</span>
-<span class="c1"># print(scores["..."])</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=754c84a8">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-0.2-%E2%80%94-Add-and-Update-Entries">Exercise 0.2 — Add and Update Entries<a class="anchor-link" href="#Exercise-0.2-%E2%80%94-Add-and-Update-Entries">¶</a></h3><p>You can add a new key or update an existing one with <code>d[key] = value</code>.</p>
-<p><strong>Task:</strong> Starting from an empty dict, add three entries one at a time.
-Then update one of them (increase the value by 10).</p>
-<p>Verify that <code>len(d) == 3</code> after adding, and that the updated value is correct.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=44355914">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="c1"># Add three entries</span>
-
-<span class="c1"># Update one entry</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=802e2e6a">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-0.3-%E2%80%94-Check-Membership-and-Default-Values">Exercise 0.3 — Check Membership and Default Values<a class="anchor-link" href="#Exercise-0.3-%E2%80%94-Check-Membership-and-Default-Values">¶</a></h3><ul>
-<li><code>key in d</code> — True if key exists</li>
-<li><code>d.get(key, default)</code> — returns <code>default</code> instead of raising <code>KeyError</code> if key is missing</li>
-</ul>
-<p><strong>Task:</strong> Write a function <code>safe_lookup(d, key)</code> that returns the value if the key exists,
-or the string <code>"not found"</code> if it does not.</p>
-<div class="highlight"><pre><span></span><span class="n">safe_lookup</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">"a"</span><span class="p">)</span>   <span class="c1"># 1</span>
-<span class="n">safe_lookup</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">"b"</span><span class="p">)</span>   <span class="c1"># "not found"</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e07e6c76">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">safe_lookup</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">safe_lookup</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">"a"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-<span class="k">assert</span> <span class="n">safe_lookup</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">"b"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"not found"</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"safe_lookup: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e52125d6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-0.4-%E2%80%94-Count-Items-in-a-List">Exercise 0.4 — Count Items in a List<a class="anchor-link" href="#Exercise-0.4-%E2%80%94-Count-Items-in-a-List">¶</a></h3><p>Write <code>count_items(items)</code> that takes a list and returns a dictionary
-where each key is an item and the value is how many times it appears.</p>
-<p><strong>Before you code:</strong></p>
-<ul>
-<li>Loop over the list.</li>
-<li>For each item, if it is not yet in the dict, add it with count 1.</li>
-<li>If it already exists, increment its count.</li>
-</ul>
-<div class="highlight"><pre><span></span><span class="n">count_items</span><span class="p">([</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"c"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">])</span>  <span class="c1"># {"a": 3, "b": 2, "c": 1}</span>
-<span class="n">count_items</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>                 <span class="c1"># {1: 3, 2: 1, 3: 1}</span>
-<span class="n">count_items</span><span class="p">([])</span>                              <span class="c1"># {}</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=bedd3d79">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">count_items</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">count_items</span><span class="p">([</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"c"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"c"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="k">assert</span> <span class="n">count_items</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="k">assert</span> <span class="n">count_items</span><span class="p">([])</span> <span class="o">==</span> <span class="p">{}</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"count_items: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=53bd31d3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<hr/>
-<h2 id="Part-1-%E2%80%94-Word-Count">Part 1 — Word Count<a class="anchor-link" href="#Part-1-%E2%80%94-Word-Count">¶</a></h2><p>Now apply <code>count_items</code> to text: split a string into words, then count each word.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=04294e3b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-1.1-%E2%80%94-Word-Count">Exercise 1.1 — Word Count<a class="anchor-link" href="#Exercise-1.1-%E2%80%94-Word-Count">¶</a></h3><p>Write <code>word_count(text)</code> that:</p>
-<ol>
-<li>Splits <code>text</code> into words using <code>text.split()</code>.</li>
-<li>Counts how many times each word appears.</li>
-<li>Returns the dictionary.</li>
-</ol>
-<div class="highlight"><pre><span></span><span class="n">word_count</span><span class="p">(</span><span class="s2">"hello world hello"</span><span class="p">)</span>
-<span class="c1"># {"hello": 2, "world": 1}</span>
-
-<span class="n">word_count</span><span class="p">(</span><span class="s2">"apple orange apple banana orange"</span><span class="p">)</span>
-<span class="c1"># {"apple": 2, "orange": 2, "banana": 1}</span>
-
-<span class="n">word_count</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
-<span class="c1"># {}</span>
-</pre></div>
-<p><strong>Hint:</strong> This is <code>count_items</code> applied to <code>text.split()</code>.
-Can you implement it by reusing <code>count_items</code>?</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c94c14eb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">word_count</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">word_count</span><span class="p">(</span><span class="s2">"hello world hello"</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"hello"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"world"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="k">assert</span> <span class="n">word_count</span><span class="p">(</span><span class="s2">"apple orange apple banana orange"</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"apple"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"orange"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"banana"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="k">assert</span> <span class="n">word_count</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span> <span class="o">==</span> <span class="p">{}</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"word_count: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=81d312fa">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-1.2-%E2%80%94-Most-Frequent-Word">Exercise 1.2 — Most Frequent Word<a class="anchor-link" href="#Exercise-1.2-%E2%80%94-Most-Frequent-Word">¶</a></h3><p>Write <code>most_frequent_word(text)</code> that returns the word with the highest count.
-If there is a tie, return any one of the tied words.</p>
-<div class="highlight"><pre><span></span><span class="n">most_frequent_word</span><span class="p">(</span><span class="s2">"the cat sat on the mat the"</span><span class="p">)</span>  <span class="c1"># "the"</span>
-<span class="n">most_frequent_word</span><span class="p">(</span><span class="s2">"a b a b c a"</span><span class="p">)</span>                  <span class="c1"># "a"</span>
-</pre></div>
-<p><strong>Before you code:</strong></p>
-<ul>
-<li>Use <code>word_count</code> to get the frequency dictionary.</li>
-<li>Loop over the dictionary to find the key with the maximum value.
-(Or think: can you use <code>max</code> with a custom <code>key</code> argument?)</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1ac3c9c2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">most_frequent_word</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">most_frequent_word</span><span class="p">(</span><span class="s2">"the cat sat on the mat the"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"the"</span>
-<span class="k">assert</span> <span class="n">most_frequent_word</span><span class="p">(</span><span class="s2">"a b a b c a"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"a"</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"most_frequent_word: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2041cb3d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-1.3-%E2%80%94-Top-N-Words">Exercise 1.3 — Top N Words<a class="anchor-link" href="#Exercise-1.3-%E2%80%94-Top-N-Words">¶</a></h3><p>Write <code>top_n_words(text, n)</code> that returns a list of the <code>n</code> most frequent
-<code>(word, count)</code> tuples, sorted from highest to lowest count.</p>
-<div class="highlight"><pre><span></span><span class="n">top_n_words</span><span class="p">(</span><span class="s2">"the cat sat on the mat the cat"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="c1"># [("the", 3), ("cat", 2)]</span>
-</pre></div>
-<p><strong>Hint:</strong> Sort the <code>word_count(text).items()</code> by value in descending order,
-then take the first <code>n</code>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=260d1405">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">top_n_words</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="n">result</span> <span class="o">=</span> <span class="n">top_n_words</span><span class="p">(</span><span class="s2">"the cat sat on the mat the cat"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"the"</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"cat"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"top_n_words: OK"</span><span class="p">)</span>
-
-<span class="c1"># Try on a longer passage:</span>
-<span class="n">passage</span> <span class="o">=</span> <span class="s2">"to be or not to be that is the question to be is to do"</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">top_n_words</span><span class="p">(</span><span class="n">passage</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=710218a9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<hr/>
-<h2 id="Part-2-%E2%80%94-Anagrams">Part 2 — Anagrams<a class="anchor-link" href="#Part-2-%E2%80%94-Anagrams">¶</a></h2><p>Two words are <strong>anagrams</strong> of each other if they contain exactly the same letters
-(in possibly different order).</p>
-<p>Examples:</p>
-<ul>
-<li>"listen" and "silent" are anagrams.</li>
-<li>"evil", "vile", "live", "veil" are all anagrams of each other.</li>
-</ul>
-<p><strong>Key idea:</strong> If you sort the letters of both words, anagrams produce the same sorted string.
-<code>sorted("listen")</code> → <code>["e","i","l","n","s","t"]</code> → <code>"eilnst"</code>
-<code>sorted("silent")</code> → <code>["e","i","l","n","s","t"]</code> → <code>"eilnst"</code> ✓</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ddbb962b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-2.1-%E2%80%94-Anagram-Key">Exercise 2.1 — Anagram Key<a class="anchor-link" href="#Exercise-2.1-%E2%80%94-Anagram-Key">¶</a></h3><p>Write <code>anagram_key(word)</code> that returns the sorted string of a word's letters.
-This key will be the same for all anagrams.</p>
-<div class="highlight"><pre><span></span><span class="n">anagram_key</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">)</span>  <span class="c1"># "eilnst"</span>
-<span class="n">anagram_key</span><span class="p">(</span><span class="s2">"silent"</span><span class="p">)</span>  <span class="c1"># "eilnst"</span>
-<span class="n">anagram_key</span><span class="p">(</span><span class="s2">"evil"</span><span class="p">)</span>    <span class="c1"># "eilv"</span>
-<span class="n">anagram_key</span><span class="p">(</span><span class="s2">"vile"</span><span class="p">)</span>    <span class="c1"># "eilv"</span>
-</pre></div>
-<p><strong>Hint:</strong> <code>sorted("abc")</code> gives <code>["a","b","c"]</code>. Use <code>"".join(...)</code> to get a string.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=635e9203">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">anagram_key</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">anagram_key</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"eilnst"</span>
-<span class="k">assert</span> <span class="n">anagram_key</span><span class="p">(</span><span class="s2">"silent"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"eilnst"</span>
-<span class="k">assert</span> <span class="n">anagram_key</span><span class="p">(</span><span class="s2">"evil"</span><span class="p">)</span>   <span class="o">==</span> <span class="s2">"eilv"</span>
-<span class="k">assert</span> <span class="n">anagram_key</span><span class="p">(</span><span class="s2">"vile"</span><span class="p">)</span>   <span class="o">==</span> <span class="s2">"eilv"</span>
-<span class="k">assert</span> <span class="n">anagram_key</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span>      <span class="o">==</span> <span class="s2">"a"</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"anagram_key: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a821bbfa">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-2.2-%E2%80%94-Find-Anagram-Groups">Exercise 2.2 — Find Anagram Groups<a class="anchor-link" href="#Exercise-2.2-%E2%80%94-Find-Anagram-Groups">¶</a></h3><p>Write <code>find_anagrams(text)</code> that:</p>
-<ol>
-<li>Splits <code>text</code> into words.</li>
-<li>For each word, compute its <code>anagram_key</code>.</li>
-<li>Groups words with the same key into a list.</li>
-<li>Returns a dictionary: <code>{key: [word1, word2, ...]}</code></li>
-</ol>
-<div class="highlight"><pre><span></span><span class="n">find_anagrams</span><span class="p">(</span><span class="s2">"listen silent enlist inlets hello world"</span><span class="p">)</span>
-<span class="c1"># {</span>
-<span class="c1">#   "eilnst": ["listen", "silent", "enlist", "inlets"],</span>
-<span class="c1">#   "ehllo":  ["hello"],</span>
-<span class="c1">#   "dlorw":  ["world"]</span>
-<span class="c1"># }</span>
-
-<span class="n">find_anagrams</span><span class="p">(</span><span class="s2">"evil vile live veil"</span><span class="p">)</span>
-<span class="c1"># {"eilv": ["evil", "vile", "live", "veil"]}</span>
-</pre></div>
-<p><strong>Before you code:</strong></p>
-<ul>
-<li>Use <code>count_items</code> or <code>word_count</code> as inspiration: loop over words,
-look up the key, append the word.</li>
-<li>If the key is not yet in the dict, start a new list <code>[word]</code>.</li>
-<li>If it already exists, append to the existing list.</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=06cb6c80">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_anagrams</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="n">r1</span> <span class="o">=</span> <span class="n">find_anagrams</span><span class="p">(</span><span class="s2">"listen silent enlist inlets hello world"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="s2">"eilnst"</span><span class="p">])</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">([</span><span class="s2">"listen"</span><span class="p">,</span> <span class="s2">"silent"</span><span class="p">,</span> <span class="s2">"enlist"</span><span class="p">,</span> <span class="s2">"inlets"</span><span class="p">])</span>
-<span class="k">assert</span> <span class="n">r1</span><span class="p">[</span><span class="s2">"ehllo"</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">"hello"</span><span class="p">]</span>
-<span class="k">assert</span> <span class="n">r1</span><span class="p">[</span><span class="s2">"dlorw"</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">"world"</span><span class="p">]</span>
-
-<span class="n">r2</span> <span class="o">=</span> <span class="n">find_anagrams</span><span class="p">(</span><span class="s2">"evil vile live veil"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="s2">"eilv"</span><span class="p">])</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">([</span><span class="s2">"evil"</span><span class="p">,</span> <span class="s2">"vile"</span><span class="p">,</span> <span class="s2">"live"</span><span class="p">,</span> <span class="s2">"veil"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"find_anagrams: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=880c63c4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-2.3-%E2%80%94-Only-True-Anagram-Groups">Exercise 2.3 — Only True Anagram Groups<a class="anchor-link" href="#Exercise-2.3-%E2%80%94-Only-True-Anagram-Groups">¶</a></h3><p><code>find_anagrams</code> returns every word, including words with no anagram partner.
-Write <code>find_true_anagram_groups(text)</code> that returns only the groups
-that contain <strong>more than one</strong> word.</p>
-<div class="highlight"><pre><span></span><span class="n">find_true_anagram_groups</span><span class="p">(</span><span class="s2">"listen silent hello world live evil"</span><span class="p">)</span>
-<span class="c1"># {"eilnst": ["listen", "silent"], "eilv": ["live", "evil"]}</span>
-<span class="c1"># ("hello" and "world" are excluded — no partners)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f9ab513f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_true_anagram_groups</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="n">r</span> <span class="o">=</span> <span class="n">find_true_anagram_groups</span><span class="p">(</span><span class="s2">"listen silent hello world live evil"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="s2">"eilnst"</span> <span class="ow">in</span> <span class="n">r</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"eilnst"</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
-<span class="k">assert</span> <span class="s2">"eilv"</span>   <span class="ow">in</span> <span class="n">r</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"eilv"</span><span class="p">])</span>   <span class="o">==</span> <span class="mi">2</span>
-<span class="k">assert</span> <span class="s2">"ehllo"</span>  <span class="ow">not</span> <span class="ow">in</span> <span class="n">r</span>
-<span class="k">assert</span> <span class="s2">"dlorw"</span>  <span class="ow">not</span> <span class="ow">in</span> <span class="n">r</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"find_true_anagram_groups: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3dad39e9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<hr/>
-<h2 id="Part-3-%E2%80%94-Expense-Tracker">Part 3 — Expense Tracker<a class="anchor-link" href="#Part-3-%E2%80%94-Expense-Tracker">¶</a></h2><p>A dictionary is a natural fit for tracking totals per category:</p>
-<pre><code>{"food": 500, "rent": 1000, "travel": 150}
+<h1 id="Part-1-%E2%80%94-Impurity-for-Numbers">Part 1 — Impurity for Numbers<a class="anchor-link" href="#Part-1-%E2%80%94-Impurity-for-Numbers">¶</a></h1><p>The classification tree asked: "how <em>mixed</em> are the labels in this group?"
+For numbers the question becomes: "how <em>spread out</em> are the values?"</p>
+<p>Look at these two groups of house prices (in lakhs):</p>
+<pre><code>group_a = [10, 10, 10, 10, 10]     # everyone agrees
+group_b = [1, 50, 3, 80]           # wild disagreement
 </code></pre>
-<p>Keys are expense categories; values are running totals.</p>
+<p>If a leaf of your tree contains <code>group_a</code>, predicting their mean (10) is
+perfect. If it contains <code>group_b</code>, predicting the mean (33.5) is terrible for
+every single house.</p>
+<h3 id="Exercise-1.1-%E2%80%94-Invent-a-Spread-Score">Exercise 1.1 — Invent a Spread Score<a class="anchor-link" href="#Exercise-1.1-%E2%80%94-Invent-a-Spread-Score">¶</a></h3><p>Invent a single number that is <code>0</code> when all values are identical and grows as
+the values spread out. Try to come up with your own formula before reading on.</p>
+<p>The classic answer is <strong>variance</strong>: the average <em>squared</em> distance from the
+mean. (Why squared? So that being 10 below the mean can't cancel out being 10
+above it — and big misses get punished extra hard.)</p>
+<p>Write <code>variance(values)</code>.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8650edb7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.1-%E2%80%94-Update-Expenses">Exercise 3.1 — Update Expenses<a class="anchor-link" href="#Exercise-3.1-%E2%80%94-Update-Expenses">¶</a></h3><p>Write <code>update_expenses(expense_list, expenses_dict)</code> that:</p>
-<ul>
-<li>Takes a list of <code>(category, amount)</code> tuples and an existing dict.</li>
-<li>For each tuple, adds <code>amount</code> to the running total for <code>category</code>.</li>
-<li>Modifies <code>expenses_dict</code> in place (no return value needed).</li>
-</ul>
-<div class="highlight"><pre><span></span><span class="n">expenses</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">update_expenses</span><span class="p">([(</span><span class="s2">"food"</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="p">(</span><span class="s2">"rent"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)],</span> <span class="n">expenses</span><span class="p">)</span>
-<span class="n">update_expenses</span><span class="p">([(</span><span class="s2">"food"</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="p">(</span><span class="s2">"travel"</span><span class="p">,</span> <span class="mi">150</span><span class="p">)],</span> <span class="n">expenses</span><span class="p">)</span>
-<span class="c1"># expenses == {"food": 500, "rent": 1000, "travel": 150}</span>
-</pre></div>
-<p><strong>Before you code:</strong></p>
-<ul>
-<li>How do you handle a category that appears for the first time?</li>
-<li>How do you handle one that already exists?</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ce1874ab">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d94cf7f2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8058,73 +7556,44 @@ that contain <strong>more than one</strong> word.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update_expenses</span><span class="p">(</span><span class="n">expense_list</span><span class="p">,</span> <span class="n">expenses_dict</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this (modifies expenses_dict in place)</span>
-
-
-<span class="n">expenses</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">update_expenses</span><span class="p">([(</span><span class="s2">"food"</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="p">(</span><span class="s2">"rent"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)],</span> <span class="n">expenses</span><span class="p">)</span>
-<span class="n">update_expenses</span><span class="p">([(</span><span class="s2">"food"</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="p">(</span><span class="s2">"travel"</span><span class="p">,</span> <span class="mi">150</span><span class="p">)],</span> <span class="n">expenses</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">expenses</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">150</span><span class="p">}</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"update_expenses: OK"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">expenses</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=20fcecd6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.2-%E2%80%94-Print-Expenses">Exercise 3.2 — Print Expenses<a class="anchor-link" href="#Exercise-3.2-%E2%80%94-Print-Expenses">¶</a></h3><p>Write <code>print_expenses(expenses_dict)</code> that prints each category and its total,
-one per line, in the format <code>"category : amount"</code>.</p>
-<div class="highlight"><pre><span></span><span class="n">print_expenses</span><span class="p">({</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">150</span><span class="p">})</span>
-<span class="c1"># food : 500</span>
-<span class="c1"># rent : 1000</span>
-<span class="c1"># travel : 150</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a44a2e08">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">print_expenses</span><span class="p">(</span><span class="n">expenses_dict</span><span class="p">):</span>
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">variance</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
     <span class="k">pass</span>  <span class="c1"># replace this</span>
 
 
-<span class="n">expenses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">150</span><span class="p">}</span>
-<span class="n">print_expenses</span><span class="p">(</span><span class="n">expenses</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">variance</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="n">variance</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">80</span><span class="p">])</span> <span class="o">==</span> <span class="mf">1105.25</span>
+<span class="k">assert</span> <span class="n">variance</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="mf">1.0</span>
+<span class="k">assert</span> <span class="n">variance</span><span class="p">([</span><span class="mi">4</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"variance: OK"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=93648a5a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=aafea3f1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.3-%E2%80%94-Highest-Expense-Category">Exercise 3.3 — Highest Expense Category<a class="anchor-link" href="#Exercise-3.3-%E2%80%94-Highest-Expense-Category">¶</a></h3><p>Write <code>top_expense(expenses_dict)</code> that returns the category with the
-highest total spend as a tuple <code>(category, amount)</code>.</p>
-<div class="highlight"><pre><span></span><span class="n">top_expense</span><span class="p">({</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">150</span><span class="p">})</span>
-<span class="c1"># ("rent", 1000)</span>
-</pre></div>
+<p><strong>Think:</strong> unlike the 0-to-1 impurity you built for classification, variance
+has no upper bound. You <em>could</em> squash it into 0–1, but you would lose
+information — and a tree never needs the absolute number anyway, it only ever
+<em>compares</em> one split against another. So raw variance is fine.</p>
+<h3 id="Exercise-1.2-%E2%80%94-The-Value-of-a-Split">Exercise 1.2 — The Value of a Split<a class="anchor-link" href="#Exercise-1.2-%E2%80%94-The-Value-of-a-Split">¶</a></h3><p>Take this group: <code>values = [10, 9, 11, 8, 10, 1]</code>. It has one troublemaker.</p>
+<p>Split it into <code>left = [10, 9, 11, 8, 10]</code> and <code>right = [1]</code>. Now <code>left</code> is
+nearly pure and <code>right</code> is <em>exactly</em> pure (a single value has zero variance).</p>
+<p>But there's a trap: <code>[1]</code> having zero variance shouldn't count as much as a
+five-element group having zero variance — otherwise the tree learns to slice
+off one element at a time. The fix: weight each side's variance by the
+<strong>fraction of elements</strong> it holds.</p>
+<p>Write <code>total_variance(left, right)</code>:</p>
+<p>$$\text{total} = \frac{n_{left}}{n}\,\text{var}(left) + \frac{n_{right}}{n}\,\text{var}(right)$$</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6a6013b6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=711ba003">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8132,41 +7601,36 @@ highest total spend as a tuple <code>(category, amount)</code>.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">top_expense</span><span class="p">(</span><span class="n">expenses_dict</span><span class="p">):</span>
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">total_variance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
     <span class="k">pass</span>  <span class="c1"># replace this</span>
 
 
-<span class="k">assert</span> <span class="n">top_expense</span><span class="p">({</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">150</span><span class="p">})</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"rent"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">top_expense</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"top_expense: OK"</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">total_variance</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mf">0.0</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">total_variance</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mf">0.8667</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span>
+<span class="k">assert</span> <span class="n">total_variance</span><span class="p">([</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">==</span> <span class="mf">0.0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"total_variance: OK"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ec3e13fa">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9f2bfab6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.4-%E2%80%94-Expenses-Above-Budget">Exercise 3.4 — Expenses Above Budget<a class="anchor-link" href="#Exercise-3.4-%E2%80%94-Expenses-Above-Budget">¶</a></h3><p>Write <code>over_budget(expenses_dict, limits)</code> that returns a dictionary
-containing only the categories where spending <strong>exceeds</strong> the budget limit.</p>
-<ul>
-<li><code>limits</code> is a dict of <code>{category: budget}</code>.</li>
-<li>Return <code>{category: (spent, limit)}</code> for each over-budget category.</li>
-</ul>
-<div class="highlight"><pre><span></span><span class="n">expenses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">300</span><span class="p">}</span>
-<span class="n">limits</span>   <span class="o">=</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1200</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">200</span><span class="p">}</span>
-<span class="n">over_budget</span><span class="p">(</span><span class="n">expenses</span><span class="p">,</span> <span class="n">limits</span><span class="p">)</span>
-<span class="c1"># {"food": (500, 400), "travel": (300, 200)}</span>
-<span class="c1"># ("rent" is under budget: 1000 &lt;= 1200)</span>
-</pre></div>
+<h3 id="Exercise-1.3-%E2%80%94-Variance-Reduction">Exercise 1.3 — Variance Reduction<a class="anchor-link" href="#Exercise-1.3-%E2%80%94-Variance-Reduction">¶</a></h3><p>A split is good when the children are much purer than the parent. Capture that
+in one number:</p>
+<p>$$\text{reduction} = \text{var}(parent) - \text{total\_variance}(left, right)$$</p>
+<p>Write <code>variance_reduction(parent, left, right)</code>. Then check: for
+<code>[10, 9, 11, 8, 10, 1]</code>, splitting the troublemaker off should score much
+higher than splitting down the middle.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=406a5347">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2586b7f9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8174,392 +7638,510 @@ containing only the categories where spending <strong>exceeds</strong> the budge
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">over_budget</span><span class="p">(</span><span class="n">expenses_dict</span><span class="p">,</span> <span class="n">limits</span><span class="p">):</span>
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">variance_reduction</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
     <span class="k">pass</span>  <span class="c1"># replace this</span>
 
 
-<span class="n">expenses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">300</span><span class="p">}</span>
-<span class="n">limits</span>   <span class="o">=</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span> <span class="s2">"rent"</span><span class="p">:</span> <span class="mi">1200</span><span class="p">,</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="mi">200</span><span class="p">}</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">over_budget</span><span class="p">(</span><span class="n">expenses</span><span class="p">,</span> <span class="n">limits</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="p">{</span><span class="s2">"food"</span><span class="p">:</span> <span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="s2">"travel"</span><span class="p">:</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">)}</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"over_budget: OK"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">variance</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">-</span> <span class="mf">11.1389</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span>
+
+<span class="n">good</span> <span class="o">=</span> <span class="n">variance_reduction</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">bad</span> <span class="o">=</span> <span class="n">variance_reduction</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"good split:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">good</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">" bad split:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">bad</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">good</span> <span class="o">-</span> <span class="mf">10.2722</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span>
+<span class="k">assert</span> <span class="n">good</span> <span class="o">&gt;</span> <span class="n">bad</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"variance_reduction: OK"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=38aa8ff7">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e4c78c5a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <hr/>
-<h2 id="Bonus-%E2%80%94-Invert-a-Dictionary">Bonus — Invert a Dictionary<a class="anchor-link" href="#Bonus-%E2%80%94-Invert-a-Dictionary">¶</a></h2><p>Sometimes you need to look up a <em>key by its value</em> instead of the other way around.
-<strong>Inverting</strong> a dictionary swaps keys and values.</p>
-<h3 id="Exercise-B.1-%E2%80%94-Invert-Dict">Exercise B.1 — Invert Dict<a class="anchor-link" href="#Exercise-B.1-%E2%80%94-Invert-Dict">¶</a></h3><p>Write <code>invert_dict(d)</code> that returns a new dictionary with keys and values swapped.
-Assume all values in <code>d</code> are unique (otherwise some keys would be lost).</p>
-<div class="highlight"><pre><span></span><span class="n">invert_dict</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>  <span class="c1"># {1: "a", 2: "b", 3: "c"}</span>
-<span class="n">invert_dict</span><span class="p">({})</span>                          <span class="c1"># {}</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e162191c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">invert_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">invert_dict</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"c"</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">"a"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"b"</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">"c"</span><span class="p">}</span>
-<span class="k">assert</span> <span class="n">invert_dict</span><span class="p">({})</span> <span class="o">==</span> <span class="p">{}</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"invert_dict: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad6c0abf">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-B.2-%E2%80%94-Group-By">Exercise B.2 — Group By<a class="anchor-link" href="#Exercise-B.2-%E2%80%94-Group-By">¶</a></h3><p>Write <code>group_by(items, key_func)</code> that groups items from a list
-by the result of applying <code>key_func</code> to each item.</p>
-<p>This is a generalisation of both <code>find_anagrams</code> and the expense grouping pattern.</p>
-<div class="highlight"><pre><span></span><span class="n">group_by</span><span class="p">([</span><span class="s2">"cat"</span><span class="p">,</span> <span class="s2">"car"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"bat"</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="c1"># {"c": ["cat", "car"], "b": ["bar", "bat"]}</span>
-
-<span class="n">group_by</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
-<span class="c1"># {1: [1, 3, 5], 0: [2, 4, 6]}</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=288a0784">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">group_by</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">key_func</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="n">r1</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">([</span><span class="s2">"cat"</span><span class="p">,</span> <span class="s2">"car"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"bat"</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="s2">"c"</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="s2">"car"</span><span class="p">,</span> <span class="s2">"cat"</span><span class="p">]</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="s2">"b"</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"bat"</span><span class="p">]</span>
-
-<span class="n">r2</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"group_by: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3f1cc8d7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Bonus-B.3-%E2%80%94-Rewrite-find_anagrams-using-group_by">Bonus B.3 — Rewrite find_anagrams using group_by<a class="anchor-link" href="#Bonus-B.3-%E2%80%94-Rewrite-find_anagrams-using-group_by">¶</a></h3><p><code>find_anagrams</code> is just <code>group_by</code> with <code>anagram_key</code> as the key function.</p>
-<div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_anagrams_v2</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">group_by</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">anagram_key</span><span class="p">)</span>
-</pre></div>
-<p>Verify it gives the same results as your original <code>find_anagrams</code>.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2b93dbcb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_anagrams_v2</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this (one line using group_by and anagram_key)</span>
-
-
-<span class="n">r</span> <span class="o">=</span> <span class="n">find_anagrams_v2</span><span class="p">(</span><span class="s2">"evil vile live veil"</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"eilv"</span><span class="p">])</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">([</span><span class="s2">"evil"</span><span class="p">,</span> <span class="s2">"vile"</span><span class="p">,</span> <span class="s2">"live"</span><span class="p">,</span> <span class="s2">"veil"</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"find_anagrams_v2: OK"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Result:"</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d8d1188c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<hr/>
-<h1 id="Bonus-C-%E2%80%94-Inventing-Hashing-(why-dicts-are-fast)">Bonus C — Inventing Hashing (why dicts are fast)<a class="anchor-link" href="#Bonus-C-%E2%80%94-Inventing-Hashing-(why-dicts-are-fast)">¶</a></h1><p>You've used dictionaries all chapter without asking the awkward question:
-<code>d["banana"]</code> is instant even if <code>d</code> holds a <em>million</em> keys. A list would have
-to check entries one by one. How does a dict jump straight to the right spot?</p>
-<p>The answer is an idea you're about to invent: turn the key into a <strong>number</strong>,
-and use that number as a position.</p>
-<h3 id="Exercise-C.1-%E2%80%94-Letters-are-already-numbers">Exercise C.1 — Letters are already numbers<a class="anchor-link" href="#Exercise-C.1-%E2%80%94-Letters-are-already-numbers">¶</a></h3><p>Python exposes each character's numeric code: <code>ord("a")</code> is <code>97</code>, and
-<code>chr(97)</code> goes back to <code>"a"</code>.</p>
-<p>Write <code>letter_position(ch)</code> returning the position of a lowercase letter in
-the alphabet — <code>"a"</code> → 0, <code>"b"</code> → 1, … <code>"z"</code> → 25 — using <code>ord</code> (no lookup
-tables!).</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=077cc6a9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">letter_position</span><span class="p">(</span><span class="n">ch</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">letter_position</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
-<span class="k">assert</span> <span class="n">letter_position</span><span class="p">(</span><span class="s2">"c"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
-<span class="k">assert</span> <span class="n">letter_position</span><span class="p">(</span><span class="s2">"z"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">25</span>
-<span class="k">assert</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span> <span class="o">+</span> <span class="n">letter_position</span><span class="p">(</span><span class="s2">"d"</span><span class="p">))</span> <span class="o">==</span> <span class="s2">"d"</span>   <span class="c1"># round trip</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"letter_position: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=227ebfa0">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-C.2-%E2%80%94-A-number-for-any-string">Exercise C.2 — A number for any string<a class="anchor-link" href="#Exercise-C.2-%E2%80%94-A-number-for-any-string">¶</a></h3><p>One letter is easy. For a whole string, the simplest recipe: <strong>add up the
-character codes</strong>. That gives a big number; to turn it into a <em>position</em>, take
-the remainder when dividing by the number of slots available.</p>
-<p>Write <code>string_hash(s, n_buckets)</code> = (sum of <code>ord</code> of every character) <code>% n_buckets</code>. The result is always a valid index between <code>0</code> and
-<code>n_buckets - 1</code> — exactly what you need to pick a slot in a list of buckets.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=02f19450">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">string_hash</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">n_buckets</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span>          <span class="c1"># 97 % 10</span>
-<span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"banana"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">9</span>
-<span class="k">assert</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"banana"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"banana"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>   <span class="c1"># deterministic!</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"'listen' goes to bucket"</span><span class="p">,</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="k">assert</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>     <span class="c1"># 655 % 10</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c14b7ddc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-C.3-%E2%80%94-The-collision">Exercise C.3 — The collision<a class="anchor-link" href="#Exercise-C.3-%E2%80%94-The-collision">¶</a></h3><p>Run this before reading on:</p>
-<div class="highlight"><pre><span></span><span class="n">string_hash</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">string_hash</span><span class="p">(</span><span class="s2">"silent"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-</pre></div>
-<p>Both give <code>655</code>. Of course — they're <strong>anagrams</strong> (Part 2 of this chapter!),
-so they contain the same letters, and addition doesn't care about order. Two
-different keys landing in the same bucket is called a <strong>collision</strong>, and a
-hash that collides for every anagram is a bad hash.</p>
-<p>The fix: make position matter. Weight each character by where it sits:</p>
-<p>$$\text{hash}(s) = \sum_i \text{ord}(s_i) \cdot (i + 1) \pmod{n}$$</p>
-<p>Write <code>string_hash_v2(s, n_buckets)</code> using the weighted sum (hint:
-<code>enumerate(s)</code>), and confirm the anagram pair now separates.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b579f0a5">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">string_hash_v2</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">n_buckets</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="c1"># same letters, different order -&gt; different hash now:</span>
-<span class="k">assert</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">==</span> <span class="mi">292</span>    <span class="c1"># 2292 % 1000</span>
-<span class="k">assert</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"silent"</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">==</span> <span class="mi">299</span>    <span class="c1"># 2299 % 1000</span>
-<span class="k">assert</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">!=</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"silent"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="n">string_hash_v2</span><span class="p">(</span><span class="s2">"listen"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"anagrams separated: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=36390ecb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-C.4-%E2%80%94-The-same-trick-at-data-center-scale">Exercise C.4 — The same trick at data-center scale<a class="anchor-link" href="#Exercise-C.4-%E2%80%94-The-same-trick-at-data-center-scale">¶</a></h3><p>You just invented how a dict works inside:</p>
-<ol>
-<li>Hash the key to a bucket index — one arithmetic step, no searching.</li>
-<li>Go directly to that bucket.</li>
-<li>Collisions are unavoidable (infinitely many strings, finitely many
-buckets), so each bucket keeps a <em>short</em> list to check — a few items, not
-a million.</li>
-</ol>
-<p>That's why <code>d[key]</code> costs the same whether the dict holds ten keys or ten
-million: this is what <strong>O(1) lookup</strong> means.</p>
-<p>Now zoom out. A big website can't fit a billion users on one database server;
-it splits them across many. Which server holds user <code>12345</code>? Same invention:
-hash the key. With numeric IDs the hash is just the remainder.</p>
-<p>Write <code>which_shard(user_id, n_servers)</code> returning <code>user_id % n_servers</code>, then
-check the test's fairness experiment: hashing 10,000 users across 7 servers
-should load every server almost equally.</p>
-<p><strong>Think about it (no code):</strong> if you <em>add</em> an 8th server, <code>% 7</code> becomes
-<code>% 8</code> — which users are now on the wrong server? (Almost all of them! Real
-systems soften this with <em>consistent hashing</em> — worth a web search. Python
-dicts face the same event when they grow: they resize and re-hash every key.)</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=26dd114f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">which_shard</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">n_servers</span><span class="p">):</span>
-    <span class="k">pass</span>  <span class="c1"># replace this</span>
-
-
-<span class="k">assert</span> <span class="n">which_shard</span><span class="p">(</span><span class="mi">12345</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>
-<span class="k">assert</span> <span class="n">which_shard</span><span class="p">(</span><span class="mi">12345</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
-
-<span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">which_shard</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
-    <span class="n">counts</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"users per server:"</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
-<span class="k">assert</span> <span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">1</span>   <span class="c1"># perfectly balanced</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"sharding: OK"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1a335ceb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<hr/>
-<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">¶</a></h2><table>
+<h1 id="Part-2-%E2%80%94-Choosing-the-Best-Split">Part 2 — Choosing the Best Split<a class="anchor-link" href="#Part-2-%E2%80%94-Choosing-the-Best-Split">¶</a></h1><p>Here is a tiny housing dataset. Each row is <code>[size_sqft, bedrooms]</code>; the
+target is the price:</p>
+<table>
 <thead>
 <tr>
-<th>Function</th>
-<th>What it does</th>
+<th>Size</th>
+<th>Bedrooms</th>
+<th>Price</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>count_items(items)</code></td>
-<td>Count occurrences of each item in a list</td>
+<td>500</td>
+<td>1</td>
+<td>50</td>
 </tr>
 <tr>
-<td><code>word_count(text)</code></td>
-<td>Count word frequencies in a string</td>
+<td>600</td>
+<td>1</td>
+<td>55</td>
 </tr>
 <tr>
-<td><code>most_frequent_word(text)</code></td>
-<td>Find the most common word</td>
+<td>900</td>
+<td>3</td>
+<td>65</td>
 </tr>
 <tr>
-<td><code>top_n_words(text, n)</code></td>
-<td>Top n words by frequency</td>
+<td>1500</td>
+<td>3</td>
+<td>150</td>
 </tr>
 <tr>
-<td><code>anagram_key(word)</code></td>
-<td>Canonical key: sorted letters as a string</td>
+<td>1600</td>
+<td>3</td>
+<td>160</td>
 </tr>
 <tr>
-<td><code>find_anagrams(text)</code></td>
-<td>Group words by anagram key</td>
-</tr>
-<tr>
-<td><code>find_true_anagram_groups(text)</code></td>
-<td>Only groups with 2+ words</td>
-</tr>
-<tr>
-<td><code>update_expenses(list, dict)</code></td>
-<td>Accumulate totals per category</td>
-</tr>
-<tr>
-<td><code>print_expenses(dict)</code></td>
-<td>Display category totals</td>
-</tr>
-<tr>
-<td><code>top_expense(dict)</code></td>
-<td>Category with highest spend</td>
-</tr>
-<tr>
-<td><code>over_budget(dict, limits)</code></td>
-<td>Categories that exceed their limit</td>
-</tr>
-<tr>
-<td><code>invert_dict(d)</code></td>
-<td>Swap keys and values</td>
-</tr>
-<tr>
-<td><code>group_by(items, key_func)</code></td>
-<td>General grouping — subsumes all of the above</td>
+<td>1700</td>
+<td>4</td>
+<td>170</td>
 </tr>
 </tbody>
 </table>
-<p>The <strong><code>group_by</code> pattern</strong> is one of the most frequently recurring patterns in
-data processing: collect items into buckets based on a computed property.</p>
+<h3 id="Exercise-2.1-%E2%80%94-Compare-Two-Splits-by-Hand">Exercise 2.1 — Compare Two Splits by Hand<a class="anchor-link" href="#Exercise-2.1-%E2%80%94-Compare-Two-Splits-by-Hand">¶</a></h3><p>Using your <code>variance_reduction</code>, compute the reduction for two candidate
+splits, and see which feature the tree should ask about first:</p>
+<ul>
+<li><strong>Size ≤ 1000</strong>: prices split into <code>[50, 55, 65]</code> vs <code>[150, 160, 170]</code></li>
+<li><strong>Bedrooms &lt; 3</strong>: prices split into <code>[50, 55]</code> vs <code>[65, 150, 160, 170]</code></li>
+</ul>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3df63264">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">600</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">900</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1600</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1700</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">170</span><span class="p">]</span>
+
+<span class="n">size_red</span> <span class="o">=</span> <span class="kc">None</span>      <span class="c1"># replace this</span>
+<span class="n">bedroom_red</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># replace this</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"size:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">size_red</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">" bedrooms:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">bedroom_red</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">size_red</span> <span class="o">-</span> <span class="mf">2669.44</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bedroom_red</span> <span class="o">-</span> <span class="mf">1558.68</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+<span class="k">assert</span> <span class="n">size_red</span> <span class="o">&gt;</span> <span class="n">bedroom_red</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Size wins — ask about size first"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9d9c6acf">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-2.2-%E2%80%94-Find-the-Best-Split-Automatically">Exercise 2.2 — Find the Best Split Automatically<a class="anchor-link" href="#Exercise-2.2-%E2%80%94-Find-the-Best-Split-Automatically">¶</a></h3><p>Trying splits by hand doesn't scale. Write
+<code>find_best_split(X, y, feature_indices=None)</code> that:</p>
+<ol>
+<li>Considers every feature index (or only <code>feature_indices</code> if given — you'll
+see why that parameter matters in Part 4).</li>
+<li>For each feature, takes the <strong>midpoints between consecutive sorted unique
+values</strong> as candidate thresholds (e.g. sizes <code>500, 600, 900, ...</code> give
+thresholds <code>550, 750, 1200, ...</code>).</li>
+<li>For each candidate <code>t</code>, splits the targets into rows with
+<code>x[feature] &lt;= t</code> (left) and the rest (right), and computes the variance
+reduction.</li>
+<li>Returns the best <code>(feature, threshold, reduction)</code> — keep the <em>first</em>
+candidate when there's a tie.</li>
+</ol>
+<p>If there is nothing to split (no candidates), return <code>(None, None, 0.0)</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=066289cc">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">find_best_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">feature_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">red</span> <span class="o">=</span> <span class="n">find_best_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"best split: feature"</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">"threshold"</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s2">"reduction"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">red</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="k">assert</span> <span class="n">f</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1200</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-9</span>
+<span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">red</span> <span class="o">-</span> <span class="mf">2669.44</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+<span class="k">assert</span> <span class="n">find_best_split</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span> <span class="o">==</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"find_best_split: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=21ca0470">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="When-Should-the-Tree-Stop-Asking-Questions?">When Should the Tree Stop Asking Questions?<a class="anchor-link" href="#When-Should-the-Tree-Stop-Asking-Questions?">¶</a></h3><p>Left alone, the tree splits until every leaf holds a single house — that's not
+learning, it's <strong>memorization</strong>: perfect on training data, brittle on anything
+new. Two brakes prevent it:</p>
+<ul>
+<li><strong><code>max_depth</code></strong> — the maximum number of questions from root to leaf. A
+shallow tree is forced to generalize.</li>
+<li><strong><code>min_samples_split</code></strong> — the smallest group still allowed to be split.
+Splitting a 2-house group into two 1-house "groups" scores a perfect
+variance reduction, and learns nothing.</li>
+</ul>
+<p>You'll wire both into the tree next. There's nothing to compute here — just
+convince yourself <em>why</em> each brake prevents memorization.</p>
+<hr/>
+<h1 id="Part-3-%E2%80%94-Build-the-Regression-Tree">Part 3 — Build the Regression Tree<a class="anchor-link" href="#Part-3-%E2%80%94-Build-the-Regression-Tree">¶</a></h1><h3 id="The-Node-%E2%80%94-Provided,-run-this-cell-as-is">The Node — Provided, run this cell as-is<a class="anchor-link" href="#The-Node-%E2%80%94-Provided,-run-this-cell-as-is">¶</a></h3><p>A tree is made of nodes. A <strong>decision node</strong> holds a question
+(<code>feature</code>, <code>threshold</code>) and two children; a <strong>leaf</strong> holds only a <code>value</code>
+(the prediction: the mean of the targets that reached it).</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=377e99e3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Node</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature</span> <span class="o">=</span> <span class="n">feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">mean</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">root_mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">sum</span><span class="p">((</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+
+<span class="n">leaf</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">52.5</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">leaf</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">()</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">Node</span><span class="p">(</span><span class="n">feature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="n">leaf</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">leaf</span><span class="p">)</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Node ready"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c31f9c14">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-3.1-%E2%80%94-The-Tree">Exercise 3.1 — The Tree<a class="anchor-link" href="#Exercise-3.1-%E2%80%94-The-Tree">¶</a></h3><p>Now assemble everything into a <code>DecisionTreeRegressor</code> class:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DecisionTreeRegressor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">feature_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+<p><strong><code>fit</code></strong> grows the tree recursively, starting at depth 0. A group becomes a
+<strong>leaf</strong> (value = mean of its targets) when <em>any</em> brake fires:</p>
+<ul>
+<li>depth has reached <code>max_depth</code>, or</li>
+<li>the group has fewer than <code>min_samples_split</code> rows, or</li>
+<li><code>find_best_split</code> finds no split with reduction &gt; 0.</li>
+</ul>
+<p>Otherwise: split the rows on the best <code>(feature, threshold)</code> and recurse into
+each side with <code>depth + 1</code>. Pass <code>feature_indices</code> through to
+<code>find_best_split</code>.</p>
+<p><strong><code>predict</code></strong> walks each row from the root — go left if
+<code>row[feature] &lt;= threshold</code> — and returns the leaf's value.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=51ec09d2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DecisionTreeRegressor</span><span class="p">:</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="c1"># A deep tree memorizes this tiny dataset perfectly...</span>
+<span class="n">deep</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">deep</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">deep</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-9</span>
+
+<span class="c1"># ...a depth-1 "stump" can only ask one question, so it must generalize:</span>
+<span class="n">stump</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">stump</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">stump</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">5</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">deep</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">550</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"predictions for a 550 sqft and a 2000 sqft house:"</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+<span class="k">assert</span> <span class="mi">50</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">65</span>
+<span class="k">assert</span> <span class="mi">150</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">170</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"DecisionTreeRegressor: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e8b88118">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
+<h1 id="Part-4-%E2%80%94-Many-Trees-Are-Better-Than-One">Part 4 — Many Trees Are Better Than One<a class="anchor-link" href="#Part-4-%E2%80%94-Many-Trees-Are-Better-Than-One">¶</a></h1><p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should
+make you suspicious, not proud — it memorized.</p>
+<p>Here's the big idea: train <strong>many</strong> trees and <strong>average</strong> their predictions.
+Individual mistakes point in different directions and cancel out; the shared
+signal survives. (The same reason a crowd's average guess of a jar's jellybean
+count beats almost every individual guess.)</p>
+<p><strong>But wait.</strong> If every tree sees exactly the same data, every tree is
+<em>identical</em>:</p>
+<pre><code>tree1 predicts 50,  tree2 predicts 50,  tree3 predicts 50 ... average: 50
+</code></pre>
+<p>Averaging identical trees gives you... one tree. To benefit from a crowd, the
+trees must be <strong>different</strong>. Random Forests inject randomness in two places.</p>
+<h3 id="Exercise-4.1-%E2%80%94-Bootstrap-Sampling-(randomize-the-rows)">Exercise 4.1 — Bootstrap Sampling (randomize the <em>rows</em>)<a class="anchor-link" href="#Exercise-4.1-%E2%80%94-Bootstrap-Sampling-(randomize-the-rows)">¶</a></h3><p>Give each tree its own dataset by sampling <code>n</code> rows from the original <code>n</code>
+rows <strong>with replacement</strong> — some rows appear twice, some not at all. This is
+called a <strong>bootstrap sample</strong>.</p>
+<p>Write <code>bootstrap_sample(X, y)</code> that returns a new <code>(X_sample, y_sample)</code> of
+the same length, where each position holds a uniformly random row of the
+original data — and each <code>y</code> stays paired with its <code>X</code> row. Use
+<code>random.randint</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f69cb12f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bootstrap_sample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">X16</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">550</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">600</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">650</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">700</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">800</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">900</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">1200</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1300</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1400</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1600</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">1700</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1800</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1900</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="n">y16</span> <span class="o">=</span> <span class="p">[</span><span class="mi">48</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="mi">57</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">66</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">127</span><span class="p">,</span> <span class="mi">136</span><span class="p">,</span> <span class="mi">149</span><span class="p">,</span> <span class="mi">157</span><span class="p">,</span> <span class="mi">171</span><span class="p">,</span> <span class="mi">205</span><span class="p">,</span> <span class="mi">189</span><span class="p">,</span> <span class="mi">197</span><span class="p">]</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">Xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">bootstrap_sample</span><span class="p">(</span><span class="n">X16</span><span class="p">,</span> <span class="n">y16</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">X16</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">y16</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">row</span> <span class="ow">in</span> <span class="n">X16</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">Xs</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">ys</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">y16</span><span class="p">[</span><span class="n">X16</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">Xs</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Xs</span><span class="p">)))</span>
+<span class="k">assert</span> <span class="n">Xs</span> <span class="o">!=</span> <span class="n">X16</span>    <span class="c1"># drawing the original order back is astronomically unlikely</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"bootstrap_sample: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dc092a67">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-4.2-%E2%80%94-Feature-Randomness-(randomize-the-questions)">Exercise 4.2 — Feature Randomness (randomize the <em>questions</em>)<a class="anchor-link" href="#Exercise-4.2-%E2%80%94-Feature-Randomness-(randomize-the-questions)">¶</a></h3><p>Bootstrap samples still look similar, so most trees would still put the
+strongest feature (here: size) at the root — the crowd stays too agreeable.
+Second injection of randomness: let each tree see only a <strong>random subset of
+the features</strong>.</p>
+<p>Write <code>choose_features(n_features, max_features)</code> that returns
+<code>max_features</code> <em>distinct</em> feature indices chosen at random from
+<code>0 .. n_features - 1</code>. (<code>random.sample</code> is your friend.)</p>
+<p>This is why <code>find_best_split</code> takes that <code>feature_indices</code> parameter.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=58fd033e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">choose_features</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">max_features</span><span class="p">):</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">feats</span> <span class="o">=</span> <span class="n">choose_features</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"this tree may only ask about features:"</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">feats</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"choose_features: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9e6c1e17">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
+<h1 id="Part-5-%E2%80%94-The-Random-Forest">Part 5 — The Random Forest<a class="anchor-link" href="#Part-5-%E2%80%94-The-Random-Forest">¶</a></h1><h3 id="Exercise-5.1-%E2%80%94-Assemble-It">Exercise 5.1 — Assemble It<a class="anchor-link" href="#Exercise-5.1-%E2%80%94-Assemble-It">¶</a></h3><p>Write <code>RandomForestRegressor</code>:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">RandomForestRegressor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+<p><strong><code>fit</code></strong>: for each of <code>n_estimators</code> trees — take a bootstrap sample, choose
+a random feature subset (all features if <code>max_features</code> is <code>None</code>), train a
+<code>DecisionTreeRegressor</code> on the sample with those <code>feature_indices</code>, and store
+it in <code>self.trees</code>.</p>
+<p><strong><code>predict</code></strong>: ask every tree, and return the <strong>average</strong> of their answers
+for each row.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=0aea9869">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">RandomForestRegressor</span><span class="p">:</span>
+    <span class="k">pass</span>  <span class="c1"># replace this</span>
+
+
+<span class="n">X_test</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">575</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">750</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1350</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1650</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1950</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="p">[</span><span class="mi">55</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">132</span><span class="p">,</span> <span class="mi">165</span><span class="p">,</span> <span class="mi">192</span><span class="p">]</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                           <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X16</span><span class="p">,</span> <span class="n">y16</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">rf</span><span class="o">.</span><span class="n">trees</span><span class="p">)</span> <span class="o">==</span> <span class="mi">20</span>
+
+<span class="n">rf_train</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y16</span><span class="p">,</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X16</span><span class="p">))</span>
+<span class="n">rf_test</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+
+<span class="n">single</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">single</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X16</span><span class="p">,</span> <span class="n">y16</span><span class="p">)</span>
+<span class="n">single_train</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y16</span><span class="p">,</span> <span class="n">single</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X16</span><span class="p">))</span>
+<span class="n">single_test</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">single</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"single tree — train RMSE </span><span class="si">{</span><span class="n">single_train</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">   test RMSE </span><span class="si">{</span><span class="n">single_test</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"forest (20) — train RMSE </span><span class="si">{</span><span class="n">rf_train</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">   test RMSE </span><span class="si">{</span><span class="n">rf_test</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">rf_train</span> <span class="o">&lt;</span> <span class="mi">30</span> <span class="ow">and</span> <span class="n">rf_test</span> <span class="o">&lt;</span> <span class="mi">30</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"RandomForestRegressor: OK"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a9deb7b3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Exercise-5.2-%E2%80%94-Think:-When-Does-the-Crowd-Win?">Exercise 5.2 — Think: When Does the Crowd Win?<a class="anchor-link" href="#Exercise-5.2-%E2%80%94-Think:-When-Does-the-Crowd-Win?">¶</a></h3><p>Look at your numbers. The single deep tree hit <strong>0.00 train RMSE</strong>
+(memorization) — yet on this tiny, perfectly clean dataset its <em>test</em> error
+may still beat the forest's. So was all this for nothing?</p>
+<p>No — but the win shows up under <em>real</em> conditions. Reason through each:</p>
+<ol>
+<li>Add measurement noise to the prices (e.g. <code>y + random.gauss(0, 15)</code> per
+row). Which model's test error degrades more, and why? (Try it!)</li>
+<li>The single tree changes drastically if you delete one training row — the
+forest barely moves. Why does averaging make predictions <em>stable</em>?</li>
+<li>Why is <code>max_features</code> more valuable when you have 50 features than when
+you have 2?</li>
+</ol>
+<hr/>
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">¶</a></h2><table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>You built</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Variance as impurity</td>
+<td><code>variance</code>, <code>total_variance</code>, <code>variance_reduction</code></td>
+<td>extends decision trees from categories to numbers</td>
+</tr>
+<tr>
+<td>Best split</td>
+<td><code>find_best_split</code></td>
+<td>the greedy heart of every tree learner</td>
+</tr>
+<tr>
+<td>Regression tree</td>
+<td><code>Node</code>, <code>DecisionTreeRegressor</code></td>
+<td><code>fit</code>/<code>predict</code> with <code>max_depth</code>, <code>min_samples_split</code> brakes</td>
+</tr>
+<tr>
+<td>Bootstrap + feature randomness</td>
+<td><code>bootstrap_sample</code>, <code>choose_features</code></td>
+<td>makes trees <em>disagree</em> so averaging helps</td>
+</tr>
+<tr>
+<td>Ensemble</td>
+<td><code>RandomForestRegressor</code></td>
+<td>many weak models → one strong, stable model</td>
+</tr>
+</tbody>
+</table>
+<p>You have now invented, from scratch, the algorithm behind scikit-learn's
+<code>RandomForestRegressor</code>. The next big idea in tree ensembles — training each
+new tree on the <em>errors</em> of the previous ones — is called <strong>gradient
+boosting</strong> (XGBoost, LightGBM). You already own every ingredient it needs.</p>
 </div>
 </div>
 </div>
