@@ -47,4 +47,9 @@ pandoc projects/projects.md \
   -o projects/projects.html \
   --standalone --metadata title="Capstone Projects"
 
+# Convert Practice Problems index to HTML
+pandoc practice_problems/practice_problems.md \
+  -o practice_problems/practice_problems.html \
+  --standalone --metadata title="Practice Problems"
+
 echo "Build complete. Open index.html to preview."

@@ -39,6 +39,7 @@ After teaching about 20 courses on machine learning, I have evolved these exerci
 | 21 | [Information Theory & Compression](information_theory/information_theory.ipynb) | Prefix-free codes → variable-length encoding → Huffman coding → Shannon entropy |
 | 22 | [RAG & Agentic AI](rag_and_agents/rag_and_agents.md) | Knowledge gap → search → inventing RAG → tool use → inventing agents |
 | 23 | [Capstone Projects](projects/projects.md) | Open-ended end-to-end projects: EDA, housing pipeline, Keras, time series, NLP, GANs, RL |
+| 24 | [Practice Problems](practice_problems/practice_problems.md) | 47 standalone ML-themed drill exercises: expressions, if/else, loops, functions, recursion |
 
 ## How to Use
 

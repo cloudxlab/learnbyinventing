@@ -55,6 +55,7 @@ Notebooks are the learner-facing artifact. When creating or editing them:
 - `information_theory/information_theory.ipynb` — prefix-free binary codes, variable-length encoding, avg bits per symbol, Huffman coding (greedy tree construction), Shannon entropy, generalized encode/decode
 - `rag_and_agents/rag_and_agents.md` — RAG & agentic AI curriculum (Markdown, needs an LLM API key): knowledge gap → search → inventing RAG → tool use → inventing agents; companions `acme_datasets.py` + `provider_setup.md`
 - `projects/projects.md` — capstone projects (Markdown, open-ended, no answer key): Kaggle EDA, California housing end-to-end pipeline, Keras models, stock-price time series, NLP embeddings + next-char prediction, autoencoders/GANs, RL policy, reading GPT-from-scratch
+- `practice_problems/practice_problems.md` — 47 standalone ML-themed drill notebooks (Markdown index + Colab links; notebooks in subfolders 01_expressions … 05_recursion): each is one formula/algorithm, fill `# TODO`, run test cell; covers statistics, kNN, gradient descent, entropy, neural net perceptron, decision tree depth
 
 ## Building for GitHub Pages
 
