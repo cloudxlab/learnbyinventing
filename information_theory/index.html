@@ -75,8 +75,14 @@ decode_ab("10")      # "BA"</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>SCHEME_AB = {"A": "0", "B": "1"}
+
+def encode_ab(message):
+    return "".join(SCHEME_AB[c] for c in message)
+
+def decode_ab(bits):
+    reverse = {v: k for k, v in SCHEME_AB.items()}
+    return "".join(reverse[b] for b in bits)</code></pre>
     </div>
   </details>
 </section>
@@ -119,8 +125,13 @@ is_prefix_free({"A": "0", "B": "10"})   # True</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def is_prefix_free(scheme):
+    codes = list(scheme.values())
+    for i, c1 in enumerate(codes):
+        for j, c2 in enumerate(codes):
+            if i != j and c2.startswith(c1):
+                return False
+    return True</code></pre>
     </div>
   </details>
 </section>
@@ -171,8 +182,17 @@ FIXED_REVERSE = {v: k for k, v in FIXED_SCHEME.items()}</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>FIXED_SCHEME = {"A": "00", "B": "01", "C": "10"}
+FIXED_REVERSE = {v: k for k, v in FIXED_SCHEME.items()}
+
+def encode_fixed(message):
+    return "".join(FIXED_SCHEME[c] for c in message)
+
+def decode_fixed(bits):
+    return "".join(
+        FIXED_REVERSE[bits[i:i+2]]
+        for i in range(0, len(bits), 2)
+    )</code></pre>
     </div>
   </details>
 </section>
@@ -224,8 +244,21 @@ decode_var("11010")  # "CAB"</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>VAR_SCHEME = {"A": "0", "B": "10", "C": "11"}
+
+def encode_var(message):
+    return "".join(VAR_SCHEME[c] for c in message)
+
+def decode_var(bits):
+    reverse = {v: k for k, v in VAR_SCHEME.items()}
+    result = []
+    current = ""
+    for b in bits:
+        current += b
+        if current in reverse:
+            result.append(reverse[current])
+            current = ""
+    return "".join(result)</code></pre>
     </div>
   </details>
 </section>
@@ -265,8 +298,9 @@ print(f"Is prefix-free:   {is_prefix_free(VAR_SCHEME)}")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>Fixed scheme: 6 symbols &times; 2 bits = <strong>12 bits</strong> (<code>"000000010110"</code>).</p>
+      <p>Variable scheme: 3&times;1 + 2&times;2 + 1&times;2 = <strong>9 bits</strong> (<code>"000101011"</code>).</p>
+      <p>The variable scheme is shorter because the most frequent symbol (A) gets a 1-bit code instead of 2 bits. The prefix-free property is confirmed: no codeword is a prefix of another.</p>
     </div>
   </details>
 </section>
@@ -361,8 +395,11 @@ avg_bits(scheme, frequencies)  # 2.0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def avg_bits(scheme, frequencies):
+    return sum(
+        frequencies[s] * len(scheme[s])
+        for s in frequencies
+    )</code></pre>
     </div>
   </details>
 </section>
@@ -417,8 +454,13 @@ for name, scheme in [("Scheme 1 (fixed)", scheme1),
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>All three schemes are prefix-free. The average bits per symbol are:</p>
+      <ul>
+        <li><strong>Scheme 1 (fixed):</strong> 0.50&times;2 + 0.25&times;2 + 0.20&times;2 + 0.05&times;2 = <strong>2.0000</strong></li>
+        <li><strong>Scheme 2 (short for common):</strong> 0.50&times;1 + 0.25&times;2 + 0.20&times;3 + 0.05&times;3 = <strong>1.7500</strong></li>
+        <li><strong>Scheme 3 (short for rare):</strong> 0.50&times;3 + 0.25&times;3 + 0.20&times;2 + 0.05&times;1 = <strong>2.7000</strong></li>
+      </ul>
+      <p><strong>Scheme 2 wins</strong> because it assigns the shortest codes to the most frequent symbols. Scheme 3 does the opposite and is the worst of the three.</p>
     </div>
   </details>
 </section>
@@ -479,8 +521,13 @@ for name, scheme in [("Scheme 1 (fixed)", scheme1),
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>With 1000 symbols generated from the given frequencies, the measured bits per symbol closely match the theoretical <code>avg_bits</code> values:</p>
+      <ul>
+        <li><strong>Scheme 1 (fixed):</strong> ~2000 bits (2.000 bits/symbol)</li>
+        <li><strong>Scheme 2 (short for common):</strong> ~1750 bits (1.750 bits/symbol)</li>
+        <li><strong>Scheme 3 (short for rare):</strong> ~2700 bits (2.700 bits/symbol)</li>
+      </ul>
+      <p>The law of large numbers ensures that in a long message the actual symbol frequencies closely track the expected frequencies, so the measured average converges to the theoretical value.</p>
     </div>
   </details>
 </section>
@@ -537,8 +584,19 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>Step-by-step tree construction (always merge the two smallest):</p>
+      <ol>
+        <li>Start: A=0.50, B=0.25, C=0.20, D=0.05</li>
+        <li>Merge D (0.05) and C (0.20) &rarr; DC=0.25. Remaining: A=0.50, B=0.25, DC=0.25</li>
+        <li>Merge B (0.25) and DC (0.25) &rarr; BDC=0.50. Remaining: A=0.50, BDC=0.50</li>
+        <li>Merge A (0.50) and BDC (0.50) &rarr; root=1.00</li>
+      </ol>
+      <p>Resulting codes (0=left, 1=right):</p>
+      <pre><code>A = "0"     (depth 1)
+B = "10"    (depth 2)
+D = "110"   (depth 3)
+C = "111"   (depth 3)</code></pre>
+      <p>Average bits: 0.50&times;1 + 0.25&times;2 + 0.20&times;3 + 0.05&times;3 = <strong>1.75 bits/symbol</strong></p>
     </div>
   </details>
 </section>
@@ -575,8 +633,16 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def build_huffman_tree(frequencies):
+    nodes = [(freq, symbol)
+             for symbol, freq in frequencies.items()]
+    nodes.sort()
+    while len(nodes) &gt; 1:
+        f1, n1 = nodes.pop(0)
+        f2, n2 = nodes.pop(0)
+        nodes.append((f1 + f2, (n1, n2)))
+        nodes.sort()
+    return nodes[0][1]</code></pre>
     </div>
   </details>
 </section>
@@ -618,8 +684,14 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def assign_codes(tree, prefix=""):
+    if isinstance(tree, str):
+        return {tree: prefix if prefix else "0"}
+    left, right = tree
+    codes = {}
+    codes.update(assign_codes(left,  prefix + "0"))
+    codes.update(assign_codes(right, prefix + "1"))
+    return codes</code></pre>
     </div>
   </details>
 </section>
@@ -649,8 +721,9 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def huffman_scheme(frequencies):
+    tree = build_huffman_tree(frequencies)
+    return assign_codes(tree)</code></pre>
     </div>
   </details>
 </section>
@@ -688,8 +761,14 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>import math
+
+def entropy(frequencies):
+    return -sum(
+        p * math.log2(p)
+        for p in frequencies.values()
+        if p &gt; 0
+    )</code></pre>
     </div>
   </details>
 </section>
@@ -728,8 +807,7 @@ plot_comparison(frequencies)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>This is a provided plotting helper &mdash; no code to write. Run the cell to see a bar chart comparing fixed-width encoding (2.0 bits/symbol), Huffman (~1.75 bits/symbol), and the entropy lower bound (~1.68 bits/symbol). Huffman gets close to entropy but cannot quite reach it because it must assign whole-number bit lengths.</p>
     </div>
   </details>
 </section>
@@ -806,8 +884,10 @@ print(scheme)  # {"A": "0", "B": "10", ...}</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def encode(data, frequencies):
+    scheme = huffman_scheme(frequencies)
+    bits = "".join(scheme[c] for c in data)
+    return bits, scheme</code></pre>
     </div>
   </details>
 </section>
@@ -843,8 +923,16 @@ print(scheme)  # {"A": "0", "B": "10", ...}</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def decode(encoded_data, scheme):
+    reverse = {v: k for k, v in scheme.items()}
+    result = []
+    current = ""
+    for bit in encoded_data:
+        current += bit
+        if current in reverse:
+            result.append(reverse[current])
+            current = ""
+    return "".join(result)</code></pre>
     </div>
   </details>
 </section>
@@ -882,8 +970,8 @@ print(f"Huffman avg bits/symbol: {avg_bits(scheme, frequencies):.3f}")</code></p
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>No new code to write &mdash; this exercise uses the provided round-trip test. Running it confirms that <code>decode(encode(message)) == message</code> for a 500-symbol message.</p>
+      <p>Typical output: ~875 encoded bits for 500 symbols (1.75 bits/symbol), compared to 4000 bits at 8-bit ASCII. The compression ratio is about 0.219, meaning Huffman reduces the message to roughly 22% of the naive ASCII size.</p>
     </div>
   </details>
 </section>
@@ -932,8 +1020,13 @@ for sym in ["q", "z", "j", "x"]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>No new code to write &mdash; this exercise uses the provided English-frequency test. Running it shows:</p>
+      <ul>
+        <li><strong>Huffman average:</strong> ~4.205 bits/symbol</li>
+        <li><strong>Entropy lower bound:</strong> ~4.176 bits/symbol</li>
+        <li><strong>Fixed 5-bit ASCII:</strong> 5.000 bits/symbol</li>
+      </ul>
+      <p>The most frequent letters (e, t, a) get short codes of 3&ndash;4 bits, while the rarest (q, z) get 9&ndash;10 bits. On average, Huffman saves about 0.8 bits per character compared to fixed-width encoding.</p>
     </div>
   </details>
 </section>

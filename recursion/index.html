@@ -100,8 +100,11 @@ power(3, 3)              # 27</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>base case: factorial(0) = 1</li>
+        <li>recursive case: factorial(n) = n * factorial(n - 1)</li>
+      </ul>
+      <p>Unrolled: factorial(4) = 4 * factorial(3) = 4 * 3 * factorial(2) = 4 * 3 * 2 * factorial(1) = 4 * 3 * 2 * 1 * factorial(0) = 4 * 3 * 2 * 1 * 1 = 24.</p>
     </div>
   </details>
 </section>
@@ -142,8 +145,10 @@ factorial_recursive(1)  # Output: 1</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def factorial_recursive(n):
+    if n == 0:
+        return 1
+    return n * factorial_recursive(n - 1)</code></pre>
     </div>
   </details>
 </section>
@@ -173,8 +178,8 @@ except RecursionError as e:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>Calling <code>factorial_recursive(-1)</code> calls <code>factorial_recursive(-2)</code>, which calls <code>factorial_recursive(-3)</code>, and so on. The argument never reaches <code>0</code> (the base case), so Python keeps recursing until it hits its built-in recursion limit and raises a <code>RecursionError: maximum recursion depth exceeded</code>.</p>
+      <p>This demonstrates why the base case must be <em>reachable</em> from all valid inputs. For negative numbers, <code>n</code> keeps decreasing and never reaches <code>0</code>.</p>
     </div>
   </details>
 </section>
@@ -259,8 +264,11 @@ except RecursionError as e:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>base case: multiply(a, 0) = 0</li>
+        <li>recursive case: multiply(a, b) = a + multiply(a, b - 1)</li>
+      </ul>
+      <p>Anything multiplied by zero is zero. For any other <code>b</code>, multiplying <code>a</code> by <code>b</code> is the same as adding <code>a</code> one more time to <code>a * (b - 1)</code>.</p>
     </div>
   </details>
 </section>
@@ -294,8 +302,10 @@ multiply_recursive(5, 0)   # Output: 0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def multiply_recursive(a, b):
+    if b == 0:
+        return 0
+    return a + multiply_recursive(a, b - 1)</code></pre>
     </div>
   </details>
 </section>
@@ -326,8 +336,8 @@ multiply_recursive(5, 0)   # Output: 0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>If <code>b</code> is negative, then <code>a * b = -(a * (-b))</code>. So negate <code>b</code> to make it positive, call the existing recursive logic, and negate the result.</p>
+      <p>In code: <code>if b &lt; 0: return -multiply_recursive(a, -b)</code></p>
     </div>
   </details>
 </section>
@@ -365,8 +375,12 @@ multiply_recursive(-3, -3)   # Output: 9</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def multiply_recursive(a, b):
+    if b &lt; 0:
+        return -multiply_recursive(a, -b)
+    if b == 0:
+        return 0
+    return a + multiply_recursive(a, b - 1)</code></pre>
     </div>
   </details>
 </section>
@@ -409,8 +423,11 @@ multiply_recursive(-3, -3)   # Output: 9</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>base case: power(x, 1) = x</li>
+        <li>recursive case: power(x, n) = x * power(x, n - 1)</li>
+      </ul>
+      <p>When <code>n</code> is 1, <code>x ** 1</code> is just <code>x</code>. For any larger <code>n</code>, you multiply <code>x</code> by <code>x ** (n - 1)</code>.</p>
     </div>
   </details>
 </section>
@@ -435,8 +452,10 @@ power(5, 2)   # Output: 25</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def power(x, n):
+    if n == 1:
+        return x
+    return x * power(x, n - 1)</code></pre>
     </div>
   </details>
 </section>
@@ -479,8 +498,11 @@ power(5, 2)   # Output: 25</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>new base case: compute_power(x, 0) = 1</li>
+        <li>negative case: compute_power(x, n) for n &lt; 0 = 1 / compute_power(x, -n)</li>
+      </ul>
+      <p>Any non-zero number raised to the power 0 is 1. For negative exponents, <code>x ** n = 1 / (x ** (-n))</code>, which converts the problem to the positive case you already solved.</p>
     </div>
   </details>
 </section>
@@ -507,8 +529,12 @@ compute_power(-2, 3)  # Output: -8</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def compute_power(x, n):
+    if n == 0:
+        return 1
+    if n &lt; 0:
+        return 1 / compute_power(x, -n)
+    return x * compute_power(x, n - 1)</code></pre>
     </div>
   </details>
 </section>
@@ -550,8 +576,13 @@ power_climb(5, 0)    # 1</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def power_climb(x, n):
+    if n == 0:
+        return 1
+    if n &gt; 0:
+        return x * power_climb(x, n - 1)
+    # n &lt; 0: climb toward 0 by adding 1 to the exponent
+    return power_climb(x, n + 1) / x</code></pre>
     </div>
   </details>
 </section>
@@ -601,8 +632,11 @@ power_climb(5, 0)    # 1</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>base case (dividend &lt; divisor): quotient = 0, remainder = dividend</li>
+        <li>recursive case: get <code>(q, r)</code> from <code>recursive_divide(dividend - divisor, divisor)</code>, then return <code>(q + 1, r)</code></li>
+      </ul>
+      <p>Trace: <code>17 - 5 = 12</code>, <code>12 - 5 = 7</code>, <code>7 - 5 = 2</code>. Three subtractions, leftover is 2. So quotient = 3, remainder = 2.</p>
     </div>
   </details>
 </section>
@@ -629,8 +663,11 @@ recursive_divide(0, 1)    # Output: (0, 0)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def recursive_divide(dividend, divisor):
+    if dividend &lt; divisor:
+        return (0, dividend)
+    q, r = recursive_divide(dividend - divisor, divisor)
+    return (q + 1, r)</code></pre>
     </div>
   </details>
 </section>
@@ -670,8 +707,7 @@ recursive_divide(0, 1)    # Output: (0, 0)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The remainder of <code>a</code> divided by <code>b</code> is <code>recursive_divide(a, b)[1]</code> &mdash; the second element of the tuple returned by your Part 5 function.</p>
     </div>
   </details>
 </section>
@@ -708,8 +744,11 @@ compute_hcf(0, 5)       # Output: 5</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def compute_hcf(a, b):
+    if b == 0:
+        return a
+    _, remainder = recursive_divide(a, b)
+    return compute_hcf(b, remainder)</code></pre>
     </div>
   </details>
 </section>
@@ -759,8 +798,11 @@ compute_hcf(0, 5)       # Output: 5</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ul>
+        <li>base case: n = 1 &mdash; move disc 1 directly from source to target.</li>
+        <li>for n = 2: move disc 1 from A to B, move disc 2 from A to C, move disc 1 from B to C.</li>
+      </ul>
+      <p>Steps 1 and 3 are themselves Tower of Hanoi sub-problems with <code>n - 1</code> discs, but with the peg roles rotated. That is what makes this doubly recursive.</p>
     </div>
   </details>
 </section>
@@ -805,8 +847,15 @@ compute_hcf(0, 5)       # Output: 5</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def solve_hanoi(n, source='A', auxiliary='B', target='C'):
+    if n == 1:
+        print(f"Moving 1 from {source} to {target}.")
+        return 1
+    moves = solve_hanoi(n - 1, source, target, auxiliary)
+    print(f"Moving {n} from {source} to {target}.")
+    moves += 1
+    moves += solve_hanoi(n - 1, auxiliary, source, target)
+    return moves</code></pre>
     </div>
   </details>
 </section>
@@ -837,8 +886,8 @@ compute_hcf(0, 5)       # Output: 5</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The totals are: n=1 &rarr; 1, n=2 &rarr; 3, n=3 &rarr; 7, n=4 &rarr; 15. Each is one less than a power of 2. The formula is <strong>2<sup>n</sup> &minus; 1</strong>.</p>
+      <p>You can verify with your <code>compute_power</code> function: <code>compute_power(2, n) - 1</code> matches the return value of <code>solve_hanoi(n)</code> for every <code>n</code>.</p>
     </div>
   </details>
 </section>
@@ -932,8 +981,23 @@ def fib_memo(n):
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p><strong>Plain recursive Fibonacci:</strong></p>
+      <pre><code>def fib(n):
+    if n &lt;= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)</code></pre>
+      <p>This is extremely slow for large <code>n</code> because it recomputes the same sub-problems exponentially many times (e.g., <code>fib(2)</code> is computed millions of times when calling <code>fib(35)</code>).</p>
+      <p><strong>Memoized Fibonacci:</strong></p>
+      <pre><code>cache = {}
+def fib_memo(n):
+    if n in cache:
+        return cache[n]
+    if n &lt;= 1:
+        return n
+    result = fib_memo(n - 1) + fib_memo(n - 2)
+    cache[n] = result
+    return result</code></pre>
+      <p>With memoization, each value of <code>fib(n)</code> is computed only once and then looked up in O(1) time for all future calls. This turns exponential time into linear time.</p>
     </div>
   </details>
 </section>
@@ -956,8 +1020,11 @@ def fib_memo(n):
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>for n in range(1, 11):
+    actual = solve_hanoi(n)
+    expected = compute_power(2, n) - 1
+    assert actual == expected, f"Mismatch at n={n}"
+    print(f"n={n}: solve_hanoi={actual}, 2^n-1={expected} -- OK")</code></pre>
     </div>
   </details>
 </section>

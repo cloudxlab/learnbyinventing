@@ -118,8 +118,19 @@ print(&quot;evaluate: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def evaluate(node):
+    if isinstance(node.val, (int, float)):
+        return node.val
+    l = evaluate(node.left)
+    r = evaluate(node.right)
+    if node.val == "+":
+        return l + r
+    elif node.val == "-":
+        return l - r
+    elif node.val == "*":
+        return l * r
+    elif node.val == "/":
+        return l / r</code></pre>
     </div>
   </details>
 </section>
@@ -155,8 +166,7 @@ print(&quot;expr2: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>expr2 = Node("*", Node("+", Node(2), Node(3)), Node("-", Node(10), Node(4)))</code></pre>
     </div>
   </details>
 </section>
@@ -230,8 +240,14 @@ print(&quot;insert: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def insert(node, val):
+    if node is None:
+        return Node(val)
+    if val &lt; node.val:
+        node.left = insert(node.left, val)
+    else:
+        node.right = insert(node.right, val)
+    return node</code></pre>
     </div>
   </details>
 </section>
@@ -267,8 +283,15 @@ print(&quot;contains: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def contains(node, val):
+    if node is None:
+        return False
+    if val == node.val:
+        return True
+    if val &lt; node.val:
+        return contains(node.left, val)
+    else:
+        return contains(node.right, val)</code></pre>
     </div>
   </details>
 </section>
@@ -308,8 +331,10 @@ print(&quot;in_order: OK &mdash; the BST keeps data sorted at all times&quot;)</
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def in_order(node):
+    if node is None:
+        return []
+    return in_order(node.left) + [node.val] + in_order(node.right)</code></pre>
     </div>
   </details>
 </section>
@@ -341,8 +366,10 @@ print(&quot;find_min: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_min(node):
+    while node.left:
+        node = node.left
+    return node.val</code></pre>
     </div>
   </details>
 </section>
@@ -373,8 +400,10 @@ print(&quot;find_max: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_max(node):
+    while node.right:
+        node = node.right
+    return node.val</code></pre>
     </div>
   </details>
 </section>
@@ -469,8 +498,23 @@ print(&quot;delete stress test: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def delete(node, val):
+    if node is None:
+        return None
+    if val &lt; node.val:
+        node.left = delete(node.left, val)
+    elif val &gt; node.val:
+        node.right = delete(node.right, val)
+    else:
+        # Found the node to delete
+        if node.left is None:
+            return node.right
+        if node.right is None:
+            return node.left
+        # Two children: replace with in-order successor
+        node.val = find_min(node.right)
+        node.right = delete(node.right, node.val)
+    return node</code></pre>
     </div>
   </details>
 </section>
@@ -610,8 +654,14 @@ print(&quot;index arithmetic: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def parent(i):
+    return (i - 1) // 2
+
+def left_child(i):
+    return 2 * i + 1
+
+def right_child(i):
+    return 2 * i + 2</code></pre>
     </div>
   </details>
 </section>
@@ -653,8 +703,12 @@ print(&quot;heap_push: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def heap_push(heap, val):
+    heap.append(val)
+    i = len(heap) - 1
+    while i &gt; 0 and heap[i] &lt; heap[parent(i)]:
+        heap[i], heap[parent(i)] = heap[parent(i)], heap[i]
+        i = parent(i)</code></pre>
     </div>
   </details>
 </section>
@@ -710,8 +764,25 @@ print(&quot;heap_pop: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def heap_pop(heap):
+    if len(heap) == 1:
+        return heap.pop()
+    result = heap[0]
+    heap[0] = heap.pop()
+    i = 0
+    while True:
+        smallest = i
+        l = left_child(i)
+        r = right_child(i)
+        if l &lt; len(heap) and heap[l] &lt; heap[smallest]:
+            smallest = l
+        if r &lt; len(heap) and heap[r] &lt; heap[smallest]:
+            smallest = r
+        if smallest == i:
+            break
+        heap[i], heap[smallest] = heap[smallest], heap[i]
+        i = smallest
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -745,8 +816,15 @@ print(&quot;run_scheduler: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def run_scheduler(tasks):
+    h = []
+    for task in tasks:
+        heap_push(h, task)
+    result = []
+    while h:
+        time, name = heap_pop(h)
+        result.append(name)
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -799,8 +877,14 @@ print(&quot;heap_sort + heapq agreement: OK&quot;)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def heap_sort(lst):
+    h = []
+    for v in lst:
+        heap_push(h, v)
+    result = []
+    while h:
+        result.append(heap_pop(h))
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -939,8 +1023,16 @@ print(&quot;in_order_iter: OK &mdash; recursion was just a hidden stack all alon
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def in_order_iter(node):
+    result, stack, current = [], [], node
+    while current or stack:
+        while current:
+            stack.append(current)
+            current = current.left
+        current = stack.pop()
+        result.append(current.val)
+        current = current.right
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -993,8 +1085,23 @@ print(&quot;parse: OK &mdash; you just wrote the front half of a compiler&quot;)
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def parse(s):
+    def _parse(s, i):
+        if i &lt; len(s) and s[i].isdigit():
+            start = i
+            while i &lt; len(s) and s[i].isdigit():
+                i += 1
+            return Node(int(s[start:i])), i
+        # must be '('
+        i += 1  # skip '('
+        left, i = _parse(s, i)
+        op = s[i]
+        i += 1  # skip operator
+        right, i = _parse(s, i)
+        i += 1  # skip ')'
+        return Node(op, left, right), i
+    node, _ = _parse(s, 0)
+    return node</code></pre>
     </div>
   </details>
 </section>

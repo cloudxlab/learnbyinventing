@@ -75,8 +75,12 @@ print(f"To find a number in [1..1000], at most {count_halvings(1000)+1} guesses 
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def count_halvings(n):
+    count = 0
+    while n &gt; 1:
+        n = n // 2
+        count += 1
+    return count</code></pre>
     </div>
   </details>
 </section>
@@ -138,8 +142,18 @@ print(f"sqrt(2) &asymp; {sqrt_binary_search(2, 1e-9):.9f}  (math.sqrt = {math.sq
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def sqrt_binary_search(n, precision):
+    if n == 0:
+        return 0.0
+    low, high = 0, max(1, n)
+    while True:
+        mid = (low + high) / 2
+        if abs(mid * mid - n) &lt; precision:
+            return mid
+        if mid * mid &lt; n:
+            low = mid
+        else:
+            high = mid</code></pre>
     </div>
   </details>
 </section>
@@ -259,8 +273,20 @@ print(f"cuberoot(-125) &asymp; {cuberoot_binary_search(-125, 1e-9):.6f}  (expect
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def cuberoot_binary_search(n, precision):
+    if n == 0:
+        return 0
+    abs_n = abs(n)
+    low = 0
+    high = abs_n if abs_n &gt;= 1 else 1
+    while True:
+        mid = (low + high) / 2
+        if abs(mid ** 3 - abs_n) &lt; precision:
+            return -mid if n &lt; 0 else mid
+        if mid ** 3 &lt; abs_n:
+            low = mid
+        else:
+            high = mid</code></pre>
     </div>
   </details>
 </section>
@@ -325,8 +351,18 @@ print("nth_root: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def nth_root(x, n, precision=1e-9):
+    if x == 0:
+        return 0
+    low, high = 0, max(1, x)
+    while True:
+        mid = (low + high) / 2
+        if abs(mid ** n - x) &lt; precision:
+            return mid
+        if mid ** n &lt; x:
+            low = mid
+        else:
+            high = mid</code></pre>
     </div>
   </details>
 </section>
@@ -438,8 +474,22 @@ print(f"log10(2) &asymp; {log10_binary_search(2):.8f}  (math.log10 = {math.log10
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def log10_binary_search(x, tol=1e-7):
+    if x &gt;= 1:
+        low, high = 0.0, 1.0
+        while 10 ** high &lt; x:
+            high *= 2
+    else:
+        low, high = -1.0, 0.0
+        while 10 ** low &gt; x:
+            low *= 2
+    while high - low &gt; 1e-12:
+        mid = (low + high) / 2
+        if 10 ** mid &lt; x:
+            low = mid
+        else:
+            high = mid
+    return (low + high) / 2</code></pre>
     </div>
   </details>
 </section>
@@ -547,8 +597,41 @@ print(f"log2(10) &asymp; {log_base_n(10, 2):.8f}  (math.log = {math.log(10, 2):.
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def log_base_n(x, n, tol=1e-7):
+    if x &lt;= 0 or n &lt;= 0 or n == 1:
+        raise ValueError("x and n must be positive, n != 1")
+    if n &gt; 1:
+        if x &gt;= 1:
+            low, high = 0.0, 1.0
+            while n ** high &lt; x:
+                high *= 2
+        else:
+            low, high = -1.0, 0.0
+            while n ** low &gt; x:
+                low *= 2
+        while high - low &gt; 1e-12:
+            mid = (low + high) / 2
+            if n ** mid &lt; x:
+                low = mid
+            else:
+                high = mid
+    else:
+        # 0 &lt; n &lt; 1: n**y is decreasing
+        if x &lt;= 1:
+            low, high = 0.0, 1.0
+            while n ** high &gt; x:
+                high *= 2
+        else:
+            low, high = -1.0, 0.0
+            while n ** low &lt; x:
+                low *= 2
+        while high - low &gt; 1e-12:
+            mid = (low + high) / 2
+            if n ** mid &gt; x:
+                low = mid
+            else:
+                high = mid
+    return (low + high) / 2</code></pre>
     </div>
   </details>
 </section>
@@ -624,8 +707,17 @@ print("contains: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def contains(arr, x):
+    lo, hi = 0, len(arr) - 1
+    while lo &lt;= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == x:
+            return True
+        elif arr[mid] &lt; x:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return False</code></pre>
     </div>
   </details>
 </section>
@@ -667,8 +759,33 @@ print("find_first / find_last: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_first(arr, x):
+    lo, hi = 0, len(arr) - 1
+    result = -1
+    while lo &lt;= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == x:
+            result = mid
+            hi = mid - 1      # keep searching left
+        elif arr[mid] &lt; x:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return result
+
+def find_last(arr, x):
+    lo, hi = 0, len(arr) - 1
+    result = -1
+    while lo &lt;= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == x:
+            result = mid
+            lo = mid + 1      # keep searching right
+        elif arr[mid] &lt; x:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -703,8 +820,11 @@ print("count_val: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def count_val(arr, x):
+    first = find_first(arr, x)
+    if first == -1:
+        return 0
+    return find_last(arr, x) - first + 1</code></pre>
     </div>
   </details>
 </section>
@@ -735,8 +855,8 @@ print("commons: OK &mdash; 4 lookups x ~20 steps beats 4 x 1,000,000")</code></p
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def commons(small, huge):
+    return [x for x in small if contains(huge, x)]</code></pre>
     </div>
   </details>
 </section>
@@ -781,8 +901,15 @@ print("find_min_convex: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_min_convex(arr):
+    lo, hi = 0, len(arr) - 1
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if arr[mid] &gt; arr[mid + 1]:
+            lo = mid + 1      # minimum is to the right
+        else:
+            hi = mid          # minimum is at mid or left
+    return arr[lo]</code></pre>
     </div>
   </details>
 </section>

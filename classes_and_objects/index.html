@@ -113,8 +113,13 @@ print("Customer: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class Customer:
+    def __init__(self, name, place):
+        self.name = name
+        self.place = place
+
+    def describe(self):
+        return f"{self.name} from {self.place}"</code></pre>
     </div>
   </details>
 </section>
@@ -183,8 +188,13 @@ print("TwoPointLine: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class TwoPointLine:
+    def fit(self, x, y):
+        self.m = (y[1] - y[0]) / (x[1] - x[0])
+        self.c = y[1] - self.m * x[1]
+
+    def predict(self, xs):
+        return [self.m * xi + self.c for xi in xs]</code></pre>
     </div>
   </details>
 </section>
@@ -228,8 +238,15 @@ print("validation: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class TwoPointLine:
+    def fit(self, x, y):
+        if len(x) != 2 or len(y) != 2:
+            raise ValueError("need exactly two points")
+        self.m = (y[1] - y[0]) / (x[1] - x[0])
+        self.c = y[1] - self.m * x[1]
+
+    def predict(self, xs):
+        return [self.m * xi + self.c for xi in xs]</code></pre>
     </div>
   </details>
 </section>
@@ -289,8 +306,17 @@ class Dog(Animal):
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class Animal:
+    def eat(self):
+        return "eating"
+
+class Dog(Animal):
+    def bark(self):
+        return "woof!"
+
+class Cat(Animal):
+    def meow(self):
+        return "meow"</code></pre>
     </div>
   </details>
 </section>
@@ -386,8 +412,27 @@ print("Node total/count: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class Node:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+    def total(self):
+        result = self.val
+        if self.left is not None:
+            result += self.left.total()
+        if self.right is not None:
+            result += self.right.total()
+        return result
+
+    def count(self):
+        result = 1
+        if self.left is not None:
+            result += self.left.count()
+        if self.right is not None:
+            result += self.right.count()
+        return result</code></pre>
     </div>
   </details>
 </section>
@@ -444,8 +489,64 @@ print("Node methods: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class Node:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+    def total(self):
+        result = self.val
+        if self.left is not None:
+            result += self.left.total()
+        if self.right is not None:
+            result += self.right.total()
+        return result
+
+    def count(self):
+        result = 1
+        if self.left is not None:
+            result += self.left.count()
+        if self.right is not None:
+            result += self.right.count()
+        return result
+
+    def min_val(self):
+        result = self.val
+        if self.left is not None:
+            result = min(result, self.left.min_val())
+        if self.right is not None:
+            result = min(result, self.right.min_val())
+        return result
+
+    def max_val(self):
+        result = self.val
+        if self.left is not None:
+            result = max(result, self.left.max_val())
+        if self.right is not None:
+            result = max(result, self.right.max_val())
+        return result
+
+    def find(self, x):
+        if self.val == x:
+            return True
+        if self.left is not None and self.left.find(x):
+            return True
+        if self.right is not None and self.right.find(x):
+            return True
+        return False
+
+    def max_depth(self):
+        left_depth = self.left.max_depth() if self.left else 0
+        right_depth = self.right.max_depth() if self.right else 0
+        return 1 + max(left_depth, right_depth)
+
+    def apply(self, func):
+        self.val = func(self.val)
+        if self.left is not None:
+            self.left.apply(func)
+        if self.right is not None:
+            self.right.apply(func)</code></pre>
     </div>
   </details>
 </section>
@@ -506,8 +607,33 @@ print("DecisionNode: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class DecisionNode:
+    def __init__(self, criteria, boundary, left, right):
+        self.criteria = criteria
+        self.boundary = boundary
+        self.left = left
+        self.right = right
+
+    def answer(self, circumstance):
+        val = circumstance[self.criteria]
+        if val &lt; self.boundary:
+            return self.left.answer(circumstance)
+        else:
+            return self.right.answer(circumstance)
+
+class Yes(DecisionNode):
+    def __init__(self):
+        pass
+
+    def answer(self, circumstance):
+        return True
+
+class No(DecisionNode):
+    def __init__(self):
+        pass
+
+    def answer(self, circumstance):
+        return False</code></pre>
     </div>
   </details>
 </section>
@@ -612,8 +738,27 @@ print("save/load: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def to_dict(node):
+    if isinstance(node, Yes):
+        return {"leaf": True}
+    if isinstance(node, No):
+        return {"leaf": False}
+    return {
+        "criteria": node.criteria,
+        "boundary": node.boundary,
+        "left": to_dict(node.left),
+        "right": to_dict(node.right),
+    }
+
+def from_dict(d):
+    if "leaf" in d:
+        return Yes() if d["leaf"] else No()
+    return DecisionNode(
+        d["criteria"],
+        d["boundary"],
+        from_dict(d["left"]),
+        from_dict(d["right"]),
+    )</code></pre>
     </div>
   </details>
 </section>
@@ -672,8 +817,47 @@ print("FitPlane: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def solve_equations(eqs):
+    """Gaussian elimination: each eq is [a1, a2, ..., an, b]."""
+    n = len(eqs)
+    # Make a copy so we don't mutate the input
+    m = [row[:] for row in eqs]
+
+    # Forward elimination
+    for col in range(n):
+        # Find pivot
+        max_row = col
+        for row in range(col + 1, n):
+            if abs(m[row][col]) &gt; abs(m[max_row][col]):
+                max_row = row
+        m[col], m[max_row] = m[max_row], m[col]
+
+        pivot = m[col][col]
+        for row in range(col + 1, n):
+            factor = m[row][col] / pivot
+            for j in range(col, n + 1):
+                m[row][j] -= factor * m[col][j]
+
+    # Back substitution
+    result = [0.0] * n
+    for i in range(n - 1, -1, -1):
+        result[i] = m[i][n]
+        for j in range(i + 1, n):
+            result[i] -= m[i][j] * result[j]
+        result[i] /= m[i][i]
+    return result
+
+class FitPlane:
+    def fit(self, points):
+        eqs = [[x, y, 1, z] for x, y, z in points]
+        sol = solve_equations(eqs)
+        self.a = sol[0]
+        self.b = sol[1]
+        self.d = sol[2]
+
+    def predict(self, points):
+        return [self.a * x + self.b * y + self.d
+                for x, y in points]</code></pre>
     </div>
   </details>
 </section>

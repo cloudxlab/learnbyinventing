@@ -102,8 +102,8 @@ print("Kept:", list(ratings.columns))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>keep = df.columns[df.count() &gt;= 3]
+ratings = df[keep]</code></pre>
     </div>
   </details>
 </section>
@@ -145,8 +145,7 @@ print("NaNs remaining:", int(scaled.isna().sum().sum()))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>scaled = (ratings - ratings.min()) / (ratings.max() - ratings.min())</code></pre>
     </div>
   </details>
 </section>
@@ -186,8 +185,7 @@ print(filled.head(5).round(2))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>filled = scaled.fillna(scaled.mean())</code></pre>
     </div>
   </details>
 </section>
@@ -244,8 +242,8 @@ print("sim(SandeepGiri, Abhishek) =",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def cosine_similarity(a, b):
+    return (a * b).sum() / (np.sqrt((a ** 2).sum()) * np.sqrt((b ** 2).sum()))</code></pre>
     </div>
   </details>
 </section>
@@ -280,8 +278,9 @@ print("all 15 columns are unit vectors")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>M = filled.values
+lengths = np.sqrt((M ** 2).sum(axis=0))
+uM = M / lengths</code></pre>
     </div>
   </details>
 </section>
@@ -319,8 +318,8 @@ sim.round(2)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>S = uM.T @ uM
+sim = pd.DataFrame(S, index=filled.columns, columns=filled.columns)</code></pre>
     </div>
   </details>
 </section>
@@ -353,8 +352,8 @@ for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def most_similar(person):
+    return sim[person].drop(person).idxmax()</code></pre>
     </div>
   </details>
 </section>
@@ -434,8 +433,8 @@ print("SandeepGiri hasn't rated:", mine)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def unrated_movies(person):
+    return list(ratings.index[ratings[person].isna()])</code></pre>
     </div>
   </details>
 </section>
@@ -475,8 +474,10 @@ print("Abhishek should watch:  ", recommend("Abhishek", 3))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def recommend(person, k=3):
+    candidates = unrated_movies(person)
+    scores = filled.loc[candidates] @ sim[person]
+    return list(scores.sort_values(ascending=False).index[:k])</code></pre>
     </div>
   </details>
 </section>
@@ -569,8 +570,23 @@ print("weighted votes said:", recommend("SandeepGiri", 3))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def top5_similar_people(person):
+    return list(sim[person].drop(person).sort_values(ascending=False).index[:5])
+
+def top5_favorites(person):
+    return list(ratings[person].dropna().sort_values(ascending=False).index[:5])
+
+def recommend_by_friends(person):
+    friends = top5_similar_people(person)
+    rated = set(ratings.index[ratings[person].notna()])
+    seen = set()
+    result = []
+    for friend in friends:
+        for movie in top5_favorites(friend):
+            if movie not in rated and movie not in seen:
+                seen.add(movie)
+                result.append(movie)
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -615,8 +631,14 @@ for movie in ["Sholay", "Dangal", "Pathaan"]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>M = filled.values
+row_lengths = np.sqrt((M ** 2).sum(axis=1, keepdims=True))
+uMr = M / row_lengths
+S_items = uMr @ uMr.T
+msim = pd.DataFrame(S_items, index=filled.index, columns=filled.index)
+
+def most_similar_movie(name):
+    return msim[name].drop(name).idxmax()</code></pre>
     </div>
   </details>
 </section>
@@ -673,8 +695,18 @@ print("sparse_matmul works &mdash; zeros never stored, never multiplied")</code>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def sparse_matmul(A_triples, B_triples):
+    # Group B's triples by row for fast lookup
+    B_by_row = {}
+    for k, j, b in B_triples:
+        B_by_row.setdefault(k, []).append((j, b))
+    # For each A entry, multiply with matching B entries
+    out = {}
+    for i, k, a in A_triples:
+        if k in B_by_row:
+            for j, b in B_by_row[k]:
+                out[(i, j)] = out.get((i, j), 0) + a * b
+    return out</code></pre>
     </div>
   </details>
 </section>

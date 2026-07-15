@@ -79,8 +79,12 @@ assert len(handshakes(list(range(n)))) == n * (n - 1) // 2
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def handshakes(people):
+    result = []
+    for i in range(len(people)):
+        for j in range(i + 1, len(people)):
+            result.append((people[i], people[j]))
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -138,8 +142,15 @@ assert next_numb(a, 10) == True and a == [3, 0]
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def next_numb(arr, m):
+    pos = len(arr) - 1
+    while pos &gt;= 0:
+        if arr[pos] + 1 &lt; m:
+            arr[pos] += 1
+            return True
+        arr[pos] = 0
+        pos -= 1
+    return False</code></pre>
     </div>
   </details>
 </section>
@@ -178,8 +189,14 @@ assert out[0] == "000" and out[-1] == "222"
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def generate(n, m):
+    arr = [0] * n
+    result = []
+    while True:
+        result.append("".join(str(d) for d in arr))
+        if not next_numb(arr, m):
+            break
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -224,8 +241,14 @@ assert generate_rec(3, 3) == generate(3, 3)
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def generate_rec(n, m):
+    if n == 0:
+        return [""]
+    result = []
+    for d in range(m):
+        for s in generate_rec(n - 1, m):
+            result.append(str(d) + s)
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -277,8 +300,16 @@ assert len(perms("abcde")) == 120
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def perms(s):
+    if len(s) &lt;= 1:
+        return [s]
+    result = []
+    for i in range(len(s)):
+        first = s[i]
+        rest = s[:i] + s[i+1:]
+        for p in perms(rest):
+            result.append(first + p)
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -368,8 +399,17 @@ assert are_valid("()[]{}") == True
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def are_valid(s):
+    stack = []
+    matching = {")": "(", "]": "[", "}": "{"}
+    for ch in s:
+        if ch in "([{":
+            stack.append(ch)
+        elif ch in ")]}":
+            if not stack or stack[-1] != matching[ch]:
+                return False
+            stack.pop()
+    return len(stack) == 0</code></pre>
     </div>
   </details>
 </section>
@@ -440,8 +480,12 @@ assert find_first_empty_space(full) == (None, None)
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_first_empty_space(board):
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] == 0:
+                return (r, c)
+    return (None, None)</code></pre>
     </div>
   </details>
 </section>
@@ -486,8 +530,22 @@ assert can_place(2, 0, 2, puzzle) == True
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def can_place(i, row, col, board):
+    # Check row
+    if i in board[row]:
+        return False
+    # Check column
+    for r in range(9):
+        if board[r][col] == i:
+            return False
+    # Check 3x3 block
+    br = row // 3 * 3
+    bc = col // 3 * 3
+    for r in range(br, br + 3):
+        for c in range(bc, bc + 3):
+            if board[r][c] == i:
+                return False
+    return True</code></pre>
     </div>
   </details>
 </section>
@@ -562,8 +620,17 @@ print_board(board)
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def solve_sudoku(board):
+    row, col = find_first_empty_space(board)
+    if row is None:
+        return True          # no empty cell = solved
+    for i in range(1, 10):
+        if can_place(i, row, col, board):
+            board[row][col] = i
+            if solve_sudoku(board):
+                return True
+            board[row][col] = 0   # undo
+    return False                  # dead end</code></pre>
     </div>
   </details>
 </section>

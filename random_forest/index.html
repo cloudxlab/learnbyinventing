@@ -68,8 +68,9 @@ assert variance([4]) == 0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def variance(values):
+    m = sum(values) / len(values)
+    return sum((v - m) ** 2 for v in values) / len(values)</code></pre>
     </div>
   </details>
 </section>
@@ -105,8 +106,9 @@ assert total_variance([5], [5]) == 0.0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def total_variance(left, right):
+    n = len(left) + len(right)
+    return (len(left) / n) * variance(left) + (len(right) / n) * variance(right)</code></pre>
     </div>
   </details>
 </section>
@@ -145,8 +147,8 @@ assert good &gt; bad</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def variance_reduction(parent, left, right):
+    return variance(parent) - total_variance(left, right)</code></pre>
     </div>
   </details>
 </section>
@@ -237,8 +239,8 @@ assert size_red &gt; bedroom_red
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>size_red = variance_reduction(y, [50, 55, 65], [150, 160, 170])
+bedroom_red = variance_reduction(y, [50, 55], [65, 150, 160, 170])</code></pre>
     </div>
   </details>
 </section>
@@ -285,8 +287,24 @@ assert find_best_split([[1, 1]], [10]) == (None, None, 0.0)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_best_split(X, y, feature_indices=None):
+    if feature_indices is None:
+        feature_indices = range(len(X[0]))
+    best_feat, best_thresh, best_red = None, None, 0.0
+    for feat in feature_indices:
+        vals = sorted(set(X[i][feat] for i in range(len(X))))
+        for j in range(len(vals) - 1):
+            t = (vals[j] + vals[j + 1]) / 2
+            left_y = [y[i] for i in range(len(X)) if X[i][feat] &lt;= t]
+            right_y = [y[i] for i in range(len(X)) if X[i][feat] &gt; t]
+            if not left_y or not right_y:
+                continue
+            red = variance_reduction(y, left_y, right_y)
+            if red &gt; best_red:
+                best_red = red
+                best_feat = feat
+                best_thresh = t
+    return (best_feat, best_thresh, best_red)</code></pre>
     </div>
   </details>
 </section>
@@ -409,8 +427,46 @@ assert 150 &lt;= p[1] &lt;= 170</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>class DecisionTree:
+    def __init__(self, max_depth=5, min_samples_split=2, feature_indices=None):
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.feature_indices = feature_indices
+        self.root = None
+
+    def fit(self, X, y):
+        self.root = self._build(X, y, 0)
+
+    def _build(self, X, y, depth):
+        if depth &gt;= self.max_depth or len(y) &lt; self.min_samples_split:
+            return Node(value=mean(y))
+        feat, thresh, red = find_best_split(X, y, self.feature_indices)
+        if feat is None or red &lt;= 0:
+            return Node(value=mean(y))
+        left_X, left_y, right_X, right_y = [], [], [], []
+        for i in range(len(X)):
+            if X[i][feat] &lt;= thresh:
+                left_X.append(X[i])
+                left_y.append(y[i])
+            else:
+                right_X.append(X[i])
+                right_y.append(y[i])
+        left_node = self._build(left_X, left_y, depth + 1)
+        right_node = self._build(right_X, right_y, depth + 1)
+        return Node(feature=feat, threshold=thresh,
+                    left=left_node, right=right_node)
+
+    def predict(self, X):
+        return [self._predict_row(row) for row in X]
+
+    def _predict_row(self, row):
+        node = self.root
+        while not node.is_leaf():
+            if row[node.feature] &lt;= node.threshold:
+                node = node.left
+            else:
+                node = node.right
+        return node.value</code></pre>
     </div>
   </details>
 </section>
@@ -468,8 +524,14 @@ assert Xs != X16  # drawing the original order is astronomically unlikely</code>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>import random
+
+def bootstrap_sample(X, y):
+    n = len(X)
+    indices = [random.randint(0, n - 1) for _ in range(n)]
+    X_sample = [X[i] for i in indices]
+    y_sample = [y[i] for i in indices]
+    return X_sample, y_sample</code></pre>
     </div>
   </details>
 </section>
@@ -498,8 +560,8 @@ assert set(feats) &lt;= {0, 1, 2, 3}</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def choose_features(n_features, max_features):
+    return random.sample(range(n_features), max_features)</code></pre>
     </div>
   </details>
 </section>
@@ -607,8 +669,35 @@ assert rf_train &lt; 30 and rf_test &lt; 30</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>class RandomForestRegressor:
+    def __init__(self, n_estimators=10, max_depth=3,
+                 min_samples_split=2, max_features=None):
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.max_features = max_features
+        self.trees = []
+
+    def fit(self, X, y):
+        self.trees = []
+        n_features = len(X[0])
+        for _ in range(self.n_estimators):
+            X_sample, y_sample = bootstrap_sample(X, y)
+            if self.max_features is not None:
+                feat_indices = choose_features(n_features, self.max_features)
+            else:
+                feat_indices = None
+            tree = DecisionTree(
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                feature_indices=feat_indices,
+            )
+            tree.fit(X_sample, y_sample)
+            self.trees.append(tree)
+
+    def predict(self, X):
+        all_preds = [tree.predict(X) for tree in self.trees]
+        return [mean(col) for col in zip(*all_preds)]</code></pre>
     </div>
   </details>
 </section>
@@ -648,8 +737,11 @@ assert rf_train &lt; 30 and rf_test &lt; 30</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ol>
+        <li><strong>Noise:</strong> A single deep tree memorizes the noise (train RMSE stays near 0, but test RMSE explodes). The forest averages out the noise because different trees, trained on different bootstrap samples, memorize <em>different</em> noise &mdash; when averaged, the random errors cancel while the true signal remains.</li>
+        <li><strong>Stability:</strong> Bootstrap means each tree sees a different subset of rows. Removing one training row only affects the trees that happened to include it &mdash; the other trees are unaffected, so the average prediction barely moves. A single tree can change its entire structure from one deleted row.</li>
+        <li><strong><code>max_features</code> with many features:</strong> With 50 features and, say, <code>max_features=7</code>, each tree explores a very different corner of feature space. This decorrelates the trees far more than when you only have 2 features to choose from, making the ensemble&rsquo;s error-cancellation effect much stronger.</li>
+      </ol>
     </div>
   </details>
 </section>

@@ -75,8 +75,14 @@ print("match_exact: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def match_exact(pat, text):
+    if len(pat) == 0 and len(text) == 0:
+        return True
+    if len(pat) == 0 or len(text) == 0:
+        return False
+    if pat[0] != text[0]:
+        return False
+    return match_exact(pat[1:], text[1:])</code></pre>
     </div>
   </details>
 </section>
@@ -133,8 +139,16 @@ print("match_q: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def match_q(pat, text):
+    if len(pat) == 0 and len(text) == 0:
+        return True
+    if len(pat) == 0 or len(text) == 0:
+        return False
+    if pat[0] == '?':
+        return match_q(pat[1:], text[1:])
+    if pat[0] != text[0]:
+        return False
+    return match_q(pat[1:], text[1:])</code></pre>
     </div>
   </details>
 </section>
@@ -183,8 +197,13 @@ aa?b*  does not match: aab, ab</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The two choices at each step are:</p>
+      <ol>
+        <li>The <code>*</code> <strong>swallows nothing</strong> (matches zero characters) &mdash; drop the <code>*</code> from the pattern and try matching the rest of the pattern against the current text: <code>match(pat[1:], text)</code>.</li>
+        <li>The <code>*</code> <strong>swallows one more character</strong> &mdash; the <code>*</code> stays in the pattern but we advance the text by one character: <code>match(pat, text[1:])</code>.</li>
+      </ol>
+      <p>If <em>either</em> branch returns <code>True</code>, the overall match succeeds.</p>
+      <p>Base case: when the text is empty and the pattern is <code>"*"</code> (or any sequence of <code>*</code>s), that is a match &mdash; the star(s) match zero characters. If the text is empty and the pattern has a non-<code>*</code> character, that is not a match.</p>
     </div>
   </details>
 </section>
@@ -252,8 +271,22 @@ print("match: OK &mdash; you have built a glob matcher")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def match(pat, text):
+    if len(pat) == 0:
+        return len(text) == 0
+    if pat[0] == '*':
+        # Option 1: star matches zero chars (skip the star)
+        # Option 2: star matches one more char (advance text, keep star)
+        if match(pat[1:], text):
+            return True
+        if len(text) &gt; 0 and match(pat, text[1:]):
+            return True
+        return False
+    if len(text) == 0:
+        return False
+    if pat[0] == '?' or pat[0] == text[0]:
+        return match(pat[1:], text[1:])
+    return False</code></pre>
     </div>
   </details>
 </section>
@@ -290,8 +323,8 @@ print("find_matching: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_matching(pattern, names):
+    return [name for name in names if match(pattern, name)]</code></pre>
     </div>
   </details>
 </section>
@@ -402,8 +435,7 @@ print("DATE_PATTERN: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>DATE_PATTERN = r"[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}"</code></pre>
     </div>
   </details>
 </section>
@@ -459,8 +491,7 @@ print("STRICT_DATE: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>STRICT_DATE = r"(0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-][0-9]{4}"</code></pre>
     </div>
   </details>
 </section>
@@ -500,8 +531,8 @@ print("find_card_numbers: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_card_numbers(text):
+    return re.findall(r"[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}", text)</code></pre>
     </div>
   </details>
 </section>
@@ -540,8 +571,8 @@ print("find_emails: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_emails(text):
+    return re.findall(r"[\w.]+@[\w.-]+\.\w+", text)</code></pre>
     </div>
   </details>
 </section>
@@ -609,8 +640,15 @@ print("domain_counts: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def find_urls(text):
+    return re.findall(r'https?://[^\s")\]]+', text)
+
+def domain_counts(urls):
+    counts = {}
+    for url in urls:
+        domain = url.split("/")[2]
+        counts[domain] = counts.get(domain, 0) + 1
+    return counts</code></pre>
     </div>
   </details>
 </section>

@@ -98,8 +98,11 @@ is_sorted([])             # True</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def is_sorted(lst):
+    for i in range(len(lst) - 1):
+        if lst[i] &gt; lst[i + 1]:
+            return False
+    return True</code></pre>
     </div>
   </details>
 </section>
@@ -125,8 +128,8 @@ x   # [30, 20, 10]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def swap(lst, i, j):
+    lst[i], lst[j] = lst[j], lst[i]</code></pre>
     </div>
   </details>
 </section>
@@ -168,8 +171,10 @@ x   # [1, 3, 1, 4, 5, 2, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def bubble_pass(lst):
+    for i in range(len(lst) - 1):
+        if lst[i] &gt; lst[i + 1]:
+            lst[i], lst[i + 1] = lst[i + 1], lst[i]</code></pre>
     </div>
   </details>
 </section>
@@ -206,8 +211,16 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def bubble_sort(lst):
+    n = len(lst)
+    for end in range(n - 1, 0, -1):
+        swapped = False
+        for i in range(end):
+            if lst[i] &gt; lst[i + 1]:
+                lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                swapped = True
+        if not swapped:
+            break</code></pre>
     </div>
   </details>
 </section>
@@ -247,8 +260,19 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def bubble_sort_counting(lst):
+    comparisons = 0
+    n = len(lst)
+    for end in range(n - 1, 0, -1):
+        swapped = False
+        for i in range(end):
+            comparisons += 1
+            if lst[i] &gt; lst[i + 1]:
+                lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                swapped = True
+        if not swapped:
+            break
+    return comparisons</code></pre>
     </div>
   </details>
 </section>
@@ -290,8 +314,11 @@ x   # [2, 3, 5, 8]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def insert_card(lst, k):
+    j = k
+    while j &gt; 0 and lst[j] &lt; lst[j - 1]:
+        lst[j], lst[j - 1] = lst[j - 1], lst[j]
+        j -= 1</code></pre>
     </div>
   </details>
 </section>
@@ -317,8 +344,12 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def insertion_sort(lst):
+    for k in range(1, len(lst)):
+        j = k
+        while j &gt; 0 and lst[j] &lt; lst[j - 1]:
+            lst[j], lst[j - 1] = lst[j - 1], lst[j]
+            j -= 1</code></pre>
     </div>
   </details>
 </section>
@@ -351,8 +382,18 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def insertion_sort_counting(lst):
+    comparisons = 0
+    for k in range(1, len(lst)):
+        j = k
+        while j &gt; 0:
+            comparisons += 1
+            if lst[j] &lt; lst[j - 1]:
+                lst[j], lst[j - 1] = lst[j - 1], lst[j]
+                j -= 1
+            else:
+                break
+    return comparisons</code></pre>
     </div>
   </details>
 </section>
@@ -431,8 +472,19 @@ merge([1, 1], [1])            # [1, 1, 1]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def merge(a, b):
+    result = []
+    i, j = 0, 0
+    while i &lt; len(a) and j &lt; len(b):
+        if a[i] &lt;= b[j]:
+            result.append(a[i])
+            i += 1
+        else:
+            result.append(b[j])
+            j += 1
+    result.extend(a[i:])
+    result.extend(b[j:])
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -464,8 +516,13 @@ merge_sort([])                   # []</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def merge_sort(lst):
+    if len(lst) &lt;= 1:
+        return list(lst)
+    mid = len(lst) // 2
+    left = merge_sort(lst[:mid])
+    right = merge_sort(lst[mid:])
+    return merge(left, right)</code></pre>
     </div>
   </details>
 </section>
@@ -510,8 +567,9 @@ for n in [1000, 1000000, 1000000000]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>There is no code to write here &mdash; this exercise is about understanding the analysis.</p>
+      <p>Each level of the recursion tree does O(n) total merge work. There are log<sub>2</sub>(n) levels because we halve the list each time. So the total work is <strong>O(n &middot; log n)</strong>.</p>
+      <p>For n = 1,000,000: n&sup2; = 10<sup>12</sup> but n &middot; log<sub>2</sub>(n) &asymp; 20,000,000 &mdash; about 50,000&times; less work.</p>
     </div>
   </details>
 </section>
@@ -553,8 +611,18 @@ for n in [1000, 1000000, 1000000000]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def partition_01(lst):
+    left = 0
+    right = len(lst) - 1
+    while left &lt; right:
+        while left &lt; right and lst[left][0] == 0:
+            left += 1
+        while left &lt; right and lst[right][0] == 1:
+            right -= 1
+        if left &lt; right:
+            lst[left], lst[right] = lst[right], lst[left]
+            left += 1
+            right -= 1</code></pre>
     </div>
   </details>
 </section>
@@ -592,8 +660,15 @@ x[p]   # 4</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def partition(lst, lo, hi):
+    pivot = lst[hi]
+    s = lo
+    for i in range(lo, hi):
+        if lst[i] &lt; pivot:
+            lst[i], lst[s] = lst[s], lst[i]
+            s += 1
+    lst[s], lst[hi] = lst[hi], lst[s]
+    return s</code></pre>
     </div>
   </details>
 </section>
@@ -626,8 +701,14 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def quick_sort(lst, lo=0, hi=None):
+    if hi is None:
+        hi = len(lst) - 1
+    if lo &gt;= hi:
+        return
+    p = partition(lst, lo, hi)
+    quick_sort(lst, lo, p - 1)
+    quick_sort(lst, p + 1, hi)</code></pre>
     </div>
   </details>
 </section>
@@ -697,8 +778,11 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def count_values(ages, max_value):
+    counts = [0] * (max_value + 1)
+    for age in ages:
+        counts[age] += 1
+    return counts</code></pre>
     </div>
   </details>
 </section>
@@ -733,8 +817,12 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def counting_sort(ages, max_value):
+    counts = count_values(ages, max_value)
+    result = []
+    for v in range(max_value + 1):
+        result.extend([v] * counts[v])
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -842,8 +930,8 @@ race()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The race code is provided above &mdash; just run it after all your sort functions are defined. You may need to add <code>import sys; sys.setrecursionlimit(200000)</code> before calling <code>race()</code> if quick sort hits the recursion limit.</p>
+      <p>On the log-log plot you should see two distinct groups: bubble sort and insertion sort climbing with slope ~2 (O(n&sup2;)), and merge sort, quick sort, and the built-in sort climbing with slope ~1 (O(n&middot;log n)).</p>
     </div>
   </details>
 </section>
@@ -873,8 +961,21 @@ race()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code># Example prediction calculations:
+# Suppose bubble_sort took T_bubble seconds at n = 4000.
+# At n = 1,000,000 (factor = 250):
+#   predicted = T_bubble * 250**2 = T_bubble * 62,500
+# If T_bubble = 0.5s, that is ~31,250s ~ 8.7 hours.
+
+# Suppose merge_sort took T_merge seconds at n = 64,000.
+# At n = 1,000,000 (factor = 15.625):
+#   predicted = T_merge * 15.625 * (log2(1e6) / log2(64000))
+#             = T_merge * 15.625 * (19.93 / 15.97)
+#             ~ T_merge * 19.5
+# If T_merge = 0.05s, that is ~0.97s ~ 1 second.
+
+# Bubble sort (O(n**2)) prediction: minutes to hours.
+# Merge sort (O(n*log n)) prediction: around one second.</code></pre>
     </div>
   </details>
 </section>

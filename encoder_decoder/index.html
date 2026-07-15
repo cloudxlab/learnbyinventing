@@ -104,8 +104,12 @@ assert parse_line("a@b.com , 7 , 0.5") == ("a@b.com", 7, 0.5)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def parse_line(line):
+    parts = line.strip().split(",")
+    user = parts[0].strip()
+    product_id = int(parts[1].strip())
+    score = float(parts[2].strip())
+    return (user, product_id, score)</code></pre>
     </div>
   </details>
 </section>
@@ -141,8 +145,12 @@ assert rows == [("sandeep", 1, 1.0), ("nitin", 2, 3.0), ("subodh", 2, 1.0),
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def read_data(filename):
+    result = []
+    for line in open(filename):
+        if line.strip():
+            result.append(parse_line(line))
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -185,8 +193,12 @@ assert mapping == {"sandeep": 1, "nitin": 2, "subodh": 3}</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def build_mapping(rows):
+    mapping = {}
+    for user, product_id, score in rows:
+        if user not in mapping:
+            mapping[user] = len(mapping) + 1
+    return mapping</code></pre>
     </div>
   </details>
 </section>
@@ -223,8 +235,20 @@ assert load_mapping("mapping.csv") == mapping</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def save_mapping(mapping, filename):
+    with open(filename, "w") as f:
+        for email, uid in mapping.items():
+            f.write(f"{email},{uid}\n")
+
+def load_mapping(filename):
+    mapping = {}
+    for line in open(filename):
+        if line.strip():
+            parts = line.strip().split(",")
+            email = parts[0].strip()
+            uid = int(parts[1].strip())
+            mapping[email] = uid
+    return mapping</code></pre>
     </div>
   </details>
 </section>
@@ -264,8 +288,13 @@ assert load_mapping("mapping.csv") == {"sandeep": 1, "nitin": 2, "subodh": 3}</c
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def encode_file(input_file, encoded_file, mapping_file):
+    rows = read_data(input_file)
+    mapping = build_mapping(rows)
+    save_mapping(mapping, mapping_file)
+    with open(encoded_file, "w") as f:
+        for user, product_id, score in rows:
+            f.write(f"{mapping[user]},{product_id},{score}\n")</code></pre>
     </div>
   </details>
 </section>
@@ -357,8 +386,9 @@ Time for the Decoder.</p>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def invert(mapping):
+    return {v: k for k, v in mapping.items()}</code></pre>
+      <p>Inversion is safe here because the mapping is <strong>one-to-one</strong> (bijective): each email gets a unique integer via <code>len(mapping) + 1</code>, so no two emails share the same id. If two emails had the same id, inverting would silently lose one of them.</p>
     </div>
   </details>
 </section>
@@ -392,8 +422,17 @@ open("final.csv").read()   # "subodh,1,1.5\n"</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def decode_file(recs_file, mapping_file, output_file):
+    mapping = load_mapping(mapping_file)
+    inv = invert(mapping)
+    with open(output_file, "w") as f:
+        for line in open(recs_file):
+            if line.strip():
+                parts = line.strip().split(",")
+                user_id = int(parts[0])
+                product_id = parts[1]
+                score = parts[2]
+                f.write(f"{inv[user_id]},{product_id},{score}\n")</code></pre>
     </div>
   </details>
 </section>
@@ -501,8 +540,24 @@ for line in open("big_final.csv").readlines()[:5]:
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def check_pipeline(original_file, final_file):
+    # Collect all unique users from the original data
+    original_users = set()
+    for line in open(original_file):
+        if line.strip():
+            user = line.strip().split(",")[0].strip()
+            original_users.add(user)
+
+    # Check every user in the final output
+    for line in open(final_file):
+        if line.strip():
+            user = line.strip().split(",")[0].strip()
+            # 1. Every user must exist in the original data
+            assert user in original_users, f"Unknown user: {user}"
+            # 2. No integer IDs leaked (every user contains "@")
+            assert "@" in user, f"Leaked integer ID: {user}"
+
+    return True</code></pre>
     </div>
   </details>
 </section>

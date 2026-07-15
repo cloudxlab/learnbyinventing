@@ -85,8 +85,8 @@ assert step_function(-0.5) == 0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def step_function(z):
+    return 1 if z &gt;= 0 else 0</code></pre>
     </div>
   </details>
 </section>
@@ -141,8 +141,8 @@ plt.show()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def sigmoid(z):
+    return 1 / (1 + np.exp(-z))</code></pre>
     </div>
   </details>
 </section>
@@ -176,8 +176,9 @@ assert abs(sigmoid_error(0, 0, heights, labels) - 0.25) &lt; 1e-9</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def sigmoid_error(m, c, x, y):
+    pred = sigmoid(m * x + c)
+    return np.mean((pred - y) ** 2)</code></pre>
     </div>
   </details>
 </section>
@@ -221,8 +222,12 @@ assert err_after &gt; 0.5                        # stuck!</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def train(m, c, x, y, learning_rate, epochs):
+    for _ in range(epochs):
+        grad_m, grad_c = gradients_mc(sigmoid_error, m, c, x, y)
+        m -= learning_rate * grad_m
+        c -= learning_rate * grad_c
+    return m, c</code></pre>
     </div>
   </details>
 </section>
@@ -262,8 +267,12 @@ assert (preds == labels).all()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>centered = heights - 165
+
+m2, c2 = train(0.12, 0.3, centered, labels, learning_rate=0.5, epochs=2000)
+
+def classify(x_centered):
+    return 1 if sigmoid(m2 * x_centered + c2) &gt;= 0.5 else 0</code></pre>
     </div>
   </details>
 </section>
@@ -347,8 +356,12 @@ assert abs(compute_graph(-5, 1, 1, 1, 1, 1, 1) - (-2.6555)) &lt; 1e-3</code></pr
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def compute_graph(x, w10, w11, w20, w21, w30, w31):
+    y1 = step_function(w11 * x + w10)
+    y2 = sigmoid(y1 * w21 + w20)
+    y3 = x * y2
+    y  = w31 * y3 + w30
+    return y</code></pre>
     </div>
   </details>
 </section>
@@ -396,8 +409,23 @@ plt.show()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code># Plot with a second weight set to see how weights reshape the curve:
+xs = np.linspace(-10, 10, 400)
+ys1 = [compute_graph(x, 1, 1, 1, 1, 1, 1) for x in xs]
+ys2 = [compute_graph(x, -3, 1, 0, 2, -1, 0.5) for x in xs]
+
+plt.plot(xs, ys1, label="w = all ones")
+plt.plot(xs, ys2, label="w = [-3, 1, 0, 2, -1, 0.5]")
+plt.legend(); plt.grid(alpha=0.3)
+plt.title("Same graph, different weights, different curve")
+plt.show()
+
+# Custom graph example:
+def my_graph(x, w0, w1, w2, w3):
+    y1 = sigmoid(w1 * x + w0)
+    y2 = x * y1
+    y  = w3 * y2 + w2
+    return y</code></pre>
     </div>
   </details>
 </section>
@@ -499,8 +527,7 @@ assert np.mean(line_pred[low]) &lt; 0    # negative tax!</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>m_line, c_line = np.polyfit(x, y, 1)</code></pre>
     </div>
   </details>
 </section>
@@ -537,8 +564,9 @@ assert accuracy &gt;= 0.97</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>is_taxable = (tax &gt; 0).astype(int)
+
+mk, ck = train(1, 0, x, is_taxable, learning_rate=2.0, epochs=3000)</code></pre>
     </div>
   </details>
 </section>
@@ -580,8 +608,13 @@ assert pipe_rmse &lt; line_rmse / 5</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>mt, ct = np.polyfit(x[is_taxable == 1], y[is_taxable == 1], 1)
+
+def predict_tax(xi):
+    if sigmoid(mk * xi + ck) &gt;= 0.5:
+        return mt * xi + ct
+    else:
+        return 0.0</code></pre>
     </div>
   </details>
 </section>
@@ -624,8 +657,23 @@ assert sig_rmse &gt; pipe_rmse</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def fit_net(err_fn, params, x, y, lr, epochs, h=1e-6):
+    params = list(params)
+    for _ in range(epochs):
+        base = err_fn(params, x, y)
+        grads = []
+        for i in range(len(params)):
+            nudged = list(params)
+            nudged[i] += h
+            grads.append((err_fn(nudged, x, y) - base) / h)
+        for i in range(len(params)):
+            params[i] -= lr * grads[i]
+    return params
+
+def net_error(params, x, y):
+    m, c, w1, w0 = params
+    pred = w1 * sigmoid(m * x + c) + w0
+    return np.mean((pred - y) ** 2)</code></pre>
     </div>
   </details>
 </section>
@@ -671,8 +719,13 @@ assert relu_rmse &lt; 0.02</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def relu(z):
+    return np.maximum(z, 0)
+
+def relu_error(params, x, y):
+    m, c, w1, w0 = params
+    pred = w1 * relu(m * x + c) + w0
+    return np.mean((pred - y) ** 2)</code></pre>
     </div>
   </details>
 </section>
@@ -705,8 +758,26 @@ assert relu_rmse &lt; 0.02</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code># 1. tanh net
+def tanh_error(params, x, y):
+    m, c, w1, w0 = params
+    pred = w1 * np.tanh(m * x + c) + w0
+    return np.mean((pred - y) ** 2)
+
+params_t = fit_net(tanh_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+print("tanh RMSE:", np.sqrt(tanh_error(params_t, x, y)))
+
+# 2. Two-ReLU net for two brackets
+def two_relu_error(params, x, y):
+    m1, c1, w1, m2, c2, w2, w0 = params
+    pred = w1 * relu(m1 * x + c1) + w2 * relu(m2 * x + c2) + w0
+    return np.mean((pred - y) ** 2)
+
+# 3. Residual connection
+def residual_error(params, x, y):
+    m, c, w1, w2, w0 = params
+    pred = w1 * relu(m * x + c) + w2 * x + w0
+    return np.mean((pred - y) ** 2)</code></pre>
     </div>
   </details>
 </section>

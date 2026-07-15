@@ -71,8 +71,8 @@ assert dot_product([2], [7]) == 14</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def dot_product(a, b):
+    return sum(ai * bi for ai, bi in zip(a, b))</code></pre>
     </div>
   </details>
 </section>
@@ -110,8 +110,14 @@ assert abs(vector_length(convert_to_unit([2, 3, 6])) - 1.0) &lt; 1e-9</code></pr
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>import math
+
+def vector_length(v):
+    return math.sqrt(dot_product(v, v))
+
+def convert_to_unit(v):
+    L = vector_length(v)
+    return [x / L for x in v]</code></pre>
     </div>
   </details>
 </section>
@@ -153,8 +159,8 @@ assert abs(cosine_similarity([1, 2], [-1, -2]) + 1.0) &lt; 1e-9   # opposite</co
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def cosine_similarity(a, b):
+    return dot_product(convert_to_unit(a), convert_to_unit(b))</code></pre>
     </div>
   </details>
 </section>
@@ -195,8 +201,16 @@ assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)</code></pre
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def matrix_mul(A, B):
+    n_cols_B = len(B[0])
+    result = []
+    for row in A:
+        new_row = []
+        for j in range(n_cols_B):
+            col = [r[j] for r in B]
+            new_row.append(dot_product(row, col))
+        result.append(new_row)
+    return result</code></pre>
     </div>
   </details>
 </section>
@@ -272,8 +286,37 @@ print("solver ready:", r)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def solve_for_first_variable(equation, vars):
+    rhs = equation[-1]
+    for i, v in enumerate(vars):
+        rhs -= equation[i + 1] * v
+    return rhs / equation[0]
+
+def eliminate_variable_pair(eq1, eq2, var_index):
+    c1 = eq1[var_index]
+    c2 = eq2[var_index]
+    new_eq = []
+    for i in range(len(eq1)):
+        if i == var_index:
+            continue
+        new_eq.append(c2 * eq1[i] - c1 * eq2[i])
+    return new_eq
+
+def eliminate_variable(equations, var_index):
+    pivot = equations[0]
+    result = []
+    for eq in equations[1:]:
+        result.append(eliminate_variable_pair(pivot, eq, var_index))
+    return result
+
+def solve_equations(equations):
+    if len(equations) == 1:
+        return [equations[0][-1] / equations[0][0]]
+    reduced = eliminate_variable(equations, 0)
+    rest = solve_equations(reduced)
+    x1 = solve_for_first_variable(equations[0], rest)
+    return [x1] + rest</code></pre>
+      <p>The running time grows like $n^3$. If 4 equations take 1 second, 8 equations take roughly $8^3 / 4^3 = 8$ seconds.</p>
     </div>
   </details>
 </section>
@@ -326,8 +369,9 @@ print("a 10-apple trip will cost:", prediction)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>eqns = [[3, 1, 6], [5, 1, 8]]
+beta = solve_equations(eqns)
+prediction = dot_product(beta, [10, 1])</code></pre>
     </div>
   </details>
 </section>
@@ -379,8 +423,9 @@ print("traffic at t=4:", prediction)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>eqns = [[1, 1, 1, 6], [4, 2, 1, 12], [9, 3, 1, 20]]
+abc = solve_equations(eqns)
+prediction = dot_product(abc, [16, 4, 1])</code></pre>
     </div>
   </details>
 </section>
@@ -423,8 +468,15 @@ print("solve_poly: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def solve_poly(x, y, xp):
+    n = len(x)
+    eqns = []
+    for i in range(n):
+        row = [x[i] ** (n - 1 - j) for j in range(n)] + [y[i]]
+        eqns.append(row)
+    coefs = solve_equations(eqns)
+    powers = [xp ** (n - 1 - j) for j in range(n)]
+    return dot_product(coefs, powers)</code></pre>
     </div>
   </details>
 </section>
@@ -481,8 +533,8 @@ print("total_error: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def total_error(m, c, data):
+    return sum((m * x + c - y) ** 2 for x, y in data)</code></pre>
     </div>
   </details>
 </section>
@@ -525,8 +577,21 @@ print(f"best line: y = {m:.3f}x + {c:.3f}   (error {best:.4f})")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The partial derivatives of $E = \sum_i (mx_i + c - y_i)^2$:</p>
+      <p>$\frac{\partial E}{\partial m} = 2\sum_i x_i(mx_i + c - y_i) = 0$ gives: $m\sum x_i^2 + c\sum x_i = \sum x_i y_i$</p>
+      <p>$\frac{\partial E}{\partial c} = 2\sum_i (mx_i + c - y_i) = 0$ gives: $m\sum x_i + cn = \sum y_i$</p>
+      <pre><code>factory_data = [(1, 8), (2, 11), (3, 16)]
+
+sum_x2 = sum(x ** 2 for x, y in factory_data)   # 14
+sum_x  = sum(x for x, y in factory_data)         # 6
+sum_xy = sum(x * y for x, y in factory_data)     # 78
+sum_y  = sum(y for x, y in factory_data)          # 35
+n      = len(factory_data)                        # 3
+
+m, c = solve_equations([
+    [sum_x2, sum_x, sum_xy],
+    [sum_x,  n,     sum_y]
+])</code></pre>
     </div>
   </details>
 </section>
@@ -589,8 +654,17 @@ plt.show()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>def best_line(data):
+    sum_x2 = sum(x ** 2 for x, y in data)
+    sum_x  = sum(x for x, y in data)
+    sum_xy = sum(x * y for x, y in data)
+    sum_y  = sum(y for x, y in data)
+    n      = len(data)
+    m, c = solve_equations([
+        [sum_x2, sum_x, sum_xy],
+        [sum_x,  n,     sum_y]
+    ])
+    return (m, c)</code></pre>
     </div>
   </details>
 </section>
@@ -680,8 +754,12 @@ print("rotation_matrix: OK")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>import math
+
+def rotation_matrix(angle_degrees):
+    rad = math.radians(angle_degrees)
+    return [[math.cos(rad),  math.sin(rad)],
+            [-math.sin(rad), math.cos(rad)]]</code></pre>
     </div>
   </details>
 </section>
@@ -728,8 +806,8 @@ plt.show()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>kite = [[0, 0], [1, 2], [0, 5], [-1, 2], [0, 0]]
+turned = matrix_mul(kite, rotation_matrix(45))</code></pre>
     </div>
   </details>
 </section>
@@ -771,8 +849,8 @@ plt.show()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <pre><code>warped = matrix_mul(kite, R)</code></pre>
+      <p>Every 2&times;2 matrix applies a linear transformation: straight lines stay straight and parallel lines stay parallel, but lengths and angles generally change. Rotation matrices are the special subset that preserve all lengths (and therefore all angles too).</p>
     </div>
   </details>
 </section>

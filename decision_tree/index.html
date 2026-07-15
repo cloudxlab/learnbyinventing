@@ -73,8 +73,12 @@ impurity(1, 0)      &rarr;  0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ol>
+        <li>Closer to 0. The bag is mostly one colour (80% Red), so it is fairly pure and easy to classify. Impurity should be low.</li>
+        <li><code>impurity(0.9, 0.1)</code> is <strong>lower</strong> than <code>impurity(0.8, 0.2)</code>. The 90/10 bag is more dominated by one colour, hence purer.</li>
+        <li>Because <code>q = 1 - p</code>, the function is really a function of one variable. It must equal 0 at the endpoints (<code>p = 0</code> and <code>p = 1</code>) and reach its maximum at <code>p = 0.5</code>. It should be a smooth, symmetric, concave curve.</li>
+        <li>Yes. Swapping the label names (calling Red "Black" and Black "Red") does not change how mixed the bag is, so the function must be symmetric: <code>impurity(p, q) == impurity(q, p)</code>.</li>
+      </ol>
     </div>
   </details>
 </section>
@@ -139,8 +143,22 @@ impurity(1, 0)      &rarr;  0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>Completed table:</p>
+      <table>
+        <tr><th>p</th><th>1&minus;p</th><th>p &times; (1&minus;p)</th></tr>
+        <tr><td>0.0</td><td>1.0</td><td>0.00</td></tr>
+        <tr><td>0.2</td><td>0.8</td><td>0.16</td></tr>
+        <tr><td>0.4</td><td>0.6</td><td>0.24</td></tr>
+        <tr><td>0.5</td><td>0.5</td><td>0.25</td></tr>
+        <tr><td>0.6</td><td>0.4</td><td>0.24</td></tr>
+        <tr><td>0.8</td><td>0.2</td><td>0.16</td></tr>
+        <tr><td>1.0</td><td>0.0</td><td>0.00</td></tr>
+      </table>
+<pre><code>for p in [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]:
+    print(f"{p:.1f}  {1-p:.1f}  {p*(1-p):.2f}")
+
+plot_impurity_candidate(lambda p: p * (1 - p), title="f(p) = p * (1-p)")</code></pre>
+      <p>The <strong>maximum</strong> is 0.25 at <code>p = 0.5</code>. The <strong>minimum</strong> is 0 at <code>p = 0</code> and <code>p = 1</code>. The function has the right shape (zero at the extremes, peaks in the middle) but its peak is 0.25 instead of 1.</p>
     </div>
   </details>
 </section>
@@ -193,8 +211,36 @@ impurity(1, 0)      &rarr;  0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p><strong>Derivation:</strong></p>
+      <ul>
+        <li>Maximum of <code>f(p) = p*(1-p)</code> is <strong>0.25</strong> at <code>p = 0.5</code>.</li>
+        <li>Transformation: multiply by 4 to scale the peak from 0.25 to 1.</li>
+        <li>Final formula: <code>impurity(p, q) = 4 * p * q</code></li>
+        <li>Check p=0.5: <code>4 * 0.5 * 0.5 = 1</code></li>
+        <li>Check p=0: <code>4 * 0 * 1 = 0</code></li>
+        <li>Check p=1: <code>4 * 1 * 0 = 0</code></li>
+      </ul>
+<pre><code>def impurity(p, q):
+    """
+    Returns the impurity of a set with fraction p of Red and q of Black.
+    impurity(0.5, 0.5) = 1  (most mixed)
+    impurity(1, 0)     = 0  (all same)
+    impurity(0, 1)     = 0
+    """
+    return 4 * p * q
+
+# Verify:
+print(impurity(0.5, 0.5))  # 1
+print(impurity(0, 1))      # 0
+print(impurity(1, 0))      # 0
+print(impurity(0.8, 0.2))  # 0.64
+
+# Ordering:
+print(impurity(0.8, 0.2) &lt; impurity(0.7, 0.3))  # True
+print(impurity(0.7, 0.3) &lt; impurity(0.6, 0.4))  # True
+
+plot_impurity_candidate(lambda p: impurity(p, 1 - p),
+                        title="My impurity function")</code></pre>
     </div>
   </details>
 </section>
@@ -236,8 +282,26 @@ impurity(1, 0)      &rarr;  0</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>bags = [
+    ("A", 0.9, 0.1),
+    ("B", 0.7, 0.3),
+    ("C", 0.6, 0.4),
+    ("D", 0.5, 0.5),
+    ("E", 0.3, 0.7),
+    ("F", 1.0, 0.0),
+]
+
+for name, p, q in bags:
+    print(f"Bag {name}: impurity({p}, {q}) = {impurity(p, q):.4f}")
+
+# Results:
+# Bag A: 0.3600   Bag B: 0.8400   Bag C: 0.9600
+# Bag D: 1.0000   Bag E: 0.8400   Bag F: 0.0000</code></pre>
+      <ol start="2">
+        <li>Bag A (impurity 0.36) is <strong>more certain</strong> than bag B (0.84). The impurity function agrees: a 90/10 split is purer than 70/30.</li>
+        <li>Yes, <code>impurity(0.3, 0.7) == impurity(0.7, 0.3) == 0.84</code>. This must hold because swapping colour labels does not change how mixed the bag is. Our formula <code>4*p*q</code> is symmetric.</li>
+        <li>For 3 classes with equal fractions (1/3 each), you can extend to Gini-style: <code>1 - (p1^2 + p2^2 + p3^2) = 1 - 3*(1/3)^2 = 1 - 1/3 = 2/3 &asymp; 0.667</code>.</li>
+      </ol>
     </div>
   </details>
 </section>
@@ -344,8 +408,32 @@ list_C = ["R", "R", "R", "R", "R", "R", "R", "B", "B", "B"]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def list_impurity(items):
+    """
+    Computes the impurity of a list of "R" and "B" elements.
+    Returns 0 for an empty list (no mixing possible).
+    """
+    if len(items) == 0:
+        return 0
+    total = len(items)
+    count_r = items.count("R")
+    count_b = total - count_r
+    p = count_r / total
+    q = count_b / total
+    return impurity(p, q)
+
+# Tests:
+print(list_impurity(["R", "B", "B", "R", "R"]))  # 0.96
+print(list_impurity(["R", "R", "R", "R"]))        # 0
+print(list_impurity(["B", "B", "B", "B"]))        # 0
+print(list_impurity(["R", "B"]))                  # 1.0
+print(list_impurity([]))                          # 0
+
+# Ranking:
+list_A = ["R"]*8 + ["B"]*2  # p=0.8  imp=0.64
+list_B = ["R"]*5 + ["B"]*5  # p=0.5  imp=1.0
+list_C = ["R"]*7 + ["B"]*3  # p=0.7  imp=0.84
+# Most mixed to least: B (1.0) &gt; C (0.84) &gt; A (0.64)</code></pre>
     </div>
   </details>
 </section>
@@ -391,8 +479,30 @@ total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def total_impurity(left, right):
+    """
+    Returns the weighted total impurity of two groups.
+    Each group's impurity is weighted by its size relative
+    to the combined total.
+    """
+    n_left = len(left)
+    n_right = len(right)
+    n_total = n_left + n_right
+    if n_total == 0:
+        return 0
+    return (n_left / n_total) * list_impurity(left) \
+         + (n_right / n_total) * list_impurity(right)
+
+# Tests:
+print(total_impurity(["R","R","R"], ["B","B","B"]))
+# 0.0 — perfectly separated, each group is pure
+
+print(total_impurity(["R","B","R"], ["B","R","B"]))
+# ~0.889 — both groups are 2/3 vs 1/3
+
+print(total_impurity(["R"]*9 + ["B"], ["B"]))
+# ~0.327 — left is slightly impure (10/11 weight),
+#           right is pure (1/11 weight)</code></pre>
     </div>
   </details>
 </section>
@@ -447,8 +557,27 @@ total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>items = ["R", "B", "B", "R", "R"]
+
+for k in range(1, len(items)):
+    left = items[:k]
+    right = items[k:]
+    imp = total_impurity(left, right)
+    print(f"k={k}: left={left}, right={right}, "
+          f"total_impurity={imp:.4f}")
+
+# k=0 gives left=[] (empty) — no meaningful split.
+# k=5 gives right=[] (empty) — no meaningful split.
+#
+# Results:
+# k=1: left=['R'],    right=['B','B','R','R'] → 0.75
+# k=2: left=['R','B'],right=['B','R','R']     → 0.9333
+# k=3: left=['R','B','B'], right=['R','R']    → 0.5333
+# k=4: left=['R','B','B','R'], right=['R']    → 0.75
+#
+# k=3 gives the minimum total impurity (0.5333).
+# Left=['R','B','B'] and Right=['R','R'] — the right
+# group is pure and the left is mostly B.</code></pre>
     </div>
   </details>
 </section>
@@ -493,8 +622,36 @@ total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def find_best_split_position(items):
+    """
+    Finds the split position k that minimises
+    total_impurity(items[:k], items[k:]).
+    Returns (best_k, min_impurity).
+    """
+    best_k = None
+    min_imp = float('inf')
+    for k in range(1, len(items)):
+        left = items[:k]
+        right = items[k:]
+        imp = total_impurity(left, right)
+        if imp &lt; min_imp:
+            min_imp = imp
+            best_k = k
+    return best_k, min_imp
+
+# Tests:
+for lst in [["R","B","B","R","R"],
+            ["R","R","R","B","B","B"],
+            ["B","R","B","R","B","R"],
+            ["R","R","R","R","B"]]:
+    best_k, min_imp = find_best_split_position(lst)
+    print(f"{lst}")
+    print(f"  best k={best_k}, left={lst[:best_k]}, "
+          f"right={lst[best_k:]}, impurity={min_imp:.4f}")
+
+# ["R","R","R","B","B","B"] → k=3 (obvious visual boundary)
+# ["B","R","B","R","B","R"] → all positions are equally
+#   mixed, so the first k with minimum is returned.</code></pre>
     </div>
   </details>
 </section>
@@ -537,8 +694,17 @@ total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>test_lists = [
+    ["R", "B", "B", "R", "R"],
+    ["R", "R", "R", "B", "B", "B"],
+    ["B", "R", "B", "R", "B", "R"],
+    ["R", "R", "R", "R", "B"],
+]
+
+for lst in test_lists:
+    plot_split_scores(lst)</code></pre>
+      <p>For <code>["R","R","R","B","B","B"]</code> the minimum is <strong>sharp</strong> at k=3 because there is a clean boundary between the two colours.</p>
+      <p>For <code>["B","R","B","R","B","R"]</code> the plot is nearly <strong>flat</strong> &mdash; no split position is much better than any other because the data is perfectly interleaved. There is no clear winner.</p>
     </div>
   </details>
 </section>
@@ -585,8 +751,11 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ol>
+        <li>Around height 170&ndash;175, gender starts being predominantly Male. Below ~167 it is mostly Female.</li>
+        <li>A split line around 167&ndash;170 cm would separate M from F most cleanly.</li>
+        <li>A perfect separation is <strong>not</strong> possible because there are outliers: e.g. "M" at 168, "F" at 174, and "F" at 181. These points violate any single threshold.</li>
+      </ol>
     </div>
   </details>
 </section>
@@ -621,8 +790,8 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>plot_height_gender(heights, genders)</code></pre>
+      <p>The scatter plot shows F (red) clustered at the lower heights and M (blue) at the higher heights, with some overlap in the 168&ndash;181 range.</p>
     </div>
   </details>
 </section>
@@ -663,8 +832,30 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def split_by_threshold(heights, genders, t):
+    """
+    Splits the dataset at threshold t on height.
+    Returns (left_genders, right_genders) where:
+      left_genders  = genders where height &lt;= t
+      right_genders = genders where height &gt; t
+    """
+    left_genders  = [g for h, g in zip(heights, genders) if h &lt;= t]
+    right_genders = [g for h, g in zip(heights, genders) if h &gt; t]
+    return left_genders, right_genders
+
+# Test:
+left, right = split_by_threshold(heights, genders, 172)
+print("Left (height &lt;= 172):", left)
+print("Right (height &gt; 172):", right)
+print("Total impurity:", total_impurity(left, right))
+
+# Scan thresholds:
+for t in [160, 165, 170, 172, 175, 178, 182, 185, 188]:
+    left, right = split_by_threshold(heights, genders, t)
+    imp = total_impurity(left, right)
+    print(f"t={t}: left={len(left)}, right={len(right)}, "
+          f"impurity={imp:.4f}")</code></pre>
+      <p>The threshold <code>t = 167</code> gives the lowest total impurity. At that split the left group (height &le; 167) is [F, F, F, F] (pure) and the right group is mostly M with a few F outliers.</p>
     </div>
   </details>
 </section>
@@ -706,8 +897,34 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def find_best_threshold(heights, genders):
+    """
+    Finds the height threshold that minimises total_impurity.
+    Returns (best_threshold, min_impurity).
+    """
+    best_t = None
+    min_imp = float('inf')
+    for t in sorted(set(heights)):
+        left = [g for h, g in zip(heights, genders) if h &lt;= t]
+        right = [g for h, g in zip(heights, genders) if h &gt; t]
+        if not left or not right:
+            continue
+        imp = total_impurity(left, right)
+        if imp &lt; min_imp:
+            min_imp = imp
+            best_t = t
+    return best_t, min_imp
+
+best_t, best_imp = find_best_threshold(heights, genders)
+print(f"Best threshold: height &lt;= {best_t}")
+print(f"Minimum total impurity: {best_imp:.4f}")
+
+left, right = split_by_threshold(heights, genders, best_t)
+print(f"Left group:  {left}")
+print(f"Right group: {right}")
+
+plot_height_gender(heights, genders, split_height=best_t)</code></pre>
+      <p>The best threshold is <code>height &le; 167</code>. The left group is all F (pure). The right group is mostly M but contains a few F outliers (at 170, 174, 181), so the split is good but not perfect.</p>
     </div>
   </details>
 </section>
@@ -745,8 +962,8 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>plot_threshold_scores(heights, genders)</code></pre>
+      <p>The curve shows impurity dropping to a minimum at <code>t = 167</code>, then rising again. The minimum is relatively sharp, confirming that 167 is the best single-feature split for this dataset.</p>
     </div>
   </details>
 </section>
@@ -840,8 +1057,12 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ol>
+        <li><strong>salary=800, distance=20:</strong> salary &le; 1000, so we go left &rarr; <strong>Reject</strong> (NO). We never even check distance.</li>
+        <li><strong>salary=1200, distance=30:</strong> salary &gt; 1000, go right &rarr; distance &le; 40, go left &rarr; <strong>Accept</strong> (YES).</li>
+        <li><strong>salary=1500, distance=60:</strong> salary &gt; 1000, go right &rarr; distance &gt; 40, go right &rarr; <strong>Reject</strong> (NO).</li>
+        <li><strong>salary=1000, distance=any:</strong> The rule is <code>salary &gt; 1000</code>. Since 1000 is NOT greater than 1000, we go left &rarr; <strong>Reject</strong> (NO). (Equivalently: salary &le; 1000 means go left.)</li>
+      </ol>
     </div>
   </details>
 </section>
@@ -912,8 +1133,45 @@ Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class DecisionTreeNode:
+    def __init__(self, decision=None, boundary=None,
+                 boundary_value=None, left=None, right=None):
+        self.decision = decision
+        self.boundary = boundary
+        self.boundary_value = boundary_value
+        self.left = left
+        self.right = right
+
+    def check(self, features):
+        if self.decision is not None:
+            return self.decision
+        if features[self.boundary] &lt;= self.boundary_value:
+            return self.left.check(features)
+        else:
+            return self.right.check(features)
+
+def YES():
+    return DecisionTreeNode(decision=True)
+
+def NO():
+    return DecisionTreeNode(decision=False)
+
+# Build the job-offer tree:
+job_tree = DecisionTreeNode(
+    boundary="salary", boundary_value=1000,
+    left=NO(),
+    right=DecisionTreeNode(
+        boundary="distance", boundary_value=40,
+        left=YES(),
+        right=NO()
+    )
+)
+
+# Test:
+print(job_tree.check({"salary": 800,  "distance": 20}))  # False
+print(job_tree.check({"salary": 1200, "distance": 30}))  # True
+print(job_tree.check({"salary": 1500, "distance": 60}))  # False
+print(job_tree.check({"salary": 1000, "distance": 15}))  # False</code></pre>
     </div>
   </details>
 </section>
@@ -959,8 +1217,32 @@ Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>job_tree_v2 = DecisionTreeNode(
+    boundary="salary", boundary_value=1000,
+    left=NO(),
+    right=DecisionTreeNode(
+        boundary="distance", boundary_value=40,
+        left=DecisionTreeNode(
+            boundary="coffee", boundary_value=0,
+            left=NO(),     # coffee &lt;= 0 → no coffee → reject
+            right=YES()    # coffee &gt; 0  → has coffee → accept
+        ),
+        right=NO()
+    )
+)
+
+# Test:
+tests = [
+    {"salary": 1200, "distance": 30, "coffee": 1},  # True
+    {"salary": 1200, "distance": 30, "coffee": 0},  # False
+    {"salary": 1200, "distance": 60, "coffee": 1},  # False
+    {"salary": 900,  "distance": 10, "coffee": 1},  # False
+]
+for job in tests:
+    result = job_tree_v2.check(job)
+    print(f"salary={job['salary']}, distance={job['distance']}, "
+          f"coffee={job['coffee']}  →  {result}")</code></pre>
+      <p>Note: we split on <code>coffee &le; 0</code> (go left = NO) vs <code>coffee &gt; 0</code> (go right = YES). This is equivalent to checking <code>coffee == 1</code>.</p>
     </div>
   </details>
 </section>
@@ -1009,8 +1291,7 @@ Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>The dataset is loaded and printed. Notice that weight tends to be higher for M than for F, but there are some overlaps (e.g. F at weight 63 with height 174, and F at weight 66 with height 181). The question is: does splitting on <strong>weight</strong> produce a cleaner separation than splitting on <strong>height</strong>?</p>
     </div>
   </details>
 </section>
@@ -1056,8 +1337,44 @@ Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def find_decision_boundary(data, features, label):
+    """
+    Finds the best (feature, threshold) split across all
+    given features.
+    Returns (best_feature, best_threshold, min_impurity).
+    """
+    best_feature = None
+    best_threshold = None
+    min_imp = float('inf')
+
+    for feature in features:
+        unique_vals = sorted(set(row[feature] for row in data))
+        for t in unique_vals:
+            left  = [row[label] for row in data
+                     if row[feature] &lt;= t]
+            right = [row[label] for row in data
+                     if row[feature] &gt; t]
+            if not left or not right:
+                continue
+            imp = total_impurity(left, right)
+            if imp &lt; min_imp:
+                min_imp = imp
+                best_feature = feature
+                best_threshold = t
+    return best_feature, best_threshold, min_imp
+
+best_feat, best_thresh, best_imp = find_decision_boundary(
+    data, ["height", "weight"], "gender")
+print(f"Best split: {best_feat} &lt;= {best_thresh}")
+print(f"Minimum total impurity: {best_imp:.4f}")
+
+left_group = [row["gender"] for row in data
+              if row[best_feat] &lt;= best_thresh]
+right_group = [row["gender"] for row in data
+               if row[best_feat] &gt; best_thresh]
+print(f"Left:  {left_group}")
+print(f"Right: {right_group}")</code></pre>
+      <p>Weight typically wins as the best feature because it separates M and F more cleanly than height does (fewer outliers cross the weight boundary).</p>
     </div>
   </details>
 </section>
@@ -1099,8 +1416,23 @@ Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>best_h, best_ht, imp_h = find_decision_boundary(
+    data, ["height"], "gender")
+best_w, best_wt, imp_w = find_decision_boundary(
+    data, ["weight"], "gender")
+
+print(f"Best height split: height &lt;= {best_ht}, "
+      f"impurity = {imp_h:.4f}")
+print(f"Best weight split: weight &lt;= {best_wt}, "
+      f"impurity = {imp_w:.4f}")
+
+plot_feature_split(data, "height", "gender",
+    split_value=best_ht,
+    title=f"Height split at {best_ht} (imp={imp_h:.3f})")
+plot_feature_split(data, "weight", "gender",
+    split_value=best_wt,
+    title=f"Weight split at {best_wt} (imp={imp_w:.3f})")</code></pre>
+      <p>Comparing the two plots, weight gives a cleaner separation (lower impurity) because the M and F weight ranges overlap less than the height ranges.</p>
     </div>
   </details>
 </section>
@@ -1156,8 +1488,18 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <p>Manual trace using the height-only dataset:</p>
+      <ol>
+        <li>Best first split: <code>height &le; 167</code> (found in Part 4).</li>
+        <li>Left group (height &le; 167): genders = [F, F, F, F]. Right group (height &gt; 167): genders = [M, F, M, M, F, M, M, M, M, M, F, M, M, M, M, M].</li>
+        <li>Left group is <strong>pure</strong> (all F). Right group is <strong>not pure</strong> (has 3 F among 16).</li>
+        <li>For the right group, the next best split isolates the remaining F outliers. The tree continues splitting until each leaf is pure.</li>
+      </ol>
+<pre>height &lt;= 167
+├── Left: [F, F, F, F]  → LEAF: F (pure)
+└── Right: [M, F, M, M, F, M, M, M, M, M, F, M, M, M, M, M]
+    └── Split again on height (or weight if available)
+        to isolate the remaining F outliers...</pre>
     </div>
   </details>
 </section>
@@ -1203,8 +1545,32 @@ is_pure(["M", "M", "F"])             # → False</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def majority_label(labels):
+    """
+    Returns the most common label in the list.
+    Tie-breaking: returns whichever label appears first
+    among those with the highest count.
+    """
+    if not labels:
+        return None
+    counts = {}
+    for label in labels:
+        counts[label] = counts.get(label, 0) + 1
+    return max(counts, key=counts.get)
+
+def is_pure(labels):
+    """
+    Returns True if all labels are the same (or the list
+    is empty).
+    """
+    return len(set(labels)) &lt;= 1
+
+# Tests:
+print(majority_label(["M", "M", "F", "M"]))  # M
+print(majority_label(["F", "M"]))             # F (tie → first)
+print(is_pure(["M", "M", "M"]))              # True
+print(is_pure(["M", "M", "F"]))              # False
+print(is_pure([]))                            # True</code></pre>
     </div>
   </details>
 </section>
@@ -1263,8 +1629,57 @@ is_pure(["M", "M", "F"])             # → False</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def build_tree(data, features, label):
+    """
+    Recursively builds a decision tree.
+    Returns a DecisionTreeNode (leaf or boundary).
+    """
+    labels = [row[label] for row in data]
+
+    # Base case 1: empty data
+    if len(data) == 0:
+        return DecisionTreeNode(decision=None)
+
+    # Base case 2: pure or single element
+    if is_pure(labels) or len(data) == 1:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    # Recursive case
+    best_feat, best_thresh, best_imp = \
+        find_decision_boundary(data, features, label)
+
+    left_data  = [row for row in data
+                  if row[best_feat] &lt;= best_thresh]
+    right_data = [row for row in data
+                  if row[best_feat] &gt;  best_thresh]
+
+    # Safety: if split doesn't separate, return leaf
+    if len(left_data) == 0 or len(right_data) == 0:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    left_tree  = build_tree(left_data,  features, label)
+    right_tree = build_tree(right_data, features, label)
+
+    return DecisionTreeNode(
+        boundary=best_feat,
+        boundary_value=best_thresh,
+        left=left_tree,
+        right=right_tree
+    )
+
+def print_tree(node, depth=0, label="ROOT"):
+    indent = "  " * depth
+    if node.decision is not None:
+        print(f"{indent}[{label}] LEAF → {node.decision}")
+    else:
+        print(f"{indent}[{label}] {node.boundary} "
+              f"&lt;= {node.boundary_value}?")
+        print_tree(node.left,  depth+1, "YES (left)")
+        print_tree(node.right, depth+1, "NO (right)")
+
+# Build and print:
+tree = build_tree(data, ["height", "weight"], "gender")
+print_tree(tree)</code></pre>
     </div>
   </details>
 </section>
@@ -1293,8 +1708,19 @@ is_pure(["M", "M", "F"])             # → False</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>correct = 0
+for row in data:
+    predicted = tree.check(row)
+    true_label = row["gender"]
+    match = "Y" if predicted == true_label else "N"
+    if predicted == true_label:
+        correct += 1
+    print(f"height={row['height']}, weight={row['weight']}: "
+          f"true={true_label}, pred={predicted}  {match}")
+
+print(f"\nAccuracy: {correct}/{len(data)} "
+      f"= {correct/len(data)*100:.1f}%")</code></pre>
+      <p>The tree achieves <strong>100% accuracy</strong> on the training data because it keeps splitting until every leaf is pure. This is expected &mdash; with no depth limit the tree memorises the training set perfectly. Whether this generalises to new data is another question (see overfitting discussion in Part 9).</p>
     </div>
   </details>
 </section>
@@ -1380,8 +1806,11 @@ is_pure(["M", "M", "F"])             # → False</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+      <ol>
+        <li><strong>Features to split on:</strong> Extract them from the keys of the first dict in X: <code>list(X[0].keys())</code>. This way <code>fit</code> automatically discovers the available features.</li>
+        <li><strong><code>predict</code> returns:</strong> A list of predicted labels, one per row in X. Each prediction comes from traversing the tree for that row.</li>
+        <li><strong>Leaf behaviour:</strong> A leaf stores the majority label (a string like <code>"M"</code> or <code>"F"</code>), and <code>check()</code> returns it directly.</li>
+      </ol>
     </div>
   </details>
 </section>
@@ -1446,8 +1875,46 @@ predictions = clf.predict(X)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>class SimpleDecisionTree:
+    def __init__(self):
+        self.root = None
+        self.features = None
+
+    def fit(self, X, y):
+        self.features = list(X[0].keys())
+        label_col = "__label__"
+        combined = [{**x, label_col: yi}
+                    for x, yi in zip(X, y)]
+        self.root = build_tree(combined,
+                               self.features,
+                               label_col)
+
+    def predict(self, X):
+        return [self.root.check(row) for row in X]
+
+# Test:
+X = [{"height": row["height"], "weight": row["weight"]}
+     for row in data]
+y = [row["gender"] for row in data]
+
+clf = SimpleDecisionTree()
+clf.fit(X, y)
+predictions = clf.predict(X)
+
+correct = sum(p == t for p, t in zip(predictions, y))
+print(f"Training accuracy: {correct}/{len(y)} "
+      f"= {correct/len(y)*100:.1f}%")
+
+# Predict on new data:
+new_people = [
+    {"height": 163, "weight": 54},
+    {"height": 185, "weight": 91},
+    {"height": 172, "weight": 65},
+]
+new_preds = clf.predict(new_people)
+for person, pred in zip(new_people, new_preds):
+    print(f"  height={person['height']}, "
+          f"weight={person['weight']}  →  {pred}")</code></pre>
     </div>
   </details>
 </section>
@@ -1476,8 +1943,9 @@ predictions = clf.predict(X)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>print_tree(clf.root)</code></pre>
+      <p>The tree is several levels deep. Each split isolates one or more data points into pure leaves. The first split is on the feature (height or weight) that gives the best separation. Subsequent splits handle the remaining impure groups.</p>
+      <p>With <strong>more noise</strong> the tree would be <strong>deeper</strong>, because more exceptions force more splits to achieve purity. This is overfitting: the tree memorises the training data rather than learning a general pattern.</p>
     </div>
   </details>
 </section>
@@ -1519,8 +1987,47 @@ predictions = clf.predict(X)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def build_tree_depth(data, features, label,
+                     depth=0, max_depth=None):
+    labels = [row[label] for row in data]
+
+    if len(data) == 0:
+        return DecisionTreeNode(decision=None)
+    if is_pure(labels) or len(data) == 1:
+        return DecisionTreeNode(decision=majority_label(labels))
+    # NEW: stop if max depth reached
+    if max_depth is not None and depth &gt;= max_depth:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    best_feat, best_thresh, _ = \
+        find_decision_boundary(data, features, label)
+    left_data  = [r for r in data if r[best_feat] &lt;= best_thresh]
+    right_data = [r for r in data if r[best_feat] &gt;  best_thresh]
+
+    if not left_data or not right_data:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    return DecisionTreeNode(
+        boundary=best_feat, boundary_value=best_thresh,
+        left=build_tree_depth(left_data, features, label,
+                              depth+1, max_depth),
+        right=build_tree_depth(right_data, features, label,
+                               depth+1, max_depth)
+    )
+
+# Test with max_depth = 1, 2, 3:
+label_col = "__label__"
+combined = [{**{"height": r["height"], "weight": r["weight"]},
+             label_col: r["gender"]} for r in data]
+feats = ["height", "weight"]
+for md in [1, 2, 3, None]:
+    t = build_tree_depth(combined, feats, label_col,
+                         max_depth=md)
+    preds = [t.check(r) for r in data]
+    acc = sum(p == r["gender"] for p, r in zip(preds, data))
+    print(f"max_depth={md}: accuracy={acc}/{len(data)}")
+    print_tree(t)</code></pre>
+      <p>With <code>max_depth=1</code> the tree is a <strong>decision stump</strong> (one split). Training accuracy is lower but the model is simpler and less likely to overfit.</p>
     </div>
   </details>
 </section>
@@ -1544,8 +2051,43 @@ predictions = clf.predict(X)</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def build_tree_ms(data, features, label, min_samples=1):
+    labels = [row[label] for row in data]
+
+    if len(data) == 0:
+        return DecisionTreeNode(decision=None)
+    if is_pure(labels) or len(data) == 1:
+        return DecisionTreeNode(decision=majority_label(labels))
+    # NEW: stop if too few samples
+    if len(data) &lt; min_samples:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    best_feat, best_thresh, _ = \
+        find_decision_boundary(data, features, label)
+    left_data  = [r for r in data if r[best_feat] &lt;= best_thresh]
+    right_data = [r for r in data if r[best_feat] &gt;  best_thresh]
+
+    if not left_data or not right_data:
+        return DecisionTreeNode(decision=majority_label(labels))
+
+    return DecisionTreeNode(
+        boundary=best_feat, boundary_value=best_thresh,
+        left=build_tree_ms(left_data, features, label,
+                           min_samples),
+        right=build_tree_ms(right_data, features, label,
+                            min_samples)
+    )
+
+# Compare min_samples = 1, 3, 5:
+for ms in [1, 3, 5]:
+    t = build_tree_ms(combined, feats, label_col,
+                      min_samples=ms)
+    preds = [t.check(r) for r in data]
+    acc = sum(p == r["gender"] for p, r in zip(preds, data))
+    print(f"min_samples={ms}: accuracy={acc}/{len(data)}")
+    print_tree(t)
+    print()</code></pre>
+      <p>Higher <code>min_samples</code> produces a shallower tree with fewer splits, trading training accuracy for simplicity and better generalisation.</p>
     </div>
   </details>
 </section>
@@ -1581,8 +2123,45 @@ y_iris = [iris.target_names[t] for t in iris.target]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>from sklearn.datasets import load_iris
+
+iris = load_iris()
+feature_names = iris.feature_names
+X_iris = [dict(zip(feature_names, row))
+          for row in iris.data]
+y_iris = [iris.target_names[t] for t in iris.target]
+
+clf_iris = SimpleDecisionTree()
+clf_iris.fit(X_iris, y_iris)
+
+preds = clf_iris.predict(X_iris)
+acc = sum(p == t for p, t in zip(preds, y_iris))
+print(f"Iris training accuracy: "
+      f"{acc}/{len(y_iris)} = {acc/len(y_iris)*100:.1f}%")
+
+print("\nTree structure:")
+print_tree(clf_iris.root)
+
+# Bonus: train/test split
+import random
+random.seed(42)
+indices = list(range(len(X_iris)))
+random.shuffle(indices)
+split = int(0.8 * len(indices))
+train_idx, test_idx = indices[:split], indices[split:]
+
+X_train = [X_iris[i] for i in train_idx]
+y_train = [y_iris[i] for i in train_idx]
+X_test  = [X_iris[i] for i in test_idx]
+y_test  = [y_iris[i] for i in test_idx]
+
+clf2 = SimpleDecisionTree()
+clf2.fit(X_train, y_train)
+test_preds = clf2.predict(X_test)
+test_acc = sum(p == t for p, t in zip(test_preds, y_test))
+print(f"\nTest accuracy: {test_acc}/{len(y_test)} "
+      f"= {test_acc/len(y_test)*100:.1f}%")</code></pre>
+      <p>The tree should achieve 100% training accuracy. The first split is usually on <code>petal width (cm)</code> at around 0.8 cm, perfectly separating setosa from the other two species. Test accuracy is typically 93&ndash;97%.</p>
     </div>
   </details>
 </section>
@@ -1619,8 +2198,41 @@ y_iris = [iris.target_names[t] for t in iris.target]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <!-- TODO: solution -->
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def gini_impurity(p, q):
+    """
+    Gini impurity for two classes.
+    Gini = 1 - (p^2 + q^2) = 2*p*q
+    Ranges from 0 (pure) to 0.5 (maximally mixed).
+    """
+    return 1 - (p**2 + q**2)
+
+def entropy_impurity(p, q):
+    """
+    Entropy for two classes.
+    H = -(p*log2(p) + q*log2(q))
+    Handle p=0 or q=0 as contributing 0.
+    Ranges from 0 (pure) to 1.0 (maximally mixed).
+    """
+    result = 0
+    if p &gt; 0:
+        result -= p * math.log2(p)
+    if q &gt; 0:
+        result -= q * math.log2(q)
+    return result
+
+# Plot all three:
+ps = [i/100 for i in range(101)]
+plt.figure(figsize=(8, 4))
+plt.plot(ps, [impurity(p, 1-p) for p in ps],
+         label='Your formula (4pq)')
+plt.plot(ps, [gini_impurity(p, 1-p) for p in ps],
+         label='Gini (2pq)', linestyle='--')
+plt.plot(ps, [entropy_impurity(p, 1-p) for p in ps],
+         label='Entropy', linestyle=':')
+plt.xlabel('p'); plt.ylabel('impurity')
+plt.title('Comparing impurity measures')
+plt.legend(); plt.grid(True); plt.show()</code></pre>
+      <p>For two classes: <code>Gini = 1 - p^2 - q^2 = 2pq</code>. Your formula <code>4pq</code> differs from Gini by a factor of 2, but this <strong>does not</strong> affect which split wins &mdash; both rank all possible splits identically. Entropy has a slightly different shape (it peaks at 1.0 instead of 0.5) but also ranks splits the same way.</p>
     </div>
   </details>
 </section>

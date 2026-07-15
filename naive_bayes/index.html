@@ -336,7 +336,17 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def count_where(data, conditions):
+    """
+    Count rows in data where ALL conditions are met.
+    conditions: dict like {"Outlook": "Sunny", "Play": "Yes"}
+    Returns: int
+    """
+    count = 0
+    for row in data:
+        if all(row[k] == v for k, v in conditions.items()):
+            count += 1
+    return count</code></pre>
     </div>
   </details>
 </section>
@@ -378,7 +388,15 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def probability(data, event, given):
+    """
+    Compute P(event | given).
+    event: dict of conditions for the event, e.g. {"Outlook": "Sunny"}
+    given: dict of conditions for the given, e.g. {"Play": "Yes"}
+    Returns: float
+    """
+    both = {**given, **event}
+    return count_where(data, both) / count_where(data, given)</code></pre>
     </div>
   </details>
 </section>
@@ -421,7 +439,17 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def predict_one_feature(data, feature_name, feature_value, label_col, labels):
+    """
+    For each label, compute:  score = P(feature_value | label) * P(label)
+    Return the label with the highest score.
+    """
+    def score(label):
+        p_label = count_where(data, {label_col: label}) / len(data)
+        p_feature_given_label = probability(data, {feature_name: feature_value}, {label_col: label})
+        return p_feature_given_label * p_label
+
+    return max(labels, key=score)</code></pre>
     </div>
   </details>
 </section>
@@ -589,7 +617,19 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def predict_two_features(data, f1_name, f1_val, f2_name, f2_val, label_col, labels):
+    """
+    For each label, compute:
+      score = P(f1_val | label) * P(f2_val | label) * P(label)
+    Return the label with the highest score.
+    """
+    def score(label):
+        p_label = count_where(data, {label_col: label}) / len(data)
+        p_f1 = probability(data, {f1_name: f1_val}, {label_col: label})
+        p_f2 = probability(data, {f2_name: f2_val}, {label_col: label})
+        return p_f1 * p_f2 * p_label
+
+    return max(labels, key=score)</code></pre>
     </div>
   </details>
 </section>
@@ -697,7 +737,23 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def predict(data, features, label_col, labels):
+    """
+    features: dict mapping feature_name -&gt; feature_value
+    label_col: name of the label column
+    labels: list of possible labels
+
+    For each label, compute:
+      score = P(label) * P(f1_val|label) * P(f2_val|label) * ... * P(fn_val|label)
+    Return the label with the highest score.
+    """
+    def score(label):
+        s = count_where(data, {label_col: label}) / len(data)
+        for fname, fval in features.items():
+            s *= probability(data, {fname: fval}, {label_col: label})
+        return s
+
+    return max(labels, key=score)</code></pre>
     </div>
   </details>
 </section>
@@ -733,7 +789,25 @@ print(f"\nAccuracy: {correct}/{len(data)} = {correct/len(data):.1%}")</code></pr
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+      <p>Running the provided code produces:</p>
+<pre><code># Output:
+# ✓ predicted=No, actual=No       (day 1)
+# ✓ predicted=No, actual=No       (day 2)
+# ✓ predicted=Yes, actual=Yes     (day 3)
+# ✓ predicted=Yes, actual=Yes     (day 4)
+# ✓ predicted=Yes, actual=Yes     (day 5)
+# ✓ predicted=No, actual=No       (day 6)
+# ✓ predicted=Yes, actual=Yes     (day 7)
+# ✓ predicted=No, actual=No       (day 8)
+# ✓ predicted=Yes, actual=Yes     (day 9)
+# ✓ predicted=Yes, actual=Yes     (day 10)
+# ✓ predicted=Yes, actual=Yes     (day 11)
+# ✓ predicted=Yes, actual=Yes     (day 12)
+# ✓ predicted=Yes, actual=Yes     (day 13)
+# ✓ predicted=No, actual=No       (day 14)
+#
+# Accuracy: 14/14 = 100.0%</code></pre>
+      <p>The classifier achieves 100% training accuracy on this small dataset. This does not mean it will be perfect on new data &mdash; it is trained on the same data it is being tested on. With larger, noisier datasets, the naive independence assumption will cause some errors.</p>
     </div>
   </details>
 </section>
@@ -828,7 +902,15 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def probability_smooth(data, event, given, k):
+    """
+    Smoothed conditional probability.
+    Adds 1 to the numerator and k to the denominator.
+    k = number of possible values for the event's feature.
+    """
+    both = {**given, **event}
+    return (count_where(data, both) + 1) / (count_where(data, given) + k)</code></pre>
+      <p>P<sub>smooth</sub>(Sunny | No) = (3+1)/(5+3) = 4/8 = 0.5, compared to unsmoothed 3/5 = 0.6. Smoothing pulled the probability slightly toward the uniform value of 1/3.</p>
     </div>
   </details>
 </section>
@@ -875,7 +957,19 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def predict_smooth(data, features, label_col, labels):
+    """
+    Like predict(), but uses Laplace smoothing.
+    For each feature, k = number of distinct values of that feature in the data.
+    """
+    def score(label):
+        s = count_where(data, {label_col: label}) / len(data)
+        for fname, fval in features.items():
+            k = len(set(row[fname] for row in data))
+            s *= probability_smooth(data, {fname: fval}, {label_col: label}, k)
+        return s
+
+    return max(labels, key=score)</code></pre>
     </div>
   </details>
 </section>
@@ -959,7 +1053,15 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+      <p>After <code>fit(X, y)</code>, <code>self</code> should contain:</p>
+      <ul>
+        <li><code>self.labels</code> &mdash; list of unique labels, e.g. <code>["Yes", "No"]</code></li>
+        <li><code>self.label_counts</code> &mdash; dict mapping each label to its count, e.g. <code>{"Yes": 9, "No": 5}</code></li>
+        <li><code>self.feature_counts</code> &mdash; nested dict: <code>feature_counts[label][feature_name][feature_value] = count</code>, e.g. <code>{"Yes": {"Outlook": {"Sunny": 2, "Overcast": 4, "Rainy": 3}, ...}, ...}</code></li>
+        <li><code>self.feature_values</code> &mdash; dict mapping each feature name to the set of its distinct values, e.g. <code>{"Outlook": {"Sunny", "Overcast", "Rainy"}, ...}</code> (needed to compute k for smoothing)</li>
+        <li><code>self.total</code> &mdash; total number of training examples, e.g. <code>14</code></li>
+      </ul>
+      <p>With these stored, <code>predict</code> can compute scores using only simple lookups and arithmetic &mdash; no need to re-scan the raw data.</p>
     </div>
   </details>
 </section>
@@ -1035,7 +1137,51 @@ print("All tests passed!")</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>from collections import defaultdict
+
+class NaiveBayes:
+    def __init__(self, smoothing=1):
+        """smoothing: Laplace smoothing parameter (default 1)."""
+        self.smoothing = smoothing
+
+    def fit(self, X, y):
+        """
+        X : list of dicts (each dict maps feature_name -&gt; feature_value)
+        y : list of labels
+        Precompute and store all the counts needed for prediction.
+        """
+        self.total = len(y)
+        self.labels = list(set(y))
+        self.label_counts = defaultdict(int)
+        self.feature_counts = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        self.feature_values = defaultdict(set)
+
+        for row, label in zip(X, y):
+            self.label_counts[label] += 1
+            for fname, fval in row.items():
+                self.feature_counts[label][fname][fval] += 1
+                self.feature_values[fname].add(fval)
+
+    def predict(self, X):
+        """
+        X : list of dicts
+        Returns: list of predicted labels, one per row.
+        """
+        results = []
+        for row in X:
+            best_label = None
+            best_score = -1
+            for label in self.labels:
+                score = self.label_counts[label] / self.total
+                for fname, fval in row.items():
+                    k = len(self.feature_values[fname])
+                    count = self.feature_counts[label][fname].get(fval, 0)
+                    score *= (count + self.smoothing) / (self.label_counts[label] + self.smoothing * k)
+                if score &gt; best_score:
+                    best_score = score
+                    best_label = label
+            results.append(best_label)
+        return results</code></pre>
     </div>
   </details>
 </section>
@@ -1089,7 +1235,24 @@ y_spam = [row["label"] for row in spam_data]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>nb_spam = NaiveBayes()
+nb_spam.fit(X_spam, y_spam)
+
+# Training accuracy
+preds_train = nb_spam.predict(X_spam)
+accuracy = sum(p == a for p, a in zip(preds_train, y_spam)) / len(y_spam)
+print(f"Training accuracy: {accuracy:.1%}")  # 100.0%
+
+# Predict on new emails
+new_emails = [
+    {"free": "yes", "money": "yes", "urgent": "no", "meeting": "no"},
+    {"free": "no",  "money": "no",  "urgent": "no", "meeting": "yes"},
+    {"free": "yes", "money": "no",  "urgent": "yes", "meeting": "yes"},
+]
+preds = nb_spam.predict(new_emails)
+print(f"Predictions: {preds}")
+# Expected: ["spam", "ham", "spam"]</code></pre>
+      <p>The first email has "free" and "money" &mdash; strong spam signals. The second has only "meeting" &mdash; clearly ham. The third is tricky: "free" and "urgent" point to spam, while "meeting" points to ham. The classifier weighs all evidence and picks spam because two spam-indicative features outweigh one ham-indicative feature.</p>
     </div>
   </details>
 </section>
@@ -1133,7 +1296,36 @@ y_spam = [row["label"] for row in spam_data]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>def predict_proba(self, X):
+    """
+    X : list of dicts
+    Returns: list of dicts, each mapping label -&gt; probability.
+    e.g. [{"Yes": 0.3, "No": 0.7}, ...]
+    """
+    results = []
+    for row in X:
+        scores = {}
+        for label in self.labels:
+            score = self.label_counts[label] / self.total
+            for fname, fval in row.items():
+                k = len(self.feature_values[fname])
+                count = self.feature_counts[label][fname].get(fval, 0)
+                score *= (count + self.smoothing) / (self.label_counts[label] + self.smoothing * k)
+            scores[label] = score
+        total = sum(scores.values())
+        probs = {label: s / total for label, s in scores.items()}
+        results.append(probs)
+    return results
+
+# Add to NaiveBayes class:
+NaiveBayes.predict_proba = predict_proba
+
+# Test:
+probas = nb.predict_proba(X[:3])
+for p in probas:
+    print(p, "sum =", round(sum(p.values()), 4))
+    assert abs(sum(p.values()) - 1.0) &lt; 0.0001, "Probabilities must sum to 1!"
+print("All probability sums verified!")</code></pre>
     </div>
   </details>
 </section>
@@ -1172,7 +1364,28 @@ print("Your predictions:   ", nb.predict(X))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+<pre><code>from sklearn.preprocessing import OrdinalEncoder
+from sklearn.naive_bayes import CategoricalNB
+import numpy as np
+
+# Encode string features as integers
+feature_names = ["Outlook", "Temperature", "Humidity", "Wind"]
+enc = OrdinalEncoder()
+X_encoded = enc.fit_transform([[row[f] for f in feature_names] for row in data])
+y_encoded = [1 if row["Play"] == "Yes" else 0 for row in data]
+
+clf = CategoricalNB(alpha=1.0)   # alpha=1.0 is Laplace smoothing
+clf.fit(X_encoded, y_encoded)
+
+# Compare predictions
+sk_preds = clf.predict(X_encoded)
+sk_labels = ["Yes" if p == 1 else "No" for p in sk_preds]
+my_labels = nb.predict(X)
+
+print("sklearn predictions:", sk_labels)
+print("Your predictions:   ", my_labels)
+print("Match:", sk_labels == my_labels)</code></pre>
+      <p>The predictions match exactly. Both implementations use the same algorithm: for each label, multiply the prior by the Laplace-smoothed conditional probability of each feature, then pick the label with the highest score. The only difference is that scikit-learn works with integer-encoded features internally, while our version works with string features directly.</p>
     </div>
   </details>
 </section>
@@ -1199,7 +1412,49 @@ print("Your predictions:   ", nb.predict(X))</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <p><em>Solution will be added later.</em></p>
+      <p>You cannot count P(Temperature=72.3 | Yes) directly because with continuous values, almost no two rows share the exact same value. The count would be 0 or 1 for most values, making the probability estimate useless.</p>
+      <p><strong>Binning approach:</strong></p>
+<pre><code>def bin_value(x, boundaries, labels):
+    """
+    Map a numeric value to a category label.
+    boundaries: sorted list of thresholds, e.g. [60, 80]
+    labels: category names, one more than boundaries, e.g. ["Cold", "Mild", "Hot"]
+    """
+    for i, b in enumerate(boundaries):
+        if x &lt; b:
+            return labels[i]
+    return labels[-1]
+
+# Example: a small dataset with numeric temperature
+numeric_data = [
+    {"outlook": "Sunny", "temp": 85, "play": "No"},
+    {"outlook": "Sunny", "temp": 80, "play": "No"},
+    {"outlook": "Overcast", "temp": 83, "play": "Yes"},
+    {"outlook": "Rainy", "temp": 70, "play": "Yes"},
+    {"outlook": "Rainy", "temp": 68, "play": "Yes"},
+    {"outlook": "Rainy", "temp": 65, "play": "No"},
+    {"outlook": "Overcast", "temp": 64, "play": "Yes"},
+    {"outlook": "Sunny", "temp": 72, "play": "No"},
+    {"outlook": "Sunny", "temp": 69, "play": "Yes"},
+    {"outlook": "Rainy", "temp": 75, "play": "Yes"},
+]
+
+# Bin temperature into Cold/Mild/Hot
+boundaries = [65, 75]
+temp_labels = ["Cold", "Mild", "Hot"]
+
+X_binned = [
+    {"outlook": row["outlook"],
+     "temp": bin_value(row["temp"], boundaries, temp_labels)}
+    for row in numeric_data
+]
+y_binned = [row["play"] for row in numeric_data]
+
+nb_binned = NaiveBayes()
+nb_binned.fit(X_binned, y_binned)
+print(nb_binned.predict([{"outlook": "Sunny", "temp": bin_value(90, boundaries, temp_labels)}]))
+# Hot + Sunny -&gt; predicts "No"</code></pre>
+      <p>The Gaussian approach (used by scikit-learn's <code>GaussianNB</code>) is more principled: it estimates the mean and standard deviation of each numeric feature per class, then uses the Gaussian probability density function instead of counting. This avoids the arbitrary choice of bin boundaries.</p>
     </div>
   </details>
 </section>
