@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pattern Matching — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/pattern_matching/pattern_matching.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Pattern Matching &mdash; Inventing Wildcards and Regular Expressions</h1>
+<p class="chapter-intro">When you type <code>*.txt</code> in a file browser, or validate an email address on a signup form, or grep through a server log &mdash; a <strong>pattern matcher</strong> is at work. In this chapter you will invent one from scratch: first exact matching, then the <code>?</code> wildcard, then the surprisingly deep <code>*</code> wildcard (a beautiful use of the recursion you already own), and finally you will graduate to Python&rsquo;s industrial-strength <code>re</code> module and mine a real web-server log with it.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Exact Match
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Exact Match</h2>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Character by Character</h3>
+  <div class="question">
+    <p>Write <code>match_exact(pat, text)</code> that returns <code>True</code> only when the pattern and the text are exactly the same &mdash; <strong>without using <code>==</code> on whole strings</strong>. Compare one character at a time.</p>
+    <p>Why the restriction? Because in a moment some pattern characters will stop meaning themselves &mdash; and then whole-string <code>==</code> is useless. Build the loop (or recursion) now, while the problem is easy.</p>
+    <p><strong>Think recursively:</strong> two strings match if their <em>first characters</em> match and the <em>rest</em> of them match. What are the base cases?</p>
+    <pre><code>match_exact("abc", "abc")    # True
+match_exact("abc", "abd")    # False
+match_exact("abc", "abcd")   # False
+match_exact("", "")          # True</code></pre>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>assert match_exact("abc", "abc")   == True
+assert match_exact("abc", "abd")   == False
+assert match_exact("abc", "abcd")  == False
+assert match_exact("abcd", "abc")  == False
+assert match_exact("", "")         == True
+assert match_exact("", "a")        == False
+print("match_exact: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Think about the base cases first. If both strings are empty, they match. If only one is empty (lengths differ), they don&rsquo;t match.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Recursive structure: if <code>pat[0] == text[0]</code>, recurse on <code>pat[1:]</code> and <code>text[1:]</code>. Otherwise return <code>False</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>You can also solve it iteratively: check <code>len(pat) == len(text)</code> first, then loop over indices comparing <code>pat[i]</code> to <code>text[i]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: The ? Wildcard
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: The <code>?</code> Wildcard</h2>
+  <p class="part-intro">New rule: in the pattern, <code>?</code> matches <strong>exactly one</strong> character &mdash; any character.</p>
+<pre><code>a?  matches: a1, a2, aa, ax
+a?  does not match: a, abc</code></pre>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Add <code>?</code> to Your Matcher</h3>
+  <div class="question">
+    <p>Write <code>match_q(pat, text)</code>. It is <code>match_exact</code> with one extra case: when the first pattern character is <code>?</code>, what should you compare &mdash; and what do you recurse on?</p>
+    <pre><code>match_q("a?c", "abc")    # True
+match_q("a?c", "axc")    # True
+match_q("a?c", "ac")     # False
+match_q("???", "xyz")    # True</code></pre>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>assert match_q("a?c", "abc")  == True
+assert match_q("a?c", "axc")  == True
+assert match_q("a?c", "ac")   == False
+assert match_q("a?c", "abcd") == False
+assert match_q("???", "xyz")  == True
+assert match_q("a?", "a1")    == True
+assert match_q("a?", "a")     == False
+assert match_q("abc", "abc")  == True
+print("match_q: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Copy your <code>match_exact</code> and add one condition: if <code>pat[0] == '?'</code>, you don&rsquo;t need to compare it with <code>text[0]</code> &mdash; just skip both and recurse on the remainders.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The <code>?</code> case: if <code>pat[0] == '?'</code> and <code>text</code> is non-empty, return <code>match_q(pat[1:], text[1:])</code>. The key is that <code>?</code> still requires the text to have at least one character &mdash; it matches <em>exactly</em> one, not zero.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: The * Wildcard
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: The <code>*</code> Wildcard</h2>
+  <p class="part-intro">The big one: <code>*</code> matches <strong>zero or more</strong> characters &mdash; any characters.</p>
+<pre><code>a*     matches: a, ab, abc, ax
+a*b    matches: ab, axyzb, a123b
+a*b*c  matches: abc, abbbc, a1b1c
+aa?b*  matches: aa1b, aaxby, aa1bcdeffgshshshsh
+aa?b*  does not match: aab, ab</code></pre>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Think Before You Code</h3>
+  <div class="question">
+    <p>Pattern <code>a*b</code>, text <code>"axyzb"</code>. The <code>a</code> matches. Now the pattern says <code>*</code> and the text says <code>"xyzb"</code>. <strong>How many characters should the <code>*</code> swallow?</strong></p>
+    <p>You cannot know yet &mdash; it depends on what comes <em>after</em> the star. So don&rsquo;t decide. <strong>Try both options and let recursion explore:</strong></p>
+    <ol>
+      <li>The <code>*</code> swallows <strong>nothing</strong> &rarr; try matching the rest of the pattern (<code>b</code>) against <code>"xyzb"</code>.</li>
+      <li>The <code>*</code> swallows <strong>one more character</strong> &rarr; the star <em>stays</em>, try <code>*b</code> against <code>"yzb"</code>.</li>
+    </ol>
+    <p>If <em>either</em> branch succeeds, the match succeeds. What is the base case when the text runs out but the pattern is <code>"*"</code>?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>When the text is empty and the pattern is <code>"*"</code>, that&rsquo;s a match &mdash; the star can match zero characters. More generally, a pattern of all <code>*</code>s (like <code>"***"</code>) matches the empty string.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The two recursive branches when <code>pat[0] == '*'</code> are: (1) skip the star: <code>match(pat[1:], text)</code>, and (2) consume one text character: <code>match(pat, text[1:])</code>. Return <code>True</code> if either returns <code>True</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; The Full Matcher</h3>
+  <div class="question">
+    <p>Write <code>match(pat, text)</code> supporting literals, <code>?</code>, and <code>*</code>.</p>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code># literals and ? still work
+assert match("abc", "abc")  == True
+assert match("a?c", "axc")  == True
+
+# star
+assert match("a*", "a")     == True
+assert match("a*", "ab")    == True
+assert match("a*", "abc")   == True
+assert match("a*b", "ab")       == True
+assert match("a*b", "axyzb")    == True
+assert match("a*b", "a123b")    == True
+assert match("a*b", "axyz")     == False
+assert match("a*b*c", "abc")    == True
+assert match("a*b*c", "abbbc")  == True
+assert match("a*b*c", "a1b1c")  == True
+assert match("a*b*c", "a1c1b")  == False
+
+# combined
+assert match("aa?b*", "aa1b")                 == True
+assert match("aa?b*", "aaxby")                == True
+assert match("aa?b*", "aa1bcdeffgshshshsh")   == True
+assert match("aa?b*", "aab")                  == False
+assert match("aa?b*", "ab")                   == False
+
+# edge cases
+assert match("*", "")           == True
+assert match("*", "anything")   == True
+assert match("", "")            == True
+assert match("", "x")           == False
+print("match: OK &mdash; you have built a glob matcher")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start from your <code>match_q</code> and add one more case for <code>pat[0] == '*'</code>. The three cases are: literal character, <code>?</code>, and <code>*</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Base cases: (1) both empty &rarr; <code>True</code>. (2) pattern empty, text non-empty &rarr; <code>False</code>. (3) pattern starts with <code>*</code> &rarr; try skipping the star OR consuming a text character. (4) text empty but pattern non-empty and not <code>*</code> &rarr; <code>False</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>Be careful with the order of checks. Handle <code>pat[0] == '*'</code> before checking whether <code>text</code> is empty, because <code>*</code> can match zero characters even when text is empty (e.g. <code>match("*", "")</code> should be <code>True</code>).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Use It Like a Shell</h3>
+  <div class="question">
+    <p>Your <code>match</code> is exactly what the shell does with filenames (called <em>globbing</em>).</p>
+    <p>Write <code>find_matching(pattern, names)</code> that returns all names matching the pattern.</p>
+    <pre><code>files = ["report.txt", "report.pdf", "data1.csv", "data2.csv", "notes.txt", "img.png"]
+find_matching("*.txt", files)      # ["report.txt", "notes.txt"]
+find_matching("data?.csv", files)  # ["data1.csv", "data2.csv"]
+find_matching("report.*", files)   # ["report.txt", "report.pdf"]</code></pre>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>files = ["report.txt", "report.pdf", "data1.csv", "data2.csv", "notes.txt", "img.png"]
+assert find_matching("*.txt", files)     == ["report.txt", "notes.txt"]
+assert find_matching("data?.csv", files) == ["data1.csv", "data2.csv"]
+assert find_matching("report.*", files)  == ["report.txt", "report.pdf"]
+assert find_matching("*", files)         == files
+print("find_matching: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A simple list comprehension: <code>[name for name in names if match(pattern, name)]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Regular Expressions — The Professional Version
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Regular Expressions &mdash; The Professional Version</h2>
+  <p class="part-intro">What you invented is the core idea behind <strong>regular expressions</strong> &mdash; a pattern language so useful it is built into every programming language. Python&rsquo;s <code>re</code> module speaks a richer dialect:</p>
+<pre><code>.        any single character            (your ?)
+*        previous thing, 0 or more times (your * &mdash; but attached to what precedes it!)
++        previous thing, 1 or more times
+[aeiou]  any ONE character from the set
+[0-9]    any ONE digit (ranges work)
+[^xyz]   any ONE character NOT in the set
+{4}      previous thing, exactly 4 times
+\.       a literal dot (backslash = escape)
+^  $     start / end of the line</code></pre>
+  <p>Note the twist: regex <code>*</code> means <em>&ldquo;repeat the <strong>previous</strong> item&rdquo;</em> &mdash; so <code>ab*c</code> matches <code>ac</code>, <code>abc</code>, <code>abbbc</code>. Your glob-style <code>a*b</code> is written <code>a.*b</code> in regex.</p>
+  <p>The two functions you need:</p>
+<pre><code>import re
+re.search(pattern, text)    # a match object if found anywhere in text, else None
+re.findall(pattern, text)   # list of every match in the text</code></pre>
+</div>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; quick demo (run as-is)</div>
+<pre><code>import re
+
+print(re.search("a.*b", "xxx_a123b_yyy"))       # found
+print(re.search("a.*b", "no such thing"))       # None
+print(re.findall("[0-9]+", "10 apples, 25 oranges, 3 kiwis"))</code></pre>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Match Dates</h3>
+  <div class="question">
+    <p>Dates appear as <code>05/07/1980</code> or <code>05-07-1980</code> (day, month, year &mdash; separator is <code>/</code> or <code>-</code>).</p>
+    <p>Write a regex string <code>DATE_PATTERN</code> so that <code>re.search(DATE_PATTERN, line)</code> finds dates. Start simple: two digits, a separator, two digits, a separator, four digits.</p>
+    <pre><code>re.search(DATE_PATTERN, "Date: 05/07/1980")   # found
+re.search(DATE_PATTERN, "Date: 05-07-1980")   # found
+re.search(DATE_PATTERN, "hello world")        # None</code></pre>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>assert re.search(DATE_PATTERN, "Date: 05/07/1980") is not None
+assert re.search(DATE_PATTERN, "Date: 05-07-1980") is not None
+assert re.search(DATE_PATTERN, "Date: 31/08/1980") is not None
+assert re.search(DATE_PATTERN, "hello world")      is None
+assert re.search(DATE_PATTERN, "12345")            is None
+print("DATE_PATTERN: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>[0-9]</code> for a digit and <code>[/-]</code> for either separator. Two digits is <code>[0-9]{2}</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The pattern is: <code>[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}</code>. This matches any two-digit/two-digit/four-digit sequence with <code>/</code> or <code>-</code> separators.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Valid Dates Only</h3>
+  <div class="question">
+    <p>Your pattern happily matches <code>99/88/1980</code>. Tighten it:</p>
+    <ul>
+      <li><strong>Day</strong> 01&ndash;31: can you express it as alternatives? <code>0[1-9]</code> covers 01&ndash;09, <code>[12][0-9]</code> covers 10&ndash;29&hellip; what covers 30 and 31? Join alternatives with <code>|</code>.</li>
+      <li><strong>Month</strong> 01&ndash;12: same game.</li>
+    </ul>
+    <p>Group alternatives in parentheses: <code>(0[1-9]|...)</code>.</p>
+    <p>Write <code>STRICT_DATE</code> that matches valid day/month combinations only.</p>
+    <pre><code>is_valid_date("05/07/1980")   # True
+is_valid_date("99/07/1980")   # False   (day 99)
+is_valid_date("05/19/1980")   # False   (month 19)
+is_valid_date("00/04/1980")   # False   (day 00)</code></pre>
+    <p>(Don&rsquo;t chase February 30th &mdash; even real-world validators leave calendar logic out of regex.)</p>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>def is_valid_date(s):
+    return re.fullmatch(STRICT_DATE, s) is not None
+
+assert is_valid_date("05/07/1980") == True
+assert is_valid_date("31/08/1980") == True
+assert is_valid_date("05-11-1980") == True
+assert is_valid_date("30/08/1980") == True
+assert is_valid_date("99/07/1980") == False
+assert is_valid_date("05/19/1980") == False
+assert is_valid_date("00/04/1980") == False
+assert is_valid_date("01/00/1980") == False
+assert is_valid_date("05/88/1980") == False
+print("STRICT_DATE: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For days: <code>0[1-9]</code> matches 01&ndash;09, <code>[12][0-9]</code> matches 10&ndash;29, <code>3[01]</code> matches 30&ndash;31. Combine with <code>|</code> inside parentheses: <code>(0[1-9]|[12][0-9]|3[01])</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For months: <code>(0[1-9]|1[0-2])</code>. The full pattern is: <code>(0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-][0-9]{4}</code>. Remember to use <code>re.fullmatch</code> so the entire string must match.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Find Credit Card Numbers</h3>
+  <div class="question">
+    <p>A security audit: find credit-card-like numbers (four groups of 4 digits, separated by spaces, dashes, or nothing) leaking into text.</p>
+    <p>Write <code>find_card_numbers(text)</code> returning the list of matches.</p>
+    <pre><code>find_card_numbers("cc: 1234-4567-8909-1111 and 1234 4567 8909 1111 and 1234456789091111")
+# ["1234-4567-8909-1111", "1234 4567 8909 1111", "1234456789091111"]</code></pre>
+    <p><strong>Hint:</strong> a group-plus-separator is <code>[0-9]{4}[- ]?</code> &mdash; how many times does it repeat?</p>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>result = find_card_numbers("cc: 1234-4567-8909-1111 and 1234 4567 8909 1111 and 1234456789091111")
+assert result == ["1234-4567-8909-1111", "1234 4567 8909 1111", "1234456789091111"], result
+assert find_card_numbers("call me at 12345") == []
+print("find_card_numbers: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>You need three &ldquo;group + separator&rdquo; chunks followed by a final group: <code>[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}</code>. Or more compactly: <code>([0-9]{4}[- ]?){3}[0-9]{4}</code> &mdash; but be careful with capturing groups in <code>re.findall</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>If you use <code>(...){3}</code>, <code>re.findall</code> returns only the captured group, not the full match. Use a non-capturing group <code>(?:...){3}</code> or write the pattern without grouping repetition.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.4 -->
+<section class="exercise" id="ex-4-4">
+  <h3>Exercise 4.4 &mdash; Extract Email Addresses</h3>
+  <div class="question">
+    <p>Write <code>find_emails(text)</code> that extracts things shaped like email addresses: one-or-more &ldquo;word characters&rdquo; (letters, digits, <code>.</code>, <code>_</code>), then <code>@</code>, then a domain with at least one dot.</p>
+    <pre><code>find_emails("Contact sandeep@example.com or admin.team@my-site.org today")
+# ["sandeep@example.com", "admin.team@my-site.org"]</code></pre>
+    <p>(A regex that matches <em>every</em> legal email is famously monstrous &mdash; the pragmatic version you are writing is what real codebases actually use.)</p>
+    <p><strong>Test cases:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>result = find_emails("Contact sandeep@example.com or admin.team@my-site.org today")
+assert result == ["sandeep@example.com", "admin.team@my-site.org"], result
+assert find_emails("no emails here @ nothing") == []
+print("find_emails: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The local part (before <code>@</code>) can contain letters, digits, dots, and underscores: <code>[\w.]+</code>. The domain part (after <code>@</code>) can contain letters, digits, dots, and hyphens: <code>[\w.-]+</code>. And it must have at least one dot.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>A practical email pattern: <code>[\w.]+@[\w.-]+\.\w+</code>. The <code>\.\w+</code> at the end ensures there&rsquo;s at least one dot in the domain (the TLD).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.5 -->
+<section class="exercise" id="ex-4-5">
+  <h3>Exercise 4.5 &mdash; Mine a Real Server Log</h3>
+  <div class="question">
+    <p>Below are genuine lines from an Apache web-server access log (<code>access.log.41</code> &mdash; 5 MB of real traffic from a Hadoop training site). Each line may contain URLs in the user-agent or referrer fields.</p>
+    <ol>
+      <li>Write <code>find_urls(text)</code> that extracts every <code>http://...</code> or <code>https://...</code> URL. Look closely at the lines: a URL ends where whitespace, a quote <code>"</code>, or a closing parenthesis <code>)</code> begins &mdash; a negated set <code>[^...]</code> handles all three.</li>
+      <li>Run it over <code>LOG_LINES</code> and count which <strong>domain</strong> appears most (your <code>group_by</code> / word-count instincts from the Dictionaries chapter apply).</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; sample log data</div>
+<pre><code>LOG_LINES = """\
+180.76.5.195 - - [28/Dec/2014:06:53:43 -0500] "GET /comment/5 HTTP/1.1" 200 7305 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+220.181.108.183 - - [28/Dec/2014:06:54:42 -0500] "GET / HTTP/1.1" 200 24390 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+5.255.253.135 - - [28/Dec/2014:06:56:34 -0500] "GET /comment/10 HTTP/1.1" 200 9379 "-" "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
+5.255.253.135 - - [28/Dec/2014:06:56:45 -0500] "GET /page/hdfs-storage HTTP/1.1" 200 9377 "-" "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
+180.76.5.150 - - [28/Dec/2014:07:01:43 -0500] "GET /page/big-data-and-hadoop HTTP/1.1" 200 22337 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+116.202.186.254 - - [28/Dec/2014:07:06:03 -0500] "GET /sites/default/files/css/style.css HTTP/1.1" 304 179 "http://www.knowbigdata.com/page/course-page-big-data-and-hadoop" "Mozilla/5.0 (Windows NT 6.1)"
+"""</code></pre>
+    </div>
+    <p><strong>Part A &mdash; <code>find_urls</code>:</strong></p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>urls = find_urls(LOG_LINES)
+print(f"Found {len(urls)} URLs:")
+for u in urls:
+    print("  ", u)
+
+assert len(urls) == 6
+assert "http://yandex.com/bots" in urls
+assert "http://www.knowbigdata.com/page/course-page-big-data-and-hadoop" in urls
+assert all(u.startswith("http") for u in urls)
+print("find_urls: OK")</code></pre>
+    </div>
+    <p><strong>Part B &mdash; <code>domain_counts</code>:</strong></p>
+    <p>Write <code>domain_counts(urls)</code> that extracts the domain from each URL and counts how many times each domain appears.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test cell</div>
+<pre><code>counts = domain_counts(find_urls(LOG_LINES))
+print(counts)
+assert counts["www.baidu.com"] == 3
+assert counts["yandex.com"] == 2
+assert counts["www.knowbigdata.com"] == 1
+print("domain_counts: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>find_urls</code>: the pattern <code>https?://[^\s")\]]+</code> will match URLs that start with <code>http</code> or <code>https</code> and continue until whitespace, a quote, or a closing paren/bracket.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>domain_counts</code>: extract the domain from a URL by splitting on <code>/</code> &mdash; the domain is the third element (<code>url.split("/")[2]</code>). Then count with a dictionary, just like word-counting.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<section class="exercise" id="ex-summary">
+  <div class="question">
+    <table>
+      <tr><th>Stage</th><th>What you built</th><th>The idea</th></tr>
+      <tr><td>Exact match</td><td><code>match_exact</code></td><td>compare char by char, recurse on the rest</td></tr>
+      <tr><td><code>?</code> wildcard</td><td><code>match_q</code></td><td>one pattern char can stand for any text char</td></tr>
+      <tr><td><code>*</code> wildcard</td><td><code>match</code></td><td><em>don&rsquo;t decide how much to swallow &mdash; recurse on both options</em></td></tr>
+      <tr><td>Globbing</td><td><code>find_matching</code></td><td>your matcher is what shells use for <code>*.txt</code></td></tr>
+      <tr><td>Regex</td><td><code>re.search</code> / <code>re.findall</code></td><td>the same engine, richer language: sets <code>[..]</code>, repeats <code>{4}</code> <code>+</code>, alternatives <code>|</code></td></tr>
+      <tr><td>Log mining</td><td><code>find_urls</code>, <code>domain_counts</code></td><td>patterns + dictionaries = real data extraction</td></tr>
+    </table>
+    <p>The branching trick in your <code>*</code> matcher &mdash; <em>try both, succeed if either succeeds</em> &mdash; is called <strong>backtracking</strong>. It is the same idea that solves mazes, Sudoku, and the N-Queens problem, and it is exactly how simple regex engines are implemented.</p>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You&rsquo;ve just invented a pattern matcher from scratch &mdash; exact matching, wildcards, globbing, and graduated to professional regular expressions to mine real server logs. That branching trick (backtracking) will come back again and again.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

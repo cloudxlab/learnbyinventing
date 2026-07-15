@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Ancient Secrets of Prediction — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/secrets_of_prediction/secrets_of_prediction.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>The Ancient Secrets of Prediction</h1>
+<p class="chapter-intro">You go to the market and buy 3 apples; with parking, the trip costs 6. Next week you buy 5 apples; the trip costs 8. <strong>How much will a 10-apple trip cost?</strong></p>
+<p>Write the story as an equation:</p>
+<p>$$Expense = parking + price \cdot apples \qquad\text{i.e.}\qquad y = \beta_1 x + \beta_0$$</p>
+<p>Trip 1 says $3\beta_1 + \beta_0 = 6$; trip 2 says $5\beta_1 + \beta_0 = 8$. Subtract them: $2\beta_1 = 2$, so the price is 1 and parking is 3. Ten apples: <strong>13</strong>.</p>
+<p>That is the oldest prediction machine there is: <em>turn observations into equations, solve, extrapolate</em>. Long before gradient descent, this is how curves were fit &mdash; and in this chapter you rebuild the whole machine, then push it to its breaking point (data that no curve passes through) and invent <strong>least squares</strong>.</p>
+<p><strong>Prerequisite:</strong> the Loops and Arrays chapter &mdash; you will reuse your <code>solve_equations</code> from its Part 5.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Vectors: the Arithmetic of Prediction
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Vectors &mdash; the Arithmetic of Prediction</h2>
+  <p>A fitted model is just a list of coefficients &mdash; a <strong>vector</strong>. Evaluating it at a point is a <em>dot product</em>. Build that toolkit first.</p>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; <code>dot_product</code></h3>
+  <div class="question">
+    <p><code>dot_product(a, b)</code> multiplies element-by-element and sums: <code>dot_product([1, 2], [3, 4])</code> is <code>1*3 + 2*4 = 11</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write <code>dot_product(a, b)</code>.</li>
+      <li>Verify with these assertions:</li>
+    </ol>
+<pre><code>assert dot_product([1, 2], [3, 4]) == 11
+assert dot_product([1, 0, 2], [5, 5, 5]) == 15
+assert dot_product([2], [7]) == 14</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>zip</code> to pair up elements from both lists, multiply each pair, and sum the results.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return sum(ai * bi for ai, bi in zip(a, b))</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; <code>vector_length</code> and <code>convert_to_unit</code></h3>
+  <div class="question">
+    <p>The length of a vector is the distance formula in disguise: $\|v\| = \sqrt{v \cdot v}$ &mdash; reuse your <code>dot_product</code>.</p>
+    <p>A <strong>unit vector</strong> keeps the direction but has length 1: divide every component by the length. <code>convert_to_unit([3, 4])</code> &rarr; <code>[0.6, 0.8]</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write <code>vector_length(v)</code> using <code>dot_product</code> and <code>math.sqrt</code>.</li>
+      <li>Write <code>convert_to_unit(v)</code> that divides each component by the length.</li>
+      <li>Verify:</li>
+    </ol>
+<pre><code>assert vector_length([3, 4]) == 5.0
+assert convert_to_unit([3, 4]) == [0.6, 0.8]
+assert abs(vector_length(convert_to_unit([2, 3, 6])) - 1.0) &lt; 1e-9</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>vector_length</code>: the dot product of a vector with itself gives the sum of squares. Take the square root of that.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>vector_length(v) = math.sqrt(dot_product(v, v))</code>. For <code>convert_to_unit(v)</code>: compute <code>L = vector_length(v)</code>, then return <code>[x / L for x in v]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; <code>cosine_similarity</code></h3>
+  <div class="question">
+    <p>How <em>aligned</em> are two vectors? Take the dot product of their <strong>unit</strong> versions. The result is the cosine of the angle between them:</p>
+    <ul>
+      <li>same direction &rarr; <code>1.0</code></li>
+      <li>perpendicular &rarr; <code>0.0</code></li>
+      <li>opposite &rarr; <code>-1.0</code></li>
+    </ul>
+    <p>This one number is how modern systems compare documents, faces and embeddings &mdash; you will meet it again the moment you touch LLMs.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write <code>cosine_similarity(a, b)</code> using <code>convert_to_unit</code> and <code>dot_product</code>.</li>
+      <li>Verify:</li>
+    </ol>
+<pre><code>assert abs(cosine_similarity([1, 2], [2, 4]) - 1.0) &lt; 1e-9    # same direction
+assert abs(cosine_similarity([1, 0], [0, 1])) &lt; 1e-9           # perpendicular
+assert abs(cosine_similarity([1, 2], [-1, -2]) + 1.0) &lt; 1e-9   # opposite</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Convert both vectors to unit vectors first, then take their dot product. The result is the cosine of the angle between them.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return dot_product(convert_to_unit(a), convert_to_unit(b))</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.4 -->
+<section class="exercise" id="ex-1-4">
+  <h3>Exercise 1.4 &mdash; <code>matrix_mul</code></h3>
+  <div class="question">
+    <p>A matrix is a list of rows. In the product <code>C = A @ B</code>, entry <code>C[i][j]</code> is the dot product of <strong>row i of A</strong> with <strong>column j of B</strong>. An (n&times;k) matrix times a (k&times;m) matrix gives an (n&times;m) matrix.</p>
+    <p>Write <code>matrix_mul(A, B)</code> using your <code>dot_product</code>.</p>
+    <p><strong>Hint:</strong> column <code>j</code> of <code>B</code> is <code>[row[j] for row in B]</code>.</p>
+    <p><strong>Verify:</strong></p>
+<pre><code>A = [[1, 2],
+     [3, 4]]
+B = [[5, 6],
+     [7, 8]]
+assert matrix_mul(A, B) == [[19, 22], [43, 50]]
+
+M = [[1, 2, 3],
+     [4, 5, 6]]
+v = [[1], [0], [2]]                      # a column vector
+assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>First figure out the dimensions: A has <code>len(A)</code> rows and <code>len(A[0])</code> columns; B has <code>len(B[0])</code> columns. The result has <code>len(A)</code> rows and <code>len(B[0])</code> columns.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For each row <code>i</code> in A and each column <code>j</code> in B, compute <code>dot_product(A[i], [row[j] for row in B])</code>. Collect these into the result matrix.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Bring Your Solver
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Bring Your Solver</h2>
+  <p>We store the equation $a_1 x_1 + a_2 x_2 + \dots + a_n x_n = b$ as the list <code>[a1, a2, ..., an, b]</code>, and a system as a list of such lists &mdash; exactly the representation you used in <strong>Loops and Arrays, Part 5</strong>.</p>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Paste and Verify Your Solver</h3>
+  <div class="question">
+    <p>Paste your <code>solve_equations</code> (with its helpers <code>solve_for_first_variable</code>, <code>eliminate_variable_pair</code>, <code>eliminate_variable</code>) into the code cell. The test must pass before you go on.</p>
+    <p>(Skipped that chapter? Go invent it there first &mdash; this whole chapter stands on it.)</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test for your solver</div>
+<pre><code>r = solve_equations([[1, 1, 1, 35], [3, 2, 1, 75], [4, 3, 1, 105]])
+assert all(abs(a - b) &lt; 1e-9 for a, b in zip(r, [10.0, 20.0, 5.0])), r
+print("solver ready:", r)</code></pre>
+    </div>
+    <p><strong>Think:</strong> your solver eliminates one variable at a time, and each elimination touches every remaining equation, and each equation has that many coefficients &mdash; three nested loops. Roughly how does the running time grow with <code>n</code> equations? If solving 4 equations takes 1 second, what would 8 take? Keep that number in mind &mdash; it returns at the end of the chapter.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The elimination algorithm has three nested loops, each of size roughly <code>n</code>. So the running time grows like $n^3$. If 4 equations take 1 second, 8 equations take roughly $8^3 / 4^3 = 8$ seconds.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Prediction as Equation Solving
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Prediction as Equation Solving</h2>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; The Apple Trips, by Code</h3>
+  <div class="question">
+    <p>Redo the opening story with your tools:</p>
+    <ol>
+      <li>Build the two equations in <code>(beta1, beta0)</code>: trip 1 &rarr; <code>[3, 1, 6]</code>, trip 2 &rarr; <code>[5, 1, 8]</code>.</li>
+      <li><code>solve_equations</code> gives you <code>beta = [price, parking]</code>.</li>
+      <li>Predict the 10-apple trip with <code>dot_product(beta, [10, 1])</code>.</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scaffold</div>
+<pre><code># YOUR CODE — set up the equations, solve, predict the 10-apple trip
+eqns = ...
+beta = ...
+prediction = ...
+
+assert all(abs(a - b) &lt; 1e-9 for a, b in zip(beta, [1.0, 3.0])), beta
+assert abs(prediction - 13.0) &lt; 1e-9
+print("a 10-apple trip will cost:", prediction)</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The equation for trip 1 (3 apples, cost 6) is <code>[3, 1, 6]</code> meaning <code>3*price + 1*parking = 6</code>. Similarly for trip 2.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>eqns = [[3, 1, 6], [5, 1, 8]]</code>. Then <code>beta = solve_equations(eqns)</code> and <code>prediction = dot_product(beta, [10, 1])</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; When a Line Isn't Enough</h3>
+  <div class="question">
+    <p>Traffic through a junction is measured three times:</p>
+    <table>
+      <tr><th>t</th><th>traffic</th></tr>
+      <tr><td>1</td><td>6</td></tr>
+      <tr><td>2</td><td>12</td></tr>
+      <tr><td>3</td><td>20</td></tr>
+    </table>
+    <p>The growth is not linear (check the gaps: +6, +8). Assume a quadratic: $traffic = a t^2 + b t + c$. Each measurement is one equation in $(a, b, c)$ &mdash; for $t=1$: $a + b + c = 6$, and so on.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Build the three equations.</li>
+      <li>Solve for <code>(a, b, c)</code>.</li>
+      <li>Predict the traffic at <code>t = 4</code>.</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scaffold</div>
+<pre><code># YOUR CODE — three equations in (a, b, c), solve, predict t = 4
+eqns = ...
+abc = ...
+prediction = ...
+
+assert all(abs(x - y) &lt; 1e-9 for x, y in zip(abc, [1.0, 3.0, 2.0])), abc
+assert abs(prediction - 30.0) &lt; 1e-9
+print("traffic at t=4:", prediction)</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For $t = 1$: $a(1)^2 + b(1) + c = 6$ &rarr; <code>[1, 1, 1, 6]</code>. For $t = 2$: $a(4) + b(2) + c = 12$ &rarr; <code>[4, 2, 1, 12]</code>. For $t = 3$: <code>[9, 3, 1, 20]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>To predict at $t = 4$: compute <code>dot_product(abc, [16, 4, 1])</code> since $a \cdot 16 + b \cdot 4 + c$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; <code>solve_poly</code>: the General Machine</h3>
+  <div class="question">
+    <p>Automate it. Write <code>solve_poly(x, y, xp)</code>:</p>
+    <ul>
+      <li><code>x</code> and <code>y</code> are <code>n</code> observed points; assume a polynomial of degree <code>n - 1</code>.</li>
+      <li>For each point build the row <code>[x_i**(n-1), ..., x_i**2, x_i, 1, y_i]</code> and solve for the coefficients.</li>
+      <li>Return the polynomial's value at <code>xp</code> &mdash; a <code>dot_product</code> of the coefficients with the matching powers of <code>xp</code>.</li>
+    </ul>
+    <p><strong>Think:</strong> why do <code>n</code> points pin down exactly a degree-<code>(n-1)</code> polynomial &mdash; what goes wrong with fewer coefficients, and what freedom is left with more?</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; tests</div>
+<pre><code>assert abs(solve_poly([1, 2, 3], [6, 12, 20], 4) - 30.0) &lt; 1e-6
+# a line is just a degree-1 polynomial — the apple trips again:
+assert abs(solve_poly([3, 5], [6, 8], 10) - 13.0) &lt; 1e-6
+# and it must reproduce the points it was built from:
+assert abs(solve_poly([1, 2, 3], [6, 12, 20], 2) - 12.0) &lt; 1e-6
+print("solve_poly: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>n</code> points you need a polynomial with <code>n</code> coefficients (degree <code>n-1</code>). Each point gives one equation: the row is the powers of <code>x_i</code> from highest to lowest, ending with 1, then the <code>y_i</code> value.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Build each row as: <code>[x_i**(n-1-j) for j in range(n)] + [y_i]</code>. Solve for coefficients <code>coefs</code>, then return <code>dot_product(coefs, [xp**(n-1-j) for j in range(n)])</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: When No Curve Fits
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: When No Curve Fits</h2>
+  <p>A factory reports:</p>
+  <table>
+    <tr><th>input</th><th>output</th></tr>
+    <tr><td>1</td><td>8</td></tr>
+    <tr><td>2</td><td>11</td></tr>
+    <tr><td>3</td><td>16</td></tr>
+    <tr><td>4</td><td>??</td></tr>
+  </table>
+  <p>Try a line through the first two points: slope 3, intercept 5 &mdash; but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 &mdash; but input 2 predicts 12, not 11. <strong>No line passes through all three points.</strong> Real measurements are noisy; perfect solving just broke.</p>
+  <p>New plan: accept an imperfect line, but pick the one that is <em>least wrong</em>. Define the total (squared) error of a candidate line $y = mx + c$:</p>
+  <p>$$E(m, c) = \sum_i (m x_i + c - y_i)^2$$</p>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; <code>total_error</code></h3>
+  <div class="question">
+    <p>Write <code>total_error(m, c, data)</code> where <code>data</code> is a list of <code>(x, y)</code> pairs.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; data and tests</div>
+<pre><code>factory_data = [(1, 8), (2, 11), (3, 16)]
+
+assert total_error(3, 5, factory_data) == 4.0   # hits two points, misses the third by 2
+assert total_error(0, 0, factory_data) == 8*8 + 11*11 + 16*16
+print("total_error: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For each <code>(x, y)</code> pair, compute the prediction <code>m * x + c</code>, find the difference from the actual <code>y</code>, square it, and sum all the squared differences.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return sum((m * x + c - y) ** 2 for x, y in data)</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Solve the Normal Equations</h3>
+  <div class="question">
+    <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing &mdash; both partial derivatives are zero. Differentiate (each term by the chain rule) and set to zero:</p>
+    <p>$$\frac{\partial E}{\partial m} = \sum_i 2(m x_i + c - y_i)\,x_i = 0 \qquad \frac{\partial E}{\partial c} = \sum_i 2(m x_i + c - y_i) = 0$$</p>
+    <p>Divide by 2 and regroup &mdash; two <em>linear</em> equations in $(m, c)$, the <strong>normal equations</strong>:</p>
+    <p>$$m\textstyle\sum x_i^2 + c\sum x_i = \sum x_i y_i \qquad m\textstyle\sum x_i + c\,n = \sum y_i$$</p>
+    <p>For the factory data: $\sum x^2 = 14$, $\sum x = 6$, $\sum xy = 8 + 22 + 48 = 78$, $\sum y = 35$, $n = 3$:</p>
+    <p>$$14m + 6c = 78 \qquad 6m + 3c = 35$$</p>
+    <p><strong>Task:</strong> Use <code>solve_equations</code> on those two equations. The test also nudges your answer in every direction to confirm no neighbor does better &mdash; the definition of a minimum.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scaffold and verification</div>
+<pre><code># YOUR CODE — solve the two normal equations for m and c
+m, c = ...
+
+assert abs(m - 4.0) &lt; 1e-9, m
+assert abs(c - 11/3) &lt; 1e-9, c
+
+best = total_error(m, c, factory_data)
+for dm, dc in [(0.01, 0), (-0.01, 0), (0, 0.01), (0, -0.01)]:
+    assert total_error(m + dm, c + dc, factory_data) &gt; best
+print(f"best line: y = {m:.3f}x + {c:.3f}   (error {best:.4f})")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Encode the two normal equations as: <code>[[14, 6, 78], [6, 3, 35]]</code> and pass them to <code>solve_equations</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; <code>best_line</code>: Least Squares for Any Data</h3>
+  <div class="question">
+    <p>Wrap it up. Write <code>best_line(data)</code>:</p>
+    <ol>
+      <li>From the <code>(x, y)</code> pairs compute $\sum x^2$, $\sum x$, $\sum xy$, $\sum y$ and $n$.</li>
+      <li>Build the two normal equations and <code>solve_equations</code>.</li>
+      <li>Return <code>(m, c)</code>.</li>
+    </ol>
+    <p>On data that <em>is</em> perfectly linear it must recover the exact line &mdash; least squares contains exact fitting as a special case.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; tests</div>
+<pre><code>m, c = best_line([(0, 3), (1, 5), (2, 7)])        # perfectly linear: y = 2x + 3
+assert abs(m - 2.0) &lt; 1e-9 and abs(c - 3.0) &lt; 1e-9
+
+m, c = best_line(factory_data)
+assert abs(m - 4.0) &lt; 1e-9 and abs(c - 11/3) &lt; 1e-9
+print("factory prediction for input 4:", round(m * 4 + c, 3))
+print("best_line: OK")</code></pre>
+    </div>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting (run as-is)</div>
+<pre><code>import matplotlib.pyplot as plt
+
+xs = [p[0] for p in factory_data]
+ys = [p[1] for p in factory_data]
+m, c = best_line(factory_data)
+line_x = [0.5, 4.2]
+line_y = [m * x + c for x in line_x]
+
+plt.scatter(xs, ys, s=70, zorder=3, label="measurements")
+plt.plot(line_x, line_y, "r-", label=f"y = {m:.2f}x + {c:.2f}")
+plt.scatter([4], [m * 4 + c], marker="*", s=200, color="green", zorder=3,
+            label="prediction for input 4")
+plt.xlabel("input"); plt.ylabel("output")
+plt.title("Least squares: the least-wrong line")
+plt.legend(); plt.grid(alpha=0.3)
+plt.show()</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Compute the five sums: <code>sum_x2 = sum(x**2 for x, y in data)</code>, <code>sum_x = sum(x for x, y in data)</code>, <code>sum_xy = sum(x*y for x, y in data)</code>, <code>sum_y = sum(y for x, y in data)</code>, and <code>n = len(data)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Build <code>[[sum_x2, sum_x, sum_xy], [sum_x, n, sum_y]]</code> and pass to <code>solve_equations</code>. The result is <code>[m, c]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     BONUS: Matrices That Move the World
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Bonus &mdash; Matrices That Move the World</h2>
+  <p>So far matrices held <em>data</em> (trips, prices). But <code>matrix_mul</code> has a second life: a matrix can be a <strong>machine that moves points</strong>. Every video game, every 3D animation, every graphics chip is built on this.</p>
+  <p>Keep points as rows, <code>[x, y]</code>. Multiplying a stack of points by one 2&times;2 matrix moves <em>all</em> of them at once with your existing <code>matrix_mul</code> &mdash; no new code needed.</p>
+</div>
+
+<!-- Exercise R.1 -->
+<section class="exercise" id="ex-r-1">
+  <h3>Exercise R.1 &mdash; The Rotation Matrix</h3>
+  <div class="question">
+    <p>The matrix that rotates every point counter-clockwise by angle $\theta$ (with points as rows) is:</p>
+    <p>$$R(\theta) = \begin{pmatrix} \cos\theta &amp; \sin\theta \\ -\sin\theta &amp; \cos\theta \end{pmatrix}$$</p>
+    <p>Write <code>rotation_matrix(angle_degrees)</code> returning that 2&times;2 list-of-lists. Use <code>math.radians</code> to convert, then <code>math.cos</code> / <code>math.sin</code>.</p>
+    <p><strong>Sanity checks worth predicting before you run:</strong> the point <code>[1, 0]</code> (due east) rotated 90&deg; should land at <code>[0, 1]</code> (due north). Rotated 180&deg;, at <code>[-1, 0]</code>.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; tests</div>
+<pre><code>p = matrix_mul([[1, 0]], rotation_matrix(90))[0]
+assert abs(p[0]) &lt; 1e-9 and abs(p[1] - 1) &lt; 1e-9      # east -&gt; north
+
+p = matrix_mul([[1, 0]], rotation_matrix(180))[0]
+assert abs(p[0] + 1) &lt; 1e-9 and abs(p[1]) &lt; 1e-9      # east -&gt; west
+
+p = matrix_mul([[0, 1]], rotation_matrix(90))[0]
+assert abs(p[0] + 1) &lt; 1e-9 and abs(p[1]) &lt; 1e-9      # north -&gt; west
+print("rotation_matrix: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Convert degrees to radians with <code>math.radians(angle_degrees)</code>. Then build the 2&times;2 list using <code>math.cos(rad)</code> and <code>math.sin(rad)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>rad = math.radians(angle_degrees)</code>, then return <code>[[math.cos(rad), math.sin(rad)], [-math.sin(rad), math.cos(rad)]]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise R.2 -->
+<section class="exercise" id="ex-r-2">
+  <h3>Exercise R.2 &mdash; Turn a Whole Shape</h3>
+  <div class="question">
+    <p>Here is a kite, five points as rows (the last repeats the first so it draws closed):</p>
+<pre><code>kite = [[0, 0], [1, 2], [0, 5], [-1, 2], [0, 0]]</code></pre>
+    <p>Rotate the <em>entire</em> kite by 45&deg; with <strong>one</strong> call to <code>matrix_mul</code>, storing the result in <code>turned</code>. Then run the provided plotting cell to see both.</p>
+    <p>A deep property to verify while you're here: rotation moves points but never stretches them. The test checks every point stays the same distance from the origin.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; tests</div>
+<pre><code># Tests: same number of points, all distances to origin preserved
+assert len(turned) == len(kite)
+for before, after in zip(kite, turned):
+    d_before = (before[0] ** 2 + before[1] ** 2) ** 0.5
+    d_after = (after[0] ** 2 + after[1] ** 2) ** 0.5
+    assert abs(d_before - d_after) &lt; 1e-9
+print("rotation preserves all lengths — the shape is rigid")</code></pre>
+    </div>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting (run as-is)</div>
+<pre><code>import matplotlib.pyplot as plt
+
+plt.plot([p[0] for p in kite], [p[1] for p in kite], "b-o", label="original")
+plt.plot([p[0] for p in turned], [p[1] for p in turned], "r-o", label="rotated 45&deg;")
+plt.axhline(0, color="gray", lw=0.5); plt.axvline(0, color="gray", lw=0.5)
+plt.gca().set_aspect("equal")
+plt.legend(); plt.grid(alpha=0.3)
+plt.title("One matrix multiplication moves every point")
+plt.show()</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The kite is already a matrix (5&times;2). Multiply it by the 2&times;2 rotation matrix: <code>turned = matrix_mul(kite, rotation_matrix(45))</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise R.3 -->
+<section class="exercise" id="ex-r-3">
+  <h3>Exercise R.3 &mdash; What Does a <em>Random</em> Matrix Do?</h3>
+  <div class="question">
+    <p>Rotation matrices are special. What happens with an arbitrary 2&times;2 matrix?</p>
+    <p>Build one from random numbers, apply it to the kite with <code>matrix_mul</code>, and plot the result (reuse the plotting code above). Run it several times.</p>
+    <p><strong>Observe, then answer:</strong> straight edges stay straight, and parallel edges stay parallel &mdash; but lengths and angles change: the kite gets stretched, squashed, sheared, maybe flipped. Every 2&times;2 matrix is some such <em>linear transformation</em>, and rotations are exactly the ones that preserve all lengths. (When a neural network multiplies data by a learned weight matrix, this stretching and squashing of space is literally what it's doing.)</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scaffold and plotting</div>
+<pre><code>import random
+
+R = [[random.uniform(-1, 1), random.uniform(-1, 1)],
+     [random.uniform(-1, 1), random.uniform(-1, 1)]]
+warped = ...   # replace this — apply R to the kite
+
+# Test: still 5 points, each with 2 coordinates
+assert len(warped) == 5 and all(len(p) == 2 for p in warped)
+
+plt.plot([p[0] for p in kite], [p[1] for p in kite], "b-o", label="original")
+plt.plot([p[0] for p in warped], [p[1] for p in warped], "g-o", label="warped")
+plt.gca().set_aspect("equal")
+plt.legend(); plt.grid(alpha=0.3)
+plt.title("A random matrix: straight lines stay straight, nothing else survives")
+plt.show()</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same pattern as the rotation: <code>warped = matrix_mul(kite, R)</code>. The random matrix <code>R</code> is already 2&times;2.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<section class="exercise" id="ex-summary">
+  <div class="question">
+    <table>
+      <tr><th>You built</th><th>The secret</th></tr>
+      <tr><td><code>dot_product</code>, <code>vector_length</code>, <code>convert_to_unit</code>, <code>cosine_similarity</code>, <code>matrix_mul</code></td><td>models are vectors; evaluation is a dot product</td></tr>
+      <tr><td>apple trips, traffic at the junction</td><td><em>prediction = set up equations + solve</em></td></tr>
+      <tr><td><code>solve_poly</code></td><td>n points &harr; one degree-(n&minus;1) polynomial</td></tr>
+      <tr><td><code>total_error</code>, normal equations, <code>best_line</code></td><td><strong>least squares</strong> &mdash; when nothing fits, minimize the squared error</td></tr>
+    </table>
+    <p>What you just derived is <strong>Ordinary Least Squares</strong>, the same closed-form answer <code>sklearn.linear_model.LinearRegression</code> computes.</p>
+    <p>So why does the next chapter exist? Two cracks in the ancient method: solving grows like $n^3$ (your Part 2 estimate), and the derive-set-to-zero trick needs a formula for the derivative &mdash; which complicated models don't offer. <strong>Gradient Descent</strong> fixes both by <em>walking</em> toward the minimum instead of jumping to it.</p>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You rebuilt the oldest prediction machine &mdash; dot products, equation solving, polynomial fitting, and least squares &mdash; from scratch. That is Ordinary Least Squares, the same thing <code>sklearn.linear_model.LinearRegression</code> computes.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

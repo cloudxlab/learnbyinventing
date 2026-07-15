@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>If-Else &mdash; Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/if_else/if_else.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Learning If-Else by Inventing Branching Logic</h1>
+<p class="chapter-intro">You won't be taught &mdash; you will <em>discover</em>. Every step builds on the last. Trust the process.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; setup</div>
+<pre><code>import random
+import matplotlib.pyplot as plt</code></pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Branching with Randomness
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Branching with Randomness</h2>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; A Random Die Roll</h3>
+  <div class="question">
+    <p><code>random.random()</code> returns a random decimal number between <code>0</code> (inclusive) and <code>1</code> (exclusive) &mdash; something like <code>0.3741...</code>.</p>
+    <p><strong>Before coding:</strong></p>
+    <ol>
+      <li>If you multiply a number in <code>[0, 1)</code> by <code>6</code>, what range does the result fall in?</li>
+      <li>If you then take the integer part (<code>int(...)</code>), what range of <em>whole numbers</em> do you get?</li>
+      <li>How would you shift that range so it becomes <code>1</code> to <code>6</code> instead of <code>0</code> to <code>5</code> &mdash; like a die?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your derivation:</strong>
+      <ul>
+        <li><code>random.random() * 6</code> is in the range: &hellip;</li>
+        <li><code>int(random.random() * 6)</code> is in the range: &hellip;</li>
+        <li>To shift to 1&ndash;6: &hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Multiplying <code>[0, 1)</code> by 6 gives <code>[0, 6)</code>. Taking <code>int()</code> of that gives one of <code>0, 1, 2, 3, 4, 5</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Adding 1 shifts the range from <code>0&ndash;5</code> to <code>1&ndash;6</code>. So the expression is <code>int(random.random() * 6) + 1</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Write <code>roll_die</code></h3>
+  <div class="question">
+    <p>Write a function <code>roll_die()</code> that returns a random integer between <code>1</code> and <code>6</code> (inclusive), using only <code>random.random()</code> &mdash; no <code>if</code> needed yet, just the expression you derived above.</p>
+    <p>Run it a bunch of times to make sure you only ever see <code>1</code> through <code>6</code>.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def roll_die():
+    """
+    Returns a random integer between 1 and 6 (inclusive).
+    """
+    pass  # replace this
+
+
+for _ in range(20):
+    print(roll_die(), end=" ")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The body is a single <code>return</code> statement using the expression from Exercise 1.1.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return int(random.random() * 6) + 1</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; Your First Branch: Coin Toss</h3>
+  <div class="question">
+    <p>Now for an actual decision. <code>random.random() &lt; 0.5</code> is <code>True</code> about half the time, <code>False</code> the other half.</p>
+    <p><strong>Write</strong> a function <code>coin_toss()</code> that returns the string <code>"Heads"</code> or <code>"Tails"</code>, using an <code>if</code>/<code>else</code> on <code>random.random() &lt; 0.5</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>coin_toss()</code>.</li>
+      <li>Call it 20 times and print the results.</li>
+      <li>Call it 10,000 times and count how many times you got <code>"Heads"</code>. Is it close to 5,000?</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def coin_toss():
+    """
+    Returns "Heads" or "Tails", each with roughly 50% probability.
+    """
+    pass  # replace this
+
+
+print([coin_toss() for _ in range(20)])
+
+heads_count = 0
+for _ in range(10000):
+    if coin_toss() == "Heads":
+        heads_count = heads_count  # fill in: count heads
+print(f"Heads: {heads_count} / 10000")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Inside the function: <code>if random.random() &lt; 0.5:</code> return one string, <code>else:</code> return the other.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Don't forget the counting line &mdash; <code>heads_count = heads_count</code> should become <code>heads_count = heads_count + 1</code> (or <code>heads_count += 1</code>).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.4 -->
+<section class="exercise" id="ex-1-4">
+  <h3>Exercise 1.4 &mdash; A Three-Way Branch</h3>
+  <div class="question">
+    <p><code>if</code>/<code>else</code> only gives you two outcomes. <code>if</code>/<code>elif</code>/<code>else</code> gives you more.</p>
+    <p>Write a function <code>classify_roll(n)</code> that takes a die result <code>n</code> (1 through 6) and returns:</p>
+    <ul>
+      <li><code>"Low"</code> if <code>n</code> is 1 or 2</li>
+      <li><code>"Mid"</code> if <code>n</code> is 3 or 4</li>
+      <li><code>"High"</code> if <code>n</code> is 5 or 6</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement it using <code>if</code>/<code>elif</code>/<code>else</code>.</li>
+      <li>Roll the die 20 times with <code>roll_die()</code> and classify each result. Print both the roll and its class.</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def classify_roll(n):
+    """
+    Returns "Low" (1-2), "Mid" (3-4), or "High" (5-6).
+    """
+    pass  # replace this
+
+
+for _ in range(20):
+    n = roll_die()
+    print(f"{n} -&gt; {classify_roll(n)}")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>You can use <code>n &lt;= 2</code> for Low, <code>n &lt;= 4</code> for Mid (because you already ruled out 1&ndash;2), and <code>else</code> for High.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Alternatively, test <code>n in [1, 2]</code>, <code>n in [3, 4]</code>, <code>n in [5, 6]</code> &mdash; but chaining <code>&lt;=</code> comparisons is more concise and generalises better.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Comparing Two Distances — Closer to A or B?
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Comparing Two Distances &mdash; Closer to A or B?</h2>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Set Up the Comparison</h3>
+  <div class="question">
+    <p>You're given three points on a 2D plane: <code>P</code>, <code>A</code>, and <code>B</code>. You want to know whether <code>P</code> is closer to <code>A</code> or to <code>B</code>.</p>
+    <p>You <em>could</em> compute the real distances (with a square root), but for <strong>comparing</strong> two distances, you don't need to &mdash; the one with the smaller <em>squared</em> distance is also the one with the smaller actual distance. (Square root is increasing, so it never flips the order.)</p>
+    <p><strong>Before coding:</strong></p>
+    <p>For <code>P=(1, 2)</code>, <code>A=(0, 0)</code>, <code>B=(5, 5)</code>:</p>
+    <ol>
+      <li>Compute the squared distance from <code>P</code> to <code>A</code>: <code>(px - ax)**2 + (py - ay)**2</code>.</li>
+      <li>Compute the squared distance from <code>P</code> to <code>B</code>.</li>
+      <li>Which is smaller? So which point is <code>P</code> closer to?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your derivation:</strong>
+      <ul>
+        <li>squared distance P to A: &hellip;</li>
+        <li>squared distance P to B: &hellip;</li>
+        <li>closer point: &hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>P to A: <code>(1-0)**2 + (2-0)**2 = 1 + 4 = 5</code>. P to B: <code>(1-5)**2 + (2-5)**2 = 16 + 9 = 25</code>. Since 5 &lt; 25, P is closer to A.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Write <code>closer_point</code></h3>
+  <div class="question">
+    <p>Write a function <code>closer_point(p, a, b)</code> where <code>p</code>, <code>a</code>, <code>b</code> are each <code>(x, y)</code> tuples. It should return:</p>
+    <ul>
+      <li><code>'A'</code> if <code>p</code> is closer to <code>a</code></li>
+      <li><code>'B'</code> if <code>p</code> is closer to <code>b</code></li>
+      <li><code>'Equal'</code> if the distances are the same</li>
+    </ul>
+    <p>This needs a <strong>three-way</strong> branch &mdash; <code>if</code>/<code>elif</code>/<code>else</code>.</p>
+    <p><strong>Example:</strong></p>
+<pre><code>closer_point((1, 2), (0, 0), (5, 5))     # Output: 'A'
+closer_point((4, 4), (0, 0), (8, 8))     # Output: 'Equal'
+closer_point((7, 3), (2, 3), (10, 3))    # Output: 'B'</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def closer_point(p, a, b):
+    """
+    p, a, b are (x, y) tuples.
+    Returns 'A' if p is closer to a, 'B' if closer to b, 'Equal' if tied.
+    """
+    pass  # replace this
+
+
+print(closer_point((1, 2), (0, 0), (5, 5)))     # A
+print(closer_point((4, 4), (0, 0), (8, 8)))     # Equal
+print(closer_point((7, 3), (2, 3), (10, 3)))    # B</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Compute <code>dist_a = (p[0]-a[0])**2 + (p[1]-a[1])**2</code> and <code>dist_b</code> similarly. Then compare them with <code>if</code>/<code>elif</code>/<code>else</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>You can also unpack tuples: <code>px, py = p</code>, <code>ax, ay = a</code>, <code>bx, by = b</code> to make the expressions more readable.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Try More Cases</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Pick three new points where you can predict the answer just by sketching them on paper. Verify your function agrees.</li>
+      <li>Pick a point exactly halfway between <code>A</code> and <code>B</code>. What does <code>closer_point</code> say?</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>print(closer_point((0, 0), (-10, 0), (10, 0)))   # halfway -&gt; ?
+print(closer_point((3, 0), (0, 0), (10, 10)))</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The midpoint of <code>(-10, 0)</code> and <code>(10, 0)</code> is <code>(0, 0)</code>. Both squared distances are <code>100</code>, so the answer should be <code>'Equal'</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Is a Point Between Two Others? (1D)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Is a Point Between Two Others? (1D)</h2>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; The Order Problem</h3>
+  <div class="question">
+    <p>On a number line, you have two points <code>a</code> and <code>b</code>, and a third point <code>p</code>. You want to know if <code>p</code> lies between <code>a</code> and <code>b</code> (including the endpoints).</p>
+    <p><strong>The tricky part:</strong> you're not told whether <code>a &lt; b</code> or <code>a &gt; b</code>.</p>
+    <p><strong>Before coding:</strong></p>
+    <ol>
+      <li>If <code>a = 5</code> and <code>b = 2</code>, what are the actual lower and upper bounds of the segment?</li>
+      <li>Python's built-in <code>min()</code> and <code>max()</code> can take two arguments. How would you use them to get the lower and upper bounds <em>regardless</em> of which of <code>a</code>, <code>b</code> is bigger?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your derivation:</strong>
+      <ul>
+        <li>lower bound = &hellip;</li>
+        <li>upper bound = &hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Lower bound = <code>min(a, b)</code>, upper bound = <code>max(a, b)</code>. These work regardless of the order of <code>a</code> and <code>b</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Write <code>is_point_on_line_1d</code></h3>
+  <div class="question">
+    <p>Write <code>is_point_on_line_1d(a, b, p)</code> that returns <code>True</code> if <code>p</code> lies between <code>a</code> and <code>b</code> (inclusive), regardless of which of <code>a</code>, <code>b</code> is larger.</p>
+    <p><strong>Example:</strong></p>
+<pre><code>is_point_on_line_1d(2, 5, 3)      # Output: True
+is_point_on_line_1d(5, 2, 3)      # Output: True   (order doesn't matter)
+is_point_on_line_1d(2, 5, 6)      # Output: False
+is_point_on_line_1d(4, 4, 4)      # Output: True   (a single point)
+is_point_on_line_1d(4, 4, 5)      # Output: False</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def is_point_on_line_1d(a, b, p):
+    """
+    Returns True if p lies between a and b (inclusive), regardless of order.
+    """
+    pass  # replace this
+
+
+print(is_point_on_line_1d(2, 5, 3))      # True
+print(is_point_on_line_1d(5, 2, 3))      # True
+print(is_point_on_line_1d(2, 5, 6))      # False
+print(is_point_on_line_1d(4, 4, 4))      # True
+print(is_point_on_line_1d(4, 4, 5))      # False</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>min(a, b)</code> and <code>max(a, b)</code> from Exercise 3.1 to find the bounds, then check if <code>p</code> is between them.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return min(a, b) &lt;= p &lt;= max(a, b)</code> &mdash; Python supports chained comparisons.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Test with Negative Numbers</h3>
+  <div class="question">
+    <p>A good function shouldn't need special-casing for negative numbers if the logic is right.</p>
+    <p><strong>Tasks:</strong> test <code>is_point_on_line_1d</code> on these and check the results match the comments.</p>
+<pre><code>is_point_on_line_1d(-5, -2, -3)   # Output: True
+is_point_on_line_1d(-5, -2, -6)   # Output: False
+is_point_on_line_1d(-2, -5, -4)   # Output: True
+is_point_on_line_1d(-1, 3, 0)     # Output: True</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>print(is_point_on_line_1d(-5, -2, -3))   # True
+print(is_point_on_line_1d(-5, -2, -6))   # False
+print(is_point_on_line_1d(-2, -5, -4))   # True
+print(is_point_on_line_1d(-1, 3, 0))     # True</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If all four test cases pass, your function handles negative numbers correctly without any extra logic. The <code>min()</code>/<code>max()</code> approach works the same way for negatives.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Do Two Segments Touch or Overlap? (1D)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Do Two Segments Touch or Overlap? (1D)</h2>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Think About Separation, Not Overlap</h3>
+  <div class="question">
+    <p>You now have <strong>two</strong> segments on the number line: segment 1 from <code>start1</code> to <code>end1</code>, and segment 2 from <code>start2</code> to <code>end2</code> (and again, you can't assume <code>start &lt; end</code> for either one).</p>
+    <p>It's easier to reason about when they're <strong>completely separate</strong> first, then negate it.</p>
+    <p><strong>Before coding:</strong></p>
+    <ol>
+      <li>After sorting each segment so you know its true <code>lo</code> and <code>hi</code>, when is segment 1 <em>entirely to the left</em> of segment 2? Write the condition.</li>
+      <li>When is segment 1 <em>entirely to the right</em> of segment 2?</li>
+      <li>The segments touch or overlap exactly when <strong>neither</strong> of those is true. Using <code>not</code> and <code>or</code> (or by flipping the logic directly), write the combined condition for &ldquo;touching or overlapping&rdquo;.</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your derivation:</strong>
+      <ul>
+        <li>segment 1 entirely left of segment 2 when: &hellip;</li>
+        <li>segment 1 entirely right of segment 2 when: &hellip;</li>
+        <li>touching or overlapping when: &hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If <code>hi1 &lt; lo2</code>, segment 1 is entirely to the left. If <code>lo1 &gt; hi2</code>, segment 1 is entirely to the right.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Separated = <code>hi1 &lt; lo2 or lo1 &gt; hi2</code>. Touching or overlapping = <code>not (hi1 &lt; lo2 or lo1 &gt; hi2)</code>, which simplifies to <code>hi1 &gt;= lo2 and lo1 &lt;= hi2</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Write <code>are_lines_touching_or_overlapping</code></h3>
+  <div class="question">
+    <p>Write <code>are_lines_touching_or_overlapping(start1, end1, start2, end2)</code> that returns <code>True</code> if the two segments touch or overlap, <code>False</code> if they're completely separate. Remember to handle the case where <code>start &gt; end</code> for either segment, just like in Part 3.</p>
+    <p><strong>Example:</strong></p>
+<pre><code>are_lines_touching_or_overlapping(1, 4, 3, 6)        # Output: True   (overlap 3 to 4)
+are_lines_touching_or_overlapping(1, 3, 3, 5)        # Output: True   (touch at 3)
+are_lines_touching_or_overlapping(1, 2, 3, 4)        # Output: False  (separate)</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def are_lines_touching_or_overlapping(start1, end1, start2, end2):
+    """
+    Returns True if the 1D segments [start1, end1] and [start2, end2]
+    touch or overlap, False if they are completely separate.
+    Works regardless of whether start &lt; end for either segment.
+    """
+    pass  # replace this
+
+
+print(are_lines_touching_or_overlapping(1, 4, 3, 6))        # True
+print(are_lines_touching_or_overlapping(1, 3, 3, 5))        # True
+print(are_lines_touching_or_overlapping(1, 2, 3, 4))        # False</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>First normalise each segment: <code>lo1, hi1 = min(start1, end1), max(start1, end1)</code>. Then apply the condition from Exercise 4.1.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>After normalising: <code>return hi1 &gt;= lo2 and lo1 &lt;= hi2</code>. Or equivalently: <code>return not (hi1 &lt; lo2 or lo1 &gt; hi2)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Test with Negative and Reversed Inputs</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong> verify these all match the comments &mdash; pay special attention to the last one, where both segments are given &ldquo;backwards&rdquo;.</p>
+<pre><code>are_lines_touching_or_overlapping(-3, 1, 0, 4)       # Output: True   (overlap 0 to 1)
+are_lines_touching_or_overlapping(-5, -2, -2, 3)     # Output: True   (touch at -2)
+are_lines_touching_or_overlapping(-10, -6, -5, -1)   # Output: False  (no touch or overlap)
+are_lines_touching_or_overlapping(-2, -7, -4, -3)    # Output: True   (overlap, even with reversed inputs)</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>print(are_lines_touching_or_overlapping(-3, 1, 0, 4))       # True
+print(are_lines_touching_or_overlapping(-5, -2, -2, 3))     # True
+print(are_lines_touching_or_overlapping(-10, -6, -5, -1))   # False
+print(are_lines_touching_or_overlapping(-2, -7, -4, -3))    # True</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If any test fails, check that you're normalising both segments with <code>min()</code>/<code>max()</code> before comparing. The last case has <code>start &gt; end</code> for <em>both</em> segments.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: Is a Point Inside a Rectangle? (2D)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: Is a Point Inside a Rectangle? (2D)</h2>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; Reduce 2D to Two 1D Problems</h3>
+  <div class="question">
+    <p>A rectangle with sides parallel to the axes is defined by its bottom-left corner <code>(x1, y1)</code> and top-right corner <code>(x2, y2)</code> (with <code>x1 &lt; x2</code> and <code>y1 &lt; y2</code>). A point <code>(px, py)</code> is inside it if its <code>x</code> is between <code>x1</code> and <code>x2</code>, <strong>and</strong> its <code>y</code> is between <code>y1</code> and <code>y2</code>.</p>
+    <p>Look closely &mdash; &ldquo;is <code>px</code> between <code>x1</code> and <code>x2</code>&rdquo; is <em>exactly</em> the function you wrote in Part 3!</p>
+    <p><strong>Before coding:</strong> write out, in words, how <code>is_point_inside_rectangle</code> could be built using <strong>two calls</strong> to <code>is_point_on_line_1d</code> instead of writing brand-new comparison logic.</p>
+    <div class="answer-prompt">
+      <strong>Your plan:</strong>
+      <p><code>is_point_inside_rectangle(x1, y1, x2, y2, px, py) = is_point_on_line_1d(...) and is_point_on_line_1d(...)</code></p>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Check the x-axis: <code>is_point_on_line_1d(x1, x2, px)</code>. Check the y-axis: <code>is_point_on_line_1d(y1, y2, py)</code>. The point is inside if <strong>both</strong> are <code>True</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Write <code>is_point_inside_rectangle</code></h3>
+  <div class="question">
+    <p>Write <code>is_point_inside_rectangle(x1, y1, x2, y2, px, py)</code> by <strong>reusing</strong> <code>is_point_on_line_1d</code> &mdash; don't rewrite the comparison logic from scratch.</p>
+    <p><strong>Example:</strong></p>
+<pre><code>is_point_inside_rectangle(0, 0, 10, 5, 3, 2)   # Output: True
+is_point_inside_rectangle(0, 0, 10, 5, 10, 5)  # Output: True  (on the corner)
+is_point_inside_rectangle(0, 0, 10, 5, 11, 5)  # Output: False
+is_point_inside_rectangle(-5, -5, 5, 5, 0, 0)  # Output: True</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def is_point_inside_rectangle(x1, y1, x2, y2, px, py):
+    """
+    Returns True if (px, py) is inside or on the boundary of the rectangle
+    with bottom-left (x1, y1) and top-right (x2, y2).
+    Reuses is_point_on_line_1d for each axis.
+    """
+    pass  # replace this
+
+
+print(is_point_inside_rectangle(0, 0, 10, 5, 3, 2))    # True
+print(is_point_inside_rectangle(0, 0, 10, 5, 10, 5))   # True
+print(is_point_inside_rectangle(0, 0, 10, 5, 11, 5))   # False
+print(is_point_inside_rectangle(-5, -5, 5, 5, 0, 0))   # True</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The entire function body is one line: <code>return is_point_on_line_1d(x1, x2, px) and is_point_on_line_1d(y1, y2, py)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.3 -->
+<section class="exercise" id="ex-5-3">
+  <h3>Exercise 5.3 &mdash; Visualise It</h3>
+  <div class="question">
+    <p>Use the plotting helper below to see a rectangle and a point together, colour-coded by whether the point is inside.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_rectangle_and_point(x1, y1, x2, y2, px, py, title=None):
+    inside = is_point_inside_rectangle(x1, y1, x2, y2, px, py)
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
+                                fill=False, edgecolor='blue', linewidth=2))
+    ax.scatter([px], [py], color='green' if inside else 'red', s=100, zorder=5)
+    margin = max(x2 - x1, y2 - y1) * 0.3 + 1
+    ax.set_xlim(min(x1, px) - margin, max(x2, px) + margin)
+    ax.set_ylim(min(y1, py) - margin, max(y2, py) + margin)
+    ax.set_aspect('equal')
+    ax.set_title(title or f"Inside: {inside}")
+    ax.grid(True)
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong> Try a few of your own points and rectangles to build intuition.</p>
+<pre><code>plot_rectangle_and_point(0, 0, 10, 5, 3, 2)
+plot_rectangle_and_point(0, 0, 10, 5, 11, 5)</code></pre>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: Do Two Rectangles Intersect? (2D)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: Do Two Rectangles Intersect? (2D)</h2>
+</div>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; Project onto Each Axis</h3>
+  <div class="question">
+    <p>A rectangle is just two independent ranges glued together: an <code>x</code>-range and a <code>y</code>-range. Two rectangles intersect <strong>exactly when</strong> their <code>x</code>-ranges touch/overlap <strong>and</strong> their <code>y</code>-ranges touch/overlap.</p>
+    <p>This is the same trick as Part 5 &mdash; except now you reuse the Part 4 function (segment overlap) instead of the Part 3 function (point between).</p>
+    <p>A rectangle here is represented as <code>((x1, y1), (x2, y2))</code> &mdash; bottom-left and top-right corners.</p>
+    <p><strong>Before coding:</strong> write out, in words, how <code>are_rectangles_intersecting(rect1, rect2)</code> could be built using <strong>two calls</strong> to <code>are_lines_touching_or_overlapping</code> &mdash; one for the x-coordinates of both rectangles, one for the y-coordinates.</p>
+    <div class="answer-prompt">
+      <strong>Your plan:</strong>
+      <p><code>are_rectangles_intersecting(rect1, rect2) = are_lines_touching_or_overlapping(...) and are_lines_touching_or_overlapping(...)</code></p>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>X-ranges overlap: <code>are_lines_touching_or_overlapping(rect1[0][0], rect1[1][0], rect2[0][0], rect2[1][0])</code>. Do the same for Y using index <code>[1]</code> of each corner.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.2 -->
+<section class="exercise" id="ex-6-2">
+  <h3>Exercise 6.2 &mdash; Write <code>are_rectangles_intersecting</code></h3>
+  <div class="question">
+    <p>Write <code>are_rectangles_intersecting(rect1, rect2)</code> by <strong>reusing</strong> <code>are_lines_touching_or_overlapping</code> on the x-coordinates and on the y-coordinates.</p>
+    <p><strong>Example:</strong></p>
+<pre><code>are_rectangles_intersecting(((0, 0), (3, 3)), ((2, 2), (5, 5)))   # Output: True
+are_rectangles_intersecting(((0, 0), (1, 1)), ((2, 2), (3, 3)))   # Output: False
+are_rectangles_intersecting(((0, 0), (2, 2)), ((2, 2), (4, 4)))   # Output: True  (touching at a corner)
+are_rectangles_intersecting(((0, 0), (5, 5)), ((1, 1), (2, 2)))   # Output: True  (one inside another)</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def are_rectangles_intersecting(rect1, rect2):
+    """
+    rect1, rect2 are each ((x1, y1), (x2, y2)) - bottom-left, top-right corners.
+    Returns True if the two rectangles touch or overlap.
+    Reuses are_lines_touching_or_overlapping for each axis.
+    """
+    pass  # replace this
+
+
+print(are_rectangles_intersecting(((0, 0), (3, 3)), ((2, 2), (5, 5))))   # True
+print(are_rectangles_intersecting(((0, 0), (1, 1)), ((2, 2), (3, 3))))   # False
+print(are_rectangles_intersecting(((0, 0), (2, 2)), ((2, 2), (4, 4))))   # True
+print(are_rectangles_intersecting(((0, 0), (5, 5)), ((1, 1), (2, 2))))   # True</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Unpack: <code>(x1a, y1a), (x2a, y2a) = rect1</code> and similarly for <code>rect2</code>. Then check x-overlap and y-overlap independently.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b) and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b)</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.3 -->
+<section class="exercise" id="ex-6-3">
+  <h3>Exercise 6.3 &mdash; Visualise It</h3>
+  <div class="question">
+    <p>Use the plotting helper below to see both rectangles, colour-coded by whether they intersect.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_rectangles(rect1, rect2, title=None):
+    intersecting = are_rectangles_intersecting(rect1, rect2)
+    color = 'green' if intersecting else 'red'
+    fig, ax = plt.subplots(figsize=(5, 5))
+    for rect, style in [(rect1, '-'), (rect2, '--')]:
+        (x1, y1), (x2, y2) = rect
+        ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
+                                    fill=False, edgecolor=color, linewidth=2, linestyle=style))
+    all_x = [rect1[0][0], rect1[1][0], rect2[0][0], rect2[1][0]]
+    all_y = [rect1[0][1], rect1[1][1], rect2[0][1], rect2[1][1]]
+    margin = max(max(all_x) - min(all_x), max(all_y) - min(all_y)) * 0.3 + 1
+    ax.set_xlim(min(all_x) - margin, max(all_x) + margin)
+    ax.set_ylim(min(all_y) - margin, max(all_y) + margin)
+    ax.set_aspect('equal')
+    ax.set_title(title or f"Intersecting: {intersecting}")
+    ax.grid(True)
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong> Try a few of your own rectangle pairs to build intuition.</p>
+<pre><code>plot_rectangles(((0, 0), (3, 3)), ((2, 2), (5, 5)))
+plot_rectangles(((0, 0), (1, 1)), ((2, 2), (3, 3)))</code></pre>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 7: Bonus Challenges
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 7: Bonus Challenges</h2>
+</div>
+
+<!-- Challenge A -->
+<section class="exercise" id="ex-7-a">
+  <h3>Challenge A &mdash; Devise Your Own Impurity Formula</h3>
+  <div class="question">
+    <p>In machine learning (you'll meet this properly in the Decision Trees chapter), we often need a number that says how &ldquo;mixed&rdquo; a set is between two classes.</p>
+    <p>Write <code>my_impurity(c1, c2)</code> where <code>c1</code> and <code>c2</code> are <em>counts</em> (not fractions) of two classes. Your formula must satisfy:</p>
+    <ol>
+      <li>If <code>c1 = 0</code> or <code>c2 = 0</code> (all one class), impurity should be <code>0</code>.</li>
+      <li>Impurity should increase as the counts become more evenly balanced.</li>
+      <li>Impurity should be <strong>maximum</strong> when <code>c1 == c2</code>.</li>
+    </ol>
+    <p>There's no single right answer &mdash; invent a formula, test it against the three conditions, and adjust if it doesn't satisfy them. (One possible formula: <code>(2 * min(c1, c2)) / (c1 + c2)</code>.)</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def my_impurity(c1, c2):
+    pass
+
+
+for c1, c2 in [(0, 5), (5, 5), (7, 3), (9, 1)]:
+    print(f"my_impurity({c1}, {c2}) = {my_impurity(c1, c2)}")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Think about what makes a bag of items &ldquo;mixed.&rdquo; If you know the fraction of each class (<code>p = c1/(c1+c2)</code>), a product like <code>p * (1-p)</code> is 0 at the extremes and peaks in the middle.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Don't forget the edge case: if <code>c1 + c2 == 0</code>, you'd divide by zero. Return <code>0</code> for that case.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>One clean formula: <code>return (2 * min(c1, c2)) / (c1 + c2) if (c1 + c2) &gt; 0 else 0</code>. Check: <code>(0,5)&rarr;0</code>, <code>(5,5)&rarr;1</code>, <code>(7,3)&rarr;0.6</code>, <code>(9,1)&rarr;0.2</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge B -->
+<section class="exercise" id="ex-7-b">
+  <h3>Challenge B &mdash; 3D Boxes</h3>
+  <div class="question">
+    <p>You generalised &ldquo;point between two numbers&rdquo; into &ldquo;point inside a rectangle&rdquo; by checking the x-axis and y-axis independently. Push it one step further.</p>
+    <p>A 3D box is <code>((x1, y1, z1), (x2, y2, z2))</code> &mdash; its two opposite corners. Write <code>are_boxes_intersecting(box1, box2)</code> by reusing <code>are_lines_touching_or_overlapping</code> <strong>three</strong> times &mdash; once per axis.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter code</div>
+<pre><code>def are_boxes_intersecting(box1, box2):
+    pass</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same pattern as rectangles, but with three axes. Unpack: <code>(x1a, y1a, z1a), (x2a, y2a, z2a) = box1</code>. Check x-overlap, y-overlap, and z-overlap.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b) and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b) and are_lines_touching_or_overlapping(z1a, z2a, z1b, z2b)</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Reflection
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Reflection &mdash; What Did You Just Build?</h2>
+</div>
+
+<section class="exercise" id="ex-reflection">
+  <h3>Reflection</h3>
+  <div class="question">
+    <p>Take a moment to answer these questions in your own words.</p>
+    <ol>
+      <li>What's the difference between <code>if</code>/<code>else</code> and <code>if</code>/<code>elif</code>/<code>else</code>? When do you need the second form?</li>
+      <li>Why is comparing <em>squared</em> distances enough, without ever computing a square root?</li>
+      <li>In Part 3, why did you need <code>min()</code>/<code>max()</code> instead of just assuming <code>a &lt; b</code>?</li>
+      <li>What was the key trick that let you turn the 1D &ldquo;is point between&rdquo; function into the 2D &ldquo;is point inside a rectangle&rdquo; function?</li>
+      <li>What was the key trick that let you turn the 1D &ldquo;segments overlap&rdquo; function into the 2D &ldquo;rectangles intersect&rdquo; function?</li>
+      <li>In your own words: what general strategy do Parts 5 and 6 both use to turn a 2D (or 3D) problem into something easier?</li>
+    </ol>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You've just learned that <code>if</code>/<code>elif</code>/<code>else</code> isn't only for simple yes/no decisions &mdash; it's also how you build up geometric reasoning piece by piece. The trick you used twice here, breaking a 2D (or 3D) question into independent 1D questions along each axis, is one of the most reusable ideas in programming.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dictionaries — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/dictionaries/dictionaries.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Dictionaries</h1>
+<p class="chapter-intro">A <strong>dictionary</strong> maps <em>keys</em> to <em>values</em> &mdash; like an index at the back of a book. You look up a key in O(1) time, regardless of how many entries exist.</p>
+<p>In this chapter you will use dictionaries to:</p>
+<ol>
+  <li>Count word frequencies in text</li>
+  <li>Group words that are anagrams of each other</li>
+  <li>Track and query expenses by category</li>
+</ol>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 0: Dictionary Basics
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 0: Dictionary Basics</h2>
+  <p class="part-intro">Before coding the exercises, make sure you are comfortable with the four core operations.</p>
+</div>
+
+<!-- Exercise 0.1 -->
+<section class="exercise" id="ex-0-1">
+  <h3>Exercise 0.1 &mdash; Create and Access</h3>
+  <div class="question">
+    <p>A dictionary literal looks like <code>{key: value, key: value, ...}</code>.</p>
+<pre><code>d = {"apple": 3, "banana": 1, "cherry": 5}
+d["apple"]    # 3
+d["banana"]   # 1</code></pre>
+    <p><strong>Task:</strong> Create a dictionary <code>scores</code> with three student names and their exam scores. Then print the score for one student.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use a literal like <code>scores = {"Alice": 85, "Bob": 92, "Charlie": 78}</code>, then access with <code>scores["Alice"]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 0.2 -->
+<section class="exercise" id="ex-0-2">
+  <h3>Exercise 0.2 &mdash; Add and Update Entries</h3>
+  <div class="question">
+    <p>You can add a new key or update an existing one with <code>d[key] = value</code>.</p>
+    <p><strong>Task:</strong> Starting from an empty dict, add three entries one at a time. Then update one of them (increase the value by 10).</p>
+    <p>Verify that <code>len(d) == 3</code> after adding, and that the updated value is correct.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start with <code>d = {}</code>, then <code>d["x"] = 10</code> to add, and <code>d["x"] = d["x"] + 10</code> (or <code>d["x"] += 10</code>) to update.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 0.3 -->
+<section class="exercise" id="ex-0-3">
+  <h3>Exercise 0.3 &mdash; Check Membership and Default Values</h3>
+  <div class="question">
+    <ul>
+      <li><code>key in d</code> &mdash; <code>True</code> if key exists</li>
+      <li><code>d.get(key, default)</code> &mdash; returns <code>default</code> instead of raising <code>KeyError</code> if key is missing</li>
+    </ul>
+    <p><strong>Task:</strong> Write a function <code>safe_lookup(d, key)</code> that returns the value if the key exists, or the string <code>"not found"</code> if it does not.</p>
+<pre><code>safe_lookup({"a": 1}, "a")   # 1
+safe_lookup({"a": 1}, "b")   # "not found"</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>You can use <code>d.get(key, "not found")</code> as a one-liner, or use an <code>if key in d</code> check.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>def safe_lookup(d, key): return d.get(key, "not found")</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 0.4 -->
+<section class="exercise" id="ex-0-4">
+  <h3>Exercise 0.4 &mdash; Count Items in a List</h3>
+  <div class="question">
+    <p>Write <code>count_items(items)</code> that takes a list and returns a dictionary where each key is an item and the value is how many times it appears.</p>
+    <p><strong>Before you code:</strong></p>
+    <ul>
+      <li>Loop over the list.</li>
+      <li>For each item, if it is not yet in the dict, add it with count 1.</li>
+      <li>If it already exists, increment its count.</li>
+    </ul>
+<pre><code>count_items(["a", "b", "a", "c", "b", "a"])  # {"a": 3, "b": 2, "c": 1}
+count_items([1, 2, 1, 1, 3])                 # {1: 3, 2: 1, 3: 1}
+count_items([])                              # {}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>if item in counts:</code> to decide whether to increment or initialise. Alternatively, <code>counts[item] = counts.get(item, 0) + 1</code> handles both cases in one line.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Structure: <code>counts = {}</code>, then <code>for item in items: counts[item] = counts.get(item, 0) + 1</code>, then <code>return counts</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Word Count
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Word Count</h2>
+  <p class="part-intro">Now apply <code>count_items</code> to text: split a string into words, then count each word.</p>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Word Count</h3>
+  <div class="question">
+    <p>Write <code>word_count(text)</code> that:</p>
+    <ol>
+      <li>Splits <code>text</code> into words using <code>text.split()</code>.</li>
+      <li>Counts how many times each word appears.</li>
+      <li>Returns the dictionary.</li>
+    </ol>
+<pre><code>word_count("hello world hello")
+# {"hello": 2, "world": 1}
+
+word_count("apple orange apple banana orange")
+# {"apple": 2, "orange": 2, "banana": 1}
+
+word_count("")
+# {}</code></pre>
+    <p><strong>Hint:</strong> This is <code>count_items</code> applied to <code>text.split()</code>. Can you implement it by reusing <code>count_items</code>?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>text.split()</code> turns <code>"hello world hello"</code> into <code>["hello", "world", "hello"]</code>. Pass that list to <code>count_items</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>One-liner: <code>def word_count(text): return count_items(text.split())</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Most Frequent Word</h3>
+  <div class="question">
+    <p>Write <code>most_frequent_word(text)</code> that returns the word with the highest count. If there is a tie, return any one of the tied words.</p>
+<pre><code>most_frequent_word("the cat sat on the mat the")  # "the"
+most_frequent_word("a b a b c a")                  # "a"</code></pre>
+    <p><strong>Before you code:</strong></p>
+    <ul>
+      <li>Use <code>word_count</code> to get the frequency dictionary.</li>
+      <li>Loop over the dictionary to find the key with the maximum value. (Or think: can you use <code>max</code> with a custom <code>key</code> argument?)</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Get the counts dict, then loop: track <code>best_word</code> and <code>best_count</code>, updating whenever you find a higher count.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Shorter approach: <code>max(counts, key=counts.get)</code> returns the key whose value is largest.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; Top N Words</h3>
+  <div class="question">
+    <p>Write <code>top_n_words(text, n)</code> that returns a list of the <code>n</code> most frequent <code>(word, count)</code> tuples, sorted from highest to lowest count.</p>
+<pre><code>top_n_words("the cat sat on the mat the cat", 2)
+# [("the", 3), ("cat", 2)]</code></pre>
+    <p><strong>Hint:</strong> Sort the <code>word_count(text).items()</code> by value in descending order, then take the first <code>n</code>.</p>
+    <p>Try it on a longer passage:</p>
+<pre><code>passage = "to be or not to be that is the question to be is to do"
+top_n_words(passage, 5)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>sorted(counts.items(), key=lambda pair: pair[1], reverse=True)</code> to sort by count descending. Then slice with <code>[:n]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Each item in <code>counts.items()</code> is a <code>(word, count)</code> tuple. <code>pair[1]</code> is the count. After sorting, return <code>sorted_list[:n]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Anagrams
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Anagrams</h2>
+  <p class="part-intro">Two words are <strong>anagrams</strong> of each other if they contain exactly the same letters (in possibly different order).</p>
+  <p>Examples:</p>
+  <ul>
+    <li>"listen" and "silent" are anagrams.</li>
+    <li>"evil", "vile", "live", "veil" are all anagrams of each other.</li>
+  </ul>
+  <p><strong>Key idea:</strong> If you sort the letters of both words, anagrams produce the same sorted string.</p>
+  <p><code>sorted("listen")</code> &rarr; <code>["e","i","l","n","s","t"]</code> &rarr; <code>"eilnst"</code><br/>
+     <code>sorted("silent")</code> &rarr; <code>["e","i","l","n","s","t"]</code> &rarr; <code>"eilnst"</code> &#10003;</p>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Anagram Key</h3>
+  <div class="question">
+    <p>Write <code>anagram_key(word)</code> that returns the sorted string of a word's letters. This key will be the same for all anagrams.</p>
+<pre><code>anagram_key("listen")  # "eilnst"
+anagram_key("silent")  # "eilnst"
+anagram_key("evil")    # "eilv"
+anagram_key("vile")    # "eilv"</code></pre>
+    <p><strong>Hint:</strong> <code>sorted("abc")</code> gives <code>["a","b","c"]</code>. Use <code>"".join(...)</code> to get a string.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>sorted(word)</code> returns a list of characters in alphabetical order. Join them back: <code>"".join(sorted(word))</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Find Anagram Groups</h3>
+  <div class="question">
+    <p>Write <code>find_anagrams(text)</code> that:</p>
+    <ol>
+      <li>Splits <code>text</code> into words.</li>
+      <li>For each word, computes its <code>anagram_key</code>.</li>
+      <li>Groups words with the same key into a list.</li>
+      <li>Returns a dictionary: <code>{key: [word1, word2, ...]}</code></li>
+    </ol>
+<pre><code>find_anagrams("listen silent enlist inlets hello world")
+# {
+#   "eilnst": ["listen", "silent", "enlist", "inlets"],
+#   "ehllo":  ["hello"],
+#   "dlorw":  ["world"]
+# }
+
+find_anagrams("evil vile live veil")
+# {"eilv": ["evil", "vile", "live", "veil"]}</code></pre>
+    <p><strong>Before you code:</strong></p>
+    <ul>
+      <li>Use <code>count_items</code> or <code>word_count</code> as inspiration: loop over words, look up the key, append the word.</li>
+      <li>If the key is not yet in the dict, start a new list <code>[word]</code>.</li>
+      <li>If it already exists, append to the existing list.</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same pattern as <code>count_items</code>, but instead of incrementing a number, you append to a list. Check with <code>if key in groups:</code> to decide between <code>groups[key].append(word)</code> and <code>groups[key] = [word]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>You can also use <code>groups.setdefault(key, []).append(word)</code> to handle both cases in one line.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Only True Anagram Groups</h3>
+  <div class="question">
+    <p><code>find_anagrams</code> returns every word, including words with no anagram partner. Write <code>find_true_anagram_groups(text)</code> that returns only the groups that contain <strong>more than one</strong> word.</p>
+<pre><code>find_true_anagram_groups("listen silent hello world live evil")
+# {"eilnst": ["listen", "silent"], "eilv": ["live", "evil"]}
+# ("hello" and "world" are excluded &mdash; no partners)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Call <code>find_anagrams(text)</code> first, then filter the result: keep only entries where <code>len(words) &gt; 1</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use a dict comprehension: <code>{k: v for k, v in groups.items() if len(v) &gt; 1}</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Expense Tracker
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Expense Tracker</h2>
+  <p class="part-intro">A dictionary is a natural fit for tracking totals per category:</p>
+<pre><code>{"food": 500, "rent": 1000, "travel": 150}</code></pre>
+  <p>Keys are expense categories; values are running totals.</p>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Update Expenses</h3>
+  <div class="question">
+    <p>Write <code>update_expenses(expense_list, expenses_dict)</code> that:</p>
+    <ul>
+      <li>Takes a list of <code>(category, amount)</code> tuples and an existing dict.</li>
+      <li>For each tuple, adds <code>amount</code> to the running total for <code>category</code>.</li>
+      <li>Modifies <code>expenses_dict</code> in place (no return value needed).</li>
+    </ul>
+<pre><code>expenses = {}
+update_expenses([("food", 200), ("rent", 1000)], expenses)
+update_expenses([("food", 300), ("travel", 150)], expenses)
+# expenses == {"food": 500, "rent": 1000, "travel": 150}</code></pre>
+    <p><strong>Before you code:</strong></p>
+    <ul>
+      <li>How do you handle a category that appears for the first time?</li>
+      <li>How do you handle one that already exists?</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same pattern as <code>count_items</code>: use <code>expenses_dict[cat] = expenses_dict.get(cat, 0) + amount</code> to handle both new and existing categories.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Loop over the expense list: <code>for cat, amount in expense_list:</code>, then update the dict on each iteration.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Print Expenses</h3>
+  <div class="question">
+    <p>Write <code>print_expenses(expenses_dict)</code> that prints each category and its total, one per line, in the format <code>"category : amount"</code>.</p>
+<pre><code>print_expenses({"food": 500, "rent": 1000, "travel": 150})
+# food : 500
+# rent : 1000
+# travel : 150</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over items: <code>for cat, amount in expenses_dict.items():</code> then <code>print(f"{cat} : {amount}")</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Highest Expense Category</h3>
+  <div class="question">
+    <p>Write <code>top_expense(expenses_dict)</code> that returns the category with the highest total spend as a tuple <code>(category, amount)</code>.</p>
+<pre><code>top_expense({"food": 500, "rent": 1000, "travel": 150})
+# ("rent", 1000)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over <code>expenses_dict.items()</code> and track the pair with the largest amount. Or use <code>max(expenses_dict.items(), key=lambda pair: pair[1])</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>max</code> returns the whole tuple, so <code>max(expenses_dict.items(), key=lambda p: p[1])</code> gives <code>("rent", 1000)</code> directly.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.4 -->
+<section class="exercise" id="ex-3-4">
+  <h3>Exercise 3.4 &mdash; Expenses Above Budget</h3>
+  <div class="question">
+    <p>Write <code>over_budget(expenses_dict, limits)</code> that returns a dictionary containing only the categories where spending <strong>exceeds</strong> the budget limit.</p>
+    <ul>
+      <li><code>limits</code> is a dict of <code>{category: budget}</code>.</li>
+      <li>Return <code>{category: (spent, limit)}</code> for each over-budget category.</li>
+    </ul>
+<pre><code>expenses = {"food": 500, "rent": 1000, "travel": 300}
+limits   = {"food": 400, "rent": 1200, "travel": 200}
+over_budget(expenses, limits)
+# {"food": (500, 400), "travel": (300, 200)}
+# ("rent" is under budget: 1000 &lt;= 1200)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over <code>expenses_dict.items()</code>. For each category, check if the category exists in <code>limits</code> and whether <code>spent &gt; limits[cat]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Build the result dict: <code>result = {}</code>, then <code>if cat in limits and spent &gt; limits[cat]: result[cat] = (spent, limits[cat])</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     BONUS B: Invert a Dictionary / Group By
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Bonus B: Invert a Dictionary &amp; Group By</h2>
+  <p class="part-intro">Sometimes you need to look up a <em>key by its value</em> instead of the other way around. <strong>Inverting</strong> a dictionary swaps keys and values.</p>
+</div>
+
+<!-- Exercise B.1 -->
+<section class="exercise" id="ex-b-1">
+  <h3>Exercise B.1 &mdash; Invert Dict</h3>
+  <div class="question">
+    <p>Write <code>invert_dict(d)</code> that returns a new dictionary with keys and values swapped. Assume all values in <code>d</code> are unique (otherwise some keys would be lost).</p>
+<pre><code>invert_dict({"a": 1, "b": 2, "c": 3})  # {1: "a", 2: "b", 3: "c"}
+invert_dict({})                          # {}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over <code>d.items()</code> and build a new dict where each old value becomes a key and each old key becomes a value.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Dict comprehension: <code>{v: k for k, v in d.items()}</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise B.2 -->
+<section class="exercise" id="ex-b-2">
+  <h3>Exercise B.2 &mdash; Group By</h3>
+  <div class="question">
+    <p>Write <code>group_by(items, key_func)</code> that groups items from a list by the result of applying <code>key_func</code> to each item.</p>
+    <p>This is a generalisation of both <code>find_anagrams</code> and the expense grouping pattern.</p>
+<pre><code>group_by(["cat", "car", "bar", "bat"], lambda w: w[0])
+# {"c": ["cat", "car"], "b": ["bar", "bat"]}
+
+group_by([1, 2, 3, 4, 5, 6], lambda x: x % 2)
+# {1: [1, 3, 5], 0: [2, 4, 6]}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same pattern as <code>find_anagrams</code>: compute a key for each item, then append the item to the list stored under that key.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>groups = {}</code>, then <code>for item in items: k = key_func(item); groups.setdefault(k, []).append(item)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise B.3 -->
+<section class="exercise" id="ex-b-3">
+  <h3>Exercise B.3 &mdash; Rewrite find_anagrams Using group_by</h3>
+  <div class="question">
+    <p><code>find_anagrams</code> is just <code>group_by</code> with <code>anagram_key</code> as the key function.</p>
+<pre><code>def find_anagrams_v2(text):
+    return group_by(text.split(), anagram_key)</code></pre>
+    <p>Verify it gives the same results as your original <code>find_anagrams</code>.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This is a one-liner. The key insight is that <code>group_by</code> generalises the grouping pattern you already wrote by hand in <code>find_anagrams</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     BONUS C: Inventing Hashing (why dicts are fast)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Bonus C: Inventing Hashing (Why Dicts Are Fast)</h2>
+  <p class="part-intro">You've used dictionaries all chapter without asking the awkward question: <code>d["banana"]</code> is instant even if <code>d</code> holds a <em>million</em> keys. A list would have to check entries one by one. How does a dict jump straight to the right spot?</p>
+  <p>The answer is an idea you're about to invent: turn the key into a <strong>number</strong>, and use that number as a position.</p>
+</div>
+
+<!-- Exercise C.1 -->
+<section class="exercise" id="ex-c-1">
+  <h3>Exercise C.1 &mdash; Letters Are Already Numbers</h3>
+  <div class="question">
+    <p>Python exposes each character's numeric code: <code>ord("a")</code> is <code>97</code>, and <code>chr(97)</code> goes back to <code>"a"</code>.</p>
+    <p>Write <code>letter_position(ch)</code> returning the position of a lowercase letter in the alphabet &mdash; <code>"a"</code> &rarr; 0, <code>"b"</code> &rarr; 1, &hellip; <code>"z"</code> &rarr; 25 &mdash; using <code>ord</code> (no lookup tables!).</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>ord("a")</code> is 97. So <code>letter_position(ch) = ord(ch) - ord("a")</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise C.2 -->
+<section class="exercise" id="ex-c-2">
+  <h3>Exercise C.2 &mdash; A Number for Any String</h3>
+  <div class="question">
+    <p>One letter is easy. For a whole string, the simplest recipe: <strong>add up the character codes</strong>. That gives a big number; to turn it into a <em>position</em>, take the remainder when dividing by the number of slots available.</p>
+    <p>Write <code>string_hash(s, n_buckets)</code> = (sum of <code>ord</code> of every character) <code>% n_buckets</code>. The result is always a valid index between <code>0</code> and <code>n_buckets - 1</code> &mdash; exactly what you need to pick a slot in a list of buckets.</p>
+<pre><code>string_hash("a", 10)       # 7  (97 % 10)
+string_hash("banana", 10)  # deterministic: same input always gives same output
+string_hash("listen", 10)  # 5  (655 % 10)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>sum(ord(ch) for ch in s)</code> to add up all character codes, then take <code>% n_buckets</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise C.3 -->
+<section class="exercise" id="ex-c-3">
+  <h3>Exercise C.3 &mdash; The Collision</h3>
+  <div class="question">
+    <p>Run this before reading on:</p>
+<pre><code>string_hash("listen", 1000), string_hash("silent", 1000)</code></pre>
+    <p>Both give <code>655</code>. Of course &mdash; they're <strong>anagrams</strong> (Part 2 of this chapter!), so they contain the same letters, and addition doesn't care about order. Two different keys landing in the same bucket is called a <strong>collision</strong>, and a hash that collides for every anagram is a bad hash.</p>
+    <p>The fix: make position matter. Weight each character by where it sits:</p>
+    <p><code>hash(s) = sum of ord(s[i]) * (i + 1), mod n</code></p>
+    <p>Write <code>string_hash_v2(s, n_buckets)</code> using the weighted sum (hint: <code>enumerate(s)</code>), and confirm the anagram pair now separates.</p>
+<pre><code>string_hash_v2("listen", 1000)  # 292  (2292 % 1000)
+string_hash_v2("silent", 1000)  # 299  (2299 % 1000)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>enumerate(s)</code> to get both the index and the character: <code>sum(ord(ch) * (i + 1) for i, ch in enumerate(s))</code>, then <code>% n_buckets</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Multiplying by <code>(i + 1)</code> means the first character is weighted by 1, the second by 2, etc. This breaks the symmetry that caused anagrams to collide.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise C.4 -->
+<section class="exercise" id="ex-c-4">
+  <h3>Exercise C.4 &mdash; The Same Trick at Data-Center Scale</h3>
+  <div class="question">
+    <p>You just invented how a dict works inside:</p>
+    <ol>
+      <li>Hash the key to a bucket index &mdash; one arithmetic step, no searching.</li>
+      <li>Go directly to that bucket.</li>
+      <li>Collisions are unavoidable (infinitely many strings, finitely many buckets), so each bucket keeps a <em>short</em> list to check &mdash; a few items, not a million.</li>
+    </ol>
+    <p>That's why <code>d[key]</code> costs the same whether the dict holds ten keys or ten million: this is what <strong>O(1) lookup</strong> means.</p>
+    <p>Now zoom out. A big website can't fit a billion users on one database server; it splits them across many. Which server holds user <code>12345</code>? Same invention: hash the key. With numeric IDs the hash is just the remainder.</p>
+    <p>Write <code>which_shard(user_id, n_servers)</code> returning <code>user_id % n_servers</code>, then check the test's fairness experiment: hashing 10,000 users across 7 servers should load every server almost equally.</p>
+<pre><code>which_shard(12345, 10)  # 5
+which_shard(12345, 7)   # 4</code></pre>
+    <p><strong>Think about it (no code):</strong> if you <em>add</em> an 8th server, <code>% 7</code> becomes <code>% 8</code> &mdash; which users are now on the wrong server? (Almost all of them! Real systems soften this with <em>consistent hashing</em> &mdash; worth a web search. Python dicts face the same event when they grow: they resize and re-hash every key.)</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This one is a one-liner: <code>return user_id % n_servers</code>. The interesting part is the reflection question about what happens when <code>n_servers</code> changes.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<section class="exercise" id="ex-summary">
+  <div class="question">
+    <table>
+      <tr><th>Function</th><th>What it does</th></tr>
+      <tr><td><code>count_items(items)</code></td><td>Count occurrences of each item in a list</td></tr>
+      <tr><td><code>word_count(text)</code></td><td>Count word frequencies in a string</td></tr>
+      <tr><td><code>most_frequent_word(text)</code></td><td>Find the most common word</td></tr>
+      <tr><td><code>top_n_words(text, n)</code></td><td>Top n words by frequency</td></tr>
+      <tr><td><code>anagram_key(word)</code></td><td>Canonical key: sorted letters as a string</td></tr>
+      <tr><td><code>find_anagrams(text)</code></td><td>Group words by anagram key</td></tr>
+      <tr><td><code>find_true_anagram_groups(text)</code></td><td>Only groups with 2+ words</td></tr>
+      <tr><td><code>update_expenses(list, dict)</code></td><td>Accumulate totals per category</td></tr>
+      <tr><td><code>print_expenses(dict)</code></td><td>Display category totals</td></tr>
+      <tr><td><code>top_expense(dict)</code></td><td>Category with highest spend</td></tr>
+      <tr><td><code>over_budget(dict, limits)</code></td><td>Categories that exceed their limit</td></tr>
+      <tr><td><code>invert_dict(d)</code></td><td>Swap keys and values</td></tr>
+      <tr><td><code>group_by(items, key_func)</code></td><td>General grouping &mdash; subsumes all of the above</td></tr>
+    </table>
+    <p>The <strong><code>group_by</code> pattern</strong> is one of the most frequently recurring patterns in data processing: collect items into buckets based on a computed property.</p>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You've used dictionaries to count, group, track, invert, and hash &mdash; and along the way invented the mechanism that makes dictionaries fast.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

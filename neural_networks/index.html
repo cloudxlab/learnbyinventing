@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neural Networks — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/neural_networks/neural_networks.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Inventing Neural Networks</h1>
+<p class="chapter-intro">In the Gradient Descent chapter you taught a computer to fit a line: pick weights, measure the error, nudge every weight downhill, repeat. That one loop is more powerful than it looks &mdash; the only thing standing between you and a <em>neural network</em> is the shape of the function you feed it.</p>
+
+<p>In this chapter you will:</p>
+<ol>
+  <li>Build a <strong>neuron</strong> &mdash; and discover it's just logistic regression.</li>
+  <li>Trip over the most classic bug in deep learning (<strong>saturation</strong>) and fix it.</li>
+  <li>Chain small functions into <strong>computation graphs</strong> and watch weights reshape curves.</li>
+  <li>Take on a problem no straight line can solve &mdash; a realistic <strong>income-tax rule</strong> &mdash; and beat it three ways, ending with the activation function that powers modern deep learning.</li>
+</ol>
+<p>You need <code>numpy</code>, <code>matplotlib</code>, and your gradient-descent instincts from Chapter 15. Nothing else.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: A Neuron That Says Yes or No
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: A Neuron That Says Yes or No</h2>
+</div>
+
+<p>Here are five people's heights, labeled <code>1</code> for adult and <code>0</code> for teenager:</p>
+<pre><code>heights = np.array([171, 173, 163, 162, 160])
+labels  = np.array([1, 1, 0, 0, 0])</code></pre>
+<p>A line <code>m*x + c</code> outputs <em>any</em> number &mdash; 0.37, 12.5, &minus;3. But the answer we want is yes/no. We need something that squashes a number into a decision.</p>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; The step function</h3>
+  <div class="question">
+    <p>The bluntest squasher possible: <code>step_function(z)</code> returns <code>1</code> if <code>z &gt;= 0</code>, else <code>0</code>. Write it.</p>
+    <p>(In 1958 this exact function, wrapped around a weighted sum, was called the <strong>perceptron</strong> &mdash; the first artificial neuron.)</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; data setup</div>
+<pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+heights = np.array([171, 173, 163, 162, 160])
+labels  = np.array([1, 1, 0, 0, 0])</code></pre>
+    </div>
+    <p><strong>Your task:</strong> Implement <code>step_function(z)</code>.</p>
+    <p><strong>Tests:</strong></p>
+<pre><code>assert step_function(3) == 1
+assert step_function(0) == 1
+assert step_function(-0.5) == 0</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A simple <code>if/else</code> will do: <code>return 1 if z &gt;= 0 else 0</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>You can also write it as <code>return int(z &gt;= 0)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; The smooth step</h3>
+  <div class="question">
+    <p>Here's the problem with <code>step_function</code>: imagine gradient descent trying to tune <code>m</code> and <code>c</code> inside <code>step_function(m*x + c)</code>. Nudge <code>m</code> a little &mdash; the output usually doesn't change <em>at all</em> (it's still exactly 0 or exactly 1). The gradient is zero almost everywhere. Gradient descent is blind; there is no downhill to follow.</p>
+    <p>We need a step with a <em>slope</em> &mdash; a function that goes from 0 to 1 but smoothly, so every nudge changes the output a little. The classic choice:</p>
+    <p>$$\sigma(z) = \frac{1}{1 + e^{-z}}$$</p>
+    <p>Write <code>sigmoid(z)</code> using <code>np.exp</code>. Predict before you run: what is <code>sigmoid(0)</code>? What does it approach for very large positive <code>z</code>? Very negative?</p>
+    <p><strong>Tests:</strong></p>
+<pre><code>assert sigmoid(0) == 0.5
+assert sigmoid(100) &gt; 0.999
+assert sigmoid(-100) &lt; 0.001
+assert abs(sigmoid(2) - 0.8808) &lt; 1e-3</code></pre>
+    <p>After implementing, run the provided plotting code to compare the step and sigmoid side by side:</p>
+<pre><code>zs = np.linspace(-8, 8, 100)
+plt.plot(zs, [step_function(z) for z in zs], label="step")
+plt.plot(zs, sigmoid(zs), label="sigmoid")
+plt.legend(); plt.grid(alpha=0.3)
+plt.title("A step you can slide down")
+plt.show()</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The formula translates directly: <code>return 1 / (1 + np.exp(-z))</code>. Because you use <code>np.exp</code>, it automatically works on arrays too.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>When <code>z = 0</code>: $e^{0} = 1$, so sigmoid returns $1 / (1 + 1) = 0.5$. For large positive <code>z</code>, $e^{-z} \to 0$ so sigmoid $\to 1$. For large negative <code>z</code>, $e^{-z} \to \infty$ so sigmoid $\to 0$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; An error we can descend</h3>
+  <div class="question">
+    <p>Our model is now <code>sigmoid(m*x + c)</code> &mdash; a line squashed into (0, 1). Read its output as "how confident am I that this is an adult."</p>
+    <p>Write <code>sigmoid_error(m, c, x, y)</code> &mdash; the mean squared error between <code>sigmoid(m*x + c)</code> and the true labels. This is your familiar MSE with a sigmoid inside; numpy broadcasting handles the whole array at once.</p>
+    <p><strong>Tests:</strong></p>
+<pre><code># perfect confidence -&gt; error ~ 0: huge m centered between the groups
+assert sigmoid_error(10, -10 * 166.5, heights, labels) &lt; 1e-6
+# always-unsure model (m=0, c=0 -&gt; everyone 0.5) -&gt; error 0.25
+assert abs(sigmoid_error(0, 0, heights, labels) - 0.25) &lt; 1e-9</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Compute predictions: <code>pred = sigmoid(m * x + c)</code>. Then MSE: <code>np.mean((pred - y) ** 2)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>When <code>m=0, c=0</code>, every prediction is <code>sigmoid(0) = 0.5</code>. The labels are 1, 1, 0, 0, 0. So each squared error is either $(0.5-1)^2 = 0.25$ or $(0.5-0)^2 = 0.25$, giving mean 0.25.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.4 -->
+<section class="exercise" id="ex-1-4">
+  <h3>Exercise 1.4 &mdash; Train it&hellip; and watch it refuse to learn</h3>
+  <div class="question">
+    <p>Below is the finite-difference gradient helper you've built twice before, provided as-is.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; finite-difference gradients for (m, c)</div>
+<pre><code>def gradients_mc(err_fn, m, c, x, y, h=1e-8):
+    base = err_fn(m, c, x, y)
+    grad_m = (err_fn(m + h, c, x, y) - base) / h
+    grad_c = (err_fn(m, c + h, x, y) - base) / h
+    return grad_m, grad_c</code></pre>
+    </div>
+    <p>Write <code>train(m, c, x, y, learning_rate, epochs)</code> &mdash; the standard loop: compute both gradients of <code>sigmoid_error</code>, step both weights against them, return the final <code>(m, c)</code>.</p>
+    <p>Then run it on the raw heights, starting from <code>m=0.12, c=0.3</code>. The tests expect something strange: <strong>the error starts at 0.6 and ends at 0.6.</strong> One hundred epochs, no progress.</p>
+<pre><code>err_before = sigmoid_error(0.12, 0.3, heights, labels)
+m1, c1 = train(0.12, 0.3, heights, labels, learning_rate=0.1, epochs=100)
+err_after = sigmoid_error(m1, c1, heights, labels)
+print(f"error: {err_before:.4f} -&gt; {err_after:.4f}")
+assert err_after &gt; 0.5                        # stuck!</code></pre>
+    <p>Before moving on, diagnose it. Print <code>sigmoid(0.12 * 171 + 0.3)</code>. That's <code>sigmoid(20.8)</code> &mdash; which is <code>0.99999999...</code>. Every prediction is glued to 1.0 on sigmoid's flat plateau, where the slope is essentially zero. Zero slope means zero gradient means zero learning. This is called <strong>saturation</strong>, and it is the single most classic failure mode in neural networks.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The training loop: each epoch, call <code>gradients_mc(sigmoid_error, m, c, x, y)</code>, then <code>m -= learning_rate * grad_m</code> and <code>c -= learning_rate * grad_c</code>. Return <code>(m, c)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The reason it doesn't learn: <code>0.12 * 171 + 0.3 = 20.82</code>. <code>sigmoid(20.82)</code> is indistinguishable from 1.0. Even for the teenagers (labels 0), the prediction is essentially 1.0. But the gradient of sigmoid at 20.82 is vanishingly small &mdash; there's nothing for gradient descent to grab onto.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.5 -->
+<section class="exercise" id="ex-1-5">
+  <h3>Exercise 1.5 &mdash; The fix: feed the neuron small numbers</h3>
+  <div class="question">
+    <p>The plateau problem came from <code>m*x</code> being huge, because heights are ~170. Keep the inputs near zero and sigmoid operates on its steep middle section, where gradients live.</p>
+    <p>Subtract 165 from the heights (so they become <code>[6, 8, -2, -3, -5]</code>), train again from the same start with <code>learning_rate=0.5, epochs=2000</code>, and this time build the actual classifier: <code>classify(x_centered)</code> returns 1 when <code>sigmoid(m*x + c) &gt;= 0.5</code>.</p>
+<pre><code>centered = heights - 165
+
+m2, c2 = train(0.12, 0.3, centered, labels, learning_rate=0.5, epochs=2000)
+err = sigmoid_error(m2, c2, centered, labels)
+assert err &lt; 0.05
+
+preds = np.array([classify(x) for x in centered])
+assert (preds == labels).all()</code></pre>
+    <p><strong>What you just invented</strong> is <strong>logistic regression</strong> &mdash; and it is exactly one <strong>neuron</strong>: weighted sum, plus bias, through a squashing <em>activation function</em>. The centering trick you used is why every deep-learning tutorial starts by normalizing inputs.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>After centering, the values are small: <code>[6, 8, -2, -3, -5]</code>. Now <code>m * x + c</code> stays in sigmoid's responsive range, so the gradients are non-zero and training proceeds.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The classifier: <code>return 1 if sigmoid(m2 * x_centered + c2) &gt;= 0.5 else 0</code>. The decision boundary is at <code>m2 * x + c2 = 0</code>, i.e., <code>x = -c2 / m2</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Wiring Neurons Together: Computation Graphs
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Wiring Neurons Together &mdash; Computation Graphs</h2>
+</div>
+
+<p>One neuron draws one soft boundary. The power move is <em>composition</em>: feed one small function's output into the next. A recipe of chained steps is called a <strong>computation graph</strong> &mdash; and a neural network is nothing more than a large one.</p>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Follow the wires</h3>
+  <div class="question">
+    <p>Implement this four-step graph as <code>compute_graph(x, w10, w11, w20, w21, w30, w31)</code>:</p>
+<pre><code>y1 = step_function(w11 * x + w10)
+y2 = sigmoid(y1 * w21 + w20)
+y3 = x * y2
+y  = w31 * y3 + w30</code></pre>
+    <p>Work the first test by hand before coding: with all weights 1 and <code>x = 2</code>, <code>y1 = step(3) = 1</code>, <code>y2 = sigmoid(2) &asymp; 0.8808</code>, <code>y3 &asymp; 1.7616</code>, <code>y &asymp; 2.7616</code>.</p>
+    <p><strong>Tests:</strong></p>
+<pre><code>assert abs(compute_graph(2, 1, 1, 1, 1, 1, 1) - 2.7616) &lt; 1e-3
+assert abs(compute_graph(-5, 1, 1, 1, 1, 1, 1) - (-2.6555)) &lt; 1e-3</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Just translate the four lines of the graph directly into Python. Each line uses the output of the previous one.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>x = -5</code>: <code>y1 = step(-5 + 1) = step(-4) = 0</code>, <code>y2 = sigmoid(0 + 1) = sigmoid(1) &asymp; 0.7311</code>, <code>y3 = -5 * 0.7311 = -3.6555</code>, <code>y = 1 * (-3.6555) + 1 = -2.6555</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Weights reshape the curve</h3>
+  <div class="question">
+    <p>Run the provided cell: it plots <code>y</code> versus <code>x</code> for the graph above with one set of weights. Then:</p>
+    <ol>
+      <li>Change the weights to a second set of your choosing and plot both curves together.</li>
+      <li>Notice the <em>kink</em> where the step function switches &mdash; the weights <code>w10, w11</code> decide <strong>where</strong> it happens, the later weights decide <strong>what</strong> happens on each side.</li>
+      <li>Invent your <strong>own</strong> graph of a similar size &mdash; chain 3&ndash;5 operations mixing <code>step_function</code>, <code>sigmoid</code>, <code>*</code>, <code>+</code> &mdash; and plot it for two weight settings.</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting starter</div>
+<pre><code>xs = np.linspace(-10, 10, 400)
+ys = [compute_graph(x, 1, 1, 1, 1, 1, 1) for x in xs]
+plt.plot(xs, ys, label="w = all ones")
+
+# your second weight set here:
+# ys2 = [compute_graph(x, ...) for x in xs]
+# plt.plot(xs, ys2, label="w = your choice")
+
+plt.legend(); plt.grid(alpha=0.3)
+plt.title("Same graph, different weights, different curve")
+plt.show()</code></pre>
+    </div>
+    <p>This is the whole game of neural networks: the <em>graph</em> fixes what shapes are possible; the <em>weights</em> choose one shape; gradient descent finds the weights.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Try extreme weight sets: e.g., <code>w10=-3, w11=1</code> shifts the kink to <code>x=3</code>. Setting <code>w30=0, w31=2</code> doubles the output scale. Experiment freely.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For your own graph, try something like: <code>y1 = sigmoid(w1*x + w0)</code>, <code>y2 = x * y1</code>, <code>y = w3*y2 + w2</code>. Three operations, four weights, and you get a different family of curves.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: The Tax Problem — When No Line Will Do
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: The Tax Problem &mdash; When No Line Will Do</h2>
+</div>
+
+<p>A country taxes income like this: <strong>nothing on the first 5000; 30% on everything above.</strong> So <code>tax = 0.3 * (income &minus; 5000)</code> if income &gt; 5000, else 0. Plotted, it's a hockey stick &mdash; flat, then a straight climb, with a sharp kink at 5000.</p>
+
+<p>The cell below generates 200 people and &mdash; remembering Part 1's saturation lesson! &mdash; scales incomes and taxes down to the 0&ndash;1 range before we model anything. Run it.</p>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; data generation</div>
+<pre><code>rng = np.random.default_rng(42)
+income = rng.uniform(0, 10000, 200)
+tax = np.where(income &gt; 5000, 0.30 * (income - 5000), 0.0)
+
+x = income / 10000     # scaled income, 0..1
+y = tax / 1500         # scaled tax, 0..1 (max tax is 1500)
+
+plt.scatter(x, y, s=12, alpha=0.6)
+plt.xlabel("income (scaled)"); plt.ylabel("tax (scaled)")
+plt.title("The hockey stick no line can fit")
+plt.grid(alpha=0.3); plt.show()</code></pre>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Prove the line fails</h3>
+  <div class="question">
+    <p>Fit the best straight line to <code>(x, y)</code> &mdash; you may use <code>np.polyfit(x, y, 1)</code> (you derived what it computes, least squares, in Chapter 14). Compute its RMSE and look at what it predicts for low incomes.</p>
+    <p>The tests capture two indictments: the RMSE stays above 0.1 no matter what, and for incomes below 3000 the line predicts <strong>negative tax</strong> &mdash; the government paying you. The problem isn't the fitting; the <em>shape</em> of the model is wrong.</p>
+<pre><code>m_line, c_line = ...   # replace with np.polyfit(x, y, 1)
+
+line_pred = m_line * x + c_line
+line_rmse = np.sqrt(np.mean((line_pred - y) ** 2))
+
+low = x &lt; 0.3
+assert line_rmse &gt; 0.1
+assert np.mean(line_pred[low]) &lt; 0    # negative tax!</code></pre>
+    <p>Plot the line against the data to see the mismatch.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>np.polyfit(x, y, 1)</code> returns <code>[m, c]</code> for the best-fit line <code>m*x + c</code>. Just unpack: <code>m_line, c_line = np.polyfit(x, y, 1)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The best line has slope ~1 and intercept ~&minus;0.33, giving RMSE around 0.14. For scaled incomes below 0.3, the line predicts about &minus;0.04 &mdash; negative tax, which is nonsensical.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Idea 1: first decide, <em>then</em> predict</h3>
+  <div class="question">
+    <p>A human would solve this in two steps: <em>is this person taxable at all?</em> If no, the answer is 0. If yes, it's a simple line. Let's build exactly that.</p>
+    <p>Step one is a yes/no question &mdash; a job for the neuron from Part 1.</p>
+    <p>Create <code>is_taxable = (tax &gt; 0).astype(int)</code> and train a sigmoid classifier <code>sigmoid(m*x + c)</code> on <code>(x, is_taxable)</code> &mdash; your <code>train</code> from Exercise 1.4 works unchanged (inputs are already scaled; use <code>learning_rate=2.0, epochs=3000</code>, starting from <code>m=1, c=0</code>). Report the accuracy of thresholding at 0.5, and print where the decision boundary sits: <code>-c/m</code> (in scaled income; multiply by 10000 to see it in currency &mdash; it should land near 5000).</p>
+<pre><code>is_taxable = (tax &gt; 0).astype(int)
+
+mk, ck = train(1, 0, x, is_taxable, learning_rate=2.0, epochs=3000)
+
+pred_taxable = (sigmoid(mk * x + ck) &gt;= 0.5).astype(int)
+accuracy = np.mean(pred_taxable == is_taxable)
+assert accuracy &gt;= 0.97</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Your existing <code>train</code> function doesn't need any changes &mdash; it minimizes <code>sigmoid_error</code>, which works for any binary labels. The inputs are already in [0, 1], so no saturation issues.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The decision boundary is where <code>sigmoid(m*x + c) = 0.5</code>, which happens when <code>m*x + c = 0</code>, i.e., <code>x = -c/m</code>. In real income: <code>-c/m * 10000</code> should be close to 5000.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; The pipeline: classify, then regress</h3>
+  <div class="question">
+    <p>Step two: for the taxable people <em>only</em>, the relationship is a perfect straight line. Fit a line on just the rows where <code>is_taxable == 1</code> &mdash; on the scaled data it should come out at exactly <code>m=2, c=&minus;1</code> (check: at <code>x=1</code>, i.e. income 10000, scaled tax is <code>2*1 &minus; 1 = 1</code>, i.e. 1500).</p>
+    <p>Then chain the two models into <code>predict_tax(xi)</code>:</p>
+    <ul>
+      <li>if the classifier says taxable &rarr; return the line's prediction,</li>
+      <li>else &rarr; return <code>0.0</code>.</li>
+    </ul>
+    <p>Compare its RMSE with the line's from 3.1.</p>
+<pre><code>mt, ct = ...   # line fit on taxable rows only
+
+assert abs(mt - 2) &lt; 1e-6 and abs(ct + 1) &lt; 1e-6
+
+pipe_pred = np.array([predict_tax(xi) for xi in x])
+pipe_rmse = np.sqrt(np.mean((pipe_pred - y) ** 2))
+assert pipe_rmse &lt; line_rmse / 5</code></pre>
+    <p><strong>What you invented:</strong> a <em>gated</em> model &mdash; one network deciding which expert handles the input. Scaled up, this idea is called a <strong>mixture of experts</strong>, and it's inside several frontier LLMs. It's also the honest answer to "how do I put an <code>if</code> inside a machine-learning model."</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Filter the data: <code>x_tax = x[is_taxable == 1]</code> and <code>y_tax = y[is_taxable == 1]</code>. Then <code>mt, ct = np.polyfit(x_tax, y_tax, 1)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>predict_tax(xi)</code>: check <code>sigmoid(mk * xi + ck) &gt;= 0.5</code>. If yes, return <code>mt * xi + ct</code>. If no, return <code>0.0</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.4 -->
+<section class="exercise" id="ex-3-4">
+  <h3>Exercise 3.4 &mdash; Idea 2: one network, end to end</h3>
+  <div class="question">
+    <p>The pipeline needed <em>us</em> to know the problem splits into classify-then-regress. Could a single network figure the shape out by itself? Try the smallest one imaginable &mdash; two neurons in a chain:</p>
+    <p>$$\hat{y} = w_1 \cdot \sigma(m x + c) + w_0$$</p>
+    <p>Neuron 1 squashes, neuron 2 scales and shifts. Four weights.</p>
+    <p>First write <code>fit_net(err_fn, params, x, y, lr, epochs, h=1e-6)</code> &mdash; your gradient-descent loop generalized to a <em>list</em> of parameters: each epoch, finite-difference each parameter (copy the list, nudge one entry), then step all of them. (You wrote the two-parameter and many-weight versions in Chapter 15 &mdash; this is the same music.)</p>
+    <p>Then define <code>net_error(params, x, y)</code> for the two-neuron model and fit it from <code>[1.0, 0.0, 1.0, 0.0]</code> with <code>lr=0.5, epochs=5000</code>.</p>
+    <p>The tests expect an honest middle result: clearly better than the line (RMSE &asymp; 0.05 vs 0.14), clearly worse than the pipeline. Look at the plot to see why &mdash; sigmoid rises and then <strong>flattens</strong>, but real tax keeps climbing. A smooth step times a constant can imitate a kink, not a ramp.</p>
+<pre><code>params = fit_net(net_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+sig_rmse = np.sqrt(net_error(params, x, y))
+assert sig_rmse &lt; line_rmse
+assert sig_rmse &gt; pipe_rmse</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>fit_net</code>: each epoch, compute the base error. Then for each parameter index <code>i</code>, make a copy of <code>params</code>, add <code>h</code> to position <code>i</code>, compute the new error, and the gradient is <code>(new_error - base) / h</code>. Then update all params: <code>params[i] -= lr * grads[i]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>net_error</code>: unpack <code>m, c, w1, w0 = params</code>. Prediction: <code>pred = w1 * sigmoid(m * x + c) + w0</code>. Return <code>np.mean((pred - y) ** 2)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>To copy the list for finite differences: <code>nudged = list(params)</code>, then <code>nudged[i] += h</code>. Be sure to make a fresh copy for each parameter.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.5 -->
+<section class="exercise" id="ex-3-5">
+  <h3>Exercise 3.5 &mdash; The right activation: ReLU</h3>
+  <div class="question">
+    <p>Look at the tax rule one more time: <em>zero below a threshold, a straight ramp above it.</em> There is an activation function that <strong>is</strong> that shape:</p>
+    <p>$$\text{relu}(z) = \max(z, 0)$$</p>
+    <p>Write <code>relu(z)</code> (use <code>np.maximum</code> so it works on arrays), then reuse your <code>fit_net</code> on the model $\hat{y} = w_1 \cdot \text{relu}(m x + c) + w_0$ &mdash; same starting point, same settings, only the activation changed.</p>
+    <p>The tests expect near-perfection: the network can now represent the true rule <em>exactly</em> (one solution: <code>m=2, c=&minus;1, w1=1, w0=0</code> &mdash; but gradient descent may find an equivalent scaling, e.g. <code>m*w1 = 2</code>).</p>
+<pre><code>assert relu(3.5) == 3.5
+assert relu(-2) == 0
+assert (relu(np.array([-1, 0, 2])) == np.array([0, 0, 2])).all()
+
+params_r = fit_net(relu_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+relu_rmse = np.sqrt(relu_error(params_r, x, y))
+assert relu_rmse &lt; sig_rmse
+assert relu_rmse &lt; 0.02</code></pre>
+    <p><strong>The reveal:</strong> ReLU &mdash; the <em>rectified linear unit</em> &mdash; is the default activation of modern deep learning, powering nearly every large model. Sigmoid saturates at both ends (you met that plateau in Exercise 1.4); ReLU never saturates on the positive side, and stacks of ReLU neurons build arbitrary piecewise-linear shapes &mdash; kinks upon kinks, like the one you just fit with a single neuron.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>relu(z)</code> is just <code>np.maximum(z, 0)</code>. That's the whole function.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>relu_error</code>: same as <code>net_error</code> but replace <code>sigmoid</code> with <code>relu</code>. Unpack <code>m, c, w1, w0 = params</code>, predict <code>w1 * relu(m * x + c) + w0</code>, return the MSE.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>The true tax in scaled form is <code>relu(2*x - 1)</code>. So the network needs to learn <code>m &asymp; 2, c &asymp; -1, w1 &asymp; 1, w0 &asymp; 0</code> (or any equivalent rescaling). With ReLU, this is representable exactly.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.6 -->
+<section class="exercise" id="ex-3-6">
+  <h3>Exercise 3.6 &mdash; Explorations (open-ended)</h3>
+  <div class="question">
+    <p>No tests here &mdash; experiment and observe:</p>
+    <ol>
+      <li>Replace <code>sigmoid</code> with <code>np.tanh</code> in the two-neuron net. Better or worse on the tax data? (tanh is a sigmoid stretched to output &minus;1&hellip;1.)</li>
+      <li>Add a second ReLU neuron: $\hat{y} = w_1\,\text{relu}(m_1 x + c_1) + w_2\,\text{relu}(m_2 x + c_2) + w_0$ (seven parameters &mdash; <code>fit_net</code> doesn't care). Invent a tax rule with <em>two</em> brackets and see if it can fit that too.</li>
+      <li>Feed <code>x</code> in again at the output: $\hat{y} = w_1\,\text{relu}(mx+c) + w_2 x + w_0$. (Networks with such shortcuts are called <em>residual</em> &mdash; the trick that made very deep networks trainable.)</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For task 1, simply write a <code>tanh_error</code> that uses <code>np.tanh</code> instead of <code>sigmoid</code>. Since tanh ranges from &minus;1 to 1 (not 0 to 1), the weights will adjust to compensate.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the two-bracket tax, try: 0% below 3000, 20% on 3000&ndash;7000, 40% above 7000. Each ReLU neuron handles one kink point. The seven parameters are <code>[m1, c1, w1, m2, c2, w2, w0]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary &mdash; What You Invented</h2>
+</div>
+
+<table>
+  <thead>
+    <tr><th>You built</th><th>The field calls it</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>step_function(m*x + c)</code></td><td>the perceptron (1958)</td></tr>
+    <tr><td><code>sigmoid(m*x + c)</code> + gradient descent</td><td>logistic regression = one neuron</td></tr>
+    <tr><td>stuck training on raw heights</td><td>saturation / vanishing gradients &mdash; fixed by input scaling</td></tr>
+    <tr><td>chained small functions with weights</td><td>a computation graph</td></tr>
+    <tr><td>classify-then-regress gate</td><td>a mixture of experts</td></tr>
+    <tr><td><code>fit_net</code> over a parameter list</td><td>training a neural network</td></tr>
+    <tr><td><code>relu</code></td><td>the default activation of deep learning</td></tr>
+  </tbody>
+</table>
+
+<p>Every deep-learning framework is these same pieces industrialized: bigger graphs, exact chain-rule gradients instead of finite differences (you verified they agree in Chapter 15), and hardware that multiplies matrices fast. When you're ready to see the same ideas at production scale, read through <a href="https://github.com/cloudxlab/GPT-from-scratch/tree/master">cloudxlab/GPT-from-scratch</a> &mdash; tokenization, embeddings, attention (the <code>uM.T @ uM</code> trick from the Recommender chapter!), and a training loop you now recognize.</p>
+
+<p>Next chapter: what happens when the input isn't one number but a whole image &mdash; <strong>convolutions</strong>.</p>
+
+<div class="chapter-footer">
+  <p><em>You've just invented neural networks from scratch &mdash; step function, sigmoid, saturation, computation graphs, gradient descent on parameter lists, gated models, and ReLU. That's the real thing. Every deep-learning framework works on exactly these principles.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

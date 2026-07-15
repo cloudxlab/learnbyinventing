@@ -1,27 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-# Export all notebooks to HTML in-place (next to the .ipynb file)
-jupyter nbconvert --to html dictionaries/dictionaries.ipynb
-jupyter nbconvert --to html binary_search/binary_search.ipynb
-jupyter nbconvert --to html loops_and_array/loops_and_array.ipynb
-jupyter nbconvert --to html expressions_and_functions/expressions_and_functions.ipynb
-jupyter nbconvert --to html if_else/if_else.ipynb
-jupyter nbconvert --to html recursion/recursion.ipynb
-jupyter nbconvert --to html sorting/sorting.ipynb
-jupyter nbconvert --to html trees_and_heaps/trees_and_heaps.ipynb
-jupyter nbconvert --to html pattern_matching/pattern_matching.ipynb
-jupyter nbconvert --to html backtracking/backtracking.ipynb
-jupyter nbconvert --to html encoder_decoder/encoder_decoder.ipynb
-jupyter nbconvert --to html classes_and_objects/classes_and_objects.ipynb
-jupyter nbconvert --to html secrets_of_prediction/secrets_of_prediction.ipynb
-jupyter nbconvert --to html gradient_descent/linear_regression_gradient_descent.ipynb
-jupyter nbconvert --to html decision_tree/decision_tree.ipynb
-jupyter nbconvert --to html random_forest/random_forest.ipynb
-jupyter nbconvert --to html recommender/recommender.ipynb
-jupyter nbconvert --to html neural_networks/neural_networks.ipynb
-jupyter nbconvert --to html convolutions/convolutions.ipynb
-jupyter nbconvert --to html information_theory/information_theory.ipynb
+# All notebook chapters are now standalone HTML files (<chapter>/index.html)
+# with shared assets (assets/lbi.css, assets/lbi.js).
+# No jupyter nbconvert needed for these chapters.
 
 # Convert learning_to_count markdown to HTML
 # (the .md source is not in the repo — only the exported .html is committed —

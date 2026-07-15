@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convolutions &mdash; Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/convolutions/convolutions.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Learning Convolutions by Inventing Computer Vision</h1>
+<p class="chapter-intro">You won't be taught &mdash; you will <em>discover</em>. Every step builds on the last. You will build everything from scratch: pixel by pixel, loop by loop.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: What Is an Image?
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: What Is an Image?</h2>
+</div>
+
+<!-- Setup: imports and helpers -->
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; imports</div>
+<pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+import requests
+from io import BytesIO</code></pre>
+</div>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; image loader helper</div>
+<pre><code>def load_color_image():
+    """Downloads a small color image.
+    Falls back to a synthetic image if download fails."""
+    try:
+        url = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Bikesgray.jpg/320px-Bikesgray.jpg"
+        response = requests.get(url, timeout=5)
+        img = Image.open(BytesIO(response.content)).convert('RGB')
+        return img
+    except Exception:
+        arr = np.zeros((100, 100, 3), dtype=np.uint8)
+        for r in range(100):
+            for c in range(100):
+                arr[r, c] = [r * 2, c * 2, 128]
+        return Image.fromarray(arr)
+
+def load_gray_image():
+    """Downloads a small grayscale image.
+    Falls back to a synthetic image if download fails."""
+    try:
+        url = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Bikesgray.jpg/320px-Bikesgray.jpg"
+        response = requests.get(url, timeout=5)
+        img = Image.open(BytesIO(response.content)).convert('L')
+        return img
+    except Exception:
+        arr = np.zeros((100, 100), dtype=np.uint8)
+        for r in range(100):
+            for c in range(100):
+                arr[r, c] = (r + c) % 256
+        return Image.fromarray(arr)
+
+color_img = load_color_image()
+gray_img  = load_gray_image()</code></pre>
+</div>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; display helper</div>
+<pre><code>def show_images(images, titles=None, cmap_list=None, figsize=None):
+    """
+    Displays a list of images side by side.
+
+    Parameters:
+        images    : list of numpy arrays or PIL Images
+        titles    : list of title strings
+        cmap_list : list of colormaps (e.g. ['gray', None, 'hot'])
+                    use None for color images, 'gray' for grayscale
+        figsize   : optional (width, height) tuple
+    """
+    n = len(images)
+    if figsize is None:
+        figsize = (5 * n, 4)
+    if titles is None:
+        titles = [f'Image {i+1}' for i in range(n)]
+    if cmap_list is None:
+        cmap_list = [None] * n
+
+    fig, axes = plt.subplots(1, n, figsize=figsize)
+    if n == 1:
+        axes = [axes]
+    for ax, img, title, cmap in zip(axes, images, titles, cmap_list):
+        if isinstance(img, Image.Image):
+            img = np.array(img)
+        ax.imshow(img, cmap=cmap)
+        ax.set_title(title)
+        ax.axis('off')
+    plt.tight_layout()
+    plt.show()</code></pre>
+</div>
+
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Load and Look</h3>
+  <div class="question">
+    <p>Before we can process images, we need to understand what they <em>are</em> to a computer.</p>
+    <p>Run the helper above to load two test images &mdash; one colored, one grayscale.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Use <code>show_images</code> to display both the color and grayscale images.
+        <ul>
+          <li>For the grayscale image, pass <code>cmap_list=['gray']</code>.</li>
+        </ul>
+      </li>
+      <li>What do you notice visually? How do they differ?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Call <code>show_images([color_img], titles=['Color Image'])</code> for the color image. For grayscale, add <code>cmap_list=['gray']</code> so matplotlib doesn't apply a default colormap.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Peek Inside: Images as Numbers</h3>
+  <div class="question">
+    <p>An image is just a grid of numbers. Let's prove it.</p>
+    <p>A PIL Image can be converted to a NumPy array using <code>np.array(img)</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Convert both images to NumPy arrays. Store them as <code>color_arr</code> and <code>gray_arr</code>.</li>
+      <li>Print <code>color_arr.shape</code> and <code>gray_arr.shape</code>. What are the dimensions?</li>
+      <li>Print <code>color_arr.dtype</code> and <code>gray_arr.dtype</code>. What is the data type of each pixel?</li>
+      <li>What is the range of values? Print <code>color_arr.min()</code> and <code>color_arr.max()</code>.</li>
+      <li>Print just the first 5&times;5 block of the grayscale array. What do the numbers represent?</li>
+      <li>Print <code>color_arr[0, 0]</code>. What does this value represent? What about <code>color_arr[0, 0, 0]</code>?</li>
+    </ol>
+    <p><strong>Write down your answers:</strong></p>
+    <ul>
+      <li>A color image has shape <code>(H, W, ?)</code>. The third dimension is&hellip; because&hellip;</li>
+      <li>A grayscale image has shape <code>(H, W)</code>. There is no third dimension because&hellip;</li>
+      <li>The numbers in the array range from ___ to ___. This makes sense because&hellip;</li>
+      <li><code>color_arr[0, 0]</code> gives <code>[R, G, B]</code> &mdash; this means the pixel at row 0, column 0 has Red=___, Green=___, Blue=___.</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The color image has 3 channels (Red, Green, Blue), so its shape is <code>(height, width, 3)</code>. The grayscale image has only one brightness value per pixel, so its shape is <code>(height, width)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Pixel values are <code>uint8</code> &mdash; unsigned 8-bit integers from 0 to 255. 0 = black, 255 = white (for grayscale) or maximum intensity (for a color channel).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; Navigate the Grid</h3>
+  <div class="question">
+    <p>Now that you know the structure, explore the image as a grid.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>How many rows does the color image have? How many columns?</li>
+      <li>What is the pixel at the very center of the color image? (Compute the center row and column from the shape.)</li>
+      <li>What is the pixel at the bottom-right corner?</li>
+      <li>Print all pixel values in the first row of the grayscale image. How many values are there?</li>
+      <li>Without using any NumPy operations &mdash; using only Python loops &mdash; compute the <strong>average brightness</strong> of the grayscale image. (Average brightness = average of all pixel values.)</li>
+    </ol>
+    <blockquote><strong>Important rule for this notebook:</strong> When asked to avoid NumPy, that means: no <code>np.mean()</code>, no <code>np.sum()</code>, no array slicing magic. Use Python <code>for</code> loops, <code>range()</code>, and plain arithmetic. You <em>can</em> still access array elements by index like <code>arr[r, c]</code>.</blockquote>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The center row is <code>height // 2</code> and center column is <code>width // 2</code>. The bottom-right pixel is at <code>[height - 1, width - 1]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For average brightness, loop over all rows and columns, accumulate the sum and count, then divide: <code>for r in range(height): for c in range(width): total += gray_arr[r, c]; count += 1</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 1.4 -->
+<section class="exercise" id="ex-1-4">
+  <h3>Exercise 1.4 &mdash; Visualize a Tiny Slice</h3>
+  <div class="question">
+    <p>Let's look at a small patch of the image zoomed in, so we can literally see the pixels.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Extract the top-left 20&times;20 patch of the grayscale image.</li>
+      <li>Display it using <code>show_images</code> with <code>cmap_list=['gray']</code>.</li>
+      <li>Do you notice anything? Each square in the display <em>is</em> one number from the array.</li>
+      <li>Extract the same 20&times;20 patch from the color image and display it.</li>
+      <li>Now extract a 20&times;20 patch from the <em>middle</em> of each image and display them side by side.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use slicing: <code>gray_arr[:20, :20]</code> for the top-left patch. For the middle, compute <code>mid_r = height // 2</code> and <code>mid_c = width // 2</code>, then use <code>gray_arr[mid_r-10:mid_r+10, mid_c-10:mid_c+10]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Extracting a Color Channel
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Extracting a Color Channel</h2>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; What Are R, G, B?</h3>
+  <div class="question">
+    <p>A color pixel is stored as three numbers: <strong>(R, G, B)</strong> &mdash; Red, Green, Blue. Each value is between 0 and 255.</p>
+    <ul>
+      <li><code>(255, 0, 0)</code> &rarr; pure red</li>
+      <li><code>(0, 255, 0)</code> &rarr; pure green</li>
+      <li><code>(0, 0, 255)</code> &rarr; pure blue</li>
+      <li><code>(0, 0, 0)</code> &rarr; black</li>
+      <li><code>(255, 255, 255)</code> &rarr; white</li>
+      <li><code>(128, 128, 128)</code> &rarr; gray</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Look at <code>color_arr[0, 0]</code>. What are the R, G, B values of the top-left pixel?</li>
+      <li>Create a tiny 4&times;4 test array manually (use <code>np.array</code>) where each pixel is a known color:
+        <ul>
+          <li>Row 0: all red pixels <code>[255, 0, 0]</code></li>
+          <li>Row 1: all green pixels <code>[0, 255, 0]</code></li>
+          <li>Row 2: all blue pixels <code>[0, 0, 255]</code></li>
+          <li>Row 3: all white pixels <code>[255, 255, 255]</code></li>
+        </ul>
+        Display it. Does it look right?
+      </li>
+      <li>Access <code>test[0, 0, 0]</code> &mdash; this is the Red channel of the first pixel. Access <code>test[1, 0, 1]</code> &mdash; what channel is this? What value do you expect?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start with <code>test = np.zeros((4, 4, 3), dtype=np.uint8)</code>. Then set <code>test[0, :] = [255, 0, 0]</code> for the red row, etc.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>test[1, 0, 1]</code> indexes row 1, column 0, channel 1 &mdash; that is the Green channel of the first pixel in the green row. The value should be 255.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Extract the Red Channel Using Loops</h3>
+  <div class="question">
+    <p>Your job is to extract only the <strong>Red channel</strong> from the color image. The result should be a 2D array (H &times; W) of numbers &mdash; just the red values.</p>
+    <p><strong>Rules for this exercise:</strong></p>
+    <ul>
+      <li>No NumPy slicing tricks like <code>color_arr[:, :, 0]</code></li>
+      <li>No <code>np.split</code>, no <code>np.take</code>, no fancy indexing</li>
+      <li>Use plain Python <code>for</code> loops and index access <code>arr[r, c, 0]</code></li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Create an empty 2D array of the right size using <code>np.zeros((height, width), dtype=np.uint8)</code>.</li>
+      <li>Loop over every pixel and copy the Red value into your new array.</li>
+      <li>Display the result using <code>show_images</code> with <code>cmap_list=['gray']</code>.</li>
+      <li>What do bright areas in the red channel mean? What do dark areas mean?</li>
+      <li><strong>Extra:</strong> Do the same for the Green and Blue channels. Display all three side by side using colormaps <code>['Reds', 'Greens', 'Blues']</code>.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Inside the nested loop: <code>red_channel[r, c] = color_arr[r, c, 0]</code>. Channel 0 is Red, channel 1 is Green, channel 2 is Blue.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Bright areas in the red channel mean those pixels have a high red component. Dark areas have little red. This is independent of green and blue.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Visualize a Single Channel in Its True Color</h3>
+  <div class="question">
+    <p>When we display the Red channel as grayscale, bright = high red value, dark = low red value. But what if we want to display it as an actual <em>red</em> image?</p>
+    <p><strong>Think:</strong> to show the red channel in red, you need a color image where:</p>
+    <ul>
+      <li>The red channel = the values from <code>red_channel</code></li>
+      <li>The green channel = all zeros</li>
+      <li>The blue channel = all zeros</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Without using NumPy fancy tricks, build a 3D array <code>red_image</code> of shape <code>(H, W, 3)</code> where only the red component is non-zero.</li>
+      <li>Display it. Does it look red-tinted?</li>
+      <li>Do the same for green and blue. Display all three.</li>
+      <li>Now add all three colored arrays together using a loop (not NumPy addition). Display the result. Does it look like the original color image? Why or why not?</li>
+    </ol>
+    <blockquote><strong>Hint for step 4:</strong> Be careful about overflow! Adding uint8 values can exceed 255. Think about how to handle this.</blockquote>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Build <code>red_image = np.zeros((height, width, 3), dtype=np.uint8)</code>, then in the loop set only <code>red_image[r, c, 0] = red_channel[r, c]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>When adding the three images, use <code>int()</code> to avoid uint8 overflow and clamp with <code>min(255, value)</code>. The recombined image should look identical to the original because R + G + B channels reconstruct the full color.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Converting Color to Grayscale
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Converting Color to Grayscale</h2>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; What <em>Is</em> Grayscale?</h3>
+  <div class="question">
+    <p>A grayscale image has only one number per pixel &mdash; its <strong>brightness</strong>. A color image has three (R, G, B).</p>
+    <p>The question is: given R, G, B &mdash; how do you compute a single brightness value?</p>
+    <p>There is no single "right" answer. But there are good ones and bad ones. Your job is to <strong>invent</strong> several formulas and see what happens.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li><strong>Before writing any code:</strong> think of 3 ways you could combine R, G, B into one number. Write them as math formulas.</li>
+      <li>The simplest idea: take the average.
+        $$\text{gray} = \frac{R + G + B}{3}$$
+        Does this make sense? What assumptions does it make?
+      </li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your 3 ideas (before looking at any answers):</strong>
+      <ol>
+        <li>Idea 1: &hellip;</li>
+        <li>Idea 2: &hellip;</li>
+        <li>Idea 3: &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Some common approaches: average, take the max, take a weighted combination. Think about whether all three channels contribute equally to perceived brightness.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Implement Your Formulas</h3>
+  <div class="question">
+    <p>For each formula you invented (and the ones below), write a function <code>rgb_to_gray_METHOD(color_array)</code> that:</p>
+    <ul>
+      <li>Takes a <code>(H, W, 3)</code> numpy array</li>
+      <li>Returns a <code>(H, W)</code> numpy array of type <code>uint8</code></li>
+      <li>Uses <strong>only Python loops and arithmetic</strong> &mdash; no <code>np.mean()</code>, no slicing across channels</li>
+    </ul>
+    <p><strong>Formulas to implement:</strong></p>
+    <table>
+      <tr><th>Method</th><th>Formula</th></tr>
+      <tr><td>Average</td><td>$\frac{R + G + B}{3}$</td></tr>
+      <tr><td>Lightness</td><td>$\frac{\max(R,G,B) + \min(R,G,B)}{2}$</td></tr>
+      <tr><td>Luminosity (ITU-R BT.601)</td><td>$0.299 R + 0.587 G + 0.114 B$</td></tr>
+      <tr><td>Your own idea</td><td>(whatever you came up with above)</td></tr>
+    </table>
+    <blockquote><strong>Tip on <code>uint8</code>:</strong> When you compute a float result, convert it back to <code>uint8</code> by wrapping in <code>int(...)</code> and clamping: <code>max(0, min(255, value))</code>.</blockquote>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter for Average method</div>
+<pre><code>def rgb_to_gray_average(arr):
+    """
+    Converts color image to grayscale using simple average: (R+G+B)/3.
+    arr: numpy array of shape (H, W, 3), dtype uint8
+    Returns: numpy array of shape (H, W), dtype uint8
+    """
+    h, w = arr.shape[0], arr.shape[1]
+    result = np.zeros((h, w), dtype=np.uint8)
+    for r in range(h):
+        for c in range(w):
+            R, G, B = arr[r, c, 0], arr[r, c, 1], arr[r, c, 2]
+            gray = int((R + G + B) / 3)
+            result[r, c] = max(0, min(255, gray))
+    return result</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For the Lightness method, use Python's built-in <code>max()</code> and <code>min()</code>: <code>gray = int((max(R, G, B) + min(R, G, B)) / 2)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the Luminosity method: <code>gray = int(0.299 * R + 0.587 * G + 0.114 * B)</code>. Notice Green gets the highest weight because human eyes are most sensitive to green light.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Compare the Methods</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Apply all four methods to <code>color_arr</code>.</li>
+      <li>Display all results side by side using <code>show_images</code> with <code>cmap_list=['gray', 'gray', 'gray', 'gray']</code>.</li>
+      <li>Also display the original color image for reference.</li>
+      <li>Do you see any visible differences between the methods?</li>
+      <li><strong>Compute the pixel-wise difference</strong> between <code>gray_average</code> and <code>gray_luminosity</code>: For each pixel, compute <code>abs(average[r,c] - luminosity[r,c])</code>. Display this difference image. Where are the biggest differences?</li>
+      <li><strong>Think about why</strong> the luminosity formula (0.299, 0.587, 0.114) uses unequal weights. Notice: Green gets the most weight, Blue the least. Why might that be?</li>
+    </ol>
+    <blockquote><strong>Hint for question 6:</strong> Think about how human eyes perceive brightness in different colors.</blockquote>
+    <div class="answer-prompt">
+      <strong>Your reflection (fill in):</strong>
+      <ul>
+        <li>Which method produced the most visually pleasing grayscale image? Why?</li>
+        <li>Why does the luminosity formula give more weight to green?</li>
+        <li>Where were the biggest differences between methods?</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The difference image highlights where Average and Luminosity disagree most. Expect the biggest differences in areas with strong color &mdash; e.g., saturated reds or blues &mdash; because the average treats all channels equally while luminosity weights green heavily.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Human eyes have more green-sensitive cone cells than red or blue. The luminosity formula mirrors human perception: green light appears brightest to us, blue appears dimmest, so a pure blue pixel should map to a darker gray than a pure green pixel at the same intensity.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Shrinking an Image — Downsampling
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Shrinking an Image &mdash; Downsampling</h2>
+</div>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; setup: 100&times;100 grayscale image</div>
+<pre><code>img_100 = np.array(gray_img.resize((100, 100), Image.LANCZOS))
+print("Shape of 100x100 image:", img_100.shape)
+show_images([img_100], titles=['100x100 Grayscale'], cmap_list=['gray'])</code></pre>
+</div>
+
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Think Before You Code</h3>
+  <div class="question">
+    <p>You have a 100&times;100 image. You want to produce a 50&times;50 image.</p>
+    <p>The output has <strong>4&times; fewer pixels</strong> than the input. Each output pixel must somehow be derived from the input pixels.</p>
+    <p><strong>Before writing any code</strong>, answer these questions:</p>
+    <ol>
+      <li>Each output pixel at position <code>(r, c)</code> in the 50&times;50 image corresponds to <em>which</em> input pixel(s) in the 100&times;100 image?</li>
+      <li>If output pixel <code>(0, 0)</code> covers input pixels <code>(0,0)</code>, <code>(0,1)</code>, <code>(1,0)</code>, <code>(1,1)</code> &mdash; what single value should you assign to it? Think of at least 3 different choices.</li>
+      <li>Is there information loss when going from 100&times;100 to 50&times;50? Can you ever perfectly reconstruct the original?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers before coding:</strong>
+      <ol>
+        <li>Output pixel <code>(r, c)</code> corresponds to input pixel(s): &hellip;</li>
+        <li>Three possible values to assign: &hellip;</li>
+        <li>Is there information loss? &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Output pixel <code>(r, c)</code> maps to a 2&times;2 block starting at input <code>(2*r, 2*c)</code>. You could take any one of the four values, their average, their max, etc. Information is always lost because four values are reduced to one.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Implement Three Downsampling Methods</h3>
+  <div class="question">
+    <p><strong>Rules:</strong> Use only Python loops. No <code>cv2.resize</code>, no PIL <code>.resize</code>, no <code>np.mean</code> over blocks.</p>
+    <p><strong>Method A &mdash; Nearest Neighbor (Subsampling)</strong><br/>
+    For each output pixel <code>(r, c)</code>, simply copy the value from input pixel <code>(2*r, 2*c)</code>.</p>
+    <p><strong>Method B &mdash; Average Pooling</strong><br/>
+    For each output pixel <code>(r, c)</code>, take the <strong>average</strong> of the 2&times;2 block:<br/>
+    <code>input[2r, 2c]</code>, <code>input[2r, 2c+1]</code>, <code>input[2r+1, 2c]</code>, <code>input[2r+1, 2c+1]</code></p>
+    <p><strong>Method C &mdash; Max Pooling</strong><br/>
+    For each output pixel <code>(r, c)</code>, take the <strong>maximum</strong> of the same 2&times;2 block.</p>
+    <p><strong>Method D &mdash; Your own!</strong><br/>
+    Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weighted average (give corners less weight).</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For average pooling: <code>result[r, c] = int((img[2*r, 2*c] + img[2*r, 2*c+1] + img[2*r+1, 2*c] + img[2*r+1, 2*c+1]) / 4)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For max pooling, use Python's <code>max()</code> on the four values in the 2&times;2 block. The output has shape <code>(height // 2, width // 2)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Compare and Analyze</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Apply all four methods to <code>img_100</code>. Display the results side by side (along with the original).</li>
+      <li>Which method preserves the most visual detail? Which looks smoothest? Which looks sharpest?</li>
+      <li><strong>Compute a difference map:</strong> For each pair of methods, compute <code>abs(method_A[r,c] - method_B[r,c])</code> for every pixel. Where do methods disagree most?</li>
+      <li><strong>Think deeper:</strong> In neural networks, max pooling is used instead of average pooling. Based on what you see, why might max pooling be preferred for detecting features (like edges)?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your observations:</strong>
+      <ul>
+        <li>Nearest neighbor looks&hellip;</li>
+        <li>Average pooling looks&hellip;</li>
+        <li>Max pooling looks&hellip;</li>
+        <li>I think max pooling is preferred in neural networks because&hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Max pooling preserves the strongest activations (brightest values). In a feature map, the strongest activation often represents a detected feature. Average pooling dilutes strong activations by mixing them with weaker neighbors.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: Growing an Image — Upsampling to 100x100
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: Growing an Image &mdash; Upsampling to 100&times;100</h2>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; The Reverse Problem</h3>
+  <div class="question">
+    <p>Now you have a 50&times;50 image (use <code>small_nearest</code> from Part 4). You want to produce a 100&times;100 image.</p>
+    <p>This is the <strong>reverse</strong> of downsampling, but it's harder: you need to <em>invent</em> information that wasn't there.</p>
+    <p><strong>Before coding, think:</strong></p>
+    <ol>
+      <li>Each output pixel <code>(r, c)</code> in the 100&times;100 image comes from which input pixel(s) in the 50&times;50 image?</li>
+      <li>What happens when <code>(r, c)</code> falls exactly between two input pixels &mdash; e.g., output pixel <code>(1, 0)</code> lands between input <code>(0,0)</code> and <code>(1,0)</code>?</li>
+      <li>Write down two different strategies.</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your strategies before coding:</strong>
+      <ol>
+        <li>Strategy A: &hellip;</li>
+        <li>Strategy B: &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Strategy A: Nearest neighbor &mdash; just copy the closest input pixel. Strategy B: Interpolation &mdash; blend between neighbors using a weighted average based on distance.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Implement Three Upsampling Methods</h3>
+  <div class="question">
+    <p><strong>Rules:</strong> Use only Python loops. No <code>cv2.resize</code>, no PIL <code>.resize</code>.</p>
+    <p><strong>Method A &mdash; Nearest Neighbor Replication</strong><br/>
+    Each output pixel <code>(r, c)</code> copies from input pixel <code>(r//2, c//2)</code>. Every input pixel gets "stretched" into a 2&times;2 block.</p>
+    <p><strong>Method B &mdash; Bilinear Interpolation (1D first, then 2D)</strong><br/>
+    This one is harder. Let's build it up:</p>
+    <ul>
+      <li>First, implement <strong>linear interpolation</strong> between two values:<br/>
+        <code>lerp(a, b, t) = a + t * (b - a)</code> where <code>t</code> is between 0 and 1.</li>
+      <li>For upsampling 2&times;: output pixel <code>(r, c)</code> maps to input position <code>(r/2, c/2)</code>.</li>
+      <li>If <code>r/2 = 1.5</code>, you interpolate between row 1 and row 2 with weight 0.5.</li>
+      <li>Do this for both row and column directions.</li>
+    </ul>
+    <p><strong>Method C &mdash; Your own!</strong><br/>
+    Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For bilinear interpolation at output pixel <code>(r, c)</code>: compute <code>in_r = r / scale</code>, <code>in_c = c / scale</code>. Find the four surrounding input pixels and use <code>lerp</code> twice &mdash; first horizontally across the top and bottom rows, then vertically between the two interpolated values.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>lerp</code>: <code>return a + t * (b - a)</code>. For the bilinear formula: <code>top = lerp(img[r0, c0], img[r0, c1], dc)</code>, <code>bottom = lerp(img[r1, c0], img[r1, c1], dc)</code>, <code>value = lerp(top, bottom, dr)</code>. Clamp <code>r1</code> and <code>c1</code> to the image boundary.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 5.3 -->
+<section class="exercise" id="ex-5-3">
+  <h3>Exercise 5.3 &mdash; Compare and Analyze</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Apply all three methods. Display results next to the original 100&times;100 image.</li>
+      <li>Nearest neighbor will look "blocky" &mdash; why? What visual artifact does it create?</li>
+      <li>Bilinear should look smoother &mdash; why? What is the trade-off?</li>
+      <li>Compute the pixel-wise error between the upsampled image and the original <code>img_100</code>:<br/>
+        <code>error[r, c] = abs(int(upsampled[r,c]) - int(img_100[r,c]))</code><br/>
+        Which method is closest to the original? Does this surprise you?
+      </li>
+      <li>Compute the <strong>mean absolute error</strong> (MAE) for each method against <code>img_100</code>:
+        $$\text{MAE} = \frac{1}{H \times W} \sum_{r,c} |\text{upsampled}[r,c] - \text{original}[r,c]|$$
+      </li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; MAE helper (implement using loops)</div>
+<pre><code>def mean_absolute_error(img_a, img_b):
+    """
+    Computes pixel-wise mean absolute error between two same-size images.
+    Use only Python loops &mdash; no np.mean, no array subtraction.
+    """
+    h, w = img_a.shape
+    total = 0
+    for r in range(h):
+        for c in range(w):
+            total += abs(int(img_a[r, c]) - int(img_b[r, c]))
+    return total / (h * w)</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Nearest neighbor is blocky because each input pixel occupies a 2&times;2 block with no transition. Bilinear is smoother because it blends between neighbors, but the trade-off is that it can appear blurry.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: Upsampling to a Non-Integer Scale
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: Upsampling to a Non-Integer Scale &mdash; 50&times;50 to 150&times;150</h2>
+</div>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; A New Challenge</h3>
+  <div class="question">
+    <p>So far you've doubled the image (50&rarr;100). Now go from 50&times;50 to 150&times;150 &mdash; a scale factor of <strong>3</strong>.</p>
+    <p>Nearest neighbor is easy: output pixel <code>(r, c)</code> maps to input <code>(r//3, c//3)</code>.<br/>
+    Bilinear is similar: output <code>(r, c)</code> maps to input coordinates <code>(r/3, c/3)</code>.</p>
+    <p><strong>But here's a deeper challenge:</strong> what about going from 50&times;50 to <strong>75&times;75</strong>? The scale factor is 1.5 &mdash; not an integer.</p>
+    <p>Output pixel <code>(r, c)</code> maps to input position <code>(r / 1.5, c / 1.5) = (r * 2/3, c * 2/3)</code>. This is a fractional coordinate &mdash; you must interpolate.</p>
+    <p><strong>The key insight:</strong> Your bilinear implementation already handles this! The formula <code>in_r = r / scale</code> works for any scale &mdash; integer or fractional.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Generalize your <code>upsample_nearest</code> and <code>upsample_bilinear</code> to accept an arbitrary <code>target_h, target_w</code> instead of a fixed scale.</li>
+      <li>Implement <code>resize_nearest(img, target_h, target_w)</code> and <code>resize_bilinear(img, target_h, target_w)</code>.</li>
+      <li>Resize <code>img_50</code> to 150&times;150 using both methods.</li>
+      <li>Resize <code>img_50</code> to 75&times;75 using both methods.</li>
+      <li>Display and compare results.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>resize_nearest</code>: <code>in_r = int(r * h / target_h)</code>, clamped to <code>[0, h-1]</code>. For <code>resize_bilinear</code>: <code>in_r = r * (h - 1) / max(1, target_h - 1)</code> to map edges correctly.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The bilinear body is the same as Exercise 5.2 Method B, but with <code>in_r = r * (h - 1) / (target_h - 1)</code> instead of <code>r / scale</code>. This ensures that the first and last output pixels map exactly to the first and last input pixels.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 6.2 -->
+<section class="exercise" id="ex-6-2">
+  <h3>Exercise 6.2 &mdash; Extreme Upsampling</h3>
+  <div class="question">
+    <p>Now let's push your implementation further.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Take a tiny 10&times;10 patch from <code>img_50</code> (top-left corner): <code>patch = img_50[:10, :10]</code>.</li>
+      <li>Upsample it to 200&times;200 using both nearest and bilinear.</li>
+      <li>Display all three (original 10&times;10 patch, nearest 200&times;200, bilinear 200&times;200).</li>
+      <li>The nearest result should look very blocky &mdash; you'll see the "pixels". The bilinear should be blurry. Why?</li>
+      <li><strong>Design question:</strong> Is there a way to upsample that preserves sharp edges? Describe your idea (no code needed &mdash; just think and write).</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Bilinear is blurry because it linearly interpolates between pixels, which smooths out transitions. Nearest neighbor is sharp but blocky because it uses the same value for an entire block of output pixels.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For preserving sharp edges, you might consider edge-aware interpolation: detect where edges are and avoid interpolating across them. Higher-order interpolation (bicubic) can also help preserve some sharpness while reducing blockiness.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 7: Designing a Convolution
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 7: Designing a Convolution</h2>
+</div>
+
+<!-- Exercise 7.1 -->
+<section class="exercise" id="ex-7-1">
+  <h3>Exercise 7.1 &mdash; The Neighborhood Idea</h3>
+  <div class="question">
+    <p>You've learned that a pixel is a single number. Now let's think differently: a pixel <strong>together with its neighbors</strong> tells you something about local structure.</p>
+    <p>Consider a grayscale image. Look at a 3&times;3 patch around any pixel <code>(r, c)</code>:</p>
+<pre><code>img[r-1, c-1]   img[r-1, c]   img[r-1, c+1]
+img[r,   c-1]   img[r,   c]   img[r,   c+1]
+img[r+1, c-1]   img[r+1, c]   img[r+1, c+1]</code></pre>
+    <p>A <strong>filter</strong> (also called a <strong>kernel</strong> or <strong>weight matrix</strong>) is a small grid of numbers, also 3&times;3:</p>
+<pre><code>w[0,0]  w[0,1]  w[0,2]
+w[1,0]  w[1,1]  w[1,2]
+w[2,0]  w[2,1]  w[2,2]</code></pre>
+    <p>The <strong>convolution output</strong> at pixel <code>(r, c)</code> is the <strong>sum of element-wise products</strong>:</p>
+    <p>$$\text{out}[r, c] = \sum_{i=0}^{2} \sum_{j=0}^{2} \text{img}[r+i-1, c+j-1] \times w[i, j]$$</p>
+    <p><strong>Before coding</strong>, think:</p>
+    <ol>
+      <li>What happens at the edges of the image? (There are no neighbors outside the boundary.)</li>
+      <li>What does the output represent? Is it still an image? What size is it?</li>
+      <li>What would happen if all weights were <code>1/9</code>? What computation would that be?</li>
+      <li>What would happen if the center weight is <code>1</code> and all others are <code>0</code>?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers before coding:</strong>
+      <ol>
+        <li>Edge problem: &hellip;</li>
+        <li>Output: &hellip;</li>
+        <li>All weights = 1/9: &hellip;</li>
+        <li>Center weight = 1, rest = 0: &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>At the edges, the 3&times;3 neighborhood extends outside the image. One strategy: only compute the output where the kernel fits entirely &mdash; the output is 2 pixels smaller in each dimension.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>All weights = 1/9 computes the average of the 3&times;3 neighborhood &mdash; a blur. Center = 1, rest = 0 copies the center pixel unchanged &mdash; the identity operation.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 7.2 -->
+<section class="exercise" id="ex-7-2">
+  <h3>Exercise 7.2 &mdash; Your First Convolution</h3>
+  <div class="question">
+    <p>Implement <code>conv(image, weights)</code> where:</p>
+    <ul>
+      <li><code>image</code> is a 2D numpy array of shape <code>(H, W)</code></li>
+      <li><code>weights</code> is a 2D numpy array of shape <code>(K, K)</code> where <code>K</code> is odd (3, 5, 7, &hellip;)</li>
+      <li>Output is a 2D numpy array</li>
+    </ul>
+    <p><strong>Boundary strategy &mdash; "valid" mode:</strong> Only compute output where the kernel fits fully inside the image. For a 3&times;3 kernel on an H&times;W image, the output will be <code>(H-2) &times; (W-2)</code>.</p>
+    <p><strong>Algorithm:</strong></p>
+<pre><code>For each output position (r, c):
+    total = 0
+    For each kernel position (i, j):
+        total += image[r + i, c + j] * weights[i, j]
+    output[r, c] = total</code></pre>
+    <blockquote><strong>Note:</strong> The output can have values outside <code>[0, 255]</code> &mdash; don't clamp yet. Use <code>float</code> arrays for the output and we'll handle display separately.</blockquote>
+    <p><strong>Sanity check:</strong> Use the identity filter to verify your implementation:</p>
+<pre><code>identity_kernel = np.array([
+    [0, 0, 0],
+    [0, 1, 0],
+    [0, 0, 0]
+], dtype=np.float64)
+
+result = conv(img_100.astype(np.float64), identity_kernel)
+# result[0,0] should equal img_100[1,1]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The output shape is <code>(H - K + 1, W - K + 1)</code>. Inside the four nested loops: <code>total += image[r + i, c + j] * weights[i, j]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use <code>np.zeros((out_H, out_W), dtype=np.float64)</code> for the output. Don't forget to convert the input image to float first with <code>img.astype(np.float64)</code> to avoid integer overflow.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 7.3 -->
+<section class="exercise" id="ex-7-3">
+  <h3>Exercise 7.3 &mdash; Helper for Displaying Convolution Output</h3>
+  <div class="question">
+    <p>The output of convolution may have negative values or values &gt; 255. We need a helper to normalize and display it.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; convolution display helper</div>
+<pre><code>def show_conv_result(original, output, title='Convolution Output', clip=False):
+    """
+    Displays the original image and convolution output side by side.
+    Normalizes the output to [0, 255] for display.
+    """
+    if clip:
+        display_out = np.clip(output, 0, 255).astype(np.uint8)
+    else:
+        lo, hi = output.min(), output.max()
+        if hi &gt; lo:
+            display_out = ((output - lo) / (hi - lo) * 255).astype(np.uint8)
+        else:
+            display_out = np.zeros_like(output, dtype=np.uint8)
+
+    pad = (original.shape[0] - display_out.shape[0]) // 2
+    orig_trimmed = original[pad:pad+display_out.shape[0],
+                            pad:pad+display_out.shape[1]]
+
+    show_images(
+        [orig_trimmed, display_out],
+        titles=['Original (trimmed)', title],
+        cmap_list=['gray', 'gray']
+    )</code></pre>
+    </div>
+    <p>Run this cell to make the helper available.</p>
+  </div>
+</section>
+
+
+<!-- Exercise 7.4 -->
+<section class="exercise" id="ex-7-4">
+  <h3>Exercise 7.4 &mdash; Discover What Filters Do</h3>
+  <div class="question">
+    <p>Now the fun part. Apply your <code>conv</code> function with different kernels and discover what each one <em>does</em> to the image.</p>
+    <p><strong>Rules:</strong> You must apply each kernel, display the result, and describe what you see <em>before</em> reading the description.</p>
+    <p><strong>Kernel A &mdash; Blur</strong></p>
+<pre><code>1/9  1/9  1/9
+1/9  1/9  1/9
+1/9  1/9  1/9</code></pre>
+    <p><strong>Kernel B &mdash; Sharpen</strong></p>
+<pre><code> 0  -1   0
+-1   5  -1
+ 0  -1   0</code></pre>
+    <p><strong>Kernel C &mdash; Horizontal Edge Detector (Sobel)</strong></p>
+<pre><code>-1  -2  -1
+ 0   0   0
+ 1   2   1</code></pre>
+    <p><strong>Kernel D &mdash; Vertical Edge Detector (Sobel)</strong></p>
+<pre><code>-1   0   1
+-2   0   2
+-1   0   1</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Apply each kernel to <code>img_100</code>.</li>
+      <li>For each result, write down what you observe <em>before</em> reading what the filter does.</li>
+      <li>For Kernels C and D: can you combine the horizontal and vertical edge maps? Try:
+<pre><code>edge_magnitude[r,c] = sqrt(horiz[r,c]**2 + vert[r,c]**2)</code></pre>
+        (Implement with a loop.)
+      </li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your observations (fill in before reading explanations):</strong>
+      <ul>
+        <li>Blur kernel: I see&hellip;</li>
+        <li>Sharpen kernel: I see&hellip;</li>
+        <li>Horizontal Sobel: I see&hellip;</li>
+        <li>Vertical Sobel: I see&hellip;</li>
+        <li>Edge magnitude: I see&hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The blur kernel averages the 3&times;3 neighborhood, smoothing the image. The sharpen kernel enhances differences between a pixel and its neighbors. The Sobel kernels detect gradients (changes in brightness) in specific directions.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the edge magnitude, use <code>import math</code> and <code>math.sqrt(horiz[r,c]**2 + vert[r,c]**2)</code> in a loop. Both Sobel outputs have the same shape, so this works element-wise.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 7.5 -->
+<section class="exercise" id="ex-7-5">
+  <h3>Exercise 7.5 &mdash; Invent Your Own Filter</h3>
+  <div class="question">
+    <p>Now you know what a convolution filter does. Design your own.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Invent a 3&times;3 filter that does something interesting. Apply it and display the result.</li>
+      <li><strong>Experiment with a 5&times;5 blur kernel.</strong> A 5&times;5 blur has all weights = <code>1/25</code>. Apply it. Compare to the 3&times;3 blur. Which is blurrier? Why?</li>
+      <li><strong>Gaussian blur idea:</strong> Instead of equal weights, what if the center gets more weight and edges get less? Design a 3&times;3 kernel where the center = 4, direct neighbors = 2, corners = 1 (then normalize so they sum to 1).
+<pre><code>gaussian_approx = np.array([
+    [1, 2, 1],
+    [2, 4, 2],
+    [1, 2, 1]
+], dtype=np.float64)
+gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
+        Apply it. How does it compare to the flat blur?
+      </li>
+      <li>Try applying the blur filter <strong>multiple times</strong> in a row (chain: <code>conv(conv(img, blur), blur)</code>). What happens? Apply it 3 times, 5 times.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A 5&times;5 blur is blurrier because it averages over a larger area (25 pixels instead of 9). The Gaussian-like kernel gives more weight to nearby pixels and less to corners, producing a smoother, more natural-looking blur.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Applying blur multiple times is equivalent to applying a larger blur kernel. Each application smooths further. After 5 iterations, fine details will be almost entirely erased. Note: the image shrinks slightly with each "valid" convolution &mdash; use <code>conv_same</code> (Exercise 7.6) to avoid this.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 7.6 -->
+<section class="exercise" id="ex-7-6">
+  <h3>Exercise 7.6 &mdash; Add Padding</h3>
+  <div class="question">
+    <p>You may have noticed that each convolution slightly shrinks the image (98&times;98 from a 100&times;100 image with a 3&times;3 kernel).</p>
+    <p>A common fix is <strong>zero-padding</strong>: surround the image with a border of zeros before convolving, so the output stays the same size as the input.</p>
+    <ul>
+      <li>For a 3&times;3 kernel, add 1 pixel of zeros on all sides.</li>
+      <li>For a 5&times;5 kernel, add 2 pixels.</li>
+    </ul>
+    <p><strong>Formula:</strong> <code>pad_size = (K - 1) // 2</code></p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>pad_image(img, pad_size)</code> that returns a new array with <code>pad_size</code> rows/columns of zeros added on all sides. Use loops &mdash; no <code>np.pad</code>!</li>
+      <li>Implement <code>conv_same(image, weights)</code> that uses <code>pad_image</code> internally, so the output is the same size as the input.</li>
+      <li>Apply <code>conv_same</code> with the blur kernel to <code>img_100</code>. Verify the output shape is <code>(100, 100)</code>.</li>
+      <li>Apply <code>conv_same</code> with the Sobel kernels. Notice that now edges near the image boundary are included in the output.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>pad_image</code>: create a new array of size <code>(H + 2*pad_size, W + 2*pad_size)</code> filled with zeros. Then copy the original image into the center: <code>result[r + pad_size, c + pad_size] = img[r, c]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>conv_same</code>: compute <code>pad_size = (K - 1) // 2</code>, pad the image, then call your <code>conv</code> function on the padded image. The output will have the same size as the original.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 7.7 -->
+<section class="exercise" id="ex-7-7">
+  <h3>Exercise 7.7 &mdash; Convolution on a Color Image</h3>
+  <div class="question">
+    <p>So far, <code>conv</code> works on grayscale (2D). But real images are color (3D: H &times; W &times; 3).</p>
+    <p>How should convolution work on a color image?</p>
+    <p><strong>Approach 1 &mdash; Per-channel:</strong> Apply the same kernel independently to each of R, G, B. Stack the three results back into a color image.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>conv_color(image_rgb, weights)</code> that:
+        <ul>
+          <li>Takes a <code>(H, W, 3)</code> array and a kernel</li>
+          <li>Applies <code>conv_same</code> to each channel separately</li>
+          <li>Returns a <code>(H, W, 3)</code> float array</li>
+        </ul>
+      </li>
+      <li>Apply it to <code>color_arr</code> with the blur kernel. Display the result.</li>
+      <li>Apply it with the Sobel horizontal kernel. What do you get?</li>
+      <li><strong>Think:</strong> What is a case where you'd want <em>different</em> kernels for different channels?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over <code>ch in range(3)</code>. Extract each channel as <code>image_rgb[:, :, ch].astype(np.float64)</code>, apply <code>conv_same</code>, store the result in the corresponding channel of the output array.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>To display the color result, normalize to [0, 255]: <code>lo = output.min(); hi = output.max(); display = ((output - lo) / (hi - lo) * 255).astype(np.uint8)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 8: Pulling It All Together
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 8: Pulling It All Together</h2>
+</div>
+
+<!-- Exercise 8.1 -->
+<section class="exercise" id="ex-8-1">
+  <h3>Exercise 8.1 &mdash; Build a Mini Image Processing Pipeline</h3>
+  <div class="question">
+    <p>You now have all the building blocks. Let's build a real pipeline.</p>
+    <p><strong>Goal:</strong> Given the original color image:</p>
+    <ol>
+      <li>Convert to grayscale (using luminosity method)</li>
+      <li>Resize to 50&times;50</li>
+      <li>Apply a blur filter</li>
+      <li>Apply a Sobel edge detector (both H and V, then combine)</li>
+      <li>Display each step side by side</li>
+    </ol>
+    <p>Use <strong>your own implementations</strong> of each step &mdash; no library functions for the image processing.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Chain the functions: <code>step1 = rgb_to_gray_luminosity(color_arr)</code>, <code>step2 = resize_bilinear(step1, 50, 50)</code>, <code>step3 = conv_same(step2.astype(np.float64), kernel_blur)</code>, then apply both Sobel kernels to <code>step3</code> and combine with edge magnitude.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For display, you may need to convert intermediate float arrays to uint8 via <code>np.clip(arr, 0, 255).astype(np.uint8)</code>. Use <code>show_images</code> with all five steps to see the full pipeline at a glance.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 8.2 -->
+<section class="exercise" id="ex-8-2">
+  <h3>Exercise 8.2 &mdash; Bonus: Design a Filter by Intuition</h3>
+  <div class="question">
+    <p>Here is a challenge with no given formula &mdash; you must <em>invent</em> the filter.</p>
+    <p><strong>Goal:</strong> Design a 3&times;3 kernel that detects <strong>diagonal edges</strong> (edges going from bottom-left to top-right, like <code>\</code>).</p>
+    <p><strong>Think:</strong></p>
+    <ul>
+      <li>The horizontal Sobel detects horizontal edges (top vs. bottom brightness difference)</li>
+      <li>The vertical Sobel detects vertical edges (left vs. right brightness difference)</li>
+      <li>What would a diagonal edge look like in the 3&times;3 patch?</li>
+      <li>Which pixels would be bright and which dark for a <code>\</code> edge?</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Sketch the 3&times;3 kernel on paper first.</li>
+      <li>Implement it in code and apply to <code>img_100</code>.</li>
+      <li>Does the result highlight diagonal edges? If not, adjust and try again.</li>
+      <li>Also design a <code>/</code> edge detector.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For a <code>\</code> edge detector, you want positive weights on one side of the diagonal and negative on the other. Think about which corner pixels are on which side of the <code>\</code> diagonal.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>One approach: top-right triangle positive, bottom-left triangle negative (or vice versa). For example: <code>[[-1, -1, 0], [-1, 0, 1], [0, 1, 1]]</code> or similar variations. The key is that the kernel should have opposite signs across the diagonal.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- Exercise 8.3 -->
+<section class="exercise" id="ex-8-3">
+  <h3>Exercise 8.3 &mdash; Bonus: What Does Repeated Convolution Do?</h3>
+  <div class="question">
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Apply the <strong>sharpen</strong> kernel 10 times in a row. Display the result after 1, 3, 5, 10 applications.</li>
+      <li>Apply the <strong>blur</strong> kernel 20 times. What happens?</li>
+      <li>Apply the <strong>edge detector</strong> to an image, then apply <strong>blur</strong> to the edge map. What does that produce?</li>
+      <li><strong>Think:</strong> In a neural network, many convolution layers are stacked. Each layer has learned kernels. Based on what you've seen, what might the first, second, and deeper layers be detecting?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your thoughts on stacked layers:</strong>
+      <ul>
+        <li>Layer 1 (close to input) likely detects&hellip;</li>
+        <li>Layer 2 detects&hellip;</li>
+        <li>Deeper layers likely detect&hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Repeated sharpening amplifies noise and can cause extreme values. Repeated blurring progressively smooths the image until all detail is lost. In CNNs, early layers tend to detect simple features (edges, textures), while deeper layers combine these into complex features (shapes, object parts).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use <code>conv_same</code> to avoid the image shrinking with each application. Store snapshots at iteration counts [1, 3, 5, 10] and display them side by side.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Final Reflection
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Final Reflection</h2>
+</div>
+
+<section class="exercise" id="ex-reflection">
+  <h3>Reflection</h3>
+  <div class="question">
+    <p>Answer these questions in your own words:</p>
+    <ol>
+      <li><strong>What is an image?</strong> Describe it as a data structure, not visually.</li>
+      <li><strong>What is a convolution?</strong> Explain in 3 sentences without using the word "filter".</li>
+      <li><strong>What is the difference between downsampling and upsampling?</strong> Which one loses information permanently? Can you recover from either?</li>
+      <li><strong>Why does the blur kernel make the image blurry?</strong> Explain using the math &mdash; what operation does it actually perform at each pixel?</li>
+      <li><strong>Why does the Sobel kernel detect edges?</strong> Think about what happens when you apply it to a flat region vs. a sharp edge.</li>
+      <li><strong>In a Convolutional Neural Network (CNN)</strong>, the kernels are not hand-designed &mdash; they are <em>learned</em> from data using gradient descent. Based on what you've built, what does "learning a kernel" mean? What is being optimized?</li>
+    </ol>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You just built a computer vision system from scratch &mdash; pixel by pixel, loop by loop. Everything in a CNN's early layers is a version of what you built here.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

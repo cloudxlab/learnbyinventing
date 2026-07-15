@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classes &amp; Objects — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/classes_and_objects/classes_and_objects.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Classes &amp; Objects &mdash; Inventing the Model API</h1>
+<p class="chapter-intro">So far your programs kept <em>data</em> (lists, dicts) and <em>behavior</em> (functions) in separate boxes, and you passed one to the other by hand. A <strong>class</strong> glues them together: an object carries its own data <em>and</em> the functions that work on it.</p>
+<p class="chapter-intro">Why should a machine-learning book care? Because a trained model <strong>is</strong> an object &mdash; some learned numbers plus a <code>predict</code> function that uses them. By the end of this chapter you will have invented the <code>fit</code>/<code>predict</code> interface that scikit-learn, Keras and friends all use, hand-built a decision tree out of objects, and saved a model to disk.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: From Dict to Class
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: From Dict to Class</h2>
+  <p class="part-intro">You could describe a customer with a dict: <code>customer = {"name": "Sandeep", "place": "India"}</code>. It works, but the data has no behavior: any code that wants to <em>do</em> something with a customer must live somewhere else.</p>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; <code>Customer</code></h3>
+  <div class="question">
+    <p>Write a class <code>Customer</code>:</p>
+    <ul>
+      <li><code>Customer("Sandeep", "India")</code> stores the two values on the object (<strong>hint:</strong> define <code>__init__(self, name, place)</code> and assign to <code>self.name</code>, <code>self.place</code>).</li>
+      <li>A method <code>describe()</code> returns <code>"&lt;name&gt; from &lt;place&gt;"</code>.</li>
+    </ul>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>c = Customer("Sandeep", "India")
+assert c.name == "Sandeep"
+assert c.place == "India"
+assert c.describe() == "Sandeep from India"
+c2 = Customer("Nitin", "Bharat")
+assert c2.describe() == "Nitin from Bharat"
+print("Customer: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start with the skeleton:</p>
+<pre><code>class Customer:
+    def __init__(self, name, place):
+        self.name = ???
+        self.place = ???
+
+    def describe(self):
+        return ???</code></pre>
+      <p>Inside <code>__init__</code>, assign the parameters to <code>self.name</code> and <code>self.place</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>describe</code>, use an f-string: <code>return f"{self.name} from {self.place}"</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<div class="aside">
+  <p><strong>What just happened?</strong></p>
+  <ul>
+    <li><code>Customer("Sandeep", "India")</code> <strong>constructs</strong> an object: Python creates an empty object and calls your <code>__init__</code> with it as <code>self</code>.</li>
+    <li><code>c.describe()</code> is exactly <code>Customer.describe(c)</code> &mdash; the object slides in as <code>self</code>. Try it: <code>Customer.describe(c)</code> returns the same string.</li>
+    <li><code>c</code> and <code>c2</code> each carry their <strong>own</strong> <code>name</code> and <code>place</code>. One class, many objects.</li>
+  </ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: A Model Is an Object — TwoPointLine
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: A Model Is an Object &mdash; <code>TwoPointLine</code></h2>
+  <p class="part-intro">Remember the thermometer from <em>Expressions &amp; Functions</em>? Calibration data: current 1 &rarr; 30&deg;, current 2 &rarr; 35&deg;. What temperature is current 3? You solved it with two loose functions, <code>fit</code> and <code>predict</code>, and had to carry the <code>(m, c)</code> tuple between them yourself. Let the object carry it.</p>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; <code>TwoPointLine</code></h3>
+  <div class="question">
+    <p>Write a class <code>TwoPointLine</code> with:</p>
+    <ul>
+      <li><code>fit(x, y)</code> &mdash; <code>x</code> and <code>y</code> are lists of <strong>two</strong> values each: two points <code>(x[0], y[0])</code> and <code>(x[1], y[1])</code>. Compute the slope <code>m = (y2 - y1) / (x2 - x1)</code> and intercept <code>c = y2 - m * x2</code>, and store them on <code>self</code>.</li>
+      <li><code>predict(xs)</code> &mdash; take a <em>list</em> of x values, return the list of <code>m * x + c</code>.</li>
+    </ul>
+<pre><code>model = TwoPointLine()
+model.fit([2, 5], [3, 9])
+model.predict([3])       # [5.0]</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>model = TwoPointLine()
+model.fit([2, 5], [3, 9])            # the points (2, 3) and (5, 9)
+assert model.predict([3, 0, 5]) == [5.0, -1.0, 9.0]
+
+thermo = TwoPointLine()
+thermo.fit([1, 2], [30, 35])         # the thermometer calibration
+assert thermo.predict([3]) == [40.0]
+assert thermo.predict([2.1]) == [35.5]
+
+# two models live side by side without interfering:
+assert model.predict([2]) == [3.0]
+print("TwoPointLine: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Inside <code>fit</code>, compute slope: <code>self.m = (y[1] - y[0]) / (x[1] - x[0])</code>, then intercept: <code>self.c = y[1] - self.m * x[1]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>predict</code>, use a list comprehension: <code>return [self.m * xi + self.c for xi in xs]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<div class="aside">
+  <p><strong>You just invented the scikit-learn API</strong></p>
+<pre><code>from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X, y)
+model.predict(X_new)</code></pre>
+  <p>Same shape: construct &rarr; <code>fit</code> stores learned parameters on the object &rarr; <code>predict</code> uses them. Every model in the rest of this book fits this mold; the only thing that changes is <em>how</em> <code>fit</code> finds the parameters.</p>
+</div>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Guard the Gate</h3>
+  <div class="question">
+    <p><code>fit</code> silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make <code>fit</code> <strong>raise</strong> a <code>ValueError</code> unless both lists have exactly two values (<strong>hint:</strong> <code>raise ValueError("need exactly two points")</code>).</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>model = TwoPointLine()
+try:
+    model.fit([1, 2, 3], [1, 2, 3])
+    assert False, "fit should have raised ValueError"
+except ValueError:
+    pass
+
+model.fit([2, 5], [3, 9])
+assert model.predict([2]) == [3.0]
+print("validation: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>At the top of <code>fit</code>, add: <code>if len(x) != 2 or len(y) != 2: raise ValueError("need exactly two points")</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Inheritance — Classes That Extend Classes
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Inheritance &mdash; Classes That Extend Classes</h2>
+  <p class="part-intro">All animals eat; only dogs bark. Instead of repeating <code>eat</code> in every animal class, write it once and <strong>inherit</strong> it.</p>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; <code>Animal</code>, <code>Dog</code>, <code>Cat</code></h3>
+  <div class="question">
+    <ul>
+      <li><code>Animal</code> has a method <code>eat()</code> returning <code>"eating"</code>.</li>
+      <li><code>Dog(Animal)</code> adds <code>bark()</code> returning <code>"woof!"</code> &mdash; and must <strong>not</strong> redefine <code>eat</code>.</li>
+      <li><code>Cat(Animal)</code> adds <code>meow()</code> returning <code>"meow"</code>.</li>
+    </ul>
+    <p>The class in parentheses &mdash; <code>class Dog(Animal):</code> &mdash; is the parent. Everything the parent can do, the child can do too.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>d = Dog()
+assert d.eat() == "eating"          # inherited: Dog never defines eat
+assert d.bark() == "woof!"
+assert Cat().eat() == "eating"
+assert Cat().meow() == "meow"
+assert isinstance(d, Animal)        # a Dog IS an Animal
+print("inheritance: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>Animal</code> defines <code>eat</code>. <code>Dog</code> and <code>Cat</code> inherit from <code>Animal</code> and only add their own unique methods. Python automatically makes <code>eat</code> available to subclasses.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+<pre><code>class Animal:
+    def eat(self):
+        return "eating"
+
+class Dog(Animal):
+    def bark(self):
+        return ???</code></pre>
+      <p>Fill in <code>bark</code> and write <code>Cat</code> similarly with <code>meow</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Objects That Contain Objects — Trees
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Objects That Contain Objects &mdash; Trees</h2>
+  <p class="part-intro">An object's attributes can be <em>other objects</em> &mdash; that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments:</p>
+<pre><code>        10
+      /    \
+     4      5
+    / \    /  \
+   1  11  15  16</code></pre>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; <code>Node</code> with <code>total</code> and <code>count</code></h3>
+  <div class="question">
+    <p>Write a class <code>Node</code>:</p>
+    <ul>
+      <li><code>Node(val, left=None, right=None)</code> stores the value and the two children.</li>
+      <li><code>total()</code> returns this node's <code>val</code> plus the totals of its children (skip a child if it is <code>None</code>).</li>
+      <li><code>count()</code> returns how many nodes are in this subtree.</li>
+    </ul>
+    <p>Notice the recursion: a method calling <em>the same method on its children</em>.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>tree = Node(10,
+            Node(4, Node(1), Node(11)),
+            Node(5, Node(15), Node(16)))
+assert tree.total() == 62
+assert tree.count() == 7
+assert Node(42).total() == 42
+assert Node(42).count() == 1
+print("Node total/count: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>total()</code>: start with <code>result = self.val</code>. If <code>self.left is not None</code>, add <code>self.left.total()</code>. Same for <code>self.right</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>count()</code> follows the same pattern: start with 1 (for this node), then add <code>self.left.count()</code> and <code>self.right.count()</code> if the children exist.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; More Tree Methods</h3>
+  <div class="question">
+    <p>Extend your <code>Node</code> class (copy it and add methods):</p>
+    <ul>
+      <li><code>min_val()</code> / <code>max_val()</code> &mdash; smallest / largest value in the subtree.</li>
+      <li><code>find(x)</code> &mdash; <code>True</code> if <code>x</code> appears anywhere in the subtree.</li>
+      <li><code>max_depth()</code> &mdash; length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive <code>max(self.left.max_depth(), self.right.max_depth()) + 1</code> crashes on a leaf &mdash; handle <code>None</code> children.</li>
+      <li><code>apply(func)</code> &mdash; replace <strong>every</strong> node's <code>val</code> with <code>func(val)</code>, in place.</li>
+    </ul>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>tree = Node(10,
+            Node(4, Node(1), Node(11)),
+            Node(5, Node(15), Node(16)))
+assert tree.min_val() == 1
+assert tree.max_val() == 16
+assert tree.find(11) == True
+assert tree.find(99) == False
+assert tree.max_depth() == 3
+assert Node(7).max_depth() == 1
+
+tree.apply(lambda v: v * 2)
+assert tree.total() == 124
+assert tree.min_val() == 2
+print("Node methods: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>min_val()</code>: start with <code>result = self.val</code>. If <code>self.left</code> exists, <code>result = min(result, self.left.min_val())</code>. Same for right. Return <code>result</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>max_depth()</code>: compute <code>left_depth = self.left.max_depth() if self.left else 0</code>, same for right, then return <code>1 + max(left_depth, right_depth)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>For <code>apply(func)</code>: set <code>self.val = func(self.val)</code>, then recursively call <code>self.left.apply(func)</code> and <code>self.right.apply(func)</code> if the children exist. No return value needed.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: A Decision Tree Is an Object
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: A Decision Tree Is an Object</h2>
+  <p class="part-intro">You get a job offer. Do you take it? Your (very rational) rules:</p>
+  <ol>
+    <li>If the salary score is below 1 &rarr; <strong>No</strong>.</li>
+    <li>Otherwise, if the learning opportunity score is below 1 &rarr; <strong>No</strong>.</li>
+    <li>Otherwise, if the distance score is below 1 &rarr; <strong>Yes</strong>; too far &rarr; <strong>No</strong>.</li>
+  </ol>
+  <p>That is a tree of decisions &mdash; and you can build it from objects.</p>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; <code>DecisionNode</code>, <code>Yes</code>, <code>No</code></h3>
+  <div class="question">
+    <ul>
+      <li><code>DecisionNode(criteria, boundary, left, right)</code> stores all four. Its method <code>answer(circumstance)</code> looks up <code>circumstance[self.criteria]</code> (circumstance is a dict) and <strong>delegates</strong>: below the boundary &rarr; ask the <code>left</code> child, at-or-above &rarr; ask the <code>right</code> child.</li>
+      <li><code>Yes(DecisionNode)</code> and <code>No(DecisionNode)</code> are leaf classes: their <code>answer</code> ignores the circumstance and returns <code>True</code> / <code>False</code>. Give them their own no-argument <code>__init__</code>.</li>
+    </ul>
+    <p>No <code>if</code>-chains about salaries anywhere &mdash; the <em>structure</em> of the objects encodes the rules.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; tree construction and test</div>
+<pre><code># the offer tree: salary -&gt; learningOpp -&gt; dist
+dist = DecisionNode("dist", 1, Yes(), No())            # close enough -&gt; Yes
+learning = DecisionNode("learningOpp", 1, No(), dist)  # no learning -&gt; No
+offer_tree = DecisionNode("salary", 1, No(), learning) # low salary -&gt; No
+
+assert offer_tree.answer({"salary": 2,   "learningOpp": 3, "dist": 0.5}) == True
+assert offer_tree.answer({"salary": 0.5, "learningOpp": 3, "dist": 0.5}) == False
+assert offer_tree.answer({"salary": 2,   "learningOpp": 0, "dist": 0.5}) == False
+assert offer_tree.answer({"salary": 2,   "learningOpp": 3, "dist": 5})   == False
+print("DecisionNode: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>DecisionNode.answer()</code>: get the feature value with <code>val = circumstance[self.criteria]</code>. If <code>val &lt; self.boundary</code>, return <code>self.left.answer(circumstance)</code>; otherwise return <code>self.right.answer(circumstance)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>Yes</code> and <code>No</code> inherit from <code>DecisionNode</code>. Their <code>__init__</code> takes no arguments (besides <code>self</code>) and does not need to call the parent constructor. Their <code>answer</code> method just returns <code>True</code> or <code>False</code> without looking at the argument.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<div class="aside">
+  <p><strong>This is a real decision tree</strong></p>
+  <p>You built its structure by hand. The <em>Decision Trees</em> chapter later in this book answers the natural next question: given a table of past decisions, how can <code>fit</code> discover the right criteria and boundaries <strong>automatically</strong>? Same object, learned instead of hand-crafted.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: Saving Objects to Files
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: Saving Objects to Files</h2>
+  <p class="part-intro">Your program built a useful tree &mdash; then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it.</p>
+  <p class="part-intro">JSON can store dicts, lists, numbers, strings and booleans &mdash; but not your objects. So the plan is: <strong>object &rarr; dict &rarr; JSON file</strong>, and back.</p>
+</div>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; <code>to_dict</code> and <code>from_dict</code></h3>
+  <div class="question">
+    <ul>
+      <li><code>to_dict(node)</code> &mdash; a <code>Yes</code> leaf becomes <code>{"leaf": True}</code>, a <code>No</code> leaf becomes <code>{"leaf": False}</code>, and an inner node becomes <code>{"criteria": ..., "boundary": ..., "left": &lt;dict&gt;, "right": &lt;dict&gt;}</code> (children converted recursively). <strong>Hint:</strong> <code>isinstance(node, Yes)</code> tells leaves apart.</li>
+      <li><code>from_dict(d)</code> &mdash; the exact inverse, rebuilding real objects.</li>
+    </ul>
+    <p>The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>import json
+
+d = to_dict(offer_tree)
+assert d["criteria"] == "salary"
+assert d["boundary"] == 1
+assert d["left"] == {"leaf": False}
+
+with open("offer_tree.json", "w") as f:
+    json.dump(d, f)
+with open("offer_tree.json") as f:
+    loaded = from_dict(json.load(f))
+
+for case in [{"salary": 2,   "learningOpp": 3, "dist": 0.5},
+             {"salary": 0.5, "learningOpp": 3, "dist": 0.5},
+             {"salary": 2,   "learningOpp": 0, "dist": 0.5},
+             {"salary": 2,   "learningOpp": 3, "dist": 5}]:
+    assert loaded.answer(case) == offer_tree.answer(case)
+print("save/load: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>to_dict</code>: check <code>isinstance(node, Yes)</code> and <code>isinstance(node, No)</code> first (before checking <code>DecisionNode</code>, since <code>Yes</code> and <code>No</code> are subclasses). Return the leaf dict, or recursively build the inner-node dict.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>from_dict</code>: check if <code>"leaf"</code> is a key in the dict. If so, return <code>Yes()</code> or <code>No()</code> based on the boolean value. Otherwise, rebuild the <code>DecisionNode</code> with recursive calls to <code>from_dict</code> for <code>left</code> and <code>right</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<div class="aside">
+  <p><strong>Aside &mdash; <code>pickle</code></strong></p>
+  <p>Python's <code>pickle</code> module can serialize almost any object in one line (<code>pickle.dump(offer_tree, f)</code>), no <code>to_dict</code> needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via <code>joblib</code>), while model <em>configs</em> travel as JSON or YAML.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Bonus Challenge — FitPlane
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Bonus Challenge &mdash; <code>FitPlane</code></h2>
+  <p class="part-intro"><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> &mdash; and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations.</p>
+</div>
+
+<!-- Bonus Exercise -->
+<section class="exercise" id="ex-bonus">
+  <h3>Bonus &mdash; <code>FitPlane</code></h3>
+  <div class="question">
+    <p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> &mdash; and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations:</p>
+<pre><code>x1*a + y1*b + 1*d = z1
+x2*a + y2*b + 1*d = z2
+x3*a + y3*b + 1*d = z3</code></pre>
+    <p>You already own a tool for that: paste your <code>solve_equations</code> (and its helpers) from the <em>Loops and Arrays</em> chapter into the cell, then write <code>FitPlane</code>:</p>
+    <ul>
+      <li><code>fit(points)</code> &mdash; <code>points</code> is a list of three <code>(x, y, z)</code> tuples. Build the three equations <code>[x, y, 1, z]</code> and solve for <code>(a, b, d)</code>.</li>
+      <li><code>predict(points)</code> &mdash; a list of <code>(x, y)</code> tuples in, a list of <code>a*x + b*y + d</code> out.</li>
+    </ul>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; test harness</div>
+<pre><code>plane = FitPlane()
+plane.fit([(1, 1, 6), (2, 1, 8), (1, 2, 9)])   # these lie on z = 2x + 3y + 1
+assert plane.predict([(2, 2)]) == [11.0]
+assert plane.predict([(0, 0), (1, 1)]) == [1.0, 6.0]
+print("FitPlane: OK")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>fit</code>, build equations from each point: for <code>(x, y, z)</code>, the equation is <code>[x, y, 1, z]</code>. Pass the list of three equations to <code>solve_equations</code>. Store the resulting <code>a</code>, <code>b</code>, <code>d</code> on <code>self</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>In <code>predict</code>: for each <code>(x, y)</code> tuple, compute <code>self.a * x + self.b * y + self.d</code> and collect the results in a list.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="chapter-footer">
+  <h2>Summary</h2>
+  <table>
+    <tr><th>Part</th><th>You built</th><th>The idea</th></tr>
+    <tr><td>1</td><td><code>Customer</code></td><td><code>__init__</code>, <code>self</code>, methods &mdash; data + behavior in one place</td></tr>
+    <tr><td>2</td><td><code>TwoPointLine</code></td><td><strong>the <code>fit</code>/<code>predict</code> model API</strong>, input validation</td></tr>
+    <tr><td>3</td><td><code>Animal</code> &rarr; <code>Dog</code>, <code>Cat</code></td><td>inheritance</td></tr>
+    <tr><td>4</td><td><code>Node.total/count/min_val/max_val/find/max_depth/apply</code></td><td>recursion on object trees</td></tr>
+    <tr><td>5</td><td><code>DecisionNode</code>, <code>Yes</code>, <code>No</code></td><td>a decision tree as objects; leaves via inheritance</td></tr>
+    <tr><td>6</td><td><code>to_dict</code> / <code>from_dict</code></td><td>serialization &mdash; models that survive the program</td></tr>
+    <tr><td>Bonus</td><td><code>FitPlane</code></td><td>fit = solving equations (three points &rarr; a plane)</td></tr>
+  </table>
+  <p><em>From here on, everything is objects: the <strong>Ancient Secrets of Prediction</strong> chapter finds best-fit models when no exact fit exists, <strong>Gradient Descent</strong> makes <code>fit</code> iterative, and <strong>Decision Trees</strong> learns Part 5's tree from data.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

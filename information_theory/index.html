@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Information Theory &mdash; Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/information_theory/information_theory.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Information Theory &mdash; Lossless Compression</h1>
+<p class="chapter-intro">You can only send <strong>0s and 1s</strong> over a wire. Your job is to design a scheme that converts any message into bits &mdash; and lets the receiver convert it back without any confusion. By the end of this chapter you will build a fully general compressor and decompressor that produces the <strong>shortest possible binary encoding</strong> for any alphabet and any set of letter frequencies. This is called <strong>Huffman coding</strong>, though you will invent it yourself.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Two Symbols: A and B
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Two Symbols &mdash; A and B</h2>
+  <p class="part-intro">You need to transmit messages that contain only the letters <strong>A</strong> and <strong>B</strong>. The wire only carries 0s and 1s.</p>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Design the Encoding</h3>
+  <div class="question">
+    <p>You need to decide: what bit string does A become? What does B become?</p>
+    <p><strong>Before you code:</strong></p>
+    <ul>
+      <li>You have two symbols and two possible 1-bit strings: <code>"0"</code> and <code>"1"</code>.</li>
+      <li>Try: A &rarr; <code>"0"</code>, B &rarr; <code>"1"</code>.</li>
+      <li>Encode <code>"AABBA"</code> by hand. What do you get?</li>
+      <li>Now decode it back. Do you get the original?</li>
+    </ul>
+    <p>Write a function <code>encode_ab(message)</code> that takes a string of As and Bs and returns a binary string.</p>
+    <p>Write a function <code>decode_ab(bits)</code> that takes a binary string and returns the original message.</p>
+<pre><code>encode_ab("AABBA")   # "00110"
+encode_ab("BA")      # "10"
+decode_ab("00110")   # "AABBA"
+decode_ab("10")      # "BA"</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; encoding map</div>
+<pre><code>SCHEME_AB = {"A": "0", "B": "1"}</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>encode_ab</code>, iterate over each character in the message and look it up in <code>SCHEME_AB</code>. Concatenate the results.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>decode_ab</code>, each bit maps to exactly one symbol. Build a reverse dict <code>{"0": "A", "1": "B"}</code> and look up each bit character.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Check for Ambiguity</h3>
+  <div class="question">
+    <p>Would any other encoding cause confusion?</p>
+    <p>Try: A &rarr; <code>"0"</code>, B &rarr; <code>"00"</code>.</p>
+    <ul>
+      <li>Encode <code>"AB"</code> &rarr; ?</li>
+      <li>Encode <code>"BA"</code> &rarr; ?</li>
+      <li>Are they the same bit string?</li>
+    </ul>
+    <p><strong>Key definition:</strong> A code is <strong>prefix-free</strong> if no codeword is the start (prefix) of another.</p>
+    <ul>
+      <li>A=<code>"0"</code>, B=<code>"00"</code> is <strong>NOT</strong> prefix-free: <code>"0"</code> is a prefix of <code>"00"</code>.</li>
+      <li>A=<code>"0"</code>, B=<code>"1"</code> <strong>IS</strong> prefix-free.</li>
+    </ul>
+    <p>Write <code>is_prefix_free(scheme)</code> that checks whether a given dict <code>{symbol: bits}</code> is prefix-free.</p>
+<pre><code>is_prefix_free({"A": "0", "B": "1"})    # True
+is_prefix_free({"A": "0", "B": "00"})   # False  ("0" is prefix of "00")
+is_prefix_free({"A": "0", "B": "10"})   # True</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Compare every pair of codewords. For codewords <code>c1</code> and <code>c2</code> (where <code>c1 != c2</code>), check if <code>c2.startswith(c1)</code>. If any pair fails, the code is not prefix-free.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use a nested loop: <code>for c1 in codes: for c2 in codes: if c1 != c2 and c2.startswith(c1): return False</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Three Symbols: A, B, and C
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Three Symbols &mdash; A, B, and C</h2>
+  <p class="part-intro">Now messages contain <strong>A</strong>, <strong>B</strong>, and <strong>C</strong>. You still can only send 0s and 1s.</p>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Why One Bit Each No Longer Works</h3>
+  <div class="question">
+    <p>With 1 bit you can only represent 2 different things (<code>"0"</code> and <code>"1"</code>). You have 3 symbols &mdash; so at least one must get a longer code.</p>
+    <p><strong>Option 1 &mdash; Fixed-width (2 bits each):</strong></p>
+    <p>A &rarr; <code>"00"</code>, B &rarr; <code>"01"</code>, C &rarr; <code>"10"</code><br/>
+    (We skip <code>"11"</code> &mdash; it goes unused.)</p>
+    <p>Write <code>encode_fixed(message)</code> and <code>decode_fixed(bits)</code> using this fixed 2-bit scheme.</p>
+<pre><code>encode_fixed("ABC")    # "000110"
+encode_fixed("CAB")    # "100001"
+decode_fixed("000110") # "ABC"
+decode_fixed("100001") # "CAB"</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scheme and reverse lookup</div>
+<pre><code>FIXED_SCHEME = {"A": "00", "B": "01", "C": "10"}
+FIXED_REVERSE = {v: k for k, v in FIXED_SCHEME.items()}</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Encoding: join <code>FIXED_SCHEME[c]</code> for each character. Decoding: split the bit string into 2-character chunks and look up each in <code>FIXED_REVERSE</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>To split into chunks: <code>[bits[i:i+2] for i in range(0, len(bits), 2)]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Variable-Length Prefix-Free Encoding</h3>
+  <div class="question">
+    <p><strong>Option 2 &mdash; Variable length:</strong></p>
+    <p>A &rarr; <code>"0"</code>, B &rarr; <code>"10"</code>, C &rarr; <code>"11"</code></p>
+    <p>This uses only 1 bit for A, and 2 bits for B and C. Is it prefix-free?</p>
+    <ul>
+      <li>Is <code>"0"</code> a prefix of <code>"10"</code>? <code>"10"</code> starts with <code>"1"</code>, not <code>"0"</code>. &#10003;</li>
+      <li>Is <code>"0"</code> a prefix of <code>"11"</code>? <code>"11"</code> starts with <code>"1"</code>, not <code>"0"</code>. &#10003;</li>
+      <li>Is <code>"10"</code> a prefix of <code>"11"</code>? They share <code>"1"</code> but differ at position 2. &#10003;</li>
+    </ul>
+    <p><strong>How do you decode variable-length codes?</strong></p>
+    <p>Walk through the bits one at a time, accumulating characters until the accumulated string matches a known codeword &mdash; then emit the symbol and reset.</p>
+    <p>Write <code>encode_var(message)</code> and <code>decode_var(bits)</code> using A=<code>"0"</code>, B=<code>"10"</code>, C=<code>"11"</code>.</p>
+<pre><code>encode_var("ABC")    # "01011"  (0 + 10 + 11)
+encode_var("CAB")    # "11010"  (11 + 0 + 10)
+decode_var("01011")  # "ABC"
+decode_var("11010")  # "CAB"</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; scheme</div>
+<pre><code>VAR_SCHEME = {"A": "0", "B": "10", "C": "11"}</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Encoding is the same as before &mdash; just join each symbol's code. The interesting part is decoding.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For decoding, build a reverse dict <code>{bits: symbol}</code>. Then walk bit by bit: maintain a <code>current</code> string. Append each bit. When <code>current</code> is in the reverse dict, emit the symbol and reset <code>current = ""</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>The prefix-free property guarantees that the moment <code>current</code> matches a codeword, it cannot also be a prefix of a longer codeword. So there is never any ambiguity about when to emit.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Compare the Two Schemes</h3>
+  <div class="question">
+    <p>For the message <code>"AAABBC"</code>:</p>
+    <ul>
+      <li>Fixed scheme (2 bits/symbol): how many bits total?</li>
+      <li>Variable scheme: how many bits total?</li>
+      <li>Which is shorter?</li>
+    </ul>
+    <p>Verify that the variable scheme <code>{"A":"0","B":"10","C":"11"}</code> is prefix-free.</p>
+<pre><code>is_prefix_free(VAR_SCHEME)  # True</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; comparison code</div>
+<pre><code>message = "AAABBC"
+fixed_encoded = encode_fixed(message)
+var_encoded   = encode_var(message)
+
+print(f"Message:          {message}  ({len(message)} symbols)")
+print(f"Fixed encoding:   {fixed_encoded}  ({len(fixed_encoded)} bits)")
+print(f"Variable encoding:{var_encoded}  ({len(var_encoded)} bits)")
+print(f"Is prefix-free:   {is_prefix_free(VAR_SCHEME)}")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Fixed: 6 symbols &times; 2 bits = 12 bits. Variable: 3&times;1 + 2&times;2 + 1&times;2 = 9 bits. The variable scheme wins because the most frequent symbol (A) gets the shortest code.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Frequencies Matter (A, B, C, D)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Frequencies Matter (A, B, C, D)</h2>
+  <p class="part-intro">Now add a fourth symbol <strong>D</strong>. Suppose you know how often each symbol appears:</p>
+  <table>
+    <tr><th>Symbol</th><th>Frequency</th></tr>
+    <tr><td>A</td><td>50%</td></tr>
+    <tr><td>B</td><td>25%</td></tr>
+    <tr><td>C</td><td>20%</td></tr>
+    <tr><td>D</td><td>5%</td></tr>
+  </table>
+  <p><strong>Question:</strong> Does the order in which you assign short vs. long codes matter? Let us find out.</p>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Average Bits Per Symbol</h3>
+  <div class="question">
+    <p>Write <code>avg_bits(scheme, frequencies)</code> that computes the <strong>weighted average</strong> number of bits per symbol:</p>
+    <p>$$\text{avg bits} = \sum_{\text{symbol}} \text{frequency}(\text{symbol}) \times \text{len}(\text{code}(\text{symbol}))$$</p>
+<pre><code>frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+scheme = {"A": "00", "B": "01", "C": "10", "D": "11"}
+avg_bits(scheme, frequencies)  # 2.0</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over each symbol in <code>frequencies</code>. Multiply the frequency by the length of the codeword for that symbol. Sum these products.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return sum(frequencies[s] * len(scheme[s]) for s in frequencies)</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Try Three Schemes</h3>
+  <div class="question">
+    <p>Compare these three prefix-free schemes on the same frequencies:</p>
+    <table>
+      <tr><th>Scheme</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+      <tr><td>1. Fixed 2-bit</td><td><code>00</code></td><td><code>01</code></td><td><code>10</code></td><td><code>11</code></td></tr>
+      <tr><td>2. Short codes for common</td><td><code>0</code></td><td><code>10</code></td><td><code>110</code></td><td><code>111</code></td></tr>
+      <tr><td>3. Short codes for rare (reversed)</td><td><code>111</code></td><td><code>110</code></td><td><code>10</code></td><td><code>0</code></td></tr>
+    </table>
+    <p>For each scheme:</p>
+    <ol>
+      <li>Check it is prefix-free.</li>
+      <li>Compute the average bits per symbol.</li>
+    </ol>
+    <p>Which scheme gives the shortest encoding?</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; comparison code</div>
+<pre><code>scheme1 = {"A": "00",  "B": "01",  "C": "10",  "D": "11"}
+scheme2 = {"A": "0",   "B": "10",  "C": "110", "D": "111"}
+scheme3 = {"A": "111", "B": "110", "C": "10",  "D": "0"}
+
+frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+
+for name, scheme in [("Scheme 1 (fixed)", scheme1),
+                     ("Scheme 2 (short for common)", scheme2),
+                     ("Scheme 3 (short for rare)", scheme3)]:
+    pf   = is_prefix_free(scheme)
+    avg  = avg_bits(scheme, frequencies)
+    print(f"{name}: prefix-free={pf}, avg bits={avg:.4f}")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Scheme 2 gives the shortest encoding. A (the most frequent at 50%) gets 1 bit, while D (the rarest at 5%) gets 3 bits. Scheme 3 does the opposite and wastes bits on the common symbols.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Scheme 1: 2.0 bits/symbol. Scheme 2: 0.50&times;1 + 0.25&times;2 + 0.20&times;3 + 0.05&times;3 = 1.75. Scheme 3: 0.50&times;3 + 0.25&times;3 + 0.20&times;2 + 0.05&times;1 = 2.70.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Measure on Real Data</h3>
+  <div class="question">
+    <p>Generate a random message of 1000 symbols according to the given frequencies, then measure how many bits each scheme actually produces.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; message generator and comparison</div>
+<pre><code>import random
+
+def generate_message(frequencies, n, seed=42):
+    random.seed(seed)
+    symbols = list(frequencies.keys())
+    probs   = list(frequencies.values())
+    cumulative = []
+    total = 0
+    for p in probs:
+        total += p
+        cumulative.append(total)
+    result = []
+    for _ in range(n):
+        r = random.random()
+        for i, threshold in enumerate(cumulative):
+            if r &lt; threshold:
+                result.append(symbols[i])
+                break
+    return "".join(result)
+
+
+def encode_with_scheme(message, scheme):
+    return "".join(scheme[c] for c in message)
+
+
+frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+message = generate_message(frequencies, 1000)
+print(f"Message length: {len(message)} symbols")
+
+for name, scheme in [("Scheme 1 (fixed)", scheme1),
+                     ("Scheme 2 (short for common)", scheme2),
+                     ("Scheme 3 (short for rare)", scheme3)]:
+    encoded = encode_with_scheme(message, scheme)
+    print(f"{name}: {len(encoded)} bits  "
+          f"({len(encoded)/len(message):.3f} bits/symbol)")</code></pre>
+    </div>
+    <p>Run the code above and observe which scheme produces the fewest bits on real data. Does it match the theoretical <code>avg_bits</code> you computed?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The measured bits/symbol should be very close to the theoretical <code>avg_bits</code> values. With 1000 symbols the law of large numbers kicks in and the actual frequencies are close to the expected ones.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Finding the Shortest Encoding
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Finding the Shortest Encoding</h2>
+  <p class="part-intro">Scheme 2 was shorter than the fixed scheme. But is it the <em>shortest possible</em>?</p>
+  <p><strong>Key insight:</strong> Give the <strong>shortest codes to the most frequent symbols</strong>. The rare symbols are used infrequently, so making their codes long barely hurts.</p>
+  <p>But <em>how</em> do you decide which symbols to group together?</p>
+  <p><strong>Greedy algorithm:</strong></p>
+  <ol>
+    <li>Sort symbols by frequency, rarest first.</li>
+    <li>Take the two rarest symbols. They will share the same long prefix &mdash; combine them into one group.</li>
+    <li>Treat the group as a single "super-symbol" with combined frequency.</li>
+    <li>Repeat from step 1 until only one group remains.</li>
+    <li>Assign codes by tracing the tree: 0 for left branch, 1 for right branch.</li>
+  </ol>
+  <p>Let us work through this for A=50%, B=25%, C=20%, D=5%.</p>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Build the Tree by Hand</h3>
+  <div class="question">
+    <p>Trace the algorithm:</p>
+    <p><strong>Step 1:</strong> Sort by frequency: <code>D(0.05), C(0.20), B(0.25), A(0.50)</code><br/>
+    Take the two rarest: D and C &rarr; form group <code>(D, C)</code> with frequency <code>0.05 + 0.20 = 0.25</code>.</p>
+    <p><strong>Step 2:</strong> Now we have: <code>B(0.25), (D,C)(0.25), A(0.50)</code>.<br/>
+    Take the two rarest: B and (D,C) &rarr; form <code>(B, (D,C))</code> with frequency <code>0.50</code>.</p>
+    <p><strong>Step 3:</strong> Now we have: <code>(B,(D,C))(0.50), A(0.50)</code>.<br/>
+    Combine into root: <code>(A, (B,(D,C)))</code>.</p>
+    <p><strong>The tree looks like this:</strong></p>
+<pre><code>         root
+        /    \
+       A      (B, (D,C))
+       0     1/         \
+             B         (D,C)
+             10        1/  \
+                       D    C
+                      110  111</code></pre>
+    <p><strong>Before you code:</strong> What codes does this tree assign to each symbol?</p>
+<pre><code># A = ?   B = ?   C = ?   D = ?</code></pre>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; verify the codes</div>
+<pre><code>expected_codes = {
+    "A": "0",    # root &rarr; left
+    "B": "10",   # root &rarr; right &rarr; left
+    "D": "110",  # root &rarr; right &rarr; right &rarr; left
+    "C": "111",  # root &rarr; right &rarr; right &rarr; right
+}
+print("Expected Huffman codes:", expected_codes)
+print("Average bits:", avg_bits(expected_codes,
+      {"A":0.50,"B":0.25,"C":0.20,"D":0.05}))</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Trace each path from the root. Going left appends <code>"0"</code>, going right appends <code>"1"</code>. A is at depth 1 (left), B at depth 2 (right then left), D at depth 3 (right, right, left), C at depth 3 (right, right, right).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Build the Huffman Tree in Code</h3>
+  <div class="question">
+    <p>Represent the tree using nested tuples:</p>
+    <ul>
+      <li>A <strong>leaf</strong> is just a string: <code>"A"</code>, <code>"B"</code>, etc.</li>
+      <li>An <strong>internal node</strong> is a tuple of its two children: <code>(left, right)</code>.</li>
+    </ul>
+    <p>So the tree from the example is:</p>
+<pre><code>("A", ("B", ("D", "C")))</code></pre>
+    <p>Write <code>build_huffman_tree(frequencies)</code> that:</p>
+    <ol>
+      <li>Starts with a list of <code>(frequency, symbol)</code> pairs.</li>
+      <li>Sorts by frequency (smallest first).</li>
+      <li>Removes the two smallest, combines them into <code>(freq1+freq2, (node1, node2))</code>.</li>
+      <li>Inserts the combined node back and re-sorts.</li>
+      <li>Repeats until one node remains.</li>
+      <li>Returns the root node (the tree, without its frequency).</li>
+    </ol>
+<pre><code>build_huffman_tree({"A":0.50,"B":0.25,"C":0.20,"D":0.05})
+# ("A", ("B", ("D", "C")))   (or equivalent &mdash; ties may be broken differently)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start with <code>nodes = [(freq, symbol) for symbol, freq in frequencies.items()]</code>. Sort the list. Pop the first two (smallest frequencies). Combine them. Append the combined node. Re-sort. Repeat.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The loop runs while <code>len(nodes) &gt; 1</code>. After popping two items <code>(f1, n1)</code> and <code>(f2, n2)</code>, append <code>(f1+f2, (n1, n2))</code> and sort again. When done, return <code>nodes[0][1]</code> (the tree without the frequency).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Assign Codes from the Tree</h3>
+  <div class="question">
+    <p>Now walk the tree recursively to assign binary codes.</p>
+    <p>Write <code>assign_codes(tree, prefix="")</code> that:</p>
+    <ul>
+      <li>If <code>tree</code> is a string (a leaf/symbol), return <code>{tree: prefix}</code>.
+        Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet) by returning <code>{tree: "0"}</code>.</li>
+      <li>If <code>tree</code> is a tuple <code>(left, right)</code>:
+        <ul>
+          <li>Recursively assign codes to <code>left</code> with prefix <code>prefix + "0"</code>.</li>
+          <li>Recursively assign codes to <code>right</code> with prefix <code>prefix + "1"</code>.</li>
+          <li>Merge and return the combined dict.</li>
+        </ul>
+      </li>
+    </ul>
+<pre><code>assign_codes(("A", ("B", ("D", "C"))))
+# {"A": "0", "B": "10", "D": "110", "C": "111"}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Check the type: <code>if isinstance(tree, str)</code> means it is a leaf. Otherwise it is a tuple with two children.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>To merge two dicts in Python: <code>{**left_codes, **right_codes}</code> or <code>left_codes.update(right_codes); return left_codes</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.4 -->
+<section class="exercise" id="ex-4-4">
+  <h3>Exercise 4.4 &mdash; Huffman Scheme</h3>
+  <div class="question">
+    <p>Combine <code>build_huffman_tree</code> and <code>assign_codes</code> into one function.</p>
+    <p>Write <code>huffman_scheme(frequencies)</code> that returns the complete <code>{symbol: bits}</code> dict.</p>
+<pre><code>huffman_scheme({"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05})
+# {"A": "0", "B": "10", ...}  (exact codes may vary if ties are broken differently)</code></pre>
+    <p>Verify:</p>
+    <ol>
+      <li>The scheme is prefix-free.</li>
+      <li><code>avg_bits</code> is &le; 2.0 (the fixed-width baseline).</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This is a two-liner: build the tree, then assign codes from it. <code>return assign_codes(build_huffman_tree(frequencies))</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.5 -->
+<section class="exercise" id="ex-4-5">
+  <h3>Exercise 4.5 &mdash; Information-Theoretic Lower Bound (Entropy)</h3>
+  <div class="question">
+    <p>Shannon's entropy is the theoretical minimum average bits per symbol:</p>
+    <p>$$H = -\sum_{\text{symbol}} p \cdot \log_2(p)$$</p>
+    <p>No lossless code can do better than this.</p>
+    <p>Write <code>entropy(frequencies)</code> and compare it to your Huffman average.</p>
+<pre><code>entropy({"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05})
+# &asymp; 1.68 bits/symbol</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>math.log2(p)</code>. Be careful: if <code>p == 0</code>, the convention is <code>0 * log2(0) = 0</code> (skip that term).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p><code>return -sum(p * math.log2(p) for p in frequencies.values() if p &gt; 0)</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Plotting helper (provided, not an exercise) -->
+<section class="exercise" id="ex-4-plot">
+  <h3>Visualisation &mdash; Encoding Efficiency</h3>
+  <div class="question">
+    <p>Run the plotting helper below to compare fixed-width, Huffman, and entropy visually.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_comparison(frequencies):
+    schemes = {
+        "Fixed width": {s: format(i, "02b")
+                        for i, s in enumerate(frequencies)},
+        "Huffman":     huffman_scheme(frequencies),
+    }
+    names = list(schemes.keys()) + ["Entropy"]
+    values = ([avg_bits(s, frequencies) for s in schemes.values()]
+              + [entropy(frequencies)])
+    colors = ["steelblue", "seagreen", "tomato"]
+    fig, ax = plt.subplots(figsize=(6, 3))
+    bars = ax.bar(names, values, color=colors)
+    ax.bar_label(bars, fmt="%.3f", padding=3)
+    ax.set_ylabel("bits per symbol")
+    ax.set_title("Encoding efficiency")
+    ax.set_ylim(0, max(values) * 1.2)
+    plt.tight_layout()
+    plt.show()
+
+frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+plot_comparison(frequencies)</code></pre>
+    </div>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: Generalized Encode and Decode
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: Generalized Encode and Decode</h2>
+  <p class="part-intro">Now put everything together into two clean functions.</p>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; <code>encode(data, frequencies)</code></h3>
+  <div class="question">
+    <p>Write <code>encode(data, frequencies)</code> that:</p>
+    <ol>
+      <li>Builds the Huffman scheme from <code>frequencies</code>.</li>
+      <li>Encodes <code>data</code> (a string) using that scheme.</li>
+      <li>Returns <code>(encoded_bits, scheme)</code>.</li>
+    </ol>
+<pre><code>frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+bits, scheme = encode("AABCD", frequencies)
+print(bits)    # e.g. "001010110111"  (depends on exact tree)
+print(scheme)  # {"A": "0", "B": "10", ...}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Build the scheme with <code>huffman_scheme(frequencies)</code>, then join the codes: <code>"".join(scheme[c] for c in data)</code>. Return both.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; <code>decode(encoded_data, scheme)</code></h3>
+  <div class="question">
+    <p>Write <code>decode(encoded_data, scheme)</code> that:</p>
+    <ol>
+      <li>Builds a reverse lookup: <code>{bits: symbol}</code>.</li>
+      <li>Walks through <code>encoded_data</code> one bit at a time.</li>
+      <li>When the accumulated bits match a codeword, emit the symbol and reset.</li>
+      <li>Returns the decoded string.</li>
+    </ol>
+<pre><code>decode(bits, scheme) == "AABCD"   # True</code></pre>
+    <p><strong>Before you code:</strong> Why does the prefix-free property guarantee this works? Could two different symbols ever produce the same accumulated prefix at the same step?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Build <code>reverse = {v: k for k, v in scheme.items()}</code>. Then iterate bit by bit: <code>current += bit</code>. When <code>current in reverse</code>, append <code>reverse[current]</code> and reset <code>current = ""</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The prefix-free property guarantees that the moment your accumulated string matches a codeword, it is the <em>only</em> possible match. No longer codeword starts with this string, so there is no risk of "reading too few bits."</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.3 -->
+<section class="exercise" id="ex-5-3">
+  <h3>Exercise 5.3 &mdash; Round-Trip on a Longer Message</h3>
+  <div class="question">
+    <p>Generate a 500-symbol message using the given frequencies and verify that <code>decode(encode(message)) == message</code>. Then measure the compression ratio.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; round-trip test</div>
+<pre><code>frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+message = generate_message(frequencies, 500)
+
+bits, scheme = encode(message, frequencies)
+recovered = decode(bits, scheme)
+
+assert recovered == message, "Round-trip failed!"
+print("Round-trip: OK")
+print(f"Original:  {len(message)} symbols  "
+      f"(at 8 bits/symbol ASCII = {len(message)*8} bits)")
+print(f"Encoded:   {len(bits)} bits")
+print(f"Ratio:     {len(bits) / (len(message)*8):.3f}  (lower is better)")
+print(f"Huffman avg bits/symbol: {avg_bits(scheme, frequencies):.3f}")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If your round-trip fails, double-check that <code>decode</code> correctly resets the accumulator after each match. Also verify that your <code>encode</code> uses the same scheme as <code>decode</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.4 -->
+<section class="exercise" id="ex-5-4">
+  <h3>Exercise 5.4 &mdash; Try Different Alphabets</h3>
+  <div class="question">
+    <p>Your <code>encode</code> and <code>decode</code> work on any alphabet and any frequencies. Try them on English-like letter frequencies.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; English letter frequencies</div>
+<pre><code>english_freqs = {
+    "e": 0.127, "t": 0.091, "a": 0.082, "o": 0.075, "i": 0.070,
+    "n": 0.067, "s": 0.063, "h": 0.061, "r": 0.060, "d": 0.043,
+    "l": 0.040, "u": 0.028, "c": 0.028, "m": 0.024, "w": 0.024,
+    "f": 0.022, "g": 0.020, "y": 0.020, "p": 0.019, "b": 0.015,
+    "v": 0.010, "k": 0.008, "j": 0.002, "x": 0.002, "q": 0.001,
+    "z": 0.001,
+}
+
+scheme = huffman_scheme(english_freqs)
+avg   = avg_bits(scheme, english_freqs)
+h     = entropy(english_freqs)
+
+print(f"English alphabet Huffman: {avg:.3f} bits/symbol")
+print(f"Entropy lower bound:      {h:.3f} bits/symbol")
+print(f"vs. fixed 5-bit ASCII:    5.000 bits/symbol")
+print()
+print("Codes for most frequent letters:")
+for sym in ["e", "t", "a", "o", "i"]:
+    print(f"  {sym}: {scheme[sym]}  ({len(scheme[sym])} bits)")
+print("Codes for rarest letters:")
+for sym in ["q", "z", "j", "x"]:
+    print(f"  {sym}: {scheme[sym]}  ({len(scheme[sym])} bits)")</code></pre>
+    </div>
+    <p>Observe: the most frequent letters (e, t, a) get short codes (3-4 bits), while the rarest (q, z) get long codes (8+ bits). On average this saves many bits compared to fixed-width encoding.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>With 26 letters, fixed-width needs $\lceil \log_2 26 \rceil = 5$ bits per symbol. Huffman gets close to the entropy (~4.17 bits/symbol), saving about 1 bit per character.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<section class="exercise" id="ex-summary">
+  <h3>What You Built</h3>
+  <div class="question">
+    <p>You just invented <strong>Huffman coding</strong> (1952), one of the most important algorithms in data compression. It is still used today inside ZIP files, JPEG images, and MP3 audio.</p>
+    <p>The key ideas you discovered:</p>
+    <table>
+      <tr><th>Idea</th><th>What you built</th></tr>
+      <tr><td>Prefix-free codes prevent ambiguity</td><td><code>is_prefix_free(scheme)</code></td></tr>
+      <tr><td>Shorter codes for common symbols saves bits</td><td><code>avg_bits(scheme, frequencies)</code></td></tr>
+      <tr><td>Greedy: always merge the two rarest</td><td><code>build_huffman_tree(frequencies)</code></td></tr>
+      <tr><td>Walk tree to assign codes</td><td><code>assign_codes(tree)</code></td></tr>
+      <tr><td>No code can beat Shannon entropy</td><td><code>entropy(frequencies)</code></td></tr>
+      <tr><td>Full compressor</td><td><code>encode(data, frequencies)</code></td></tr>
+      <tr><td>Full decompressor</td><td><code>decode(bits, scheme)</code></td></tr>
+    </table>
+    <p><strong>Huffman coding is provably optimal among all codes that assign a fixed bit-string to each symbol.</strong></p>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You've just invented Huffman coding from scratch &mdash; prefix-free codes, variable-length encoding, greedy tree construction, Shannon entropy, and a full compressor/decompressor. That's the real thing.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

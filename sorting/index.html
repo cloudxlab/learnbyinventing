@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/sorting/sorting.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Sorting &mdash; Inventing Order</h1>
+<p class="chapter-intro">Sorting looks like a solved problem: call <code>.sort()</code> and move on. But almost every important idea in algorithm design &mdash; nested loops, invariants, divide and conquer, trading memory for speed &mdash; shows up first in sorting. In this chapter you will invent five different sorting algorithms, measure them against each other, and discover <em>why</em> some are dramatically faster, and when you can beat all of them.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 0: Warm-Up
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 0: Warm-Up</h2>
+</div>
+
+<!-- Exercise 0.1 -->
+<section class="exercise" id="ex-0-1">
+  <h3>Exercise 0.1 &mdash; Is It Sorted?</h3>
+  <div class="question">
+    <p>Before sorting anything, you need a way to <em>check</em> whether a list is sorted.</p>
+    <p>Write <code>is_sorted(lst)</code> that returns <code>True</code> if every element is less than or equal to the next one.</p>
+<pre><code>is_sorted([1, 2, 2, 9])   # True
+is_sorted([1, 3, 2])      # False
+is_sorted([5])            # True
+is_sorted([])             # True</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop through indices <code>0</code> to <code>len(lst) - 2</code>. If you ever find <code>lst[i] &gt; lst[i+1]</code>, return <code>False</code>. If the loop finishes without finding any such pair, return <code>True</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>An empty list and a single-element list are both trivially sorted &mdash; the loop body never runs, so you return <code>True</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 0.2 -->
+<section class="exercise" id="ex-0-2">
+  <h3>Exercise 0.2 &mdash; Swap In Place</h3>
+  <div class="question">
+    <p>All the algorithms in this chapter rearrange elements <em>inside</em> the same list. The basic move is a swap.</p>
+    <p>Write <code>swap(lst, i, j)</code> that exchanges the elements at positions <code>i</code> and <code>j</code> <strong>in place</strong> (modify the list, return nothing).</p>
+<pre><code>x = [10, 20, 30]
+swap(x, 0, 2)
+x   # [30, 20, 10]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Python supports simultaneous assignment: <code>lst[i], lst[j] = lst[j], lst[i]</code>. This does the swap in one line without needing a temporary variable.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Bubble Sort
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Bubble Sort</h2>
+  <p class="part-intro">Watch the animation first: <a href="https://yongdanielliang.github.io/animation/web/BubbleSortNew.html" target="_blank">Bubble Sort Animation</a>. The idea: walk through the list comparing <strong>neighbors</strong>. Whenever the left neighbor is bigger, swap them. Big values &ldquo;bubble up&rdquo; toward the end.</p>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; One Bubble Pass</h3>
+  <div class="question">
+    <p>Write <code>bubble_pass(lst)</code> that goes through the list once, comparing each pair of neighbors <code>(lst[i], lst[i+1])</code> and swapping when they are out of order. Modify the list in place.</p>
+    <p><strong>Before you code:</strong> Take <code>[3, 1, 4, 1, 5, 9, 2, 6]</code> and do one pass by hand. Where does the 9 end up? Why must the <em>largest</em> element always reach the last position after one full pass?</p>
+<pre><code>x = [3, 1, 4, 1, 5, 9, 2, 6]
+bubble_pass(x)
+x   # [1, 3, 1, 4, 5, 2, 6, 9]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop <code>i</code> from <code>0</code> to <code>len(lst) - 2</code>. At each step, compare <code>lst[i]</code> and <code>lst[i+1]</code>. If the left is larger, swap them using your <code>swap</code> function.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The largest element always reaches the end because wherever it sits, it will be swapped rightward at every step &mdash; it &ldquo;wins&rdquo; every comparison until it reaches the last position.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Bubble Sort</h3>
+  <div class="question">
+    <p>One pass guarantees the largest element is at the end. How many passes guarantee the whole list is sorted?</p>
+    <p>Write <code>bubble_sort(lst)</code> that repeats passes until the list is sorted. Modify in place.</p>
+    <p><strong>Think about:</strong></p>
+    <ul>
+      <li>After pass 1, the last element is final. After pass 2, the last <em>two</em> are final. Can each pass stop earlier than the previous one?</li>
+      <li>If a whole pass makes <strong>zero swaps</strong>, what do you know?</li>
+    </ul>
+<pre><code>x = [5, 2, 9, 1, 5, 6]
+bubble_sort(x)
+x   # [1, 2, 5, 5, 6, 9]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>You need at most <code>n - 1</code> passes (where <code>n = len(lst)</code>). On pass <code>k</code>, you only need to scan up to index <code>n - 1 - k</code> because the last <code>k</code> elements are already in place.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Optimization: track whether any swap happened during a pass. If a pass completes with zero swaps, the list is already sorted and you can stop early.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; Count the Comparisons</h3>
+  <div class="question">
+    <p>How much work does bubble sort actually do?</p>
+    <p>Write <code>bubble_sort_counting(lst)</code> &mdash; same algorithm, but return the total number of <strong>comparisons</strong> made.</p>
+    <p>Run it on lists of length 10, 100, and 1000 (use <code>random.sample(range(10000), n)</code>). When the list gets 10&times; longer, how much does the comparison count grow?</p>
+    <p>Fill in the table:</p>
+    <table>
+      <tr><th>n</th><th>comparisons</th><th>comparisons / n&sup2;</th></tr>
+      <tr><td>10</td><td>?</td><td>?</td></tr>
+      <tr><td>100</td><td>?</td><td>?</td></tr>
+      <tr><td>1000</td><td>?</td><td>?</td></tr>
+    </table>
+    <p>This growth pattern is called <strong>O(n&sup2;)</strong> &mdash; quadratic time.</p>
+    <p><strong>Pause and think:</strong> a modern laptop does roughly 10&sup8;&ndash;10&sup9; simple operations per second. If n = 1,000,000, then n&sup2; = 10&sup1;&sup2;. How long would bubble sort take? Hours? Days?</p>
+    <p>This is why we need better ideas.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Add a counter variable initialized to 0. Increment it every time you compare two elements. Return the counter at the end.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>You should find that the ratio <code>comparisons / n&sup2;</code> stays roughly constant (around 0.5 for the worst case). This confirms O(n&sup2;) behavior: doubling n quadruples the work.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Insertion Sort
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Insertion Sort</h2>
+  <p class="part-intro">Think about how you sort playing cards in your hand: you pick up cards one at a time, and <strong>insert</strong> each new card into its correct place among the cards you already hold &mdash; which are always sorted.</p>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Insert Into a Sorted Prefix</h3>
+  <div class="question">
+    <p>Suppose <code>lst[0:k]</code> is already sorted and <code>lst[k]</code> is the new card.</p>
+    <p>Write <code>insert_card(lst, k)</code> that moves <code>lst[k]</code> left, one swap at a time, until it sits in its correct position. In place.</p>
+<pre><code>x = [2, 5, 8, 3]      # first 3 elements sorted, insert the 3
+insert_card(x, 3)
+x   # [2, 3, 5, 8]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start at position <code>k</code>. While the element is smaller than its left neighbor (and you haven&rsquo;t reached the beginning), swap it one position to the left.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use a <code>while</code> loop: <code>j = k</code>, then <code>while j &gt; 0 and lst[j] &lt; lst[j-1]: swap(lst, j, j-1); j -= 1</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Insertion Sort</h3>
+  <div class="question">
+    <p>Now sort the whole list: the sorted prefix starts with just <code>lst[0:1]</code>, and you insert <code>lst[1]</code>, then <code>lst[2]</code>, &hellip; one at a time.</p>
+    <p>Write <code>insertion_sort(lst)</code>. In place.</p>
+<pre><code>x = [5, 2, 9, 1, 5, 6]
+insertion_sort(x)
+x   # [1, 2, 5, 5, 6, 9]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop <code>k</code> from <code>1</code> to <code>len(lst) - 1</code>. At each step, call <code>insert_card(lst, k)</code>. That&rsquo;s it &mdash; the entire sort is just repeated insertions.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; The Best Case</h3>
+  <div class="question">
+    <p>Run your <code>insertion_sort</code> on a list that is <strong>already sorted</strong>, counting comparisons (write <code>insertion_sort_counting</code>, like you did for bubble sort).</p>
+    <ul>
+      <li>Already sorted list of length 1000: how many comparisons?</li>
+      <li>Reversed list of length 1000: how many comparisons?</li>
+    </ul>
+    <p>Insertion sort is O(n&sup2;) in the worst case, but <strong>O(n) when the data is nearly sorted</strong> &mdash; which is why real-world sorts (like Python&rsquo;s Timsort) use it as a building block.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For an already-sorted list, each new card is already in position &mdash; the inner <code>while</code> loop checks one comparison and stops immediately. That gives roughly <code>n - 1</code> comparisons total.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For a reversed list, every card must travel all the way to the front &mdash; the inner loop runs fully each time. You should see roughly n&sup2;/2 comparisons, matching the worst case.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Merge Sort — Divide and Conquer
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Merge Sort &mdash; Divide and Conquer</h2>
+  <p class="part-intro">Here is a completely different idea, and it comes from a question: <em>If I hand you <strong>two already-sorted lists</strong>, can you combine them into one sorted list faster than sorting from scratch?</em></p>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Merge Two Sorted Lists</h3>
+  <div class="question">
+    <p>Write <code>merge(a, b)</code> where <code>a</code> and <code>b</code> are each sorted. Return a new sorted list containing all elements of both.</p>
+    <p><strong>Before you code:</strong> merge <code>[1, 5, 9]</code> and <code>[2, 3, 7]</code> by hand. You only ever need to compare the two <em>front</em> elements. Why?</p>
+<pre><code>merge([1, 5, 9], [2, 3, 7])   # [1, 2, 3, 5, 7, 9]
+merge([], [4, 8])             # [4, 8]
+merge([1, 1], [1])            # [1, 1, 1]</code></pre>
+    <p>How many comparisons did merging cost, roughly, for lists of total length n?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use two pointers, <code>i</code> and <code>j</code>, starting at the beginning of each list. At each step, append the smaller of <code>a[i]</code> and <code>b[j]</code> to the result and advance that pointer.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>When one list is exhausted, append the remainder of the other. The total number of comparisons is at most <code>len(a) + len(b) - 1</code>, which is O(n).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Merge Sort</h3>
+  <div class="question">
+    <p>Now the recursive leap (remember the Recursion chapter):</p>
+    <blockquote>To sort a list: split it in half, <strong>sort each half</strong> (how? the same way!), then <code>merge</code> the two sorted halves.</blockquote>
+    <p>Write <code>merge_sort(lst)</code> that returns a new sorted list. What is the base case &mdash; the list so small it is already sorted?</p>
+<pre><code>merge_sort([5, 2, 9, 1, 5, 6])   # [1, 2, 5, 5, 6, 9]
+merge_sort([])                   # []</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Base case: a list of length 0 or 1 is already sorted &mdash; return a copy of it. For the recursive case, find the midpoint <code>mid = len(lst) // 2</code> and split into <code>lst[:mid]</code> and <code>lst[mid:]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Recursively sort each half, then return <code>merge(left_sorted, right_sorted)</code>. The recursion bottoms out at single elements and builds the sorted result up through merging.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Why Is It n&middot;log(n)?</h3>
+  <div class="question">
+    <p>Picture the recursion as levels:</p>
+<pre><code>level 0:              [ n elements ]                 &rarr; merged with ~n comparisons
+level 1:        [ n/2 ]        [ n/2 ]               &rarr; merged with ~n comparisons
+level 2:     [n/4] [n/4]    [n/4] [n/4]              &rarr; merged with ~n comparisons
+...</code></pre>
+    <ul>
+      <li>Each level does about <strong>n</strong> comparison work in total.</li>
+      <li>How many times can you halve n before reaching lists of size 1? (You invented this number in the Binary Search chapter &mdash; it is <strong>log&sub2;(n)</strong>.)</li>
+    </ul>
+    <p>So the total is about <strong>n&middot;log&sub2;(n)</strong>. For n = 1,000,000:</p>
+    <ul>
+      <li>n&sup2; = 1,000,000,000,000</li>
+      <li>n&middot;log&sub2;(n) &asymp; 20,000,000</li>
+    </ul>
+    <p><strong>50,000&times; less work.</strong> Compute the ratio yourself for a few values of n.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; ratio computation</div>
+<pre><code>import math
+
+for n in [1000, 1000000, 1000000000]:
+    quadratic = n * n
+    nlogn = n * math.log2(n)
+    print(f"n={n:&gt;13,}   n^2={quadratic:&gt;22,.0f}   n*log2(n)={nlogn:&gt;18,.0f}   ratio={quadratic/nlogn:&gt;12,.0f}x")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The key insight: each level of recursion does O(n) total work (merging), and there are O(log n) levels. Multiplying gives O(n&middot;log n) total.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Quick Sort — Partition First
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Quick Sort &mdash; Partition First</h2>
+  <p class="part-intro">Merge sort splits blindly down the middle, then does its work while merging. Quick sort does the opposite: it does its work <strong>while splitting</strong>, so no merge is needed.</p>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Partition 0s and 1s</h3>
+  <div class="question">
+    <p>Warm-up from real life. You have records labeled 0 or 1:</p>
+<pre><code>[(0,"x"), (1, 12), (0, 34), (1, 90), (1, 89), (0, "s"), (1, "7")]</code></pre>
+    <p>Move all the 0-records to the front and all the 1-records to the back &mdash; <strong>without creating another list</strong>, touching each element only a constant number of times (a single O(n) pass with swaps).</p>
+    <p><strong>Hint:</strong> keep two positions, one scanning from the left, one from the right. What should each of them look for?</p>
+    <p>Write <code>partition_01(lst)</code> that rearranges in place. (Order <em>within</em> the 0-group and 1-group may end up anything.)</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use two pointers: <code>left = 0</code> and <code>right = len(lst) - 1</code>. Move <code>left</code> rightward while it points at a 0-record. Move <code>right</code> leftward while it points at a 1-record. When both stop, swap and continue.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The loop continues while <code>left &lt; right</code>. Each element is visited at most once by each pointer, so the total work is O(n).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Partition Around a Pivot</h3>
+  <div class="question">
+    <p>Generalize: instead of 0s and 1s, pick one element of the list &mdash; the <strong>pivot</strong> &mdash; and rearrange so that everything <code>&lt; pivot</code> is on its left and everything <code>&gt;= pivot</code> is on its right.</p>
+    <p>Write <code>partition(lst, lo, hi)</code> that:</p>
+    <ul>
+      <li>works on the slice <code>lst[lo..hi]</code> (inclusive) in place,</li>
+      <li>uses <code>lst[hi]</code> as the pivot,</li>
+      <li>returns the final index where the pivot lands.</li>
+    </ul>
+<pre><code>x = [3, 8, 2, 5, 1, 4]
+p = partition(x, 0, 5)    # pivot = 4
+# afterwards: {3, 2, 1} somewhere left of 4, {8, 5} right of it
+x[p]   # 4</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Lomuto partition scheme: keep a &ldquo;store index&rdquo; <code>s = lo</code>. Scan <code>i</code> from <code>lo</code> to <code>hi - 1</code>. Whenever <code>lst[i] &lt; pivot</code>, swap <code>lst[i]</code> with <code>lst[s]</code> and increment <code>s</code>. Finally, swap <code>lst[s]</code> with <code>lst[hi]</code> (the pivot).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>After the loop, <code>s</code> is the correct final position for the pivot. Everything to the left of <code>s</code> is <code>&lt; pivot</code>, everything to the right is <code>&gt;= pivot</code>. Return <code>s</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Quick Sort</h3>
+  <div class="question">
+    <p>After partitioning, the pivot is in its <strong>final sorted position</strong>. What remains? Two smaller unsorted regions &mdash; one on each side. Sort each of them&hellip; the same way.</p>
+    <p>Write <code>quick_sort(lst, lo=0, hi=None)</code> that sorts in place.</p>
+<pre><code>x = [5, 2, 9, 1, 5, 6]
+quick_sort(x)
+x   # [1, 2, 5, 5, 6, 9]</code></pre>
+    <p><strong>Think about:</strong> merge sort needed extra memory for merging. How much extra memory does quick sort need?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Base case: if <code>lo &gt;= hi</code>, return (region has 0 or 1 elements). Otherwise: partition, then recursively sort <code>lst[lo..p-1]</code> and <code>lst[p+1..hi]</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Handle the default <code>hi=None</code> at the top: <code>if hi is None: hi = len(lst) - 1</code>. Quick sort uses only O(log n) extra memory for the recursion stack &mdash; no auxiliary arrays needed.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: Beating n·log(n) — Counting Sort
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: Beating n&middot;log(n) &mdash; Counting Sort</h2>
+  <p class="part-intro">A puzzle: You must sort the <strong>ages of a billion people</strong>. Ages are whole numbers between 0 and 200. Merge sort would need ~30 billion comparisons. Can you sort them with <strong>zero comparisons between elements</strong>?</p>
+  <p class="part-intro"><strong>Hint:</strong> how many <em>different</em> values can an age take? What if you just&hellip; counted?</p>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; Count Occurrences</h3>
+  <div class="question">
+    <p>Write <code>count_values(ages, max_value)</code> that returns a list <code>counts</code> of length <code>max_value + 1</code>, where <code>counts[v]</code> is how many times age <code>v</code> appears.</p>
+<pre><code>count_values([3, 1, 3, 0], 3)   # [1, 1, 0, 2]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Create a list of zeros: <code>counts = [0] * (max_value + 1)</code>. Then loop through the ages, incrementing <code>counts[age]</code> for each one.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Rebuild the Sorted List</h3>
+  <div class="question">
+    <p>If you know there are three 0s, zero 1s, five 2s, &hellip; you can write down the sorted list directly.</p>
+    <p>Write <code>counting_sort(ages, max_value)</code> that returns the sorted list using <code>count_values</code> &mdash; no comparisons between elements at all.</p>
+<pre><code>counting_sort([3, 1, 3, 0], 3)   # [0, 1, 3, 3]</code></pre>
+    <p><strong>Then answer:</strong></p>
+    <ul>
+      <li>How many operations for n ages with values up to k? (in terms of n and k)</li>
+      <li>Why can&rsquo;t you use this trick to sort arbitrary floats or strings?</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>After building the counts array, loop through indices 0 to <code>max_value</code>. For each index <code>v</code>, append <code>v</code> to the result list <code>counts[v]</code> times.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The complexity is O(n + k): one pass to count (O(n)), one pass to rebuild (O(k) for iterating indices, O(n) for writing values). It only works when k is small &mdash; for floats or strings, the range of possible values is effectively infinite.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: The Race
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: The Race</h2>
+  <p class="part-intro">Time to put every algorithm you invented on the same track.</p>
+</div>
+
+<section class="exercise" id="ex-6-0">
+  <h3>The Race &mdash; Timing All Algorithms</h3>
+  <div class="question">
+    <p>The helper below times each sorting algorithm on progressively larger lists and plots the results on a log-log scale. Run it once all your sorts pass their tests.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; race timing &amp; plotting</div>
+<pre><code>def time_sort(sort_fn, data, in_place):
+    data = list(data)
+    t0 = time.perf_counter()
+    result = sort_fn(data)
+    elapsed = time.perf_counter() - t0
+    final = data if in_place else result
+    assert is_sorted(final), f"{sort_fn.__name__} failed to sort!"
+    return elapsed
+
+
+def race(max_n_quadratic=4000, max_n_fast=64000):
+    contenders = [
+        ("bubble_sort",    bubble_sort,           True,  max_n_quadratic),
+        ("insertion_sort", insertion_sort,        True,  max_n_quadratic),
+        ("merge_sort",     merge_sort,            False, max_n_fast),
+        ("quick_sort",     quick_sort,            True,  max_n_fast),
+        ("built-in sort",  lambda d: d.sort(),    True,  max_n_fast),
+    ]
+    plt.figure(figsize=(8, 5))
+    for name, fn, in_place, max_n in contenders:
+        sizes, times = [], []
+        n = 500
+        while n &lt;= max_n:
+            data = random.sample(range(10 * n), n)
+            times.append(time_sort(fn, data, in_place))
+            sizes.append(n)
+            n *= 2
+        plt.plot(sizes, times, marker="o", label=name)
+        print(f"{name:15s} n={sizes[-1]:6d}: {times[-1]:.4f}s")
+    plt.xlabel("list size n")
+    plt.ylabel("seconds")
+    plt.xscale("log"); plt.yscale("log")
+    plt.legend(); plt.grid(True, which="both", alpha=0.3)
+    plt.title("Sorting race (log-log): slope reveals the exponent")
+    plt.show()
+
+race()</code></pre>
+    </div>
+    <p><strong>Reading the plot:</strong> on a log-log plot, O(n&sup2;) algorithms climb with slope 2, O(n&middot;log n) with slope &asymp; 1. You should see the two families separate clearly.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If your quick sort hits Python&rsquo;s recursion limit on large inputs, try adding <code>import sys; sys.setrecursionlimit(200000)</code> before the race.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; Predict Before You Run</h3>
+  <div class="question">
+    <p>Using your timing for <code>bubble_sort</code> at n = 4000, <strong>predict</strong> how long it would take at n = 1,000,000 (scale by (10&sup6;/4000)&sup2;). Write the number down.</p>
+    <p>Then predict <code>merge_sort</code> at n = 1,000,000 from its n = 64000 timing.</p>
+    <p>One of these predictions is minutes-to-hours. The other is around a second. Which is which?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For O(n&sup2;): if n grows by a factor of 250 (from 4000 to 1,000,000), time grows by 250&sup2; = 62,500. Even if bubble sort took 0.5s at n = 4000, that predicts about 31,250 seconds &asymp; 8.7 hours.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For O(n&middot;log n): from 64000 to 1,000,000 is a factor of ~15.6. Time grows by roughly 15.6 &times; (log(10&sup6;)/log(64000)) &asymp; 15.6 &times; 1.25 &asymp; 19.5. So if merge sort took 0.05s at 64000, the prediction is about 1 second.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<section class="exercise" id="ex-summary">
+  <div class="question">
+    <table>
+      <tr><th>Algorithm</th><th>Idea you discovered</th><th>Time</th><th>Notes</th></tr>
+      <tr><td>Bubble sort</td><td>swap out-of-order neighbors, repeat</td><td>O(n&sup2;)</td><td>largest bubbles to the end each pass</td></tr>
+      <tr><td>Insertion sort</td><td>insert each card into a sorted hand</td><td>O(n&sup2;), <strong>O(n) if nearly sorted</strong></td><td>building block of Timsort</td></tr>
+      <tr><td>Merge sort</td><td>sort halves recursively, merge</td><td>O(n&middot;log n)</td><td>needs extra memory for merging</td></tr>
+      <tr><td>Quick sort</td><td>partition around a pivot, recurse</td><td>O(n&middot;log n) average</td><td>in place; partition puts pivot in final spot</td></tr>
+      <tr><td>Counting sort</td><td>count values, rebuild</td><td>O(n + k)</td><td>no comparisons &mdash; only for small integer ranges</td></tr>
+    </table>
+    <p>Python&rsquo;s built-in <code>sort()</code> (Timsort) combines two of your inventions: merge sort&rsquo;s structure with insertion sort&rsquo;s speed on nearly-sorted runs.</p>
+  </div>
+</section>
+
+
+<div class="chapter-footer">
+  <p><em>You&rsquo;ve just invented five sorting algorithms from scratch &mdash; bubble sort, insertion sort, merge sort, quick sort, and counting sort. You measured them, discovered why O(n&middot;log n) crushes O(n&sup2;), and learned when you can beat even that. That&rsquo;s the real foundation of algorithm design.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

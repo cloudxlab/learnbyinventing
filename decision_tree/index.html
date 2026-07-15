@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Trees — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/decision_tree/decision_tree.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Learning Decision Trees by Inventing Them</h1>
+<p class="chapter-intro">You won't be taught &mdash; you will <em>discover</em>. Every step builds on the last. Trust the process.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: What Is Impurity?
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: What Is Impurity?</h2>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Think About Mixing</h3>
+  <div class="question">
+    <p>Imagine a bag of coloured balls &mdash; some <strong>Red</strong>, some <strong>Black</strong>.</p>
+    <p>We want a number that captures how <strong>mixed</strong> the bag is:</p>
+    <ul>
+      <li>A bag of <strong>all Red</strong> &rarr; not mixed at all &rarr; impurity = <strong>0</strong></li>
+      <li>A bag of <strong>all Black</strong> &rarr; not mixed at all &rarr; impurity = <strong>0</strong></li>
+      <li>A bag of <strong>half Red, half Black</strong> &rarr; maximally mixed &rarr; impurity = <strong>1</strong></li>
+    </ul>
+    <pre><code>impurity(0.5, 0.5)  &rarr;  1       # maximally mixed: impurity is 1
+impurity(0, 1)      &rarr;  0       # all one colour:  impurity is 0
+impurity(1, 0)      &rarr;  0</code></pre>
+    <blockquote><strong>Important:</strong> Here <strong>impurity = 0</strong> means <em>completely pure</em> (easy to classify), and <strong>impurity = 1</strong> means <em>maximally mixed</em> (hard to classify).</blockquote>
+    <p><strong>Before coding, answer these questions:</strong></p>
+    <ol>
+      <li>If a bag has 80% Red and 20% Black, would its impurity be closer to 0 or 1? Why?</li>
+      <li>What is <code>impurity(0.9, 0.1)</code>? Higher or lower than <code>impurity(0.8, 0.2)</code>?</li>
+      <li>What mathematical property must the function <code>impurity(p, q)</code> have when <code>p = 1 - q</code>?</li>
+      <li>Is <code>impurity(p, q)</code> the same as <code>impurity(q, p)</code>? Why should it be?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Think about symmetry: swapping the labels (calling Red "Black" and Black "Red") shouldn't change how mixed the bag is. What does that mean for <code>impurity(p, q)</code> vs <code>impurity(q, p)</code>?</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The function should be <strong>symmetric</strong> &mdash; <code>impurity(p, q) == impurity(q, p)</code>. It should peak when <code>p == q == 0.5</code> and be zero at the extremes (<code>p = 0</code> or <code>p = 1</code>).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Invent the Formula</h3>
+  <div class="question">
+    <p>We're going to invent the formula for <code>impurity(p, q)</code> where:</p>
+    <ul>
+      <li><code>p</code> = fraction of Red balls (between 0 and 1)</li>
+      <li><code>q</code> = fraction of Black balls (between 0 and 1)</li>
+      <li><code>p + q = 1</code> always</li>
+    </ul>
+    <p><strong>Step A:</strong> Consider the function $f(p) = p \times (1 - p)$. Fill in the table below by computing it:</p>
+    <table>
+      <tr><th>p</th><th>1&minus;p</th><th>p &times; (1&minus;p)</th></tr>
+      <tr><td>0.0</td><td>1.0</td><td>?</td></tr>
+      <tr><td>0.2</td><td></td><td>?</td></tr>
+      <tr><td>0.4</td><td></td><td>?</td></tr>
+      <tr><td>0.5</td><td></td><td>?</td></tr>
+      <tr><td>0.6</td><td></td><td>?</td></tr>
+      <tr><td>0.8</td><td></td><td>?</td></tr>
+      <tr><td>1.0</td><td></td><td>?</td></tr>
+    </table>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Compute the table values in Python and print them.</li>
+      <li>What is the <strong>maximum</strong> value of $p \times (1 - p)$? At what <code>p</code> does it occur?</li>
+      <li>What are the <strong>minimum</strong> values? When do they occur?</li>
+      <li>Plot $f(p) = p \times (1 - p)$ for $p \in [0, 1]$ using the helper below.</li>
+      <li>Does this function behave like our desired impurity? Where are its max and min?</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_impurity_candidate(f, title="Candidate impurity function"):
+    ps = [i/100 for i in range(101)]
+    vals = [f(p) for p in ps]
+    plt.figure(figsize=(7, 4))
+    plt.plot(ps, vals, 'b-', linewidth=2)
+    plt.xlabel('p (fraction of Red)')
+    plt.ylabel('value')
+    plt.title(title)
+    plt.grid(True)
+    plt.show()</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Start with $p = 0$: what is $0 \times (1 - 0)$? Then $p = 0.5$: what is $0.5 \times 0.5$?</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The maximum of $p(1-p)$ is $0.25$ at $p = 0.5$. It's zero at $p = 0$ and $p = 1$. The shape is right (parabola opening downward), but the peak value is $0.25$ instead of $1$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.3 -->
+<section class="exercise" id="ex-1-3">
+  <h3>Exercise 1.3 &mdash; Scale It</h3>
+  <div class="question">
+    <p>From Exercise 1.2, you found that $f(p) = p \times (1-p)$ peaks at $p = 0.5$ with a value of $0.25$.</p>
+    <p>But we want <code>impurity(0.5, 0.5) = 1</code> (max impurity = 1, not 0.25).</p>
+    <p>So we need a function that:</p>
+    <ul>
+      <li>Returns <strong>1</strong> when <code>p = 0.5</code> (most uncertain)</li>
+      <li>Returns <strong>0</strong> when <code>p = 0</code> or <code>p = 1</code> (most certain)</li>
+    </ul>
+    <p><strong>Your task:</strong></p>
+    <p>Take $f(p) = p \times (1 - p)$ and apply a simple transformation so that its maximum becomes 1.</p>
+    <ol>
+      <li>Find the transformation mathematically (algebra only, no code yet).</li>
+      <li>Write the resulting formula.</li>
+      <li>Verify by plugging in: $p = 0.5$, $p = 0$, $p = 1$.</li>
+      <li>Write it in Python as <code>def impurity(p, q)</code> and plot it.</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your derivation:</strong>
+      <ul>
+        <li>Maximum of f(p) = p*(1-p) is &#8230; at p = &#8230;</li>
+        <li>Transformation: &#8230;</li>
+        <li>Final formula: <code>impurity(p) = &#8230;</code></li>
+        <li>Check p=0.5: &#8230;</li>
+        <li>Check p=0: &#8230;</li>
+        <li>Check p=1: &#8230;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If the maximum is $0.25$, what simple operation turns $0.25$ into $1$?</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Multiply by $4$: $\text{impurity}(p, q) = 4 \times p \times q$. Verify: $4 \times 0.5 \times 0.5 = 1$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.4 -->
+<section class="exercise" id="ex-1-4">
+  <h3>Exercise 1.4 &mdash; Explore the Function</h3>
+  <div class="question">
+    <p>Now that you have <code>impurity(p, q)</code>, explore it.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Compute and print the impurity for the following bags. Do the results match your intuition?</li>
+    </ol>
+    <table>
+      <tr><th>Bag</th><th>Contents</th><th>p</th><th>q</th></tr>
+      <tr><td>A</td><td>9 Red, 1 Black</td><td>0.9</td><td>0.1</td></tr>
+      <tr><td>B</td><td>7 Red, 3 Black</td><td>0.7</td><td>0.3</td></tr>
+      <tr><td>C</td><td>6 Red, 4 Black</td><td>0.6</td><td>0.4</td></tr>
+      <tr><td>D</td><td>5 Red, 5 Black</td><td>0.5</td><td>0.5</td></tr>
+      <tr><td>E</td><td>3 Red, 7 Black</td><td>0.3</td><td>0.7</td></tr>
+      <tr><td>F</td><td>10 Red, 0 Black</td><td>1.0</td><td>0.0</td></tr>
+    </table>
+    <ol start="2">
+      <li>Is bag A more or less certain than bag B? Does <code>impurity</code> agree?</li>
+      <li>Is <code>impurity(0.3, 0.7)</code> equal to <code>impurity(0.7, 0.3)</code>? Why should it be?</li>
+      <li>What is the impurity of a bag with 50 Red, 50 Black, and 50 Green (3 classes)?
+        <ul><li><em>Bonus:</em> Can you extend your formula? Think about what $p \times (1-p)$ means for each pair of classes.</li></ul>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Just plug the values into your <code>impurity(p, q)</code> function. Remember: higher impurity = more mixed.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: Impurity of a List
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: Impurity of a List</h2>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; From Fractions to Lists</h3>
+  <div class="question">
+    <p>So far, <code>impurity(p, q)</code> takes fractions directly. But in practice, you have a <strong>list</strong> like:</p>
+    <pre><code>["R", "B", "B", "R", "R"]</code></pre>
+    <p>You need to compute <code>p</code> and <code>q</code> from the list yourself.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>For the list <code>["R", "B", "B", "R", "R"]</code>, manually compute:
+        <ul>
+          <li>Count of "R"</li>
+          <li>Count of "B"</li>
+          <li>Total count</li>
+          <li><code>p</code> (fraction of R)</li>
+          <li><code>q</code> (fraction of B)</li>
+        </ul>
+      </li>
+      <li>Write a function <code>list_impurity(items)</code> that:
+        <ul>
+          <li>Takes a list of "R" and "B" strings</li>
+          <li>Computes <code>p</code> and <code>q</code></li>
+          <li>Returns <code>impurity(p, q)</code></li>
+          <li><strong>Edge case:</strong> What should it return for an empty list <code>[]</code>? Decide and document your choice.</li>
+        </ul>
+      </li>
+      <li>Test your function:
+<pre><code>list_impurity(["R", "B", "B", "R", "R"])   # what do you expect?
+list_impurity(["R", "R", "R", "R"])         # all same → what value?
+list_impurity(["B", "B", "B", "B"])         # all same → what value?
+list_impurity(["R", "B"])                   # exactly half → what value?
+list_impurity([])                           # empty → your decision</code></pre>
+      </li>
+      <li>Try these additional lists and rank them by impurity (most mixed to least mixed):
+<pre><code>list_A = ["R", "R", "R", "R", "R", "R", "R", "R", "B", "B"]
+list_B = ["R", "R", "R", "R", "R", "B", "B", "B", "B", "B"]
+list_C = ["R", "R", "R", "R", "R", "R", "R", "B", "B", "B"]</code></pre>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>items.count("R")</code> and <code>len(items)</code> to compute the fractions.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the empty list edge case, returning <code>0</code> is a reasonable choice &mdash; an empty set has no mixing.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Weighted Impurity of Two Groups</h3>
+  <div class="question">
+    <p>When we split a list into two parts, we get two separate impurity values &mdash; one for each part.</p>
+    <p>But how do we combine them into one number?</p>
+    <p><strong>Think about it:</strong> If one group has 100 items and another has 2 items, should they count equally?</p>
+    <p><strong>Your task:</strong></p>
+    <ol>
+      <li>Invent a formula for the <strong>total impurity</strong> of two groups, <code>left</code> and <code>right</code>, that accounts for their sizes.
+        <ul>
+          <li>What should happen if one group is empty?</li>
+          <li>What should happen if both groups are identical?</li>
+        </ul>
+      </li>
+      <li>Write a function <code>total_impurity(left, right)</code> that takes two lists and returns a single number.</li>
+      <li>Test it:
+<pre><code>total_impurity(["R", "R", "R"], ["B", "B", "B"])  # perfectly separated
+total_impurity(["R", "B", "R"], ["B", "R", "B"])  # each group is mixed
+total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes</code></pre>
+      </li>
+      <li>Reflection: For the last test case, the right group has 1 item (<code>["B"]</code>) so it's pure (impurity = 0). But it only has 1 item out of 11 total. Does your formula give it less weight? It should.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Think about <strong>weighted average</strong>. A group with more items should have more influence on the total.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>$\text{total} = \frac{|L|}{|L|+|R|} \times \text{impurity}(L) + \frac{|R|}{|L|+|R|} \times \text{impurity}(R)$</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Finding the Best Split
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Finding the Best Split</h2>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Splitting a List at a Position</h3>
+  <div class="question">
+    <p>You are given an ordered list:</p>
+    <pre><code>items = ["R", "B", "B", "R", "R"]</code></pre>
+    <p>You can <strong>split</strong> it at position <code>k</code> (0-indexed), meaning:</p>
+    <ul>
+      <li><strong>Left part:</strong> <code>items[:k]</code> &mdash; the first <code>k</code> items</li>
+      <li><strong>Right part:</strong> <code>items[k:]</code> &mdash; the remaining items</li>
+    </ul>
+    <p>For example, splitting at position <code>k=2</code>:</p>
+    <ul>
+      <li>Left: <code>["R", "B"]</code></li>
+      <li>Right: <code>["B", "R", "R"]</code></li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>For <code>items = ["R", "B", "B", "R", "R"]</code>, print the left and right parts for <strong>every possible split position</strong> <code>k = 1, 2, 3, 4</code>.
+        <ul><li>(Why not <code>k=0</code> or <code>k=5</code>? What would those give?)</li></ul>
+      </li>
+      <li>For each split position, compute <code>total_impurity(left, right)</code>. Print all values.</li>
+      <li>Which split position gives the <strong>minimum</strong> total impurity?
+        <ul>
+          <li>What are the left and right groups at that position?</li>
+          <li>Does that split make intuitive sense?</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use a loop: <code>for k in range(1, len(items))</code>. Print <code>items[:k]</code> and <code>items[k:]</code> for each.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; The Best Split Function</h3>
+  <div class="question">
+    <p>Now automate it: write a function <code>find_best_split_position(items)</code> that:</p>
+    <ul>
+      <li>Tries every possible split position <code>k = 1</code> to <code>len(items) - 1</code></li>
+      <li>Computes <code>total_impurity</code> at each position</li>
+      <li>Returns the position <code>k</code> that gives the <strong>minimum</strong> total impurity</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>find_best_split_position(items)</code>. It should return the best <code>k</code> and the minimum total impurity.</li>
+      <li>Test it on these lists:
+<pre><code>["R", "B", "B", "R", "R"]
+["R", "R", "R", "B", "B", "B"]
+["B", "R", "B", "R", "B", "R"]
+["R", "R", "R", "R", "B"]</code></pre>
+      </li>
+      <li>For <code>["R", "R", "R", "B", "B", "B"]</code>, the answer should be obvious from visual inspection. Does your function agree?</li>
+      <li>For <code>["B", "R", "B", "R", "B", "R"]</code> (perfectly alternating), what split position does it find? Are there multiple "tied" positions?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Track <code>best_k</code> and <code>min_impurity</code> as you loop. Update them whenever you find a lower impurity.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Initialize <code>min_impurity = float('inf')</code> so any real value will be smaller.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.3 -->
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Visualise the Split Scores</h3>
+  <div class="question">
+    <p>Use the plotting helper below to visualise how total impurity changes at each split position.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_split_scores(items, title=None):
+    ks = list(range(1, len(items)))
+    scores = [total_impurity(items[:k], items[k:]) for k in ks]
+    best_k = ks[scores.index(min(scores))]
+    plt.figure(figsize=(8, 4))
+    plt.plot(ks, scores, 'b-o')
+    plt.axvline(x=best_k, color='red', linestyle='--',
+                label=f'best k={best_k}')
+    plt.xlabel('Split position k')
+    plt.ylabel('Total impurity')
+    plt.title(title or f'Split scores for {items}')
+    plt.legend(); plt.grid(True); plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run <code>plot_split_scores</code> on all four test lists from Exercise 3.2.</li>
+      <li>For <code>["R", "R", "R", "B", "B", "B"]</code>: is the minimum sharp or flat? Why?</li>
+      <li>For <code>["B", "R", "B", "R", "B", "R"]</code>: what does the plot look like? Is there a clear winner?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A "sharp" minimum means one position is clearly best. A "flat" minimum means several positions are nearly equal &mdash; the data doesn't have a clean boundary.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: Splitting Real Data — Height & Gender
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: Splitting Real Data &mdash; Height &amp; Gender</h2>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Meet the Dataset</h3>
+  <div class="question">
+    <p>You are given a dataset of students in a class. Each student has a <strong>height</strong> (in cm) and a <strong>gender</strong> ("M" or "F").</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; dataset</div>
+<pre><code>import random
+random.seed(42)
+
+heights = [158, 162, 165, 167, 168, 170, 171, 172, 174, 175,
+           176, 178, 179, 180, 181, 182, 183, 185, 187, 190]
+genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
+           "M",  "M",  "M",  "M",  "F",  "M",  "M",  "M",  "M",  "M"]</code></pre>
+    </div>
+    <p><strong>Before coding, answer these questions:</strong></p>
+    <ol>
+      <li>Just by looking at the data, at roughly what height does gender start being predominantly Male?</li>
+      <li>If you had to draw a single horizontal line through the data to separate M from F as cleanly as possible, where would you draw it?</li>
+      <li>Is a perfect separation possible? Why or why not?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Look for the region where the labels switch from mostly "F" to mostly "M". Notice there are some outliers (e.g. "M" at 168, "F" at 174 and 181).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Visualise the Data</h3>
+  <div class="question">
+    <p>Run the plotting helper below to see the data.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_height_gender(heights, genders, split_height=None,
+                       title="Height vs Gender"):
+    colors = {"M": "blue", "F": "red"}
+    y_jitter = {"M": 1, "F": 0}
+    plt.figure(figsize=(10, 3))
+    for h, g in zip(heights, genders):
+        plt.scatter(h, y_jitter[g], color=colors[g], s=80, zorder=5)
+        plt.text(h, y_jitter[g] + 0.05, g, ha='center', fontsize=8)
+    if split_height is not None:
+        plt.axvline(x=split_height, color='green', linestyle='--',
+                    linewidth=2, label=f'split at {split_height}')
+        plt.legend()
+    plt.yticks([0, 1], ["F", "M"])
+    plt.xlabel("Height (cm)")
+    plt.title(title)
+    plt.grid(axis='x'); plt.tight_layout(); plt.show()</code></pre>
+    </div>
+    <p>Call <code>plot_height_gender(heights, genders)</code> to see the scatter plot.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Split by Height Threshold</h3>
+  <div class="question">
+    <p>Now the key idea: instead of splitting at a <em>position</em> in a list, we split at a <strong>threshold value</strong> in a feature.</p>
+    <p>For a given threshold <code>t</code>:</p>
+    <ul>
+      <li><strong>Left group:</strong> all rows where <code>height &lt;= t</code></li>
+      <li><strong>Right group:</strong> all rows where <code>height &gt; t</code></li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write a function <code>split_by_threshold(heights, genders, t)</code> that:
+        <ul>
+          <li>Splits the data at threshold <code>t</code></li>
+          <li>Returns <code>(left_genders, right_genders)</code></li>
+        </ul>
+      </li>
+      <li>Test it: <code>split_by_threshold(heights, genders, 172)</code> should return the genders of everyone with height &le; 172 and height &gt; 172.</li>
+      <li>For the thresholds below, compute and print <code>total_impurity(left, right)</code>:
+<pre><code>t = 160, 165, 170, 172, 175, 178, 182, 185, 188</code></pre>
+      </li>
+      <li>Which threshold gives the lowest total impurity? Verify visually using <code>plot_height_gender</code> with <code>split_height=t</code>.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use list comprehensions: <code>[g for h, g in zip(heights, genders) if h &lt;= t]</code> for the left group.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.4 -->
+<section class="exercise" id="ex-4-4">
+  <h3>Exercise 4.4 &mdash; Find the Best Threshold Automatically</h3>
+  <div class="question">
+    <p>Instead of manually trying thresholds, automate it.</p>
+    <p><strong>Key insight:</strong> You only need to try thresholds at the <strong>unique values in your data</strong>. Why? Because splitting at 173.5 vs 174 makes no difference if there's no data point between them.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write <code>find_best_threshold(heights, genders)</code> that:
+        <ul>
+          <li>Tries every unique height value as a threshold</li>
+          <li>Computes <code>total_impurity</code> for each</li>
+          <li>Returns the threshold with minimum total impurity, and that minimum impurity value</li>
+        </ul>
+      </li>
+      <li>Run it and print the result. Does it match your manual inspection?</li>
+      <li>Visualise the best threshold using <code>plot_height_gender(heights, genders, split_height=best_t)</code>.</li>
+      <li><strong>Reflection:</strong> What are the genders in the left and right groups at the best threshold? Is the split clean?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Get unique thresholds with <code>sorted(set(heights))</code>. Skip the last one (splitting there puts everything on the left).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Same pattern as <code>find_best_split_position</code>: track <code>best_t</code> and <code>min_imp</code>, update in a loop.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.5 -->
+<section class="exercise" id="ex-4-5">
+  <h3>Exercise 4.5 &mdash; Plot Impurity vs Threshold</h3>
+  <div class="question">
+    <p>Use the plotting helper below to visualise how impurity changes as the threshold varies.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_threshold_scores(heights, genders,
+                          title="Impurity vs Threshold"):
+    unique_heights = sorted(set(heights))
+    scores = []
+    for t in unique_heights:
+        left = [g for h, g in zip(heights, genders) if h &lt;= t]
+        right = [g for h, g in zip(heights, genders) if h &gt; t]
+        if left and right:
+            scores.append((t, total_impurity(left, right)))
+    ts, imps = zip(*scores)
+    best_t = ts[imps.index(min(imps))]
+    plt.figure(figsize=(9, 4))
+    plt.plot(ts, imps, 'b-o')
+    plt.axvline(x=best_t, color='red', linestyle='--',
+                label=f'best t={best_t}')
+    plt.xlabel('Threshold (height cm)')
+    plt.ylabel('Total impurity')
+    plt.title(title)
+    plt.legend(); plt.grid(True); plt.show()</code></pre>
+    </div>
+    <p>Run <code>plot_threshold_scores(heights, genders)</code> and observe the curve.</p>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: A Decision Node — The Job Offer
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: A Decision Node &mdash; The Job Offer</h2>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; What Is a Decision Tree Node?</h3>
+  <div class="question">
+    <p>Before we build a full tree from data, let's understand the structure of a decision tree by <strong>constructing one by hand</strong>.</p>
+    <p>A decision tree is made of <strong>nodes</strong>. There are two kinds:</p>
+    <ul>
+      <li><strong>Boundary node:</strong> Has a rule &mdash; "if feature X &le; value, go left; else go right." Has two children.</li>
+      <li><strong>Leaf node:</strong> Has a final answer &mdash; just <code>True</code> (YES) or <code>False</code> (NO). No children.</li>
+    </ul>
+    <p>Here is a tree for deciding whether to accept a job offer:</p>
+<pre><code>Is salary &gt; 1000?
+├── NO  → Reject the offer
+└── YES → Is distance &lt;= 40?
+           ├── YES → Accept the offer
+           └── NO  → Reject the offer</code></pre>
+    <p><strong>Before coding, answer these questions:</strong></p>
+    <ol>
+      <li>If a job pays 800 and is 20km away &mdash; what does the tree say?</li>
+      <li>If a job pays 1200 and is 30km away &mdash; what does the tree say?</li>
+      <li>If a job pays 1500 and is 60km away &mdash; what does the tree say?</li>
+      <li>If a job pays 1000 exactly &mdash; which branch do you take? (Careful: the rule is <code>salary &gt; 1000</code>.)</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers:</strong>
+      <ol>
+        <li>salary=800, distance=20 &rarr; &#8230;</li>
+        <li>salary=1200, distance=30 &rarr; &#8230;</li>
+        <li>salary=1500, distance=60 &rarr; &#8230;</li>
+        <li>salary=1000, distance=any &rarr; &#8230;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Trace each case from the root. The first check is <code>salary &gt; 1000</code>. If NO (salary &le; 1000), you immediately reject.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Build the <code>DecisionTreeNode</code> Class</h3>
+  <div class="question">
+    <p>Design a class <code>DecisionTreeNode</code> that can be either a <strong>boundary node</strong> or a <strong>leaf node</strong>.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul>
+      <li>A <strong>leaf node</strong> stores a boolean <code>decision</code> (<code>True</code> = YES, <code>False</code> = NO).</li>
+      <li>A <strong>boundary node</strong> stores:
+        <ul>
+          <li><code>boundary</code> &mdash; the feature name (a string, e.g. <code>"salary"</code>)</li>
+          <li><code>boundary_value</code> &mdash; the threshold (a number)</li>
+          <li><code>left</code> &mdash; the child node for when <code>feature &le; boundary_value</code></li>
+          <li><code>right</code> &mdash; the child node for when <code>feature &gt; boundary_value</code></li>
+        </ul>
+      </li>
+      <li>A method <code>check(features)</code> that:
+        <ul>
+          <li>Takes a dict like <code>{"salary": 1200, "distance": 30}</code></li>
+          <li>Traverses the tree</li>
+          <li>Returns the leaf's boolean <code>decision</code></li>
+        </ul>
+      </li>
+    </ul>
+    <p><strong>Also create two helper functions:</strong></p>
+    <ul>
+      <li><code>YES()</code> &mdash; returns a leaf node with decision <code>True</code></li>
+      <li><code>NO()</code> &mdash; returns a leaf node with decision <code>False</code></li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>DecisionTreeNode</code>, <code>YES()</code>, and <code>NO()</code>.</li>
+      <li>Build the job offer tree manually:
+<pre><code>Is salary &lt;= 1000? → NO()
+Else: Is distance &lt;= 40? → YES() else NO()</code></pre>
+      </li>
+      <li>Test it against your answers from Exercise 5.1.</li>
+    </ol>
+    <p><strong>Class structure hint:</strong></p>
+<pre><code>class DecisionTreeNode:
+    def __init__(self, ...):
+        # your attributes here
+        pass
+
+    def check(self, features):
+        # if leaf: return decision
+        # if boundary: go left or right
+        pass</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use a single class with optional parameters. If <code>decision</code> is not <code>None</code>, it's a leaf. Otherwise it's a boundary node with <code>boundary</code>, <code>boundary_value</code>, <code>left</code>, <code>right</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>In <code>check()</code>: if it's a leaf, return <code>self.decision</code>. Otherwise, compare <code>features[self.boundary]</code> to <code>self.boundary_value</code> and recurse into <code>self.left</code> or <code>self.right</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.3 -->
+<section class="exercise" id="ex-5-3">
+  <h3>Exercise 5.3 &mdash; A Bigger Tree</h3>
+  <div class="question">
+    <p>Now build a more complex tree by hand. This tree has 3 levels:</p>
+<pre><code>Is salary &lt;= 1000?
+├── YES → NO (reject)
+└── NO (salary &gt; 1000):
+    Is distance &lt;= 40?
+    ├── YES (close enough):
+    │   Is coffee == 1?         ← 1 means "office has free coffee"
+    │   ├── YES → YES (accept)
+    │   └── NO  → NO (reject)
+    └── NO (too far) → NO (reject)</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Build this tree using <code>DecisionTreeNode</code>, <code>YES()</code>, and <code>NO()</code>.</li>
+      <li>Test with these job offers:</li>
+    </ol>
+    <table>
+      <tr><th>salary</th><th>distance</th><th>coffee</th><th>Expected</th></tr>
+      <tr><td>1200</td><td>30</td><td>1</td><td>YES</td></tr>
+      <tr><td>1200</td><td>30</td><td>0</td><td>NO</td></tr>
+      <tr><td>1200</td><td>60</td><td>1</td><td>NO</td></tr>
+      <tr><td>900</td><td>10</td><td>1</td><td>NO</td></tr>
+    </table>
+    <ol start="3">
+      <li>Extend the tree by adding one more rule of your own. Document what you added.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Nest the <code>DecisionTreeNode</code> constructors. The outermost node splits on <code>salary</code>, its right child splits on <code>distance</code>, and that node's left child splits on <code>coffee</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: Multiple Features — Finding the Best Split
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: Multiple Features &mdash; Finding the Best Split</h2>
+</div>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; Add a Second Feature: Weight</h3>
+  <div class="question">
+    <p>Now the dataset has <strong>two features</strong>: height and weight. We want to find which feature and which threshold gives the best split.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; extended dataset</div>
+<pre><code>data = [
+    {"height": 158, "weight": 52, "gender": "F"},
+    {"height": 162, "weight": 55, "gender": "F"},
+    {"height": 165, "weight": 58, "gender": "F"},
+    {"height": 167, "weight": 61, "gender": "F"},
+    {"height": 168, "weight": 70, "gender": "M"},
+    {"height": 170, "weight": 60, "gender": "F"},
+    {"height": 171, "weight": 73, "gender": "M"},
+    {"height": 172, "weight": 75, "gender": "M"},
+    {"height": 174, "weight": 63, "gender": "F"},
+    {"height": 175, "weight": 78, "gender": "M"},
+    {"height": 176, "weight": 80, "gender": "M"},
+    {"height": 178, "weight": 82, "gender": "M"},
+    {"height": 179, "weight": 84, "gender": "M"},
+    {"height": 180, "weight": 85, "gender": "M"},
+    {"height": 181, "weight": 66, "gender": "F"},
+    {"height": 182, "weight": 88, "gender": "M"},
+    {"height": 183, "weight": 90, "gender": "M"},
+    {"height": 185, "weight": 92, "gender": "M"},
+    {"height": 187, "weight": 95, "gender": "M"},
+    {"height": 190, "weight": 98, "gender": "M"},
+]</code></pre>
+    </div>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.2 -->
+<section class="exercise" id="ex-6-2">
+  <h3>Exercise 6.2 &mdash; Find the Best Feature and Threshold</h3>
+  <div class="question">
+    <p><strong>The question:</strong> Should we split on <strong>height</strong> or <strong>weight</strong>, and at what value?</p>
+    <p>Write a function <code>find_decision_boundary(data, features, label)</code> that:</p>
+    <ul>
+      <li>Takes a list of dicts (<code>data</code>), a list of feature names (<code>features</code>), and the label column name (<code>label</code>)</li>
+      <li>For <strong>each feature</strong>:
+        <ul>
+          <li>Tries every unique value of that feature as a threshold</li>
+          <li>Computes <code>total_impurity</code> for that split</li>
+        </ul>
+      </li>
+      <li>Returns the <strong>best feature name</strong>, the <strong>best threshold</strong>, and the <strong>minimum impurity</strong></li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>find_decision_boundary</code>.</li>
+      <li>Run it on the dataset with <code>features=["height", "weight"]</code> and <code>label="gender"</code>.</li>
+      <li>Print the result. Which feature won? At what threshold?</li>
+      <li>Does this match what you expected from looking at the data?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Nested loops: outer loop over features, inner loop over unique values of that feature. Track the best (feature, threshold, impurity) triple.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Extract unique values: <code>sorted(set(row[feature] for row in data))</code>. For each threshold <code>t</code>, the left group is <code>[row[label] for row in data if row[feature] &lt;= t]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.3 -->
+<section class="exercise" id="ex-6-3">
+  <h3>Exercise 6.3 &mdash; Visualise Both Features</h3>
+  <div class="question">
+    <p>Use the helper below to visualise both the height split and the weight split.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_feature_split(data, feature, label, split_value=None,
+                       title=None):
+    color_map = {"M": "blue", "F": "red"}
+    y_map = {"M": 1, "F": 0}
+    plt.figure(figsize=(10, 3))
+    for row in data:
+        x = row[feature]; y = y_map[row[label]]
+        c = color_map[row[label]]
+        plt.scatter(x, y, color=c, s=80, zorder=5)
+        plt.text(x, y + 0.06, row[label], ha='center', fontsize=8)
+    if split_value is not None:
+        plt.axvline(x=split_value, color='green', linestyle='--',
+                    linewidth=2, label=f'split at {split_value}')
+        plt.legend()
+    plt.yticks([0, 1], ["F", "M"])
+    plt.xlabel(feature)
+    plt.title(title or f"{feature} vs {label}")
+    plt.grid(axis='x'); plt.tight_layout(); plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Use <code>find_decision_boundary</code> on each feature separately.</li>
+      <li>Plot the best height split and the best weight split.</li>
+      <li>Which feature gives a cleaner separation?</li>
+    </ol>
+  </div>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 7: Growing the Tree — Recursive Splitting
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 7: Growing the Tree &mdash; Recursive Splitting</h2>
+</div>
+
+<!-- Exercise 7.1 -->
+<section class="exercise" id="ex-7-1">
+  <h3>Exercise 7.1 &mdash; What Happens After the First Split?</h3>
+  <div class="question">
+    <p>After the first split, you have two groups. Each group may still be impure (mixed).</p>
+    <p>The idea: <strong>repeat the splitting</strong> on each group independently, until each group is pure or has only 1 element.</p>
+    <p><strong>Before coding, trace through manually</strong> using the height-only dataset from Part 4:</p>
+<pre><code>heights = [158, 162, 165, 167, 168, 170, 171, 172, 174, 175,
+           176, 178, 179, 180, 181, 182, 183, 185, 187, 190]
+genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
+           "M",  "M",  "M",  "M",  "F",  "M",  "M",  "M",  "M",  "M"]</code></pre>
+    <ol>
+      <li>What is the best first split threshold? (You found this in Part 4.)</li>
+      <li>After splitting, what are the left and right groups?</li>
+      <li>Is the left group pure? Is the right group pure?</li>
+      <li>For the impure group(s), what is the best next split?</li>
+      <li>Draw this out as a tree structure.</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your manual tree sketch:</strong>
+<pre>height &lt;= ???
+├── Left: ???  (pure? yes/no)
+│   └── If not pure, split again at height &lt;= ???
+│       ├── ...
+│       └── ...
+└── Right: ???  (pure? yes/no)
+    └── If not pure, split again at height &lt;= ???
+        ├── ...
+        └── ...</pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The best first split from Part 4 is around height 167. After that, neither group is perfectly pure because of the outlier data points.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.2 -->
+<section class="exercise" id="ex-7-2">
+  <h3>Exercise 7.2 &mdash; Stopping Conditions</h3>
+  <div class="question">
+    <p>Before writing the recursive function, think about <strong>when to stop</strong>.</p>
+    <p><strong>When should we NOT split further?</strong></p>
+    <ol>
+      <li>The group has <strong>only 1 element</strong> &mdash; nothing to split.</li>
+      <li>The group is <strong>completely pure</strong> &mdash; all same label. No need to split.</li>
+      <li><em>(Optional):</em> All elements have the <strong>same feature values</strong> &mdash; we can't find a meaningful threshold.</li>
+    </ol>
+    <p><strong>When we stop, what do we return?</strong> A <strong>leaf node</strong> with the majority label in that group.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write a helper <code>majority_label(labels)</code> that takes a list of labels and returns the most common one. Document your tie-breaking rule.</li>
+      <li>Write a helper <code>is_pure(labels)</code> that returns <code>True</code> if all labels are the same.</li>
+      <li>Test both helpers:
+<pre><code>majority_label(["M", "M", "F", "M"])  # → "M"
+majority_label(["F", "M"])            # → tie: your choice
+is_pure(["M", "M", "M"])             # → True
+is_pure(["M", "M", "F"])             # → False</code></pre>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>majority_label</code>, count each label and pick the one with the highest count. For ties, just pick the first one you find.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For <code>is_pure</code>: <code>return len(set(labels)) &lt;= 1</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.3 -->
+<section class="exercise" id="ex-7-3">
+  <h3>Exercise 7.3 &mdash; Build the Tree Recursively</h3>
+  <div class="question">
+    <p>Now write <code>build_tree(data, features, label)</code> that:</p>
+    <ol>
+      <li><strong>Base case:</strong> If <code>data</code> is empty, or has 1 element, or is pure &mdash; return a <code>DecisionTreeNode</code> leaf with the majority label.</li>
+      <li><strong>Recursive case:</strong>
+        <ul>
+          <li>Find the best feature and threshold using <code>find_decision_boundary</code>.</li>
+          <li>Split <code>data</code> into <code>left_data</code> and <code>right_data</code>.</li>
+          <li>Recursively call <code>build_tree</code> on each.</li>
+          <li>Return a <code>DecisionTreeNode</code> boundary node with the two subtrees.</li>
+        </ul>
+      </li>
+    </ol>
+    <p><strong>Important:</strong> The leaf node now stores a <strong>label string</strong> (like <code>"M"</code> or <code>"F"</code>), not just <code>True</code>/<code>False</code>. You may need to adapt your <code>DecisionTreeNode</code> slightly.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>build_tree(data, features, label)</code>.</li>
+      <li>Run it on the height+weight dataset from Part 6.</li>
+      <li>Write a helper <code>print_tree(node, depth=0)</code> that prints the tree in an indented format:</li>
+    </ol>
+<pre><code>[height &lt;= 175]
+  LEFT:
+    [weight &lt;= 63]
+      LEFT:  LEAF → F
+      RIGHT: LEAF → M
+  RIGHT:
+    LEAF → M</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Think about the safety check: what if <code>find_decision_boundary</code> returns a split where all data goes to one side? You need to stop and return a leaf to avoid infinite recursion.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Split the data: <code>left_data = [row for row in data if row[best_feat] &lt;= best_thresh]</code> and similarly for right. If either is empty, return a leaf.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>For <code>print_tree</code>: check if <code>node.decision is not None</code> (leaf) vs boundary. Use <code>"  " * depth</code> for indentation and recurse on left/right children.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.4 -->
+<section class="exercise" id="ex-7-4">
+  <h3>Exercise 7.4 &mdash; Use the Tree to Predict</h3>
+  <div class="question">
+    <p>Now use your built tree to predict the gender of each row in the original <code>data</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Use <code>tree.check(row)</code> to predict the gender for each row.</li>
+      <li>Compare the prediction to the true label.</li>
+      <li>Count how many predictions are correct. What is the <strong>accuracy</strong> (correct / total)?</li>
+      <li>Which rows does the tree get wrong? Can you explain why?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Since the tree was built on this exact data and we didn't limit its depth, it should get 100% accuracy on the training data. If not, check your <code>build_tree</code> stopping conditions.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 8: The Full Decision Tree — fit and predict
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 8: The Full Decision Tree &mdash; <code>fit</code> and <code>predict</code></h2>
+</div>
+
+<!-- Exercise 8.1 -->
+<section class="exercise" id="ex-8-1">
+  <h3>Exercise 8.1 &mdash; The Interface</h3>
+  <div class="question">
+    <p>Real ML libraries use a standard interface:</p>
+    <ul>
+      <li><code>fit(X, y)</code> &mdash; train the model on data <code>X</code> (features) and labels <code>y</code></li>
+      <li><code>predict(X)</code> &mdash; given new data, return predictions</li>
+    </ul>
+    <p>Here, <code>X</code> will be a list of dicts (one per sample), and <code>y</code> will be a list of labels.</p>
+    <p><strong>Before coding, think about these questions:</strong></p>
+    <ol>
+      <li>In <code>fit(X, y)</code>: how do you know which features to try splitting on?</li>
+      <li>In <code>predict(X)</code>: <code>X</code> is a list of rows &mdash; so <code>predict</code> should return a <strong>list</strong> of predictions.</li>
+      <li>What should a leaf return when <code>check</code> is called on it?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers:</strong>
+      <ol>
+        <li>Features to split on: &#8230;</li>
+        <li><code>predict</code> returns: &#8230;</li>
+        <li>Leaf behaviour: &#8230;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The features are just the keys of the first dict in <code>X</code>: <code>list(X[0].keys())</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.2 -->
+<section class="exercise" id="ex-8-2">
+  <h3>Exercise 8.2 &mdash; Implement <code>SimpleDecisionTree</code></h3>
+  <div class="question">
+    <p>Wrap everything into a clean class:</p>
+<pre><code>class SimpleDecisionTree:
+    def fit(self, X, y):
+        """
+        X : list of dicts (each dict is one row of features)
+        y : list of labels (strings or booleans)
+        Builds the decision tree and stores it in self.root.
+        """
+        pass
+
+    def predict(self, X):
+        """
+        X : list of dicts
+        Returns a list of predicted labels, one per row.
+        """
+        pass</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>SimpleDecisionTree</code> using <code>build_tree</code> inside <code>fit</code>.</li>
+      <li>Combine <code>X</code> and <code>y</code> inside <code>fit</code> to pass to <code>build_tree</code>.</li>
+      <li>Test it on the height+weight dataset:
+<pre><code>X = [{"height": row["height"], "weight": row["weight"]}
+     for row in data]
+y = [row["gender"] for row in data]
+
+clf = SimpleDecisionTree()
+clf.fit(X, y)
+predictions = clf.predict(X)</code></pre>
+      </li>
+      <li>Compute accuracy.</li>
+      <li>Now predict on some <strong>new unseen data</strong>:
+<pre><code>new_people = [
+    {"height": 163, "weight": 54},   # your guess: F or M?
+    {"height": 185, "weight": 91},   # your guess: F or M?
+    {"height": 172, "weight": 65},   # your guess: F or M?
+]</code></pre>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>fit</code>: merge <code>X[i]</code> and <code>{label: y[i]}</code> into one dict per row: <code>[{**x, "__label__": yi} for x, yi in zip(X, y)]</code>. Use <code>"__label__"</code> as the label column name when calling <code>build_tree</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>In <code>predict</code>: <code>return [self.root.check(row) for row in X]</code></p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.3 -->
+<section class="exercise" id="ex-8-3">
+  <h3>Exercise 8.3 &mdash; Print the Learned Tree</h3>
+  <div class="question">
+    <p>Use your <code>print_tree</code> function to display the tree learned by <code>SimpleDecisionTree</code>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Call <code>print_tree(clf.root)</code>.</li>
+      <li>How deep is the tree? Count the levels.</li>
+      <li>Does the tree make intuitive sense? Are the splits reasonable?</li>
+      <li>What would happen if you trained on a dataset with <strong>more noise</strong> &mdash; would the tree be deeper or shallower? Why?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A noisier dataset means more exceptions to every rule, so the tree has to keep splitting to isolate them &mdash; it gets deeper. This is overfitting.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 9: Bonus Challenges
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 9: Bonus Challenges</h2>
+  <p class="part-intro">If you've made it here, you've built a decision tree from scratch &mdash; impurity formula, split search, recursive tree growth, and a full ML-style class. Here are open-ended extensions.</p>
+</div>
+
+<!-- Challenge A -->
+<section class="exercise" id="ex-9-a">
+  <h3>Challenge A &mdash; Max Depth</h3>
+  <div class="question">
+    <p>Your tree keeps splitting until each leaf is pure. This can lead to <strong>overfitting</strong> &mdash; the tree memorises the training data but won't generalise to new data.</p>
+    <p>Add a <code>max_depth</code> parameter to <code>SimpleDecisionTree</code> (and <code>build_tree</code>):</p>
+    <ul>
+      <li>If the current depth equals <code>max_depth</code>, stop and return a leaf regardless of purity.</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Try <code>max_depth=1</code>, <code>2</code>, <code>3</code>. How does accuracy on the training set change?</li>
+      <li>What does the tree look like with <code>max_depth=1</code>? This is called a <strong>decision stump</strong>.</li>
+      <li>In general: deeper tree = higher training accuracy. Is that always better? Why not?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Add a <code>depth</code> parameter to <code>build_tree</code>. In each recursive call, pass <code>depth + 1</code>. At the top, check <code>if depth &gt;= max_depth: return leaf</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge B -->
+<section class="exercise" id="ex-9-b">
+  <h3>Challenge B &mdash; Min Samples to Split</h3>
+  <div class="question">
+    <p>Another way to prevent overfitting: don't split a group if it has fewer than <code>min_samples</code> rows.</p>
+    <p>Add a <code>min_samples</code> parameter: if <code>len(data) &lt; min_samples</code>, return a leaf.</p>
+    <p>Try <code>min_samples=1</code> (default) vs <code>min_samples=3</code> vs <code>min_samples=5</code>. How does the tree structure change?</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Just add one more base-case check at the top of <code>build_tree</code>: <code>if len(data) &lt; min_samples: return leaf</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge C -->
+<section class="exercise" id="ex-9-c">
+  <h3>Challenge C &mdash; A New Dataset</h3>
+  <div class="question">
+    <p>Try your tree on the Iris dataset &mdash; a classic ML benchmark.</p>
+<pre><code>from sklearn.datasets import load_iris
+iris = load_iris()
+
+feature_names = iris.feature_names  # 4 features
+X_iris = [dict(zip(feature_names, row)) for row in iris.data]
+y_iris = [iris.target_names[t] for t in iris.target]</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Fit your <code>SimpleDecisionTree</code> on the Iris dataset.</li>
+      <li>Compute training accuracy.</li>
+      <li>Print the tree. How deep is it?</li>
+      <li>Compare to <code>sklearn.tree.DecisionTreeClassifier</code>. Do they make the same splits?</li>
+      <li><strong>Bonus:</strong> Split into train/test sets (80/20) and measure test accuracy.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Your tree should get ~100% training accuracy on Iris. The first split is usually on <code>petal width (cm)</code> at around 0.8 &mdash; this separates setosa from the other two perfectly.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge D -->
+<section class="exercise" id="ex-9-d">
+  <h3>Challenge D &mdash; What Is Gini Impurity?</h3>
+  <div class="question">
+    <p>The impurity function you invented is based on $p(1-p)$. Look up <strong>Gini impurity</strong>:</p>
+    <p>$$\text{Gini} = 1 - \sum_k p_k^2$$</p>
+    <p>where the sum is over all classes $k$, and $p_k$ is the fraction of class $k$.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>For two classes (R and B), write out the Gini formula in full.</li>
+      <li>Is it the same as your formula, or different?</li>
+      <li>Replace your <code>impurity</code> function with the Gini formula and re-run everything. Do the results change?</li>
+      <li>Look up <strong>Entropy</strong> as another impurity measure. Try implementing that too.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For two classes: $\text{Gini} = 1 - p^2 - q^2$. Since $q = 1-p$, expand and simplify &mdash; compare to $4pq$.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>$1 - p^2 - (1-p)^2 = 2p(1-p)$. Your formula was $4p(1-p)$. They differ by a factor of 2, but this doesn't affect which split wins &mdash; both rank splits the same way.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Reflection
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Reflection &mdash; What Did You Just Build?</h2>
+</div>
+
+<section class="exercise" id="ex-reflection">
+  <h3>Reflection</h3>
+  <div class="question">
+    <p>Take a moment to answer these questions in your own words.</p>
+    <ol>
+      <li><strong>What is impurity?</strong> Why does it matter for decision trees?</li>
+      <li><strong>What is a decision boundary?</strong> How did you find the best one?</li>
+      <li><strong>What is recursive splitting?</strong> When does it stop?</li>
+      <li><strong>What is overfitting?</strong> How does a decision tree overfit, and how can you prevent it?</li>
+      <li><strong>What does <code>fit</code> do?</strong> What does <code>predict</code> do?</li>
+      <li><strong>What would a Random Forest be?</strong> (Think: what if you built many trees on random subsets of data and features, then took a vote?)</li>
+    </ol>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You've just invented a decision tree classifier from scratch &mdash; impurity, split search, recursive tree growth, and a full ML interface. That's the real thing. sklearn's <code>DecisionTreeClassifier</code> works on exactly these principles.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

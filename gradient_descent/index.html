@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linear Regression &amp; Gradient Descent &mdash; Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/gradient_descent/linear_regression_gradient_descent.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>Learning Linear Regression by Inventing Gradient Descent</h1>
+<p class="chapter-intro">You won't be taught &mdash; you will <em>discover</em>. Every step builds on the last. Trust the process.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ===============================================================
+     PART 1: Finding the Bottom of a Valley
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 1: Finding the Bottom of a Valley</h2>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Look Before You Leap</h3>
+  <div class="question">
+    <p>Consider this function:</p>
+    <p>$$f(x) = x^4 - 4x + 10$$</p>
+    <p>Your first job is simply to <strong>see</strong> it.</p>
+    <p>Use the plotting helper below to draw the function over the range $x \in [-3, 3]$.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; plotting helper</div>
+<pre><code>def plot_function(f, x_range=(-3, 3), num_points=500, title="f(x)", mark_x=None):
+    """
+    Plots a function f over x_range.
+    Optionally marks a specific x value with a red dot.
+    """
+    xs = np.linspace(x_range[0], x_range[1], num_points)
+    ys = [f(x) for x in xs]
+    plt.figure(figsize=(8, 4))
+    plt.plot(xs, ys, 'b-', linewidth=2)
+    if mark_x is not None:
+        plt.plot(mark_x, f(mark_x), 'ro', markersize=10,
+                 label=f'x={mark_x:.4f}, f(x)={f(mark_x):.4f}')
+        plt.legend()
+    plt.title(title)
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.grid(True)
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run the plotting helper cell to define <code>plot_function</code>.</li>
+      <li>Define $f(x) = x^4 - 4x + 10$ as a Python function.</li>
+      <li>Call <code>plot_function(f, x_range=(-3, 3), title="x^4 - 4x + 10")</code>.</li>
+      <li>Visually estimate: <strong>where does the minimum appear to be?</strong> Write your guess as a comment.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The function <code>f(x) = x**4 - 4*x + 10</code> is a simple one-liner. Look at the plot for the lowest point of the curve &mdash; it should be somewhere around $x = 1$.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The true derivative is $f'(x) = 4x^3 - 4$. Setting it to zero: $4x^3 = 4 \Rightarrow x = 1$. So the minimum is at $x = 1$, $f(1) = 7$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Hit and Trial</h3>
+  <div class="question">
+    <p>Now let's find the minimum by hand &mdash; no calculus, just trying values.</p>
+    <p>The plotting helper accepts a <code>mark_x</code> argument. Use it to mark your guesses on the plot.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Start with your visual estimate from Exercise 1.1. Call <code>plot_function(f, mark_x=YOUR_GUESS)</code>.</li>
+      <li>Look at the plot. Is the marked point at the bottom? If not, which direction should you move?</li>
+      <li>Try a new value. Re-plot.</li>
+      <li>Repeat until you are confident you have found the minimum to <strong>2 decimal places</strong>.</li>
+      <li>Record <strong>every guess you made and the function value at that guess</strong> in a table (use a Python list of tuples).</li>
+    </ol>
+<pre><code># Template for recording your guesses:
+guesses = [
+    # (x_value, f(x_value))
+    # e.g. (1.0, f(1.0)),
+]</code></pre>
+    <p><strong>Reflection questions (answer in a markdown cell below):</strong></p>
+    <ul>
+      <li>How many guesses did it take?</li>
+      <li>What strategy did you use to decide the next guess?</li>
+      <li>Can you describe your strategy in plain English, like a recipe?</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A natural strategy is binary search: pick a point, check whether the function is lower to its left or right, then narrow the range.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Another strategy: if the function value decreases when you step right, keep going right; if it increases, you overshot &mdash; go back with a smaller step. This is a manual version of gradient descent!</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 2: Making the Machine Do the Searching
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 2: Making the Machine Do the Searching</h2>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; The Slope Tells You Which Way to Walk</h3>
+  <div class="question">
+    <p>You had a strategy when doing hit-and-trial. Let's make it precise.</p>
+    <p>Think about this: when you are standing on the curve at some point $x$, the <strong>slope</strong> of the curve tells you:</p>
+    <ul>
+      <li>If slope is <strong>positive</strong> &rarr; the function is going <em>up</em> to the right &rarr; you should move <em>left</em> (decrease $x$)</li>
+      <li>If slope is <strong>negative</strong> &rarr; the function is going <em>up</em> to the left &rarr; you should move <em>right</em> (increase $x$)</li>
+      <li>If slope is <strong>zero</strong> &rarr; you are at the bottom!</li>
+    </ul>
+    <p>We can approximate the slope (derivative) at any point using:</p>
+    <p>$$\text{slope at } x \approx \frac{f(x + h) - f(x - h)}{2h} \quad \text{for a very small } h$$</p>
+    <p>This is called the <strong>numerical derivative</strong>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write a function <code>numerical_derivative(f, x, h=1e-5)</code> that computes the slope at point <code>x</code>.</li>
+      <li>Test it on $f(x) = x^4 - 4x + 10$ at a few points: $x = 0, 1, 1.5, 2$.</li>
+      <li>Print both the slope value and whether it's positive, negative, or near-zero.</li>
+      <li>Manually verify one of your answers: the true derivative is $f'(x) = 4x^3 - 4$. Does your numerical result match?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The function is a direct translation of the formula: <code>return (f(x + h) - f(x - h)) / (2 * h)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>At $x = 0$: true derivative is $4(0)^3 - 4 = -4$. At $x = 1$: $4(1)^3 - 4 = 0$ (the minimum!). Your numerical values should be very close to these.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; One Step at a Time</h3>
+  <div class="question">
+    <p>Now let's build the update rule.</p>
+    <p>If you are at position $x$, and the slope there is $s$, your next position should be:</p>
+    <p>$$x_{\text{new}} = x - \alpha \cdot s$$</p>
+    <p>where $\alpha$ (alpha) is called the <strong>learning rate</strong> &mdash; it controls how big a step you take.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Start at $x_0 = 2.0$.</li>
+      <li>Compute the slope at $x_0$.</li>
+      <li>Compute $x_1 = x_0 - \alpha \cdot \text{slope}$ with $\alpha = 0.01$.</li>
+      <li>Print $x_0$, slope, and $x_1$.</li>
+      <li>Is $f(x_1) &lt; f(x_0)$? It should be! Why?</li>
+      <li>Now do this <strong>manually</strong> for 5 steps. Print each step. Is $x$ getting closer to the minimum you found in Exercise 1.2?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>At $x = 2$, the slope is $f'(2) = 4(8) - 4 = 28$, which is positive (going uphill to the right). So the update $x_{\text{new}} = 2.0 - 0.01 \times 28 = 1.72$ moves you to the left, downhill.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use a loop to repeat the update five times. Each iteration: compute slope, print current state, update <code>x = x - alpha * slope</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Build <code>find_minima_1d</code></h3>
+  <div class="question">
+    <p>Now automate the process. Write a function that keeps taking steps until the slope is close enough to zero.</p>
+    <p><strong>Stopping condition:</strong> Stop when $|\text{slope}| &lt; \epsilon$ (a small tolerance, e.g. $10^{-6}$), or when you've taken <code>max_steps</code> steps.</p>
+<pre><code>def find_minima_1d(f, x_start, alpha=0.01, epsilon=1e-6, max_steps=10000):
+    """
+    Finds the x that minimizes f using gradient descent.
+
+    Parameters:
+        f         : function to minimize
+        x_start   : starting point
+        alpha     : learning rate
+        epsilon   : stop when |slope| &lt; epsilon
+        max_steps : maximum number of steps
+
+    Returns:
+        x_min     : the x value at the minimum
+        f_min     : the function value at the minimum
+        history   : list of (step, x, f(x)) tuples
+    """
+    pass  # YOUR IMPLEMENTATION</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>find_minima_1d</code>.</li>
+      <li>Test it on $f(x) = x^4 - 4x + 10$ starting from $x = 2.0$.</li>
+      <li>Print the final answer and how many steps it took.</li>
+      <li>Does it match your manual answer from Exercise 1.2?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The loop body is the same as Exercise 2.2: compute slope, update <code>x</code>, append to history. Just wrap it in a <code>while</code> or <code>for</code> loop with the stopping condition.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use <code>abs(slope) &lt; epsilon</code> to check convergence. Don't forget to return <code>history</code> as a list of <code>(step, x, f(x))</code> tuples &mdash; you'll need it for plotting.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.4 -->
+<section class="exercise" id="ex-2-4">
+  <h3>Exercise 2.4 &mdash; Watch It Learn</h3>
+  <div class="question">
+    <p>Use the plotting helper below to visualize the descent path. Run it after you have <code>history</code> from Exercise 2.3.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; descent path plotter</div>
+<pre><code>def plot_descent(f, history, x_range=(-3, 3), title="Gradient Descent"):
+    """
+    Plots the function and shows how x evolved during descent.
+    history: list of (step, x, f(x)) tuples
+    """
+    xs = np.linspace(x_range[0], x_range[1], 500)
+    ys = [f(x) for x in xs]
+    steps, xvals, fvals = zip(*history)
+
+    plt.figure(figsize=(12, 4))
+
+    # Left: function with descent path
+    plt.subplot(1, 2, 1)
+    plt.plot(xs, ys, 'b-', linewidth=2, label='f(x)')
+    plt.plot(xvals, fvals, 'ro-', markersize=3, alpha=0.5, label='descent path')
+    plt.plot(xvals[-1], fvals[-1], 'g*', markersize=15,
+             label=f'minimum: x={xvals[-1]:.4f}')
+    plt.title(title)
+    plt.xlabel('x'); plt.ylabel('f(x)'); plt.legend(); plt.grid(True)
+
+    # Right: f(x) over steps
+    plt.subplot(1, 2, 2)
+    plt.plot(steps, fvals, 'b-')
+    plt.title('f(x) value over steps')
+    plt.xlabel('step'); plt.ylabel('f(x)'); plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Define and run <code>plot_descent</code> with your history.</li>
+      <li>What do you observe in the right plot? Is it always decreasing?</li>
+      <li>Try starting from $x = -2.0$ instead. Does it converge to the same minimum? Why or why not?</li>
+      <li>Try <code>alpha = 0.1</code>. What happens? Try <code>alpha = 1.0</code>. What happens? <strong>Record your observations.</strong></li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For this particular function, starting from $x = -2.0$ should still converge to the same minimum since there is only one. But with <code>alpha = 1.0</code>, the steps may be so large that the algorithm overshoots and diverges.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>A too-large learning rate causes the algorithm to "bounce" back and forth over the minimum, possibly with increasing amplitude (divergence). This is one of the most important practical considerations in gradient descent.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 3: Stress-Testing Your Algorithm
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 3: Stress-Testing Your Algorithm</h2>
+</div>
+
+<!-- Exercise 3.1 -->
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; New Functions, Same Algorithm</h3>
+  <div class="question">
+    <p>Your <code>find_minima_1d</code> is general &mdash; it should work on any function. Let's test it.</p>
+    <p><strong>For each function below:</strong></p>
+    <ol>
+      <li>Define it in Python.</li>
+      <li>Plot it to visually estimate the minimum.</li>
+      <li>Run <code>find_minima_1d</code> and record the result.</li>
+      <li>Plot the descent path.</li>
+      <li>Note any problems or surprises.</li>
+    </ol>
+    <p><strong>Functions to test:</strong></p>
+    <table>
+      <tr><th>#</th><th>Function</th><th>x_range to plot</th><th>Suggested x_start</th></tr>
+      <tr><td>A</td><td>$f(x) = x^6 - 4x^2 + 10$</td><td>$(-2, 2)$</td><td>$1.5$</td></tr>
+      <tr><td>B</td><td>$f(x) = (x - 3)^2 + 5$</td><td>$(0, 6)$</td><td>$0.0$</td></tr>
+      <tr><td>C</td><td>$f(x) = x^2 + 3|x|$</td><td>$(-4, 4)$</td><td>$2.0$</td></tr>
+      <tr><td>D</td><td>$f(x) = e^x - 5x$</td><td>$(0, 4)$</td><td>$3.0$</td></tr>
+      <tr><td>E</td><td>$f(x) = x^4 - 3x^3 + 2$</td><td>$(-1, 3)$</td><td>$2.5$</td></tr>
+    </table>
+    <blockquote><strong>Caution on Function A:</strong> Plot it first. Does it have one minimum or more? What does that mean for your algorithm?</blockquote>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For Function C, the absolute value $|x|$ creates a sharp corner at $x = 0$. The numerical derivative may still work, but the function isn't differentiable at zero. For Function D, use <code>import math; math.exp(x)</code> or <code>np.exp(x)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Function A has two local minima (symmetric about the origin) and a local maximum at $x = 0$. Your algorithm will find whichever local minimum is closest to your starting point.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 3.2 -->
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Function A Is Sneaky</h3>
+  <div class="question">
+    <p>Plot Function A carefully. You should notice it has <strong>two local minima</strong> &mdash; one on the left and one on the right.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run <code>find_minima_1d</code> on Function A starting from $x = 1.5$. Where does it end up?</li>
+      <li>Run it starting from $x = -1.5$. Where does it end up?</li>
+      <li>Run it starting from $x = 0.0$. Where does it end up?</li>
+      <li>Which of the two minima is the <strong>global</strong> minimum (lowest overall)? Which is just a <strong>local</strong> minimum?</li>
+      <li>Can your algorithm always find the global minimum? What would you need to do to be more confident?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Starting from $x = 0$, the slope is zero (by symmetry), so the algorithm may not move at all &mdash; or may move very slowly due to numerical noise. This is a <strong>saddle point</strong> (or local maximum).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Both minima are symmetric and equal (same function value), so both are global minima. To be confident about finding the global minimum in general, you could run the algorithm from many different random starting points and keep the best result.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 4: Two Variables — A Landscape Instead of a Curve
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 4: Two Variables &mdash; A Landscape Instead of a Curve</h2>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; See the Landscape</h3>
+  <div class="question">
+    <p>Now consider a function of <strong>two variables</strong>:</p>
+    <p>$$g(x, y) = x^2 + y^2$$</p>
+    <p>This is a bowl shape in 3D. The minimum is clearly at $(x, y) = (0, 0)$.</p>
+    <p>Use the 2D plotting helper below to visualize it.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; 2D contour plot</div>
+<pre><code>def plot_function_2d(f2, x_range=(-3, 3), y_range=(-3, 3),
+                     num_points=100, title="f(x,y)", mark_xy=None):
+    xs = np.linspace(x_range[0], x_range[1], num_points)
+    ys = np.linspace(y_range[0], y_range[1], num_points)
+    X, Y = np.meshgrid(xs, ys)
+    Z = np.array([[f2(x, y) for x in xs] for y in ys])
+
+    plt.figure(figsize=(6, 5))
+    contour = plt.contourf(X, Y, Z, levels=30, cmap='viridis')
+    plt.colorbar(contour)
+    if mark_xy is not None:
+        plt.plot(mark_xy[0], mark_xy[1], 'r*', markersize=15,
+                 label=f'({mark_xy[0]:.3f}, {mark_xy[1]:.3f})')
+        plt.legend()
+    plt.title(title)
+    plt.xlabel('x'); plt.ylabel('y')
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Define and run the <code>plot_function_2d</code> helper.</li>
+      <li>Define $g(x, y) = x^2 + y^2$ and plot it.</li>
+      <li>What color represents the minimum? What color represents high values?</li>
+      <li>Now plot these functions and describe the shape of each landscape:
+        <ul>
+          <li>$h_1(x, y) = (x - 1)^2 + (y + 2)^2$</li>
+          <li>$h_2(x, y) = x^2 + 4y^2$</li>
+          <li>$h_3(x, y) = x^2 + y^2 + xy$</li>
+        </ul>
+      </li>
+      <li>Visually identify the minimum of each.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In a <code>viridis</code> colormap, dark purple/blue represents low values and bright yellow represents high values. The minimum is at the darkest spot.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>$h_1$ is a bowl centered at $(1, -2)$. $h_2$ is an elongated bowl (elliptical contours) centered at $(0, 0)$ &mdash; it's steeper in the $y$ direction. $h_3$ has tilted elliptical contours but still a minimum at $(0, 0)$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Partial Derivatives</h3>
+  <div class="question">
+    <p>With two variables, the slope has <strong>two components</strong> &mdash; one for each variable.</p>
+    <p>The <strong>partial derivative</strong> with respect to $x$ tells you the slope if you move only in the $x$ direction (holding $y$ fixed).</p>
+    <p>We can compute them numerically the same way:</p>
+    <p>$$\frac{\partial f}{\partial x} \approx \frac{f(x+h, y) - f(x-h, y)}{2h}$$</p>
+    <p>$$\frac{\partial f}{\partial y} \approx \frac{f(x, y+h) - f(x, y-h)}{2h}$$</p>
+    <p>Together, $\left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}\right)$ is called the <strong>gradient</strong> &mdash; it points in the direction of steepest <em>increase</em>.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Write a function <code>partial_x(f2, x, y, h=1e-5)</code> that returns $\partial f / \partial x$.</li>
+      <li>Write a function <code>partial_y(f2, x, y, h=1e-5)</code> that returns $\partial f / \partial y$.</li>
+      <li>Write a function <code>gradient_2d(f2, x, y, h=1e-5)</code> that returns the tuple <code>(df_dx, df_dy)</code>.</li>
+      <li>Test on $g(x, y) = x^2 + y^2$ at several points:
+        <ul>
+          <li>$(1, 1)$ &rarr; expected gradient: $(2, 2)$</li>
+          <li>$(3, 0)$ &rarr; expected gradient: $(6, 0)$</li>
+          <li>$(0, 0)$ &rarr; expected gradient: $(0, 0)$</li>
+        </ul>
+      </li>
+      <li>For $h_2(x, y) = x^2 + 4y^2$, compute the gradient at $(1, 1)$ and $(0, 2)$. Do the answers make intuitive sense? (Which direction does the gradient point &mdash; toward or away from the minimum?)</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>partial_x</code> is identical to the 1D numerical derivative, except you hold <code>y</code> fixed: <code>(f2(x+h, y) - f2(x-h, y)) / (2*h)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The gradient always points <em>away</em> from the minimum (uphill). That's why gradient descent subtracts it: moving <em>opposite</em> the gradient takes you downhill.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.3 -->
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Build <code>find_minima_2d</code></h3>
+  <div class="question">
+    <p>Now extend the 1D algorithm to 2D. The update rule becomes:</p>
+    <p>$$x_{\text{new}} = x - \alpha \cdot \frac{\partial f}{\partial x}$$</p>
+    <p>$$y_{\text{new}} = y - \alpha \cdot \frac{\partial f}{\partial y}$$</p>
+    <p>Both variables are updated simultaneously.</p>
+    <p><strong>Stopping condition:</strong> Stop when $\sqrt{(\partial f/\partial x)^2 + (\partial f/\partial y)^2} &lt; \epsilon$. This is the <strong>magnitude</strong> of the gradient (how steep the hill is overall).</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>find_minima_2d(f2, x_start, y_start, alpha=0.1, epsilon=1e-6, max_steps=10000)</code>.
+        <ul><li>It should return <code>(x_min, y_min, f_min, history)</code> where <code>history</code> is a list of <code>(step, x, y, f(x,y))</code> tuples.</li></ul>
+      </li>
+      <li>Test it on $g(x, y) = x^2 + y^2$ starting from $(2, 3)$. It should find $(0, 0)$.</li>
+      <li>Test it on $h_1(x, y) = (x-1)^2 + (y+2)^2$ starting from $(3, 3)$. Expected minimum: $(1, -2)$.</li>
+      <li>Test it on $h_2(x, y) = x^2 + 4y^2$ starting from $(2, 2)$. Expected minimum: $(0, 0)$.</li>
+    </ol>
+    <p>Use <code>plot_function_2d</code> with <code>mark_xy=(x_min, y_min)</code> to verify your answers visually.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The structure is identical to <code>find_minima_1d</code>: a loop that computes the gradient, checks convergence, and updates the variables. The only difference is that you have two variables to update instead of one.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the stopping condition, compute the gradient magnitude: <code>mag = (dx**2 + dy**2)**0.5</code>. Stop when <code>mag &lt; epsilon</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.4 -->
+<section class="exercise" id="ex-4-4">
+  <h3>Exercise 4.4 &mdash; Visualize the Path (2D)</h3>
+  <div class="question">
+    <p>Use the helper below to draw the descent path on the contour map.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; 2D descent path</div>
+<pre><code>def plot_descent_2d(f2, history, x_range=(-4, 4), y_range=(-4, 4),
+                    title="2D Gradient Descent"):
+    """
+    history: list of (step, x, y, f(x,y)) tuples
+    """
+    xs = np.linspace(x_range[0], x_range[1], 100)
+    ys = np.linspace(y_range[0], y_range[1], 100)
+    X, Y = np.meshgrid(xs, ys)
+    Z = np.array([[f2(x, y) for x in xs] for y in ys])
+    steps, xvals, yvals, fvals = zip(*history)
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.contourf(X, Y, Z, levels=30, cmap='viridis')
+    plt.colorbar()
+    plt.plot(xvals, yvals, 'w-o', markersize=3, alpha=0.6, label='path')
+    plt.plot(xvals[0], yvals[0], 'rs', markersize=10, label='start')
+    plt.plot(xvals[-1], yvals[-1], 'g*', markersize=15, label='end')
+    plt.legend(); plt.title(title); plt.xlabel('x'); plt.ylabel('y')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(steps, fvals, 'b-')
+    plt.title('f(x,y) over steps')
+    plt.xlabel('step'); plt.ylabel('f(x,y)'); plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Define and run <code>plot_descent_2d</code> for at least two of your test functions.</li>
+      <li>Does the path head straight to the minimum, or does it zigzag? Why?</li>
+      <li>For $h_2(x, y) = x^2 + 4y^2$: try <code>alpha=0.3</code> and <code>alpha=0.5</code>. Describe what you see. <strong>This is a famous problem in gradient descent called oscillation.</strong></li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For $h_2$, the contour lines are ellipses (steeper in $y$). The gradient doesn't point toward the minimum &mdash; it points perpendicular to the contour lines. This causes a zigzag path, especially with a large learning rate.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>With <code>alpha=0.5</code> on $h_2$, the $y$ update overshoots because the gradient in $y$ is $8y$ (large). Each step bounces $y$ to the other side, and the path oscillates. This is why choosing the learning rate is critical.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 5: Going Generic
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 5: Going Generic</h2>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; N Variables</h3>
+  <div class="question">
+    <p>Your 1D and 2D algorithms are very similar. Can you unify them?</p>
+    <p>Think about it this way:</p>
+    <ul>
+      <li>In 1D, your position is a single number $x$. The gradient is a single number.</li>
+      <li>In 2D, your position is a pair $(x, y)$. The gradient is a pair $(\partial f/\partial x, \partial f/\partial y)$.</li>
+      <li>In N dimensions, your position is a <strong>list</strong> of N numbers. The gradient is also a <strong>list</strong> of N numbers.</li>
+    </ul>
+    <p>The update rule is always the same:</p>
+    <p>$$\text{variables}_{\text{new}} = \text{variables} - \alpha \cdot \text{gradient}$$</p>
+    <p>where both are lists.</p>
+    <p><strong>The signature you are building:</strong></p>
+<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6, max_steps=100000):
+    """
+    Finds the values of 'variables' that minimize f.
+
+    Parameters:
+        f         : a function that takes a LIST of values and returns a scalar
+                    e.g., if variables = [x, y], then f([x, y]) should work
+        variables : initial guess, a list of numbers [v1, v2, ..., vN]
+        alpha     : learning rate
+        epsilon   : stop when gradient magnitude &lt; epsilon
+        max_steps : maximum number of steps
+
+    Returns:
+        min_vars  : list of variable values at the minimum
+        f_min     : function value at the minimum
+        history   : list of (step, variables_copy, f_value) tuples
+    """
+    pass</code></pre>
+    <p><strong>Key challenge:</strong> Computing the gradient for a list of N variables.</p>
+    <p>For variable $i$, the partial derivative is:</p>
+    <p>$$\frac{\partial f}{\partial v_i} \approx \frac{f(v_1, \ldots, v_i + h, \ldots, v_N) - f(v_1, \ldots, v_i - h, \ldots, v_N)}{2h}$$</p>
+    <p>You need to perturb one variable at a time.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>First, write a helper <code>compute_gradient(f, variables, h=1e-5)</code> that returns the gradient as a list.</li>
+      <li>Then write <code>find_minima(f, variables, ...)</code>.</li>
+      <li>Test by re-running your earlier examples, but now with the new interface:
+        <ul>
+          <li>1D: <code>find_minima(lambda v: v[0]**4 - 4*v[0] + 10, [2.0])</code></li>
+          <li>2D: <code>find_minima(lambda v: v[0]**2 + v[1]**2, [2.0, 3.0])</code></li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>compute_gradient</code>, loop over each index <code>i</code>. Make a copy of the variables list, bump <code>variables[i]</code> up by <code>h</code>, evaluate <code>f</code>, then bump it down by <code>h</code>, evaluate <code>f</code>, and compute the centered difference.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Be careful to make a <em>copy</em> of the list before perturbing: <code>v_plus = variables.copy(); v_plus[i] += h</code>. Otherwise you'll modify the original. For the stopping condition, compute <code>sum(g**2 for g in grad)**0.5 &lt; epsilon</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 5.2 -->
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Three Variables</h3>
+  <div class="question">
+    <p>Test your generic <code>find_minima</code> on 3D functions:</p>
+    <p>$$p(x, y, z) = (x - 1)^2 + (y - 2)^2 + (z + 3)^2$$</p>
+    <p>The minimum is obviously at $(1, 2, -3)$.</p>
+    <p>$$q(x, y, z) = x^2 + 2y^2 + 3z^2 - 4x + 6z$$</p>
+    <p>For $q$: what is the minimum analytically? (Hint: complete the square for each variable.)</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Define $p$ and $q$ as functions that take a list <code>[x, y, z]</code>.</li>
+      <li>Run <code>find_minima</code> on both, starting from <code>[0, 0, 0]</code>.</li>
+      <li>Verify your answer for $p$ is $(1, 2, -3)$.</li>
+      <li>For $q$: first compute the answer analytically, then verify your algorithm found it.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For $q$: complete the square. $x^2 - 4x = (x - 2)^2 - 4$. $3z^2 + 6z = 3(z + 1)^2 - 3$. The $y$ term is already $2y^2$ with minimum at $y = 0$. So the minimum is at $(2, 0, -1)$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 6: The Real Problem — Fitting a Line to Data
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 6: The Real Problem &mdash; Fitting a Line to Data</h2>
+</div>
+
+<!-- Exercise 6.1 -->
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; What Does It Mean to Fit a Line?</h3>
+  <div class="question">
+    <p>Suppose you have a dataset: some $x$ values and corresponding $y$ values. You want to find the <strong>straight line</strong> $\hat{y} = mx + c$ that best fits the data.</p>
+    <p>But what does "best fit" mean?</p>
+    <p>For each data point $(x_i, y_i)$, your line predicts $\hat{y}_i = m x_i + c$. The <strong>error</strong> for that point is $y_i - \hat{y}_i$.</p>
+    <p><strong>Mean Squared Error (MSE)</strong> is defined as:</p>
+    <p>$$\text{MSE}(m, c) = \frac{1}{N} \sum_{i=1}^{N} (y_i - (m x_i + c))^2$$</p>
+    <p>A smaller MSE means the line fits the data better.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; dataset</div>
+<pre><code>np.random.seed(42)
+X_data = np.linspace(0, 10, 30)
+y_data = 2.5 * X_data + 4.0 + np.random.randn(30) * 3  # true: m=2.5, c=4.0 + noise
+
+print(f"Number of data points: {len(X_data)}")
+print(f"X range: [{X_data.min():.1f}, {X_data.max():.1f}]")
+print(f"y range: [{y_data.min():.1f}, {y_data.max():.1f}]")</code></pre>
+    </div>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; data + line overlay plotter</div>
+<pre><code>def plot_data_and_line(X, y, m=None, c=None, title="Data"):
+    plt.figure(figsize=(8, 5))
+    plt.scatter(X, y, color='blue', label='data', zorder=5)
+    if m is not None and c is not None:
+        x_line = np.linspace(X.min(), X.max(), 200)
+        y_line = m * x_line + c
+        plt.plot(x_line, y_line, 'r-', linewidth=2,
+                 label=f'y = {m:.2f}x + {c:.2f}')
+    plt.legend()
+    plt.title(title)
+    plt.xlabel('X'); plt.ylabel('y')
+    plt.grid(True)
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run the data cell and the plotting helper.</li>
+      <li>Plot the data points using <code>plot_data_and_line(X_data, y_data)</code>.</li>
+      <li>Try drawing lines with different $(m, c)$ on the same plot. Which looks like the best fit visually?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Try values like <code>m=1.0, c=5.0</code>, then <code>m=2.5, c=4.0</code> (the true values), then <code>m=5.0, c=0.0</code>. Compare visually.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.2 -->
+<section class="exercise" id="ex-6-2">
+  <h3>Exercise 6.2 &mdash; Write the MSE Function</h3>
+  <div class="question">
+    <p>Now write a function that quantifies how well a line fits the data.</p>
+<pre><code>def mse(X, y, m, c):
+    """
+    Computes Mean Squared Error for predicting y from X using line y = mx + c.
+
+    Parameters:
+        X : array of input values (shape: N,)
+        y : array of true output values (shape: N,)
+        m : slope of the line
+        c : intercept of the line
+
+    Returns:
+        mse_value : a single number
+    """
+    pass</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Implement <code>mse</code>. Do NOT use any library function &mdash; write the formula yourself using a loop or numpy operations.</li>
+      <li>Test it:
+        <ul>
+          <li>A perfect line should have MSE = 0. Create a tiny dataset where you know the exact answer: <code>X=[1,2,3]</code>, <code>y=[3,5,7]</code> is perfectly fit by $m=2, c=1$. Verify <code>mse(X, y, 2, 1) == 0</code>.</li>
+          <li>For our main dataset, compute MSE for:
+            <ul>
+              <li><code>m=2.5, c=4.0</code> (the true line used to generate data)</li>
+              <li><code>m=1.0, c=5.0</code></li>
+              <li><code>m=5.0, c=0.0</code></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>Which $(m, c)$ gives the lowest MSE? Does this match your visual judgment from Exercise 6.1?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The formula is: compute <code>predicted = m * X[i] + c</code> for each point, then <code>error = y[i] - predicted</code>, square it, sum them all, and divide by <code>N</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>With numpy, this is a one-liner: <code>return np.mean((y - (m * X + c))**2)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 6.3 -->
+<section class="exercise" id="ex-6-3">
+  <h3>Exercise 6.3 &mdash; The MSE Landscape</h3>
+  <div class="question">
+    <p>MSE is a function of $m$ and $c$. Let's visualize it as a 2D landscape.</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Use <code>plot_function_2d</code> (from Part 4) to plot MSE over a grid of $(m, c)$ values.
+        <ul>
+          <li>Let $m$ range from 0 to 5, and $c$ from &minus;5 to 15.</li>
+          <li>You'll need to wrap <code>mse</code> so it takes a form compatible with <code>plot_function_2d</code>.</li>
+        </ul>
+      </li>
+      <li>What shape does the MSE landscape have? Is it convex? Does it have a clear minimum?</li>
+      <li>Mark the point $(m, c) = (2.5, 4.0)$ on the plot. Is it at or near the minimum?</li>
+    </ol>
+    <p><strong>Hint for wrapping:</strong></p>
+<pre><code>def mse_landscape(m, c):
+    return mse(X_data, y_data, m, c)
+
+plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
+                 title="MSE Landscape (m, c)")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The MSE landscape for linear regression is always a <strong>convex bowl</strong> (a paraboloid). This means there is exactly one minimum, and gradient descent will always find it regardless of starting point.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 7: Putting It All Together — Linear Regression via Gradient Descent
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 7: Putting It All Together &mdash; Linear Regression via Gradient Descent</h2>
+</div>
+
+<!-- Exercise 7.1 -->
+<section class="exercise" id="ex-7-1">
+  <h3>Exercise 7.1 &mdash; Minimize MSE with <code>find_minima</code></h3>
+  <div class="question">
+    <p>You now have:</p>
+    <ul>
+      <li><code>find_minima(f, variables)</code> &mdash; a general minimizer</li>
+      <li><code>mse(X, y, m, c)</code> &mdash; the function to minimize</li>
+    </ul>
+    <p>Put them together.</p>
+    <p><strong>The key step:</strong> To use <code>find_minima</code>, you need to express MSE as a function of a <strong>list</strong> <code>[m, c]</code>:</p>
+<pre><code>def mse_for_optimizer(params):
+    m, c = params
+    return mse(X_data, y_data, m, c)</code></pre>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Define <code>mse_for_optimizer</code> as above.</li>
+      <li>Call <code>find_minima(mse_for_optimizer, [0.0, 0.0])</code> with an appropriate learning rate.
+        <ul><li><strong>Warning:</strong> You may need to tune <code>alpha</code>. Try <code>0.001</code> first, then adjust.</li></ul>
+      </li>
+      <li>Print the final <code>m</code> and <code>c</code> found by the algorithm.</li>
+      <li>Compare to the true values <code>m=2.5, c=4.0</code>. How close did you get?</li>
+      <li>Plot the resulting line over the data using <code>plot_data_and_line</code>.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>If the algorithm diverges (MSE explodes), your learning rate is too large. Start with <code>alpha=0.001</code> or even <code>alpha=0.0001</code>. The MSE surface for this data is elongated, so you may need a small step size.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>If the algorithm converges very slowly (thousands of steps but still not at the minimum), try increasing the learning rate slightly. You can also increase <code>max_steps</code>. The final answer should be close to <code>m ~= 2.5, c ~= 4.0</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.2 -->
+<section class="exercise" id="ex-7-2">
+  <h3>Exercise 7.2 &mdash; Watch the Line Learn</h3>
+  <div class="question">
+    <p>Let's visualize how the line evolves during gradient descent.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; learning progress plotter</div>
+<pre><code>def plot_learning_progress(X, y, history, steps_to_show=[0, 5, 20, 100, 500, -1]):
+    """
+    Shows the fitted line at different stages of training.
+    history: list of (step, [m, c], mse_value) tuples from find_minima
+    """
+    n = len(steps_to_show)
+    fig, axes = plt.subplots(1, n, figsize=(4*n, 4))
+    history_len = len(history)
+    x_line = np.linspace(X.min(), X.max(), 100)
+
+    for ax, step_idx in zip(axes, steps_to_show):
+        if step_idx == -1:
+            step_idx = history_len - 1
+        step_idx = min(step_idx, history_len - 1)
+
+        step_num, params, mse_val = history[step_idx]
+        m, c = params
+        y_line = m * x_line + c
+
+        ax.scatter(X, y, color='blue', s=15, alpha=0.6)
+        ax.plot(x_line, y_line, 'r-', linewidth=2)
+        ax.set_title(f'Step {step_num}\nm={m:.2f}, c={c:.2f}\nMSE={mse_val:.1f}')
+        ax.set_xlabel('X'); ax.set_ylabel('y')
+        ax.grid(True)
+
+    plt.tight_layout()
+    plt.show()</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run <code>find_minima</code> with <code>alpha=0.001</code> starting from <code>[0.0, 0.0]</code>.</li>
+      <li>Call <code>plot_learning_progress</code> with your history.</li>
+      <li>Describe what you see: how does the line change from step 0 to the final step?</li>
+      <li>Also plot the MSE over steps using the 2D descent helper.</li>
+    </ol>
+    <blockquote><strong>Note:</strong> For this to work, your <code>find_minima</code> history must store <code>[m, c]</code> as a list (not just the step index). Make sure your implementation stores a copy of the variables at each step.</blockquote>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>You should see the line start flat (near $y = 0$), then gradually rotate and shift until it matches the data. The MSE curve should decrease rapidly at first, then level off as it approaches the minimum.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.3 -->
+<section class="exercise" id="ex-7-3">
+  <h3>Exercise 7.3 &mdash; New Dataset, Same Code</h3>
+  <div class="question">
+    <p>Here are three new datasets. For each:</p>
+    <ol>
+      <li>Plot the raw data.</li>
+      <li>Use your <code>find_minima</code> + <code>mse</code> to find the best-fit line.</li>
+      <li>Plot the fitted line over the data.</li>
+      <li>Report the final $m$, $c$, and MSE.</li>
+    </ol>
+    <p>No new code is needed &mdash; you're reusing everything you built.</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; datasets</div>
+<pre><code>np.random.seed(7)
+
+# Dataset 1: negative slope
+X1 = np.linspace(0, 10, 40)
+y1 = -1.5 * X1 + 20 + np.random.randn(40) * 2
+
+# Dataset 2: steep positive slope
+X2 = np.linspace(-5, 5, 50)
+y2 = 5.0 * X2 - 10 + np.random.randn(50) * 4
+
+# Dataset 3: nearly flat
+X3 = np.linspace(0, 20, 60)
+y3 = 0.3 * X3 + 2.0 + np.random.randn(60) * 5
+
+print("Datasets ready: X1/y1, X2/y2, X3/y3")</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Reuse the same pattern: define <code>mse_for_optimizer</code> with the new dataset, run <code>find_minima</code>, and plot. You may need to adjust the learning rate for datasets with different scales.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 7.4 -->
+<section class="exercise" id="ex-7-4">
+  <h3>Exercise 7.4 &mdash; Sanity Check with NumPy</h3>
+  <div class="question">
+    <p>NumPy has a function <code>np.polyfit(X, y, 1)</code> that finds the best-fit line using an exact mathematical formula (not gradient descent).</p>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Run <code>np.polyfit(X_data, y_data, 1)</code> &mdash; it returns <code>[m, c]</code>.</li>
+      <li>Compare the result to what your gradient descent found.</li>
+      <li>Run the same comparison for all three datasets in Exercise 7.3.</li>
+      <li>Are the answers the same? Should they be exactly the same, or just approximately the same? Why?</li>
+    </ol>
+    <p><strong>Bonus:</strong> If your answers disagree significantly (more than 0.01), investigate why. Check:</p>
+    <ul>
+      <li>Did gradient descent converge? (Check the final gradient magnitude.)</li>
+      <li>Is your learning rate too large or too small?</li>
+      <li>Did you run enough steps?</li>
+    </ul>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p><code>np.polyfit</code> uses the <strong>normal equations</strong> &mdash; an exact closed-form solution. It gives the true optimal answer. Gradient descent approximates it iteratively, so the answers should be very close but may differ in the last few decimal places.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 8: More Than One Feature
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 8: More Than One Feature</h2>
+  <p class="part-intro">Your line <code>y = m*x + c</code> predicts from a <em>single</em> number. But a house price depends on size <strong>and</strong> bedrooms <strong>and</strong> age. A student's score depends on hours studied <strong>and</strong> hours slept. Real prediction almost always uses several inputs &mdash; called <strong>features</strong>.</p>
+  <p class="part-intro">The fix is tiny: give each feature its own slope.</p>
+  <p class="part-intro">$$y = m_0 x_0 + m_1 x_1 + \dots + m_{k-1} x_{k-1} + c$$</p>
+  <p class="part-intro">Everything you built &mdash; MSE, gradients, the update loop &mdash; survives unchanged. You'll rebuild the pipeline for many features in five short steps, then meet the trick that makes this genuinely powerful: inventing new features.</p>
+</div>
+
+<!-- Exercise 8.1 -->
+<section class="exercise" id="ex-8-1">
+  <h3>Exercise 8.1 &mdash; <code>predict</code> with Many Features</h3>
+  <div class="question">
+    <p>Write <code>predict(x, m, c)</code> where <code>x</code> is a list of feature values and <code>m</code> is a list of slopes (same length): return $m_0 x_0 + m_1 x_1 + \dots + c$.</p>
+    <p>Hint: start <code>total = c</code>, then loop over <code>zip(x, m)</code>.</p>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert predict([1, 2], [2, 3], 1) == 9      # 2*1 + 3*2 + 1
+assert predict([0, 0], [2, 3], 1) == 1      # only the intercept survives
+assert predict([10], [0.5], 2) == 7         # works for a single feature too</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This is a dot product plus a bias. Start with <code>total = c</code>, then <code>for xi, mi in zip(x, m): total += xi * mi</code>. Return <code>total</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.2 -->
+<section class="exercise" id="ex-8-2">
+  <h3>Exercise 8.2 &mdash; MSE for Many Features</h3>
+  <div class="question">
+    <p>Here is a dataset that follows the plane $y = 2 x_0 + 3 x_1 + 1$ <em>exactly</em> (check one row by hand!):</p>
+<pre><code>X = [[1, 2], [2, 1], [3, 4], [4, 3]]
+y = [9, 8, 19, 18]</code></pre>
+    <p>Write <code>total_err_sqr(X, y, m, c)</code> &mdash; the mean squared error of <code>predict</code> across all rows. This is the same MSE from Part 6; only the call to <code>predict</code> changed.</p>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert total_err_sqr(X, y, [2, 3], 1) == 0.0      # perfect weights, zero error
+assert abs(total_err_sqr(X, y, [0, 0], 0) - 207.5) &lt; 1e-9</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop over each row <code>xi, yi</code> in <code>zip(X, y)</code>, compute <code>predict(xi, m, c)</code>, accumulate <code>(yi - predicted)**2</code>, then divide the total by <code>len(X)</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.3 -->
+<section class="exercise" id="ex-8-3">
+  <h3>Exercise 8.3 &mdash; A Gradient per Weight</h3>
+  <div class="question">
+    <p>In Exercise 4.2 you discovered partial derivatives: nudge <em>one</em> variable, hold the rest still, measure the change. Same move here, just more knobs.</p>
+    <p>Write <code>gradients(X, y, m, c, h=1e-6)</code> returning <code>(grad_m, grad_c)</code> where <code>grad_m</code> is a list &mdash; one slope estimate per weight:</p>
+    <p>$$\text{grad}_{m_i} = \frac{\text{MSE}(m \text{ with } m_i + h) - \text{MSE}(m)}{h}$$</p>
+    <p><strong>Hints:</strong></p>
+    <ul>
+      <li>Copy the list before nudging: <code>m2 = m.copy(); m2[i] += h</code>.</li>
+      <li><code>grad_c</code> is the same one-sided difference, nudging <code>c</code>.</li>
+    </ul>
+    <p><strong>Test cases:</strong></p>
+<pre><code>gm, gc = gradients(X, y, [2, 3], 1)
+# At the optimum, all gradients should be near zero
+
+gm, gc = gradients(X, y, [0, 0], 0)
+# All slopes should point downhill (negative)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For each weight index <code>i</code>: <code>m2 = m.copy(); m2[i] += h; grad_m[i] = (total_err_sqr(X, y, m2, c) - total_err_sqr(X, y, m, c)) / h</code>. Same pattern for <code>c</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.4 -->
+<section class="exercise" id="ex-8-4">
+  <h3>Exercise 8.4 &mdash; <code>fit</code></h3>
+  <div class="question">
+    <p>Assemble the full trainer. Write <code>fit(X, y, learning_rate=0.01, epochs=5000)</code>:</p>
+    <ol>
+      <li>Start with <code>m = [0.0] * len(X[0])</code> and <code>c = 0.0</code>.</li>
+      <li>Each epoch: compute the gradients, then step <strong>every</strong> weight against its own gradient: <code>m[i] -= learning_rate * grad_m[i]</code>, same for <code>c</code>.</li>
+      <li>Return <code>(m, c)</code>.</li>
+    </ol>
+    <p>If your implementation is right, it will recover the plane $y = 2x_0 + 3x_1 + 1$ almost perfectly. You have just written multivariate linear regression &mdash; the same algorithm, feature-for-feature, that trains inside every neural network layer.</p>
+    <p><strong>Test cases:</strong></p>
+<pre><code>m, c = fit(X, y)
+print("found m =", [round(v, 3) for v in m], " c =", round(c, 3))
+assert abs(m[0] - 2) &lt; 0.05
+assert abs(m[1] - 3) &lt; 0.05
+assert abs(c - 1) &lt; 0.15
+assert total_err_sqr(X, y, m, c) &lt; 0.01</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The loop body: call <code>gradients(X, y, m, c)</code>, then <code>for i in range(len(m)): m[i] -= learning_rate * grad_m[i]</code>, and <code>c -= learning_rate * grad_c</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Make sure to use <code>m = [0.0] * len(X[0])</code> as initialization &mdash; this creates a fresh list of zeros with the right number of weights.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.5 -->
+<section class="exercise" id="ex-8-5">
+  <h3>Exercise 8.5 &mdash; Inventing Features</h3>
+  <div class="question">
+    <p>In Challenge A (coming up) you'll see a straight line fail on curved data. Here is the escape hatch: if the data follows $y = x^2$, then <em>as a function of $x^2$</em> it's a straight line! We don't need a new algorithm &mdash; we need a new <strong>column</strong>.</p>
+    <p>Write <code>add_feature(X, feature_fn)</code> that returns a <strong>new</strong> list of rows, each row extended with <code>feature_fn(row)</code> appended. Don't modify <code>X</code>.</p>
+    <p>Then watch the tests: a line on <code>y = x^2</code> data is stuck with MSE &gt; 1, but after <code>add_feature(Xc, lambda row: row[0] ** 2)</code> the <em>same</em> <code>fit</code> gets it almost exactly. This is called <strong>feature engineering</strong>, and before deep learning it was most of the job of a machine-learning engineer.</p>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert add_feature([[1, 2], [3, 4]], lambda row: row[0] * row[1]) == \
+       [[1, 2, 2], [3, 4, 12]]
+
+Xc = [[1], [2], [3], [4], [5]]
+yc = [1, 4, 9, 16, 25]                      # y = x^2
+
+m1, c1 = fit(Xc, yc, learning_rate=0.005, epochs=8000)
+line_mse = total_err_sqr(Xc, yc, m1, c1)
+
+Xc2 = add_feature(Xc, lambda row: row[0] ** 2)
+m2, c2 = fit(Xc2, yc, learning_rate=0.001, epochs=20000)
+curve_mse = total_err_sqr(Xc2, yc, m2, c2)
+
+# line_mse should be &gt; 1, curve_mse should be &lt; 0.1</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use a list comprehension: <code>return [row + [feature_fn(row)] for row in X]</code>. This creates new lists without modifying <code>X</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>After adding the $x^2$ feature, each row becomes <code>[x, x^2]</code>. The <code>fit</code> function will learn weights <code>[m0, m1]</code> and intercept <code>c</code> such that $y \approx m_0 x + m_1 x^2 + c$. If the true relationship is $y = x^2$, you'd expect $m_0 \approx 0$, $m_1 \approx 1$, $c \approx 0$.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 8.6 -->
+<section class="exercise" id="ex-8-6">
+  <h3>Exercise 8.6 &mdash; Skip the Nudging: the Chain Rule</h3>
+  <div class="question">
+    <p>Your <code>gradients</code> calls <code>total_err_sqr</code> once per weight per epoch &mdash; thousands of full passes over the data just to <em>estimate</em> slopes. Calculus hands us the exact answer for free.</p>
+    <p>MSE is built from pieces: $\text{MSE} = \frac{1}{n}\sum e^2$ where $e = \text{predict}(x) - y$, and $\frac{\partial\, \text{predict}}{\partial m_i} = x_i$. The <strong>chain rule</strong> multiplies the pieces' derivatives together:</p>
+    <p>$$\frac{\partial\, \text{MSE}}{\partial m_i} = \frac{1}{n}\sum 2e \cdot x_i \qquad \frac{\partial\, \text{MSE}}{\partial c} = \frac{1}{n}\sum 2e$$</p>
+    <p>Write <code>analytic_gradients(X, y, m, c)</code> implementing those two formulas, and verify it against your finite-difference <code>gradients</code> at an arbitrary point. No nudging, no <code>h</code>, exact &mdash; this is what <strong>backpropagation</strong> does inside every deep-learning framework: chain rule, applied layer by layer.</p>
+    <p><strong>Test case:</strong></p>
+<pre><code>gm_a, gc_a = analytic_gradients(X, y, [0.5, -1.0], 2.0)
+gm_n, gc_n = gradients(X, y, [0.5, -1.0], 2.0)
+# Both should match to within 1e-2</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For each row, compute the error <code>e = predict(xi, m, c) - yi</code>. Then <code>grad_m[j] += 2 * e * xi[j]</code> for each weight <code>j</code>, and <code>grad_c += 2 * e</code>. Finally divide everything by <code>n</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Initialize <code>grad_m = [0.0] * len(m)</code> and <code>grad_c = 0.0</code>. Loop over <code>zip(X, y)</code>, accumulate, then divide by <code>len(X)</code>. This is exact and uses only one pass over the data.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     PART 9: Bonus Challenges
+     =============================================================== -->
+
+<div class="part">
+  <h2>Part 9: Bonus Challenges</h2>
+  <p class="part-intro">If you've made it this far, you've independently discovered <strong>gradient descent</strong> and used it to implement <strong>linear regression</strong>. These are the foundations of almost every machine learning algorithm. Here are some open-ended challenges to push further.</p>
+</div>
+
+<!-- Challenge A -->
+<section class="exercise" id="ex-9-a">
+  <h3>Challenge A &mdash; What If the Data Isn't Linear?</h3>
+  <div class="question">
+    <p>Generate this dataset:</p>
+<pre><code>X_quad = np.linspace(-3, 3, 50)
+y_quad = 1.5 * X_quad**2 - 2 * X_quad + 1 + np.random.randn(50) * 1.5</code></pre>
+    <p>The data was generated with a <strong>quadratic</strong> function $y = 1.5x^2 - 2x + 1$.</p>
+    <ol>
+      <li>Try fitting a straight line to it. What MSE do you get?</li>
+      <li>Now fit a quadratic: $\hat{y} = ax^2 + bx + c$. You now have <strong>3 parameters</strong> to optimize: $[a, b, c]$.</li>
+      <li>Extend your <code>mse</code> function to handle any polynomial and minimize it with <code>find_minima</code>.</li>
+      <li>Compare the fitted $a, b, c$ to the true values $1.5, -2, 1$.</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Define <code>mse_quadratic(params)</code> where <code>params = [a, b, c]</code>. The prediction becomes <code>a * x**2 + b * x + c</code>. Then call <code>find_minima(mse_quadratic, [0, 0, 0])</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Alternatively, use your multi-feature pipeline from Part 8: treat $x$ and $x^2$ as two separate features with <code>add_feature</code>. The <code>fit</code> function already handles multiple features!</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge B -->
+<section class="exercise" id="ex-9-b">
+  <h3>Challenge B &mdash; Learning Rate Scheduler</h3>
+  <div class="question">
+    <p>You've seen that a large $\alpha$ causes oscillation and a small $\alpha$ is slow.</p>
+    <p>One trick: <strong>decay the learning rate</strong> over time. Start with a large $\alpha$ and make it smaller each step:</p>
+    <p>$$\alpha_t = \frac{\alpha_0}{1 + t \cdot \text{decay\_rate}}$$</p>
+    <p>Modify your <code>find_minima</code> to support an optional <code>decay_rate</code> parameter. Compare:</p>
+    <ul>
+      <li>Fixed <code>alpha=0.1</code> on the MSE problem</li>
+      <li>Decaying alpha starting at <code>0.1</code> with <code>decay_rate=0.01</code></li>
+    </ul>
+    <p>Which converges faster? Plot both loss curves on the same graph.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In the update step, replace the fixed <code>alpha</code> with <code>alpha / (1 + step * decay_rate)</code>. At step 0, alpha is unchanged. By step 100 with <code>decay_rate=0.01</code>, alpha is halved.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Challenge C -->
+<section class="exercise" id="ex-9-c">
+  <h3>Challenge C &mdash; Stochastic Gradient Descent</h3>
+  <div class="question">
+    <p>In real ML, datasets have millions of points. Computing MSE over all of them every step is expensive.</p>
+    <p><strong>Stochastic Gradient Descent (SGD):</strong> Instead of using all data to compute the gradient, use a <strong>random single point</strong> (or a small batch of points) each step.</p>
+    <ol>
+      <li>Modify <code>find_minima</code> (or write <code>find_minima_sgd</code>) to:
+        <ul>
+          <li>Each step, pick one random data point $(x_i, y_i)$</li>
+          <li>Compute the gradient of the error for that single point</li>
+          <li>Update $m$ and $c$</li>
+        </ul>
+      </li>
+      <li>Run it on <code>X_data, y_data</code>.</li>
+      <li>Plot the loss curve. Is it smooth or noisy? Why?</li>
+      <li>How does the final answer compare to full gradient descent?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>i = np.random.randint(len(X))</code> to pick a random index each step. The "MSE" for a single point is just <code>(y[i] - (m * X[i] + c))**2</code>. The loss curve will be noisy because each step uses a different random point.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>SGD converges to the same answer on average but with random fluctuations. The noisy loss curve is normal &mdash; in practice, people average the loss over many points for monitoring. The noise actually helps escape local minima in non-convex problems.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ===============================================================
+     Reflection
+     =============================================================== -->
+
+<div class="part">
+  <h2>Reflection &mdash; What Did You Just Build?</h2>
+</div>
+
+<section class="exercise" id="ex-reflection">
+  <h3>Reflection</h3>
+  <div class="question">
+    <p>Take a moment to answer these questions in your own words.</p>
+    <ol>
+      <li><strong>What is gradient descent?</strong> Explain it in 3 sentences as if you're describing it to someone who has never heard of it.</li>
+      <li><strong>What is the learning rate?</strong> What happens if it's too large? Too small?</li>
+      <li><strong>What is MSE?</strong> Why do we minimize it instead of just minimizing the average error?</li>
+      <li><strong>What is linear regression?</strong> What problem does it solve?</li>
+      <li><strong>What is the connection</strong> between minimizing MSE and fitting a line?</li>
+      <li><strong>What's the biggest limitation</strong> of the approach you built? What would you want to improve?</li>
+    </ol>
+  </div>
+</section>
+
+<div class="chapter-footer">
+  <p><em>You've just invented gradient descent and linear regression from scratch. That's not nothing &mdash; it's the foundation of deep learning.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>

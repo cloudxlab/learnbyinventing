@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encoder-Decoder Pipeline &mdash; Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+  <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/encoder_decoder/encoder_decoder.ipynb" target="_blank">Open notebook in Colab</a>
+</nav>
+
+<h1>The Encoder-Decoder Pipeline &mdash; A Real Data Engineering Problem</h1>
+<p class="chapter-intro">You are handed a real task at work:</p>
+
+<blockquote>
+  <p>We bought a <strong>recommendation engine</strong>. It reads a CSV file with three columns &mdash;
+  <code>user_id, product_id, score</code> &mdash; and writes its recommendations to another CSV
+  with columns <code>user_id, product_id, recommendation_score</code>.
+  <strong>It only accepts integers</strong> for <code>user_id</code>.</p>
+  <p>Our data, however, identifies users by <strong>email address</strong>:</p>
+<pre><code>sandeep,1, 1.0
+nitin, 2, 3.0
+subodh, 2, 1.0
+sandeep, 2, 2.0
+nitin, 1, 2.0</code></pre>
+  <p>Make it work. And when the engine answers, translate its output <strong>back</strong> to emails.</p>
+</blockquote>
+
+<p>You cannot change the engine. So you will wrap it:</p>
+<pre><code>our data (emails)                                      final output (emails)
+      |                                                        ^
+      v                                                        |
+  ENCODER --&gt; engine input (ints) --&gt; RECOMMENDER --&gt; engine output (ints) --&gt; DECODER</code></pre>
+
+<p>The Encoder and Decoder are <strong>separate programs</strong> that communicate only through
+files &mdash; so the mapping between emails and integers must itself be saved to a file.
+This pattern (encode &rarr; black box &rarr; decode) is everywhere: ML pipelines call it
+<em>label encoding</em>, and you already met its purest form in the Information Theory chapter.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Reading the Data
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Reading the Data</h2>
+</div>
+
+<p>First, create the input data file. Run this provided cell as-is.</p>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; create the input file</div>
+<pre><code>OUR_DATA = """\
+sandeep,1, 1.0
+nitin, 2, 3.0
+subodh, 2, 1.0
+sandeep, 2, 2.0
+nitin, 1, 2.0
+"""
+
+with open("our_data.csv", "w") as f:
+    f.write(OUR_DATA)
+
+print(open("our_data.csv").read())</code></pre>
+</div>
+
+<!-- Exercise 1.1 -->
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Parse One Line</h3>
+  <div class="question">
+    <p>The lines are messy: spaces after commas, a newline at the end. Write
+    <code>parse_line(line)</code> that returns a clean tuple <code>(user, product_id, score)</code>
+    with the right types: <code>str</code>, <code>int</code>, <code>float</code>.</p>
+<pre><code>parse_line("sandeep, 2, 2.0\n")   # ("sandeep", 2, 2.0)
+parse_line("nitin,1, 3.5")        # ("nitin", 1, 3.5)</code></pre>
+    <p>Your function must pass these assertions:</p>
+<pre><code>assert parse_line("sandeep, 2, 2.0\n") == ("sandeep", 2, 2.0)
+assert parse_line("nitin,1, 3.5")      == ("nitin", 1, 3.5)
+assert parse_line("a@b.com , 7 , 0.5") == ("a@b.com", 7, 0.5)</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Use <code>line.strip().split(",")</code> to break the line into parts. Then call <code>.strip()</code> on each part to remove extra whitespace before converting types.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>After splitting, you get three strings. The first stays a <code>str</code> (just strip whitespace), the second becomes <code>int(...)</code>, and the third becomes <code>float(...)</code>. Return them as a tuple.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 1.2 -->
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Read the Whole File</h3>
+  <div class="question">
+    <p>Write <code>read_data(filename)</code> that opens the file and returns a list of parsed
+    tuples, skipping any blank lines.</p>
+<pre><code>read_data("our_data.csv")
+# [("sandeep", 1, 1.0), ("nitin", 2, 3.0), ("subodh", 2, 1.0),
+#  ("sandeep", 2, 2.0), ("nitin", 1, 2.0)]</code></pre>
+    <p>Your function must pass this assertion:</p>
+<pre><code>rows = read_data("our_data.csv")
+assert rows == [("sandeep", 1, 1.0), ("nitin", 2, 3.0), ("subodh", 2, 1.0),
+                ("sandeep", 2, 2.0), ("nitin", 1, 2.0)]</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Open the file, iterate over its lines, skip any line where <code>line.strip()</code> is empty, and call <code>parse_line</code> on each non-blank line. Collect results into a list.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>A list comprehension works well: <code>[parse_line(line) for line in open(filename) if line.strip()]</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: The Encoder
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: The Encoder</h2>
+</div>
+
+<!-- Exercise 2.1 -->
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Assign an Integer to Each Email</h3>
+  <div class="question">
+    <p>Write <code>build_mapping(rows)</code> that gives each <strong>distinct</strong> user an integer ID:
+    1 for the first user seen, 2 for the second new user, and so on.
+    Users repeat in the data &mdash; they must keep the same ID.</p>
+<pre><code>build_mapping(rows)   # {"sandeep": 1, "nitin": 2, "subodh": 3}</code></pre>
+    <p>Your function must pass this assertion:</p>
+<pre><code>mapping = build_mapping(rows)
+assert mapping == {"sandeep": 1, "nitin": 2, "subodh": 3}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Iterate over the rows. For each row, check if the user is already in your mapping dictionary. If not, assign the next integer (use <code>len(mapping) + 1</code> as the next ID).</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Start with an empty dict. For each <code>(user, product_id, score)</code> tuple, do: <code>if user not in mapping: mapping[user] = len(mapping) + 1</code>. Return the dict at the end.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.2 -->
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; Persist the Mapping</h3>
+  <div class="question">
+    <p>The Decoder is a <em>separate program</em> &mdash; it will not share memory with the Encoder.
+    The mapping must survive as a file.</p>
+    <p>Write <code>save_mapping(mapping, filename)</code> (one <code>email,id</code> line per user) and
+    <code>load_mapping(filename)</code> that reads it back &mdash; <strong>types intact</strong> (ids are ints).</p>
+    <p>The test is the round trip:</p>
+<pre><code>save_mapping(mapping, "mapping.csv")
+load_mapping("mapping.csv") == mapping   # True</code></pre>
+    <p>Your functions must pass these assertions:</p>
+<pre><code>save_mapping(mapping, "mapping.csv")
+assert load_mapping("mapping.csv") == mapping</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For <code>save_mapping</code>: iterate over <code>mapping.items()</code> and write each pair as a line like <code>"sandeep,1\n"</code>. For <code>load_mapping</code>: split each line on <code>","</code>, strip whitespace, and convert the second part to <code>int</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Be careful with types when loading: <code>int("1")</code> works, but <code>int(" 1\n")</code> requires a <code>.strip()</code> first. Build a new dict from the parsed pairs.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 2.3 -->
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; The Complete Encoder Program</h3>
+  <div class="question">
+    <p>Put it together. Write <code>encode_file(input_file, encoded_file, mapping_file)</code> that:</p>
+    <ol>
+      <li>Reads the raw data (<code>read_data</code>),</li>
+      <li>Builds and saves the mapping,</li>
+      <li>Writes the encoded CSV: same rows, emails replaced by their integer IDs.</li>
+    </ol>
+    <p>Expected <code>encoded.csv</code> for our data:</p>
+<pre><code>1,1,1.0
+2,2,3.0
+3,2,1.0
+1,2,2.0
+2,1,2.0</code></pre>
+    <p>Your function must pass these assertions:</p>
+<pre><code>encode_file("our_data.csv", "encoded.csv", "mapping.csv")
+
+expected = "1,1,1.0\n2,2,3.0\n3,2,1.0\n1,2,2.0\n2,1,2.0\n"
+assert open("encoded.csv").read() == expected
+assert load_mapping("mapping.csv") == {"sandeep": 1, "nitin": 2, "subodh": 3}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This is mostly gluing together the functions you already have: <code>read_data</code>, <code>build_mapping</code>, <code>save_mapping</code>. The new part is writing the encoded file &mdash; for each row, look up the user's integer ID from the mapping and write <code>f"{id},{product_id},{score}\n"</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Open the output file for writing. For each <code>(user, product_id, score)</code> tuple in the rows, write: <code>f.write(f"{mapping[user]},{product_id},{score}\n")</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: The Recommendation Engine (Black Box)
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: The Recommendation Engine (Black Box)</h2>
+</div>
+
+<p>Here is the engine you bought. <strong>You are not allowed to modify it</strong> &mdash; run the
+cell as-is. For each user it recommends the products they have <em>not</em> rated yet,
+scored by that product's average rating from other users.</p>
+
+<p>Notice it would crash on emails: it calls <code>int()</code> on the first column.
+That is exactly why you wrote the Encoder.</p>
+
+<div class="provided-code">
+  <div class="provided-code-label">Provided &mdash; the black-box recommender (do not modify)</div>
+<pre><code>def run_recommender(input_file, output_file):
+    """BLACK BOX -- the engine you bought. Do not modify."""
+    ratings = []
+    for line in open(input_file):
+        if line.strip():
+            u, p, s = line.strip().split(",")
+            ratings.append((int(u), int(p), float(s)))
+
+    product_scores = {}
+    for u, p, s in ratings:
+        product_scores.setdefault(p, []).append(s)
+    avg = {p: sum(v) / len(v) for p, v in product_scores.items()}
+
+    seen = {}
+    for u, p, s in ratings:
+        seen.setdefault(u, set()).add(p)
+
+    with open(output_file, "w") as f:
+        for u in sorted(seen):
+            for p in sorted(avg):
+                if p not in seen[u]:
+                    f.write(f"{u},{p},{avg[p]}\n")
+
+
+run_recommender("encoded.csv", "recommendations.csv")
+print(open("recommendations.csv").read())</code></pre>
+</div>
+
+<p>Only one line came out: user <code>3</code> should look at product <code>1</code>.
+Makes sense &mdash; everyone else has already rated everything. But <strong>who is user 3?</strong>
+Time for the Decoder.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: The Decoder
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: The Decoder</h2>
+</div>
+
+<!-- Exercise 4.1 -->
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Invert the Mapping</h3>
+  <div class="question">
+    <p>The mapping file maps email &rarr; id. The decoder needs id &rarr; email.</p>
+    <p>Write <code>invert(mapping)</code>. (You built this in the Dictionaries chapter &mdash; rebuild
+    it from memory.) Why is inversion safe here &mdash; what property must the mapping have?</p>
+<pre><code>invert({"sandeep": 1, "nitin": 2})   # {1: "sandeep", 2: "nitin"}</code></pre>
+    <p>Your function must pass this assertion:</p>
+<pre><code>assert invert({"sandeep": 1, "nitin": 2}) == {1: "sandeep", 2: "nitin"}</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Build a new dict where every key-value pair from the original is swapped: <code>{v: k for k, v in mapping.items()}</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Inversion is safe because the mapping is <strong>one-to-one</strong> (bijective): each email gets a unique integer, so no two emails share the same id. If two emails had the same id, inverting would lose one of them.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<!-- Exercise 4.2 -->
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; The Complete Decoder Program</h3>
+  <div class="question">
+    <p>Write <code>decode_file(recs_file, mapping_file, output_file)</code> that:</p>
+    <ol>
+      <li>Loads the mapping from its file and inverts it,</li>
+      <li>Reads the engine's recommendations,</li>
+      <li>Writes the final CSV with integer IDs translated back to emails.</li>
+    </ol>
+<pre><code>decode_file("recommendations.csv", "mapping.csv", "final.csv")
+open("final.csv").read()   # "subodh,1,1.5\n"</code></pre>
+    <p>So the mystery user 3 was <strong>subodh</strong>, and the pipeline recommends product 1
+    with score 1.5.</p>
+    <p>Your function must pass this assertion:</p>
+<pre><code>assert open("final.csv").read() == "subodh,1,1.5\n"</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Load the mapping with <code>load_mapping</code>, invert it with <code>invert</code>. Then read the recommendations file line by line, split on <code>","</code>, look up the integer user id in the inverted mapping, and write the email-based line to the output file.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The recommendation lines look like <code>"3,1,1.5\n"</code>. Split on <code>","</code> to get the user id (convert to <code>int</code>), product id, and score. Replace the user id with <code>inv_mapping[user_id]</code> and write the line.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: Prove the Pipeline
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: Prove the Pipeline</h2>
+</div>
+
+<!-- Exercise 5.1 -->
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; Round Trip on Bigger Data</h3>
+  <div class="question">
+    <p>A pipeline you have run once works once. A pipeline you have <strong>tested</strong> works.</p>
+    <p>The provided cell generates a bigger random dataset. Run your whole pipeline on
+    it, then write <code>check_pipeline(original_file, final_file)</code> that verifies:</p>
+    <ol>
+      <li>Every user in the final output existed in the original data (no invented users).</li>
+      <li>No integer IDs leaked into the final output (every user field contains <code>"@"</code>).</li>
+    </ol>
+    <p><strong>Think about:</strong> what could silently break if two different emails ever received
+    the same ID? Which of your functions guarantees that cannot happen?</p>
+
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; generate bigger data and run the pipeline</div>
+<pre><code>import random
+
+random.seed(7)
+users = [f"user{i}@example.com" for i in range(1, 21)]
+with open("big_data.csv", "w") as f:
+    for _ in range(100):
+        u = random.choice(users)
+        p = random.randint(1, 10)
+        s = round(random.uniform(0.5, 5.0), 1)
+        f.write(f"{u}, {p}, {s}\n")
+
+# run YOUR pipeline:
+encode_file("big_data.csv", "big_encoded.csv", "big_mapping.csv")
+run_recommender("big_encoded.csv", "big_recs.csv")
+decode_file("big_recs.csv", "big_mapping.csv", "big_final.csv")
+
+print(f"{len(open('big_recs.csv').readlines())} recommendations generated")
+print("first 5 lines of the final output:")
+for line in open("big_final.csv").readlines()[:5]:
+    print("  ", line, end="")</code></pre>
+    </div>
+
+    <p>Now write <code>check_pipeline</code>:</p>
+<pre><code>assert check_pipeline("big_data.csv", "big_final.csv") == True</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Read the original file and collect all unique user emails into a set. Read the final file and collect all user fields (first column). Then assert every final user is in the original set, and every final user contains <code>"@"</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>For the <code>"@"</code> check: if an integer ID leaked through (the decoder failed for some row), the first column would be something like <code>"3"</code> instead of <code>"user3@example.com"</code>. Checking for <code>"@"</code> catches that class of bug.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <!-- TODO: solution -->
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     Summary
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Summary</h2>
+</div>
+
+<table>
+  <tr>
+    <th>Piece</th>
+    <th>What you built</th>
+    <th>The general pattern</th>
+  </tr>
+  <tr>
+    <td><code>parse_line</code>, <code>read_data</code></td>
+    <td>messy text &rarr; typed tuples</td>
+    <td>every pipeline starts with parsing</td>
+  </tr>
+  <tr>
+    <td><code>build_mapping</code></td>
+    <td>email &rarr; int, first-seen order</td>
+    <td><strong>label encoding</strong> &mdash; <code>sklearn.preprocessing.LabelEncoder</code> is exactly this</td>
+  </tr>
+  <tr>
+    <td><code>save_mapping</code>, <code>load_mapping</code></td>
+    <td>mapping as a file</td>
+    <td>separate programs share state only through files</td>
+  </tr>
+  <tr>
+    <td><code>encode_file</code></td>
+    <td>the Encoder program</td>
+    <td>adapt <em>your</em> data to <em>their</em> interface</td>
+  </tr>
+  <tr>
+    <td><code>run_recommender</code></td>
+    <td>untouched black box</td>
+    <td>you wrapped it instead of changing it</td>
+  </tr>
+  <tr>
+    <td><code>invert</code>, <code>decode_file</code></td>
+    <td>the Decoder program</td>
+    <td>translate answers back into your domain</td>
+  </tr>
+  <tr>
+    <td><code>check_pipeline</code></td>
+    <td>end-to-end verification</td>
+    <td>trust pipelines you have tested, not pipelines that ran</td>
+  </tr>
+</table>
+
+<p>The same encode &rarr; black box &rarr; decode shape appears when you one-hot-encode
+categories for a model, tokenize text for an LLM, or compress data before a
+network hop (your Huffman coder!). The black box changes; the wrapper pattern never does.</p>
+
+<div class="chapter-footer">
+  <p><em>You've just built a complete encoder-decoder pipeline from scratch &mdash; parsing, label encoding, file-based persistence, wrapping a black-box system, decoding, and end-to-end verification. This is real data engineering.</em></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+</div>
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>
