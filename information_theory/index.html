@@ -293,8 +293,17 @@ print(f"Is prefix-free:   {is_prefix_free(VAR_SCHEME)}")</code></pre>
 <section class="exercise" id="ex-3-1">
   <h3>Exercise 3.1 &mdash; Average Bits Per Symbol</h3>
   <div class="question">
-    <p>Write <code>avg_bits(scheme, frequencies)</code> that computes the <strong>weighted average</strong> number of bits per symbol:</p>
-    <p>$$\text{avg bits} = \sum_{\text{symbol}} \text{frequency}(\text{symbol}) \times \text{len}(\text{code}(\text{symbol}))$$</p>
+    <p>Write <code>avg_bits(scheme, frequencies)</code> that computes the <strong>expected</strong> number of bits per symbol.</p>
+    <p><strong>Think it through:</strong> In the fixed 2-bit scheme, every symbol costs 2 bits, so the average is obviously 2. But in a variable-length scheme, A costs 1 bit and appears 50% of the time, B costs 2 bits and appears 25% of the time, and so on. What operation combines &ldquo;how often&rdquo; with &ldquo;how many bits&rdquo; into an overall average?</p>
+    <p><strong>Try by hand first:</strong> For scheme <code>{A:"0", B:"01", C:"10", D:"11"}</code> with frequencies A=50%, B=25%, C=20%, D=5%:</p>
+    <ul>
+    <li>A contributes 0.50 &times; 1 bit = ?</li>
+    <li>B contributes 0.25 &times; 2 bits = ?</li>
+    <li>C contributes 0.20 &times; 2 bits = ?</li>
+    <li>D contributes 0.05 &times; 2 bits = ?</li>
+    <li>Total = ?</li>
+    </ul>
+    <p>Now generalize this into a function.</p>
 <pre><code>frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
 scheme = {"A": "00", "B": "01", "C": "10", "D": "11"}
 avg_bits(scheme, frequencies)  # 2.0</code></pre>
@@ -303,7 +312,7 @@ avg_bits(scheme, frequencies)  # 2.0</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Loop over each symbol in <code>frequencies</code>. Multiply the frequency by the length of the codeword for that symbol. Sum these products.</p>
+      <p>The average bits per symbol is a weighted average: $$\text{avg bits} = \sum_{\text{symbol}} \text{frequency}(\text{symbol}) \times \text{len}(\text{code}(\text{symbol}))$$ Loop over each symbol, multiply frequency by code length, and sum.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -637,10 +646,15 @@ print("Average bits:", avg_bits(expected_codes,
 <section class="exercise" id="ex-4-5">
   <h3>Exercise 4.5 &mdash; Information-Theoretic Lower Bound (Entropy)</h3>
   <div class="question">
-    <p>Shannon's entropy is the theoretical minimum average bits per symbol:</p>
-    <p>$$H = -\sum_{\text{symbol}} p \cdot \log_2(p)$$</p>
-    <p>No lossless code can do better than this.</p>
-    <p>Write <code>entropy(frequencies)</code> and compare it to your Huffman average.</p>
+    <p>Your Huffman code assigns A (50%) a 1-bit code, B (25%) a 2-bit code, D (5%) a 3-bit code. Do you see a pattern between frequency and code length?</p>
+    <p><strong>Think about it:</strong></p>
+    <ul>
+    <li>A appears 50% = 1/2 of the time and gets 1 bit. Notice: $\log_2(1/0.50) = \log_2(2) = 1$.</li>
+    <li>B appears 25% = 1/4 of the time and gets 2 bits. Notice: $\log_2(1/0.25) = \log_2(4) = 2$.</li>
+    <li>For a symbol with frequency $p$, the &ldquo;ideal&rdquo; code length is $\log_2(1/p)$.</li>
+    </ul>
+    <p><strong>Your challenge:</strong> If each symbol could have <em>exactly</em> its ideal code length $\log_2(1/p)$, what would the average bits per symbol be? Use the same weighted-average idea from <code>avg_bits</code>, but with the ideal lengths instead of actual code lengths.</p>
+    <p>Write <code>entropy(frequencies)</code> and compare it to your Huffman average. No lossless code can do better than this theoretical minimum.</p>
 <pre><code>entropy({"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05})
 # &asymp; 1.68 bits/symbol</code></pre>
   </div>
@@ -648,7 +662,7 @@ print("Average bits:", avg_bits(expected_codes,
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Use <code>math.log2(p)</code>. Be careful: if <code>p == 0</code>, the convention is <code>0 * log2(0) = 0</code> (skip that term).</p>
+      <p>The ideal length for frequency $p$ is $\log_2(1/p) = -\log_2(p)$. The weighted average is: $$H = \sum p \cdot \log_2(1/p) = -\sum p \cdot \log_2(p)$$ This is <strong>Shannon&rsquo;s entropy</strong>. Use <code>math.log2(p)</code>. Skip terms where $p = 0$.</p>
     </div>
   </details>
   <details class="hint" data-level="2">

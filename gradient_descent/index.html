@@ -163,9 +163,8 @@ guesses = [
       <li>If slope is <strong>negative</strong> &rarr; the function is going <em>up</em> to the left &rarr; you should move <em>right</em> (increase $x$)</li>
       <li>If slope is <strong>zero</strong> &rarr; you are at the bottom!</li>
     </ul>
-    <p>We can approximate the slope (derivative) at any point using:</p>
-    <p>$$\text{slope at } x \approx \frac{f(x + h) - f(x - h)}{2h} \quad \text{for a very small } h$$</p>
-    <p>This is called the <strong>numerical derivative</strong>.</p>
+    <p>You know how to compute the slope of a line through two points $(a, f(a))$ and $(b, f(b))$: it&rsquo;s $\frac{f(b) - f(a)}{b - a}$. To approximate the slope of the <em>curve</em> at point $x$, use two points very close to $x$: one just to the left at $(x - h)$ and one just to the right at $(x + h)$, for a very small $h$.</p>
+    <p><strong>Write the formula</strong> for the slope using these two points, then implement it as <code>numerical_derivative(f, x, h=1e-5)</code>.</p>
     <p><strong>Tasks:</strong></p>
     <ol>
       <li>Write a function <code>numerical_derivative(f, x, h=1e-5)</code> that computes the slope at point <code>x</code>.</li>
@@ -178,11 +177,17 @@ guesses = [
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>The function is a direct translation of the formula: <code>return (f(x + h) - f(x - h)) / (2 * h)</code>.</p>
+      <p>The centered-difference formula: $$\text{slope at } x \approx \frac{f(x + h) - f(x - h)}{2h}$$ This is called the <strong>numerical derivative</strong>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The function is a direct translation of the formula: <code>return (f(x + h) - f(x - h)) / (2 * h)</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
     <div class="hint-body">
       <p>At $x = 0$: true derivative is $4(0)^3 - 4 = -4$. At $x = 1$: $4(1)^3 - 4 = 0$ (the minimum!). Your numerical values should be very close to these.</p>
     </div>
@@ -201,10 +206,13 @@ guesses = [
 <section class="exercise" id="ex-2-2">
   <h3>Exercise 2.2 &mdash; One Step at a Time</h3>
   <div class="question">
-    <p>Now let's build the update rule.</p>
-    <p>If you are at position $x$, and the slope there is $s$, your next position should be:</p>
-    <p>$$x_{\text{new}} = x - \alpha \cdot s$$</p>
-    <p>where $\alpha$ (alpha) is called the <strong>learning rate</strong> &mdash; it controls how big a step you take.</p>
+    <p>Now let&rsquo;s build the update rule. You&rsquo;re at position $x$ and the slope is $s$.</p>
+    <ul>
+    <li>If the slope is <strong>positive</strong> (uphill to the right), you should move <em>left</em> (decrease $x$).</li>
+    <li>If the slope is <strong>negative</strong> (uphill to the left), you should move <em>right</em> (increase $x$).</li>
+    <li>A steeper slope means you should take a bigger step.</li>
+    </ul>
+    <p><strong>Write a formula</strong> for your new position $x_{\text{new}}$ using $x$, $s$, and a step-size parameter $\alpha$ (the <strong>learning rate</strong>).</p>
     <p><strong>Tasks:</strong></p>
     <ol>
       <li>Start at $x_0 = 2.0$.</li>
@@ -219,7 +227,7 @@ guesses = [
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>At $x = 2$, the slope is $f'(2) = 4(8) - 4 = 28$, which is positive (going uphill to the right). So the update $x_{\text{new}} = 2.0 - 0.01 \times 28 = 1.72$ moves you to the left, downhill.</p>
+      <p>The update rule: $$x_{\text{new}} = x - \alpha \cdot s$$ Subtracting $\alpha \cdot s$ moves you opposite to the slope direction. At $x = 2$, slope is about 28 (positive), so $x_{\text{new}} = 2 - 0.01 \times 28 = 1.72$ &mdash; moving left, downhill.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -533,9 +541,8 @@ guesses = [
   <div class="question">
     <p>With two variables, the slope has <strong>two components</strong> &mdash; one for each variable.</p>
     <p>The <strong>partial derivative</strong> with respect to $x$ tells you the slope if you move only in the $x$ direction (holding $y$ fixed).</p>
-    <p>We can compute them numerically the same way:</p>
-    <p>$$\frac{\partial f}{\partial x} \approx \frac{f(x+h, y) - f(x-h, y)}{2h}$$</p>
-    <p>$$\frac{\partial f}{\partial y} \approx \frac{f(x, y+h) - f(x, y-h)}{2h}$$</p>
+    <p>You can compute them numerically, just like in 1D. For the $x$-direction: hold $y$ fixed, and use your centered-difference formula from Exercise 2.1, but applied only to the $x$ argument. Similarly for $y$.</p>
+    <p><strong>Adapt your 1D formula</strong> to write <code>partial_x</code> and <code>partial_y</code>.</p>
     <p>Together, $\left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}\right)$ is called the <strong>gradient</strong> &mdash; it points in the direction of steepest <em>increase</em>.</p>
     <p><strong>Tasks:</strong></p>
     <ol>
@@ -556,7 +563,7 @@ guesses = [
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p><code>partial_x</code> is identical to the 1D numerical derivative, except you hold <code>y</code> fixed: <code>(f2(x+h, y) - f2(x-h, y)) / (2*h)</code>.</p>
+      <p>The partial derivative formulas are: $$\frac{\partial f}{\partial x} \approx \frac{f(x+h, y) - f(x-h, y)}{2h}$$ $$\frac{\partial f}{\partial y} \approx \frac{f(x, y+h) - f(x, y-h)}{2h}$$ Same centered-difference idea, just holding one variable constant.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -579,10 +586,7 @@ guesses = [
 <section class="exercise" id="ex-4-3">
   <h3>Exercise 4.3 &mdash; Build <code>find_minima_2d</code></h3>
   <div class="question">
-    <p>Now extend the 1D algorithm to 2D. The update rule becomes:</p>
-    <p>$$x_{\text{new}} = x - \alpha \cdot \frac{\partial f}{\partial x}$$</p>
-    <p>$$y_{\text{new}} = y - \alpha \cdot \frac{\partial f}{\partial y}$$</p>
-    <p>Both variables are updated simultaneously.</p>
+    <p>Now extend the 1D algorithm to 2D. In 1D, you updated $x$ using the slope. Now you have <strong>two</strong> slopes (one per variable). Update each variable independently, using its own partial derivative, the same way you updated $x$ in 1D.</p>
     <p><strong>Stopping condition:</strong> Stop when $\sqrt{(\partial f/\partial x)^2 + (\partial f/\partial y)^2} &lt; \epsilon$. This is the <strong>magnitude</strong> of the gradient (how steep the hill is overall).</p>
     <p><strong>Tasks:</strong></p>
     <ol>
@@ -599,7 +603,7 @@ guesses = [
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>The structure is identical to <code>find_minima_1d</code>: a loop that computes the gradient, checks convergence, and updates the variables. The only difference is that you have two variables to update instead of one.</p>
+      <p>The 2D update rule: $$x_{\text{new}} = x - \alpha \cdot \frac{\partial f}{\partial x}$$ $$y_{\text{new}} = y - \alpha \cdot \frac{\partial f}{\partial y}$$ Same as 1D, applied to each variable independently.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -704,9 +708,7 @@ guesses = [
       <li>In 2D, your position is a pair $(x, y)$. The gradient is a pair $(\partial f/\partial x, \partial f/\partial y)$.</li>
       <li>In N dimensions, your position is a <strong>list</strong> of N numbers. The gradient is also a <strong>list</strong> of N numbers.</li>
     </ul>
-    <p>The update rule is always the same:</p>
-    <p>$$\text{variables}_{\text{new}} = \text{variables} - \alpha \cdot \text{gradient}$$</p>
-    <p>where both are lists.</p>
+    <p>The update rule is always the same pattern you used in 1D and 2D &mdash; now applied element-wise to a list.</p>
     <p><strong>The signature you are building:</strong></p>
 <pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6, max_steps=100000):
     """
@@ -727,9 +729,7 @@ guesses = [
     """
     pass</code></pre>
     <p><strong>Key challenge:</strong> Computing the gradient for a list of N variables.</p>
-    <p>For variable $i$, the partial derivative is:</p>
-    <p>$$\frac{\partial f}{\partial v_i} \approx \frac{f(v_1, \ldots, v_i + h, \ldots, v_N) - f(v_1, \ldots, v_i - h, \ldots, v_N)}{2h}$$</p>
-    <p>You need to perturb one variable at a time.</p>
+    <p>For variable $i$, compute the partial derivative the same way as before: perturb just that one variable by $\pm h$ and compute the centered difference.</p>
     <p><strong>Tasks:</strong></p>
     <ol>
       <li>First, write a helper <code>compute_gradient(f, variables, h=1e-5)</code> that returns the gradient as a list.</li>
@@ -746,7 +746,7 @@ guesses = [
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>In <code>compute_gradient</code>, loop over each index <code>i</code>. Make a copy of the variables list, bump <code>variables[i]</code> up by <code>h</code>, evaluate <code>f</code>, then bump it down by <code>h</code>, evaluate <code>f</code>, and compute the centered difference.</p>
+      <p>The N-dimensional generalization: $$\text{variables}_{\text{new}} = \text{variables} - \alpha \cdot \text{gradient}$$ where each gradient component is: $$\frac{\partial f}{\partial v_i} \approx \frac{f(v_1, \ldots, v_i + h, \ldots) - f(v_1, \ldots, v_i - h, \ldots)}{2h}$$ Loop over index <code>i</code>, make a copy, bump <code>variables[i]</code> by <code>h</code>, evaluate, bump by <code>-h</code>, evaluate, compute the difference.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -815,9 +815,8 @@ guesses = [
     <p>Suppose you have a dataset: some $x$ values and corresponding $y$ values. You want to find the <strong>straight line</strong> $\hat{y} = mx + c$ that best fits the data.</p>
     <p>But what does "best fit" mean?</p>
     <p>For each data point $(x_i, y_i)$, your line predicts $\hat{y}_i = m x_i + c$. The <strong>error</strong> for that point is $y_i - \hat{y}_i$.</p>
-    <p><strong>Mean Squared Error (MSE)</strong> is defined as:</p>
-    <p>$$\text{MSE}(m, c) = \frac{1}{N} \sum_{i=1}^{N} (y_i - (m x_i + c))^2$$</p>
-    <p>A smaller MSE means the line fits the data better.</p>
+    <p>But some errors are positive and some negative &mdash; they&rsquo;d cancel if you just added them. <strong>Think:</strong> How do you fix the cancellation problem? And how do you combine $N$ errors into a single number that measures overall fit?</p>
+    <p>The result is called <strong>Mean Squared Error (MSE)</strong>. A smaller MSE means the line fits better.</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; dataset</div>
 <pre><code>np.random.seed(42)
@@ -854,6 +853,12 @@ print(f"y range: [{y_data.min():.1f}, {y_data.max():.1f}]")</code></pre>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Square each error to make it positive, then average: $$\text{MSE}(m, c) = \frac{1}{N} \sum_{i=1}^{N} (y_i - (m x_i + c))^2$$</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
     <div class="hint-body">
       <p>Try values like <code>m=1.0, c=5.0</code>, then <code>m=2.5, c=4.0</code> (the true values), then <code>m=5.0, c=0.0</code>. Compare visually.</p>
     </div>
@@ -1369,6 +1374,7 @@ curve_mse = total_err_sqr(Xc2, yc, m2, c2)
   <h3>Exercise 8.6 &mdash; Skip the Nudging: the Chain Rule</h3>
   <div class="question">
     <p>Your <code>gradients</code> calls <code>total_err_sqr</code> once per weight per epoch &mdash; thousands of full passes over the data just to <em>estimate</em> slopes. Calculus hands us the exact answer for free.</p>
+    <p><em>Challenge: before reading the derivation below, try to work out $\frac{\partial \text{MSE}}{\partial m_i}$ yourself. You know MSE is built from squared errors, and each error depends on the weights through <code>predict</code>. Can you use the chain rule to get an expression?</em></p>
     <p>MSE is built from pieces: $\text{MSE} = \frac{1}{n}\sum e^2$ where $e = \text{predict}(x) - y$, and $\frac{\partial\, \text{predict}}{\partial m_i} = x_i$. The <strong>chain rule</strong> multiplies the pieces' derivatives together:</p>
     <p>$$\frac{\partial\, \text{MSE}}{\partial m_i} = \frac{1}{n}\sum 2e \cdot x_i \qquad \frac{\partial\, \text{MSE}}{\partial c} = \frac{1}{n}\sum 2e$$</p>
     <p>Write <code>analytic_gradients(X, y, m, c)</code> implementing those two formulas, and verify it against your finite-difference <code>gradients</code> at an arbitrary point. No nudging, no <code>h</code>, exact &mdash; this is what <strong>backpropagation</strong> does inside every deep-learning framework: chain rule, applied layer by layer.</p>

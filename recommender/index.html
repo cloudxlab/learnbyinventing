@@ -114,9 +114,8 @@ print("Kept:", list(ratings.columns))</code></pre>
   <div class="question">
     <p>Print <code>ratings.mean().sort_values()</code>. Notice something? Bhaskar's <em>average</em> rating is about <strong>1.7</strong> while Venu's is about <strong>4.1</strong>. Does Venu love every movie and Bhaskar hate them all? More likely they just use the scale differently &mdash; a 3 from Bhaskar might mean the same as a 5 from Venu.</p>
     <p>If we compare raw numbers, the stingy and generous raters will look like they disagree even when their <em>taste</em> is identical. We need to put everyone on the same scale.</p>
-    <p><strong>The fix &mdash; min-max scaling, per person:</strong> stretch each person's ratings so their lowest becomes 0 and their highest becomes 1:</p>
-    <p>$$\text{scaled} = \frac{x - \min}{\max - \min}$$</p>
-    <p><strong>Your task:</strong> create <code>scaled</code> from <code>ratings</code> using the formula above, applied column-by-column.</p>
+    <p><strong>The fix &mdash; min-max scaling, per person:</strong> You derived a normalization formula in the Loops &amp; Arrays chapter that maps any value to [0, 1] using the minimum and maximum. Apply that same idea here, column by column, so each person's lowest rating becomes 0 and highest becomes 1.</p>
+    <p><strong>Your task:</strong> create <code>scaled</code> from <code>ratings</code> using that formula, applied column-by-column.</p>
     <p><strong>Test your result:</strong></p>
 <pre><code>assert np.allclose(scaled.min(), 0)           # every person's lowest -&gt; 0
 assert np.allclose(scaled.max(), 1)           # every person's highest -&gt; 1
@@ -206,12 +205,13 @@ print(filled.head(5).round(2))</code></pre>
 <section class="exercise" id="ex-2-1">
   <h3>Exercise 2.1 &mdash; Cosine Similarity</h3>
   <div class="question">
-    <p>Each person is now a column of 25 numbers &mdash; a <strong>vector</strong> in 25-dimensional space (one dimension per movie). Two people with similar taste should have vectors pointing in a similar <em>direction</em>.</p>
-    <p>Recall the dot product identity:</p>
-    <p>$$\vec{a} \cdot \vec{b} = |\vec{a}|\,|\vec{b}|\,\cos\theta$$</p>
-    <p>where $\theta$ is the angle between the vectors. Rearranging:</p>
-    <p>$$\cos\theta = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}$$</p>
-    <p>This is <strong>cosine similarity</strong>: 1 means the vectors point the same way (identical taste), 0 means perpendicular (unrelated taste). Because it divides away the lengths, it measures <em>direction only</em> &mdash; one more defense against scale differences between raters.</p>
+    <p>Each person is now a column of 25 numbers &mdash; a <strong>vector</strong> in 25-dimensional space (one dimension per movie).</p>
+    <p>Two people with similar taste should have vectors pointing in a similar <em>direction</em>. You already know the dot product from the Secrets of Prediction chapter. Think about these questions:</p>
+    <ul>
+    <li>The dot product of two identical vectors is large. The dot product of perpendicular vectors is 0. So the dot product tells you something about <em>alignment</em>. But it also depends on the vectors' lengths &mdash; how can you remove the length effect?</li>
+    <li>What if you divided the dot product by both vectors' lengths? What would that give you for identical vectors? For perpendicular vectors?</li>
+    </ul>
+    <p>This quantity &mdash; the dot product divided by the product of lengths &mdash; is called <strong>cosine similarity</strong>: 1 means identical taste, 0 means unrelated taste. It measures <em>direction only</em>, which is one more defense against scale differences between raters.</p>
     <p><strong>Your task:</strong> write <code>cosine_similarity(a, b)</code> for two columns of <code>filled</code>.</p>
     <p><strong>Test your result:</strong></p>
 <pre><code>me = filled["SandeepGiri"]
@@ -224,11 +224,18 @@ print("sim(SandeepGiri, Abhishek) =",
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Dot product: <code>(a * b).sum()</code>. Length of a vector: <code>np.sqrt((a ** 2).sum())</code>.</p>
+      <p>The formula you should have arrived at:</p>
+      <p>$$\cos\theta = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}$$</p>
     </div>
   </details>
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Dot product: <code>(a * b).sum()</code>. Length of a vector: <code>np.sqrt((a ** 2).sum())</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
     <div class="hint-body">
       <p>Cosine similarity is: <code>(a * b).sum() / (np.sqrt((a**2).sum()) * np.sqrt((b**2).sum()))</code>.</p>
     </div>

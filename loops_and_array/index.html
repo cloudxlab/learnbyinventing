@@ -76,10 +76,9 @@ find_min_max([-3, 0, 3])         # (-3, 3)</code></pre>
 <section class="exercise" id="ex-1-2">
   <h3>Exercise 1.2 &mdash; Min-Max Normalization</h3>
   <div class="question">
-    <p>Rescale any value to [0, 1] relative to the dataset:</p>
-    <p>$$\text{normalized}(x) = \frac{x - \min}{\max - \min}$$</p>
+    <p>You want to rescale any value to [0, 1] relative to the dataset, so the minimum maps to 0 and the maximum maps to 1.</p>
+    <p><strong>Think it through:</strong> Given <code>[10, 20, 30]</code>, what operation maps 10 &rarr; 0 and 30 &rarr; 1? What does 20 become? Can you write a general formula using min and max?</p>
     <p>Write <code>min_max_normalize(value, data)</code>. Reuse <code>find_min_max</code>.</p>
-    <p><strong>Before you code:</strong> What does the formula give when <code>value == min</code>? When <code>value == max</code>?</p>
 <pre><code>min_max_normalize(20, [10, 20, 30])  # 0.5
 min_max_normalize(10, [10, 20, 30])  # 0.0
 min_max_normalize(30, [10, 20, 30])  # 1.0</code></pre>
@@ -88,7 +87,7 @@ min_max_normalize(30, [10, 20, 30])  # 1.0</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Call <code>find_min_max(data)</code> to get <code>mn</code> and <code>mx</code>, then return <code>(value - mn) / (mx - mn)</code>.</p>
+      <p>The formula: $$\text{normalized}(x) = \frac{x - \min}{\max - \min}$$ Call <code>find_min_max(data)</code> to get <code>mn</code> and <code>mx</code>, then return <code>(value - mn) / (mx - mn)</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -178,8 +177,8 @@ compute_sd([0, 6])                     # 3.0</code></pre>
 <section class="exercise" id="ex-1-5">
   <h3>Exercise 1.5 &mdash; Detect Outliers with Z-Score</h3>
   <div class="question">
-    <p>The z-score of a value tells you how many standard deviations it is from the mean:</p>
-    <p>$$z(x) = \frac{x - \mu}{\sigma}$$</p>
+    <p>The z-score tells you how many standard deviations a value is from the mean.</p>
+    <p><strong>Think about it:</strong> In <code>[10, 12, 12, 13, 12, 11, 90]</code>, the value 90 looks suspicious. How far is it from the mean? And how does that distance compare to the &ldquo;typical spread&rdquo; (the SD)? Write a formula for &ldquo;how many SDs from the mean.&rdquo;</p>
     <p>Values with $|z| &gt;$ threshold are <strong>outliers</strong>.</p>
     <p>Write <code>find_outliers(nums, threshold)</code>. Reuse <code>compute_mean</code> and <code>compute_sd</code>.</p>
 <pre><code>find_outliers([10, 12, 12, 13, 12, 11, 90], 2)  # [90]
@@ -190,7 +189,7 @@ find_outliers([1, 2, 3, 4, 5], 2)                # []</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Compute <code>mu</code> and <code>sigma</code> once. Then loop through the list and collect every <code>x</code> where <code>abs((x - mu) / sigma) &gt; threshold</code>.</p>
+      <p>The z-score formula: $$z(x) = \frac{x - \mu}{\sigma}$$ Compute <code>mu</code> and <code>sigma</code> once. Collect every <code>x</code> where <code>abs((x - mu) / sigma) > threshold</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -213,8 +212,9 @@ find_outliers([1, 2, 3, 4, 5], 2)                # []</code></pre>
 <section class="exercise" id="ex-1-6">
   <h3>Exercise 1.6 &mdash; Interquartile Range (IQR)</h3>
   <div class="question">
-    <p>$$IQR = Q_3 - Q_1$$</p>
     <p>$Q_1$ is the median of the <strong>lower half</strong> of the sorted data; $Q_3$ is the median of the <strong>upper half</strong>.</p>
+    <p>You know $Q_1$ (median of the lower half) and $Q_3$ (median of the upper half). What single number captures the width of the &ldquo;middle 50%&rdquo; of the data?</p>
+    <p>$$IQR = Q_3 - Q_1$$</p>
     <p><strong>How to split:</strong></p>
     <ul>
       <li>Sort the data.</li>
@@ -287,8 +287,7 @@ plot_stats([10, 12, 12, 13, 12, 11, 90], "Outlier example")</code></pre>
 <section class="exercise" id="ex-1-7">
   <h3>Exercise 1.7 &mdash; Standardization</h3>
   <div class="question">
-    <p>Shift the mean to 0 and scale SD to 1:</p>
-    <p>$$z_i = \frac{x_i - \mu}{\sigma}$$</p>
+    <p>You want to transform a dataset so its mean becomes 0 and its standard deviation becomes 1. What operation shifts the mean to 0? What further operation scales the SD to 1? Combine both.</p>
     <p>Write <code>standardize(data)</code>. Reuse <code>compute_mean</code> and <code>compute_sd</code>.</p>
 <pre><code>standardize([10, 10, 10])    # [0.0, 0.0, 0.0]
 # After standardizing [1,2,3,4,5]:
@@ -299,7 +298,7 @@ plot_stats([10, 12, 12, 13, 12, 11, 90], "Outlier example")</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Handle the special case where <code>sigma == 0</code> (all values are the same) by returning a list of <code>0.0</code>s. Otherwise, return <code>[(x - mu) / sigma for x in data]</code>.</p>
+      <p>Subtract the mean, then divide by the SD: $$z_i = \frac{x_i - \mu}{\sigma}$$ Handle the case where <code>sigma == 0</code> (all values identical) by returning a list of <code>0.0</code>s.</p>
     </div>
   </details>
 
@@ -358,8 +357,8 @@ compute_rmse([1, 2, 3], [1, 2, 3])  # 0.0</code></pre>
 <section class="exercise" id="ex-2-2">
   <h3>Exercise 2.2 &mdash; Mean Absolute Error (MAE)</h3>
   <div class="question">
-    <p>MAE is the average of absolute errors:</p>
-    <p>$$\text{MAE} = \frac{1}{n} \sum |actual_i - predicted_i|$$</p>
+    <p>Mean Absolute Error (MAE) measures how wrong predictions are, on average.</p>
+    <p><strong>Think:</strong> For each pair (actual, predicted), what&rsquo;s the simplest measure of &ldquo;how wrong&rdquo;? Why use absolute value instead of plain difference? How do you combine all the individual errors into one summary number?</p>
     <p>Write <code>compute_mae(actual, predicted)</code> for 1-D lists.</p>
 <pre><code>compute_mae([3, 5, 2], [2, 5, 4])  # 1.0
 compute_mae([1, 2, 3], [1, 2, 3])  # 0.0</code></pre>
@@ -372,7 +371,7 @@ compute_mae([[0,0],[2,0]], [[1,0],[2,1]])  # (1+0+0+1)/4 = 0.5</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>For 1-D: <code>sum(abs(a - p) for a, p in zip(actual, predicted)) / len(actual)</code>.</p>
+      <p>The formula: $$\text{MAE} = \frac{1}{n} \sum |actual_i - predicted_i|$$ Sum <code>abs(a - p)</code> for each pair, divide by count.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -740,8 +739,7 @@ multiply_polynomials([1], [5])               # [5]</code></pre>
 <section class="exercise" id="ex-5-1">
   <h3>Exercise 5.1 &mdash; Solve for the First Variable</h3>
   <div class="question">
-    <p>If you know all variables <em>except</em> the first, you can rearrange:</p>
-    <p>$$x_1 = \frac{b - (a_2 v_1 + a_3 v_2 + \cdots)}{a_1}$$</p>
+    <p>If you know all variables <em>except</em> the first, you can rearrange the equation to solve for it. Try it by hand with the worked example below, then generalize.</p>
     <p>Write <code>solve_for_first_variable(equation, vars)</code> where <code>vars</code> contains values for $x_2, x_3, \ldots$</p>
     <p><strong>Worked example:</strong></p>
     <ul>
@@ -755,7 +753,7 @@ solve_for_first_variable([2, 5, 7], [4])          # -6.5</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>The RHS is <code>equation[-1]</code>. The first coefficient is <code>equation[0]</code>. Subtract the products of the remaining coefficients and the known values from the RHS, then divide by <code>equation[0]</code>.</p>
+      <p>Rearranging: $$x_1 = \frac{b - (a_2 v_1 + a_3 v_2 + \cdots)}{a_1}$$ The RHS is <code>equation[-1]</code>. Subtract the products of the remaining coefficients and known values, then divide by <code>equation[0]</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -1047,10 +1045,10 @@ normalize_to_probabilities([3, 3, 4])  # [0.3, 0.3, 0.4]</code></pre>
 <section class="exercise" id="ex-6-6">
   <h3>Exercise 6.6 &mdash; Softmax</h3>
   <div class="question">
-    <p>Softmax is like normalization, but on <em>exponentials</em> of the values:</p>
-    <p>$$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$</p>
-    <p>All outputs are positive and sum to 1.</p>
+    <p>You built <code>normalize</code>, but it fails when values are negative &mdash; negative &ldquo;probabilities&rdquo; make no sense.</p>
+    <p><strong>Key idea:</strong> What if you transformed each value to be <em>positive</em> first, while preserving order? Try <code>math.exp(x)</code> &mdash; it is always positive, and larger inputs give larger outputs. Now normalize these exponentials.</p>
     <p>Write <code>softmax(values)</code>.</p>
+    <p>All outputs should be positive and sum to 1.</p>
 <pre><code>softmax([1, 2, 3])   # approx [0.090, 0.245, 0.665]
 softmax([2, 2, 2])   # [0.333, 0.333, 0.333]
 sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)</code></pre>
@@ -1059,7 +1057,7 @@ sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Compute <code>exps = [math.exp(x) for x in values]</code>, then normalize: <code>total = sum(exps)</code>, return <code>[e / total for e in exps]</code>.</p>
+      <p>The formula you should arrive at: $$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$ Compute <code>exps = [math.exp(x) for x in values]</code>, then normalize: <code>total = sum(exps)</code>, return <code>[e / total for e in exps]</code>.</p>
     </div>
   </details>
 
@@ -1077,9 +1075,7 @@ sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)</code></pre>
   <h3>Exercise 6.7 &mdash; Softmax (Numerically Stable)</h3>
   <div class="question">
     <p><strong>Problem:</strong> <code>math.exp(1000)</code> raises <code>OverflowError</code>.</p>
-    <p><strong>Fix:</strong> Subtract the maximum value before exponentiation. This leaves the result unchanged:</p>
-    <p>$$\frac{e^{x_i - m}}{\sum_j e^{x_j - m}} = \frac{e^{x_i}}{\sum_j e^{x_j}}$$</p>
-    <p>because the $e^{-m}$ factor cancels.</p>
+    <p><strong>Your challenge:</strong> Try <code>softmax([1000, 1001, 1002])</code>. It crashes! The exponentials are astronomically large. But you only care about the <em>ratios</em>, not the absolute sizes. What constant could you subtract from every value before exponentiating, to keep the numbers small without changing the ratios? Try it and verify the result matches <code>softmax([1, 2, 3])</code>.</p>
     <p>Rewrite <code>softmax(values)</code> with this trick.</p>
 <pre><code>softmax([1000, 1001, 1002])  # [0.090, 0.245, 0.665] &mdash; no overflow!</code></pre>
     <p>Verify that <code>softmax([1,2,3])</code> and <code>softmax([1000,1001,1002])</code> give the same result.</p>
@@ -1088,7 +1084,7 @@ sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Add one line at the start: <code>m = max(values)</code>. Then compute <code>exps = [math.exp(x - m) for x in values]</code>. The rest stays the same.</p>
+      <p>Subtract the maximum: $$\frac{e^{x_i - m}}{\sum_j e^{x_j - m}} = \frac{e^{x_i}}{\sum_j e^{x_j}}$$ The $e^{-m}$ cancels in numerator and denominator. Add one line: <code>m = max(values)</code>, then <code>exps = [math.exp(x - m) for x in values]</code>.</p>
     </div>
   </details>
 
@@ -1105,12 +1101,12 @@ sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)</code></pre>
 <section class="exercise" id="ex-6-8">
   <h3>Exercise 6.8 &mdash; Softmax with Temperature</h3>
   <div class="question">
-    <p>Temperature $T$ controls the sharpness of the distribution:</p>
-    <p>$$\text{softmax}(x_i, T) = \frac{e^{x_i/T}}{\sum_j e^{x_j/T}}$$</p>
+    <p><strong>Experiment:</strong> What happens to the softmax output if you divide all values by 2 before applying softmax? Try it. Then try dividing by 0.5. What pattern do you see?</p>
+    <p>Dividing by a number $T$ before softmax controls the <strong>sharpness</strong> of the distribution. This $T$ is called the <strong>temperature</strong>.</p>
     <ul>
-      <li>$T = 1$ &rarr; standard softmax</li>
-      <li>$T &lt; 1$ &rarr; <strong>sharper</strong> (largest value dominates more)</li>
-      <li>$T &gt; 1$ &rarr; <strong>flatter</strong> (more uniform)</li>
+      <li>Predict: what happens when $T = 1$?</li>
+      <li>Predict: what happens when $T &lt; 1$?</li>
+      <li>Predict: what happens when $T &gt; 1$?</li>
     </ul>
     <p>Write <code>softmax_with_temperature(values, T)</code>.</p>
 <pre><code>softmax_with_temperature([1, 2, 3], 1)    # [0.090, 0.245, 0.665]
@@ -1121,7 +1117,7 @@ softmax_with_temperature([1, 2, 3], 2)    # flatter</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Divide each value by <code>T</code> first: <code>scaled = [x / T for x in values]</code>, then apply your stable softmax to <code>scaled</code>.</p>
+      <p>The formula: $$\text{softmax}(x_i, T) = \frac{e^{x_i/T}}{\sum_j e^{x_j/T}}$$ $T = 1$: standard softmax. $T &lt; 1$: sharper (largest value dominates). $T &gt; 1$: flatter (more uniform). Divide each value by <code>T</code> first, then apply your stable softmax.</p>
     </div>
   </details>
 

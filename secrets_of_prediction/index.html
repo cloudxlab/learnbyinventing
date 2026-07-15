@@ -409,14 +409,15 @@ print("solve_poly: OK")</code></pre>
     <tr><td>4</td><td>??</td></tr>
   </table>
   <p>Try a line through the first two points: slope 3, intercept 5 &mdash; but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 &mdash; but input 2 predicts 12, not 11. <strong>No line passes through all three points.</strong> Real measurements are noisy; perfect solving just broke.</p>
-  <p>New plan: accept an imperfect line, but pick the one that is <em>least wrong</em>. Define the total (squared) error of a candidate line $y = mx + c$:</p>
-  <p>$$E(m, c) = \sum_i (m x_i + c - y_i)^2$$</p>
+  <p>New plan: accept an imperfect line, but pick the one that is <em>least wrong</em>. But how do you measure how wrong a line is? You&rsquo;ll figure that out in the next exercise.</p>
 </div>
 
 <!-- Exercise 4.1 -->
 <section class="exercise" id="ex-4-1">
   <h3>Exercise 4.1 &mdash; <code>total_error</code></h3>
   <div class="question">
+    <p>For a candidate line $y = mx + c$, each data point $(x_i, y_i)$ has an error: the prediction $mx_i + c$ minus the actual $y_i$. But some errors are positive (prediction too high) and some are negative (prediction too low) &mdash; if you just add them up, they cancel out.</p>
+    <p><strong>Think:</strong> How do you prevent cancellation? What operation makes all errors positive? Then how do you combine them into a single &ldquo;total wrongness&rdquo; score?</p>
     <p>Write <code>total_error(m, c, data)</code> where <code>data</code> is a list of <code>(x, y)</code> pairs.</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; data and tests</div>
@@ -431,7 +432,7 @@ print("total_error: OK")</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>For each <code>(x, y)</code> pair, compute the prediction <code>m * x + c</code>, find the difference from the actual <code>y</code>, square it, and sum all the squared differences.</p>
+      <p>Square each error to make it positive (and to penalize large errors more). The total squared error is: $$E(m, c) = \sum_i (m x_i + c - y_i)^2$$ For each <code>(x, y)</code> pair, compute <code>m * x + c - y</code>, square it, and sum.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -454,6 +455,7 @@ print("total_error: OK")</code></pre>
 <section class="exercise" id="ex-4-2">
   <h3>Exercise 4.2 &mdash; Solve the Normal Equations</h3>
   <div class="question">
+    <p><em>The derivation below uses calculus &mdash; read it to understand where the equations come from, but your job is to translate the <strong>result</strong> into code and solve it.</em></p>
     <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing &mdash; both partial derivatives are zero. Differentiate (each term by the chain rule) and set to zero:</p>
     <p>$$\frac{\partial E}{\partial m} = \sum_i 2(m x_i + c - y_i)\,x_i = 0 \qquad \frac{\partial E}{\partial c} = \sum_i 2(m x_i + c - y_i) = 0$$</p>
     <p>Divide by 2 and regroup &mdash; two <em>linear</em> equations in $(m, c)$, the <strong>normal equations</strong>:</p>

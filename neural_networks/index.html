@@ -96,9 +96,14 @@ assert step_function(-0.5) == 0</code></pre>
   <h3>Exercise 1.2 &mdash; The smooth step</h3>
   <div class="question">
     <p>Here's the problem with <code>step_function</code>: imagine gradient descent trying to tune <code>m</code> and <code>c</code> inside <code>step_function(m*x + c)</code>. Nudge <code>m</code> a little &mdash; the output usually doesn't change <em>at all</em> (it's still exactly 0 or exactly 1). The gradient is zero almost everywhere. Gradient descent is blind; there is no downhill to follow.</p>
-    <p>We need a step with a <em>slope</em> &mdash; a function that goes from 0 to 1 but smoothly, so every nudge changes the output a little. The classic choice:</p>
-    <p>$$\sigma(z) = \frac{1}{1 + e^{-z}}$$</p>
-    <p>Write <code>sigmoid(z)</code> using <code>np.exp</code>. Predict before you run: what is <code>sigmoid(0)</code>? What does it approach for very large positive <code>z</code>? Very negative?</p>
+    <p>We need a step with a <em>slope</em> &mdash; a function that goes from 0 to 1 but smoothly, so every nudge changes the output a little. What properties must this &ldquo;smooth step&rdquo; have?</p>
+    <ul>
+    <li>Output is always between 0 and 1</li>
+    <li>Output is 0.5 when the input is 0 (the tipping point)</li>
+    <li>Output approaches 1 for large positive inputs, 0 for large negative inputs</li>
+    <li>The function is smooth everywhere &mdash; it has a slope at every point</li>
+    </ul>
+    <p><strong>Your challenge:</strong> Try the expression <code>1 / (1 + math.exp(-z))</code>. Does it meet all four properties? Test it at <code>z = 0</code>, <code>z = 100</code>, <code>z = -100</code>, and <code>z = 2</code>. If it works, use it to write <code>sigmoid(z)</code>.</p>
     <p><strong>Tests:</strong></p>
 <pre><code>assert sigmoid(0) == 0.5
 assert sigmoid(100) &gt; 0.999
@@ -116,11 +121,18 @@ plt.show()</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>The formula translates directly: <code>return 1 / (1 + np.exp(-z))</code>. Because you use <code>np.exp</code>, it automatically works on arrays too.</p>
+      <p>The function is called the <strong>sigmoid</strong>: $$\sigma(z) = \frac{1}{1 + e^{-z}}$$</p>
+      <p>Verify: when $z = 0$, $e^{0} = 1$, so the result is $1/2 = 0.5$. For large positive $z$, $e^{-z} \to 0$ so sigmoid $\to 1$.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>The formula translates directly: <code>return 1 / (1 + np.exp(-z))</code>. Because you use <code>np.exp</code>, it automatically works on arrays too.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
     <div class="hint-body">
       <p>When <code>z = 0</code>: $e^{0} = 1$, so sigmoid returns $1 / (1 + 1) = 0.5$. For large positive <code>z</code>, $e^{-z} \to 0$ so sigmoid $\to 1$. For large negative <code>z</code>, $e^{-z} \to \infty$ so sigmoid $\to 0$.</p>
     </div>
@@ -548,8 +560,8 @@ assert sig_rmse &gt; pipe_rmse</code></pre>
   <h3>Exercise 3.5 &mdash; The right activation: ReLU</h3>
   <div class="question">
     <p>Look at the tax rule one more time: <em>zero below a threshold, a straight ramp above it.</em> There is an activation function that <strong>is</strong> that shape:</p>
-    <p>$$\text{relu}(z) = \max(z, 0)$$</p>
-    <p>Write <code>relu(z)</code> (use <code>np.maximum</code> so it works on arrays), then reuse your <code>fit_net</code> on the model $\hat{y} = w_1 \cdot \text{relu}(m x + c) + w_0$ &mdash; same starting point, same settings, only the activation changed.</p>
+    <p><strong>Your challenge:</strong> Before looking at any formula, write a function that outputs 0 for negative inputs and the input itself for positive inputs. That&rsquo;s the shape you need. Write <code>relu(z)</code> (use <code>np.maximum</code> so it works on arrays).</p>
+    <p>Then reuse your <code>fit_net</code> on the model $\hat{y} = w_1 \cdot \text{relu}(m x + c) + w_0$ &mdash; same starting point, same settings, only the activation changed.</p>
     <p>The tests expect near-perfection: the network can now represent the true rule <em>exactly</em> (one solution: <code>m=2, c=&minus;1, w1=1, w0=0</code> &mdash; but gradient descent may find an equivalent scaling, e.g. <code>m*w1 = 2</code>).</p>
 <pre><code>assert relu(3.5) == 3.5
 assert relu(-2) == 0
@@ -565,7 +577,7 @@ assert relu_rmse &lt; 0.02</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p><code>relu(z)</code> is just <code>np.maximum(z, 0)</code>. That's the whole function.</p>
+      <p>The function you should have written is called <strong>ReLU</strong> (Rectified Linear Unit): $$\text{relu}(z) = \max(z, 0)$$ In numpy: <code>np.maximum(z, 0)</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">

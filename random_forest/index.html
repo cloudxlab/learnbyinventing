@@ -80,9 +80,9 @@ assert variance([4]) == 0</code></pre>
   <div class="question">
     <p>Take this group: <code>values = [10, 9, 11, 8, 10, 1]</code>. It has one troublemaker.</p>
     <p>Split it into <code>left = [10, 9, 11, 8, 10]</code> and <code>right = [1]</code>. Now <code>left</code> is nearly pure and <code>right</code> is <em>exactly</em> pure (a single value has zero variance).</p>
-    <p>But there&rsquo;s a trap: <code>[1]</code> having zero variance shouldn&rsquo;t count as much as a five-element group having zero variance &mdash; otherwise the tree learns to slice off one element at a time. The fix: weight each side&rsquo;s variance by the <strong>fraction of elements</strong> it holds.</p>
-    <p><strong>Write <code>total_variance(left, right)</code>:</strong></p>
-    <p>$$\text{total} = \frac{n_{\text{left}}}{n}\,\text{var}(\text{left}) + \frac{n_{\text{right}}}{n}\,\text{var}(\text{right})$$</p>
+    <p>But there&rsquo;s a trap: <code>[1]</code> having zero variance shouldn&rsquo;t count as much as a five-element group having zero variance &mdash; otherwise the tree learns to slice off one element at a time.</p>
+    <p><strong>Your challenge:</strong> Simply adding the two variances treats a 1-element group the same as a 5-element group &mdash; that can&rsquo;t be right. How should you combine the two variances so that a larger group&rsquo;s variance counts more? Think about what &ldquo;fraction of elements&rdquo; each side holds and use that to weight the variances.</p>
+    <p><strong>Write <code>total_variance(left, right)</code>.</strong></p>
     <p>Test cases:</p>
 <pre><code>assert total_variance([10, 10, 10], [0, 0, 0]) == 0.0
 assert abs(total_variance([10, 9, 11, 8, 10], [1]) - 0.8667) &lt; 1e-3
@@ -92,7 +92,7 @@ assert total_variance([5], [5]) == 0.0</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Compute <code>n = len(left) + len(right)</code>. Then return the weighted sum: <code>(len(left)/n) * variance(left) + (len(right)/n) * variance(right)</code>.</p>
+      <p>Weight each side&rsquo;s variance by the fraction of total elements it holds: $$\text{total} = \frac{n_{\text{left}}}{n}\,\text{var}(\text{left}) + \frac{n_{\text{right}}}{n}\,\text{var}(\text{right})$$ where $n = n_{\text{left}} + n_{\text{right}}$. Compute <code>n = len(left) + len(right)</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -115,8 +115,7 @@ assert total_variance([5], [5]) == 0.0</code></pre>
 <section class="exercise" id="ex-1-3">
   <h3>Exercise 1.3 &mdash; Variance Reduction</h3>
   <div class="question">
-    <p>A split is good when the children are much purer than the parent. Capture that in one number:</p>
-    <p>$$\text{reduction} = \text{var}(\text{parent}) - \text{total\_variance}(\text{left}, \text{right})$$</p>
+    <p>A split is good when the children are much purer (lower variance) than the parent. You have the parent&rsquo;s variance and the children&rsquo;s combined (weighted) variance. How would you capture &ldquo;how much purer did the split make things&rdquo; in one number?</p>
     <p><strong>Write <code>variance_reduction(parent, left, right)</code>.</strong></p>
     <p>Then check: for <code>[10, 9, 11, 8, 10, 1]</code>, splitting the troublemaker off should score much higher than splitting down the middle.</p>
     <p>Test cases:</p>
@@ -133,7 +132,7 @@ assert good &gt; bad</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>This is a one-liner: <code>return variance(parent) - total_variance(left, right)</code>.</p>
+      <p>Subtract: $$\text{reduction} = \text{var}(\text{parent}) - \text{total\_variance}(\text{left}, \text{right})$$ A higher reduction means a better split. If reduction is 0 or negative, the split didn&rsquo;t help.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
