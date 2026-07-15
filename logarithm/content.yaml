@@ -1,0 +1,513 @@
+chapter:
+  id: logarithm
+  title: "Logarithms — The Simplest Idea with the Scariest Name"
+  intro: |
+    Logarithms sound intimidating, but you already understand them. Let's prove it.
+  mathjax: false
+  footer: |
+    You just invented logarithms from scratch. Every time you see "log", just ask yourself: "what power of the base gives this number?" That's all there is to it.
+
+blocks:
+  # ═══════════════════════════════════════════════════
+  # PART 1: Counting Zeros
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Counting Zeros"
+    intro: |
+      You already know what a logarithm is — you just don't know that you know it yet.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "How Many Zeros?"
+    description: |
+      Look at these numbers and count how many zeros each one has:
+
+      - 10
+      - 100
+      - 1000
+      - 10000
+    prompts:
+      - "How many zeros does 10 have?"
+      - "How many zeros does 100 have?"
+      - "How many zeros does 1000 have?"
+      - "Do you see the pattern?"
+    hints:
+      - "10 has 1 zero, 100 has 2 zeros, 1000 has 3 zeros."
+    solution:
+      code: null
+      text: |
+        10 → 1 zero, 100 → 2 zeros, 1000 → 3 zeros, 10000 → 4 zeros.
+
+        Congratulations — you just computed log base 10! log(10) = 1, log(100) = 2, log(1000) = 3, log(10000) = 4. That's it. That's all a logarithm is.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Powers of 10 in Python"
+    description: |
+      In Python, `**` is the power operator. `10**2` means "10 to the power of 2" which is 100.
+
+      Try these in Python and observe the pattern:
+
+      - `10**1`
+      - `10**2`
+      - `10**3`
+      - `10**4`
+
+      What do you notice? Each power adds one more zero!
+    provided_code: []
+    hints:
+      - "`10**1` is 10, `10**2` is 100, `10**3` is 1000. The power tells you how many zeros."
+    solution:
+      code: |
+        print(10**1)   # 10
+        print(10**2)   # 100
+        print(10**3)   # 1000
+        print(10**4)   # 10000
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Predict the Log"
+    description: |
+      Now go the other way. If someone asks "what is log(100000)?", you are really asking: "how many zeros does 100000 have?" or equivalently "10 to the power of WHAT gives 100000?"
+
+      Predict the answer, then verify by computing `10**your_answer` in Python.
+    provided_code:
+      - label: "verify"
+        code: |
+          # Replace the ? with your answer
+          my_answer = ?
+          print(f"10**{my_answer} = {10**my_answer}")
+          # It should print 100000
+    hints:
+      - "Count the zeros in 100000. There are 5 of them."
+    solution:
+      code: |
+        my_answer = 5
+        print(f"10**{my_answer} = {10**my_answer}")
+        # 10**5 = 100000
+      text: null
+
+  - type: reveal
+    text: |
+      **What you just did** is called "taking the logarithm base 10." When you said log(1000) = 3, you were saying: "the power of 10 that gives 1000 is 3." Simple, right?
+
+  # ═══════════════════════════════════════════════════
+  # PART 2: The Power Question
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "The Power Question"
+    intro: |
+      Let's reframe logarithms as a question: "10 to the power of WHAT gives this number?"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Flip It Around"
+    description: |
+      Answer each question without Python — just think:
+    prompts:
+      - "10 to the power of what gives 100?"
+      - "10 to the power of what gives 1000?"
+      - "10 to the power of what gives 10?"
+      - "10 to the power of what gives 1? (Tricky! What happens with power 0?)"
+    hints:
+      - "Remember: any number to the power of 0 is 1. So 10**0 = 1, which means log(1) = 0."
+    solution:
+      code: null
+      text: |
+        - 10^2 = 100, so the answer is 2.
+        - 10^3 = 1000, so the answer is 3.
+        - 10^1 = 10, so the answer is 1.
+        - 10^0 = 1, so the answer is 0.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "What About 500?"
+    description: |
+      Here's where it gets interesting. What is log(500)?
+
+      You know log(100) = 2 and log(1000) = 3. So log(500) must be somewhere between 2 and 3. But where exactly?
+
+      Use Python's `**` operator to do hit-and-trial. Try different values of `x` and see if `10**x` gets close to 500.
+    provided_code:
+      - label: "try it"
+        code: |
+          # Try different values of x until 10**x is close to 500
+          x = 2.5
+          print(f"10**{x} = {10**x}")
+
+          # Keep adjusting x...
+          # Is 10**2.5 too big or too small? Try another value.
+    hints:
+      - "`10**2.5` is about 316 — too small. Try something bigger."
+      - "`10**2.7` is about 501 — very close! The answer is around 2.7."
+    solution:
+      code: |
+        print(f"10**2.5 = {10**2.5}")   # ~316 — too small
+        print(f"10**2.6 = {10**2.6}")   # ~398 — still small
+        print(f"10**2.7 = {10**2.7}")   # ~501 — very close!
+        print(f"10**2.69 = {10**2.69}") # ~490 — a bit under
+        print(f"10**2.699 = {10**2.699}") # ~500.3 — almost!
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Check with Python's Built-in"
+    description: |
+      Python has a built-in function `math.log10()` that computes the exact log base 10. Let's check how close your hit-and-trial answer was.
+    provided_code:
+      - label: "check"
+        code: |
+          import math
+          print(f"log10(500) = {math.log10(500)}")
+          # Compare with your answer from the previous exercise!
+    hints:
+      - "`math.log10(500)` gives approximately 2.699. If your trial got close to 2.7, you did great!"
+    solution:
+      code: |
+        import math
+        print(f"log10(500) = {math.log10(500)}")
+        # 2.6989700043360187
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "More Hit-and-Trial"
+    description: |
+      Now try the same hit-and-trial approach for these:
+
+      1. What is log10(50)? (It's between 1 and 2. Try values of x where `10**x` gets close to 50.)
+      2. What is log10(5)? (It's between 0 and 1.)
+
+      After your guesses, verify both with `math.log10()`.
+    provided_code:
+      - label: "verify"
+        code: |
+          import math
+          # After your trials, check:
+          print(f"log10(50) = {math.log10(50)}")
+          print(f"log10(5)  = {math.log10(5)}")
+    hints:
+      - "For 50: try `10**1.5` (about 31.6), `10**1.7` (about 50.1) — so log10(50) is about 1.7."
+      - "For 5: try `10**0.5` (about 3.16), `10**0.7` (about 5.01) — so log10(5) is about 0.7."
+      - "Notice something? log10(5) ≈ 0.699 and log10(50) ≈ 1.699. The difference is exactly 1! That's because 50 = 5 × 10, and multiplying by 10 adds 1 to the log."
+    solution:
+      code: |
+        import math
+        # Hit and trial for 50:
+        print(f"10**1.5 = {10**1.5}")   # ~31.6
+        print(f"10**1.7 = {10**1.7}")   # ~50.1 — close!
+        print(f"Exact: log10(50) = {math.log10(50)}")  # 1.699
+
+        # Hit and trial for 5:
+        print(f"10**0.5 = {10**0.5}")   # ~3.16
+        print(f"10**0.7 = {10**0.7}")   # ~5.01 — close!
+        print(f"Exact: log10(5) = {math.log10(5)}")    # 0.699
+      text: null
+
+  - type: reveal
+    text: |
+      **Key insight:** log10(5) ≈ 0.699, log10(50) ≈ 1.699, log10(500) ≈ 2.699. Each time you multiply the number by 10, the log goes up by exactly 1. That makes sense — you're adding one more power of 10!
+
+  # ═══════════════════════════════════════════════════
+  # PART 3: Beyond Base 10 — Any Base Works
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Beyond Base 10 — Any Base Works"
+    intro: |
+      So far we've only used 10 as the base. But there's nothing special about 10 — it's just what humans picked because we have 10 fingers. Logarithms work with ANY base.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Log Base 2"
+    description: |
+      Instead of asking "10 to the power of what?", let's ask "2 to the power of what?"
+
+      This is called **log base 2**, written as log2.
+    prompts:
+      - "log2(4) = ? In other words: 2 to the power of what gives 4?"
+      - "log2(8) = ? i.e. 2**x = 8, what is x?"
+      - "log2(16) = ?"
+      - "log2(2) = ?"
+    hints:
+      - "2**2 = 4, so log2(4) = 2."
+      - "2**3 = 8, so log2(8) = 3."
+    solution:
+      code: null
+      text: |
+        - log2(4) = 2, because 2^2 = 4.
+        - log2(8) = 3, because 2^3 = 8.
+        - log2(16) = 4, because 2^4 = 16.
+        - log2(2) = 1, because 2^1 = 2.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Verify with Python"
+    description: |
+      Use Python's `**` operator to verify your answers. Compute `2**2`, `2**3`, `2**4`, and `2**1`.
+
+      Then try: what is log2(32)? log2(64)? log2(1024)?
+    provided_code: []
+    hints:
+      - "2**5 = 32, so log2(32) = 5."
+      - "2**10 = 1024, so log2(1024) = 10. Computers love this one — 1 KB is 1024 bytes!"
+    solution:
+      code: |
+        print(f"2**1 = {2**1}")    # 2
+        print(f"2**2 = {2**2}")    # 4
+        print(f"2**3 = {2**3}")    # 8
+        print(f"2**4 = {2**4}")    # 16
+        print(f"2**5 = {2**5}")    # 32
+        print(f"2**6 = {2**6}")    # 64
+        print(f"2**10 = {2**10}")  # 1024
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "The Power of Zero"
+    description: |
+      What is log2(1)?
+
+      Hint: what is ANY number raised to the power of 0? Try `2**0`, `10**0`, `5**0` in Python.
+    provided_code: []
+    hints:
+      - "Any number raised to the power 0 is 1. So log of 1 is always 0, no matter what the base is."
+    solution:
+      code: |
+        print(f"2**0 = {2**0}")    # 1
+        print(f"10**0 = {10**0}")  # 1
+        print(f"5**0 = {5**0}")    # 1
+        # So log2(1) = 0, log10(1) = 0, log5(1) = 0
+        # log of 1 is ALWAYS 0, regardless of base!
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "Other Bases"
+    description: |
+      Let's try other bases:
+
+      1. What is log3(27)? i.e. 3 to the power of what gives 27?
+      2. What is log5(125)? i.e. 5 to the power of what gives 125?
+      3. What is log4(64)?
+
+      Compute using `**` first, then verify with Python's `math.log(value, base)`.
+    provided_code:
+      - label: "verify"
+        code: |
+          import math
+          # math.log(value, base) computes log of value with given base
+          print(f"log3(27)  = {math.log(27, 3)}")
+          print(f"log5(125) = {math.log(125, 5)}")
+          print(f"log4(64)  = {math.log(64, 4)}")
+    hints:
+      - "3**3 = 27, so log3(27) = 3."
+      - "5**3 = 125, so log5(125) = 3."
+      - "4**3 = 64, so log4(64) = 3. All three are 3!"
+    solution:
+      code: |
+        # Verify by computing powers:
+        print(f"3**3 = {3**3}")    # 27
+        print(f"5**3 = {5**3}")    # 125
+        print(f"4**3 = {4**3}")    # 64
+
+        import math
+        print(f"log3(27)  = {math.log(27, 3)}")   # 3.0
+        print(f"log5(125) = {math.log(125, 5)}")   # 3.0
+        print(f"log4(64)  = {math.log(64, 4)}")    # 3.0
+      text: null
+
+  - type: reveal
+    text: |
+      **The pattern:** log_base(value) always asks the same question — "base to the power of WHAT gives value?" It doesn't matter if the base is 2, 3, 5, 10, or anything else. The idea is always the same.
+
+  # ═══════════════════════════════════════════════════
+  # PART 4: Fractional Logs — Between the Integers
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Fractional Logs — Between the Integers"
+    intro: |
+      So far all our answers have been nice whole numbers. But what happens when the answer isn't a whole number?
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Narrowing It Down"
+    description: |
+      What is log2(6)?
+
+      You know that log2(4) = 2 and log2(8) = 3. Since 6 is between 4 and 8, log2(6) must be between 2 and 3.
+
+      But where between 2 and 3?
+    prompts:
+      - "Is log2(6) closer to 2 or to 3? (Is 6 closer to 4 or to 8?)"
+      - "Try 2**2.5 in your head or on paper. Is it bigger or smaller than 6?"
+    hints:
+      - "6 is closer to 8 than to 4, so log2(6) is closer to 3 than to 2. It's probably around 2.5 to 2.6."
+      - "2**2.5 = 2^2 × 2^0.5 = 4 × 1.414... ≈ 5.66 — a bit less than 6. So the answer is a bit above 2.5."
+    solution:
+      code: null
+      text: |
+        log2(6) is between 2 and 3. Since 2**2.5 ≈ 5.66 (less than 6), the answer is a bit above 2.5.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Hit-and-Trial for log2(6)"
+    description: |
+      Use `2**x` with different values of x to get as close to 6 as you can. Then check your answer with `math.log(6, 2)`.
+    provided_code:
+      - label: "try it"
+        code: |
+          import math
+
+          # Try different values of x
+          x = 2.5
+          print(f"2**{x} = {2**x}")
+
+          # Keep adjusting...
+
+          # When you're done, check the exact answer:
+          print(f"\nExact: log2(6) = {math.log(6, 2)}")
+    hints:
+      - "`2**2.5` ≈ 5.66 — too small. `2**2.6` ≈ 6.06 — a tiny bit too big. So it's between 2.5 and 2.6."
+      - "Try `2**2.58` ≈ 5.98. The exact answer is about 2.585."
+    solution:
+      code: |
+        import math
+        print(f"2**2.5  = {2**2.5}")    # ~5.66
+        print(f"2**2.6  = {2**2.6}")    # ~6.06
+        print(f"2**2.58 = {2**2.58}")   # ~5.98
+        print(f"2**2.585 = {2**2.585}") # ~5.999 — very close!
+
+        print(f"\nExact: log2(6) = {math.log(6, 2)}")  # 2.5849...
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Automate the Trial — Write my_log()"
+    description: |
+      You've been doing hit-and-trial by hand. Let's make Python do it for you!
+
+      Write a function `my_log(value, base)` that finds the log by brute force: try `x` from 0 to 20 in small steps (say 0.001) and return the `x` where `base**x` is closest to `value`.
+    provided_code:
+      - label: "test your function"
+        code: |
+          print(f"my_log(1000, 10) = {my_log(1000, 10)}")  # should be ~3.0
+          print(f"my_log(8, 2)     = {my_log(8, 2)}")      # should be ~3.0
+          print(f"my_log(6, 2)     = {my_log(6, 2)}")      # should be ~2.585
+          print(f"my_log(500, 10)  = {my_log(500, 10)}")    # should be ~2.699
+    hints:
+      - "Start with `best_x = 0` and `best_diff = abs(value - 1)` (since `base**0 = 1`). Loop `x` from 0 to 20 in steps of 0.001. If `abs(base**x - value)` is smaller than `best_diff`, update `best_x` and `best_diff`."
+      - |
+        The structure looks like:
+        ```python
+        def my_log(value, base):
+            best_x = 0
+            best_diff = abs(value - 1)
+            x = 0
+            while x <= 20:
+                diff = abs(base**x - value)
+                if diff < best_diff:
+                    ...
+                x += 0.001
+            return best_x
+        ```
+    solution:
+      code: |
+        def my_log(value, base):
+            best_x = 0
+            best_diff = abs(value - 1)
+            x = 0
+            while x <= 20:
+                diff = abs(base**x - value)
+                if diff < best_diff:
+                    best_diff = diff
+                    best_x = x
+                x += 0.001
+            return round(best_x, 3)
+      text: null
+
+  - type: reveal
+    text: |
+      **What you just built** is a brute-force logarithm calculator! It's slow (checking 20,000 values), but it works. In the Binary Search chapter, you'll learn how to find this answer in just 40 steps instead of 20,000 — that's the power of binary search.
+
+  # ═══════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: null
+    title: "Summary"
+    intro: |
+      Here's everything you discovered in this chapter.
+
+  - type: reveal
+    text: |
+      **Logarithm** = the reverse of exponentiation.
+
+      When someone says log_b(x) = y, they're saying: **b to the power of y equals x**.
+
+      That's it. That's the whole idea. Now when you see log2(1024) = 10, you know it just means 2^10 = 1024.
+
+  - type: table
+    title: "Logs You Computed"
+    headers: ["Question", "Meaning", "Answer"]
+    rows:
+      - ["log10(10)", "10 to the power of ? = 10", "1"]
+      - ["log10(100)", "10 to the power of ? = 100", "2"]
+      - ["log10(1000)", "10 to the power of ? = 1000", "3"]
+      - ["log10(500)", "10 to the power of ? = 500", "~2.699"]
+      - ["log2(4)", "2 to the power of ? = 4", "2"]
+      - ["log2(8)", "2 to the power of ? = 8", "3"]
+      - ["log2(1024)", "2 to the power of ? = 1024", "10"]
+      - ["log3(27)", "3 to the power of ? = 27", "3"]
+      - ["log of 1 (any base)", "any number to the power of ? = 1", "0"]
