@@ -17,6 +17,42 @@
 <p class="chapter-intro">So far your programs kept <em>data</em> (lists, dicts) and <em>behavior</em> (functions) in separate boxes, and you passed one to the other by hand. A <strong>class</strong> glues them together: an object carries its own data <em>and</em> the functions that work on it.</p>
 <p class="chapter-intro">Why should a machine-learning book care? Because a trained model <strong>is</strong> an object &mdash; some learned numbers plus a <code>predict</code> function that uses them. By the end of this chapter you will have invented the <code>fit</code>/<code>predict</code> interface that scikit-learn, Keras and friends all use, hand-built a decision tree out of objects, and saved a model to disk.</p>
 
+<div class="syntax-overview">
+  <h2>Python Quick Reference</h2>
+  <p>A <strong>class</strong> bundles data and behavior. <code>self</code> refers to the current object.</p>
+<pre><code># Defining a class
+class Dog:
+    def __init__(self, name, age):   # constructor
+        self.name = name             # store data on the object
+        self.age = age
+
+    def speak(self):                 # method
+        return f"{self.name} says woof!"
+
+# Creating an object (instance)
+rex = Dog("Rex", 3)
+rex.name                 # "Rex"
+rex.speak()              # "Rex says woof!"
+
+# Inheritance &mdash; reuse &amp; extend
+class Puppy(Dog):
+    def speak(self):                 # override parent method
+        return f"{self.name} yips!"
+
+p = Puppy("Max", 1)
+p.speak()                # "Max yips!"
+p.age                    # 1 (inherited from Dog)
+
+# f-strings for formatted output
+x = 3.14159
+f"pi is {x:.2f}"         # "pi is 3.14"</code></pre>
+  <ul>
+    <li><code>__init__</code> runs when you create an object; use it to store initial data on <code>self</code>.</li>
+    <li>Every method&rsquo;s first parameter is <code>self</code> &mdash; Python passes it automatically.</li>
+    <li>A subclass inherits all methods and can override any of them.</li>
+  </ul>
+</div>
+
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
