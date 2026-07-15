@@ -957,12 +957,9 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 <li>Start with 100 random weight vectors</li>
 <li>Evaluate all of them</li>
 <li>Keep only the <strong>top 20</strong></li>
-<li>From each of the 20, create 4 "children" by adding small random noise (±0.1)</li>
-<li>That gives 80 children + 20 parents = 100</li>
-<li>Go back to step 2</li>
 </ol>
 
-<p>Run this for 10 generations. Print the best score each generation. Does it improve?</p>
+<p>Now you have 20 good weight vectors. But you need 100 for the next round. How would you get from 20 back to 100? And then what? Design the rest of this algorithm yourself, implement it, and run it for 10 generations. Print the best score each generation.</p>
 
 
 
@@ -972,31 +969,33 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>To create a child from a parent: <code>child = parent + np.random.uniform(-0.1, 0.1, size=4)</code>.</p>
+    <div class="hint-body"><p>Think about it: each of the 20 survivors is a good set of weights. What if you made slightly different copies of each one — like variations on a theme? How many copies per survivor do you need to get back to 100?</p>
 </div>
   </details>
 
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
+    <div class="hint-body"><p>Create 4 'children' from each of the 20 by adding small random noise: <code>child = parent + np.random.uniform(-0.1, 0.1, size=4)</code>. That gives 80 children + 20 parents = 100. Then repeat: evaluate → keep top 20 → breed → repeat.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
     <div class="hint-body"><div class="codehilite">
 <pre><span></span><code><span class="n">population</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
 
 <span class="k">for</span> <span class="n">gen</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-    <span class="c1"># Evaluate</span>
     <span class="n">scored</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">weights</span> <span class="ow">in</span> <span class="n">population</span><span class="p">:</span>
         <span class="n">policy</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weights</span><span class="p">:</span> <span class="n">weighted_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
         <span class="n">scored</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">score</span><span class="p">,</span> <span class="n">weights</span><span class="p">))</span>
 
-    <span class="c1"># Sort and keep top 20</span>
     <span class="n">scored</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">top_20</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">scored</span><span class="p">[:</span><span class="mi">20</span><span class="p">]]</span>
-
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Gen </span><span class="si">{</span><span class="n">gen</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: best = </span><span class="si">{</span><span class="n">scored</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Breed next generation</span>
-    <span class="n">population</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">top_20</span><span class="p">)</span>  <span class="c1"># keep parents</span>
+    <span class="n">population</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">top_20</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">top_20</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
             <span class="n">child</span> <span class="o">=</span> <span class="n">parent</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
@@ -1137,20 +1136,9 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 <section class="exercise" id="ex-6-1">
   <h3>Exercise 6.1 &mdash; Strategy 3 — Tweak and Observe</h3>
   <div class="question">
-    <p>Take your best weights from the genetic algorithm. Try to compute a "gradient" by:</p>
+    <p>In the Gradient Descent chapter, you computed gradients by nudging each parameter slightly and measuring how the output changed (finite differences). Can you apply that same trick here?</p>
 
-<ol>
-<li>For each weight i (0 to 3):
-<ul>
-<li>Add 0.01 to weight i, play 10 games, record the average score</li>
-<li>Subtract 0.01 from weight i, play 10 games, record the average score</li>
-<li>The gradient for weight i ≈ (score_plus - score_minus) / 0.02</li>
-</ul></li>
-<li>Update all weights: <code>weights += learning_rate * gradient</code></li>
-<li>Repeat 50 times</li>
-</ol>
-
-<p>Does this converge to a good solution?</p>
+<p>Take your best weights from the genetic algorithm. Estimate the gradient of the average score with respect to each weight, update the weights in the uphill direction, and repeat 50 times. Does this converge to a good solution?</p>
 
 
 
@@ -1160,7 +1148,7 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>This is the same finite-difference gradient you used in the Gradient Descent chapter — but applied to game scores instead of loss functions.</p>
+    <div class="hint-body"><p>For each weight i: add a small epsilon (e.g. 0.01), play 10 games and record the average score. Subtract epsilon, play 10 games. The gradient for that weight ≈ (score_plus - score_minus) / (2 × epsilon). Then update: <code>weights += learning_rate * gradient</code>.</p>
 </div>
   </details>
 
@@ -1789,6 +1777,11 @@ print(f"Sampled action: {sample_action(obs, weights)}")
       In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?
     </div>
 
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?
+    </div>
+
 
 
   </div>
@@ -1800,13 +1793,19 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 </div>
   </details>
 
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>The function is log! log(a × b) = log(a) + log(b). And log is smooth and differentiable. So you want the gradient of log(probability of chosen action) — that's your learning signal.</p>
+</div>
+  </details>
+
 
 
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p>Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses.</p>
+      <p>Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses. Use log(p) as the quantity to differentiate — it turns products into sums and has clean gradients.</p>
 
 
 
@@ -1824,7 +1823,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 <section class="exercise" id="ex-7-2b">
   <h3>Exercise 7.3 &mdash; Derive the Gradient</h3>
   <div class="question">
-    <p>You need the gradient of "how likely the chosen action was" with respect to the weights. Specifically, the gradient of $\log(p)$ where $p$ is the probability of the action you took.</p>
+    <p>You just figured out that $\log(p)$ is the right quantity to differentiate. Now work out the gradient.</p>
 
 <p>You already know from the Gradient Descent chapter that the derivative of sigmoid is $\text{sigmoid}(z) \cdot (1 - \text{sigmoid}(z))$, and that $\log'(x) = 1/x$.</p>
 

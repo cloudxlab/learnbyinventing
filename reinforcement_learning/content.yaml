@@ -494,34 +494,28 @@ blocks:
       1. Start with 100 random weight vectors
       2. Evaluate all of them
       3. Keep only the **top 20**
-      4. From each of the 20, create 4 "children" by adding small random noise (±0.1)
-      5. That gives 80 children + 20 parents = 100
-      6. Go back to step 2
 
-      Run this for 10 generations. Print the best score each generation. Does it improve?
+      Now you have 20 good weight vectors. But you need 100 for the next round. How would you get from 20 back to 100? And then what? Design the rest of this algorithm yourself, implement it, and run it for 10 generations. Print the best score each generation.
     provided_code: []
     hints:
-      - "To create a child from a parent: `child = parent + np.random.uniform(-0.1, 0.1, size=4)`."
+      - "Think about it: each of the 20 survivors is a good set of weights. What if you made slightly different copies of each one — like variations on a theme? How many copies per survivor do you need to get back to 100?"
+      - "Create 4 'children' from each of the 20 by adding small random noise: `child = parent + np.random.uniform(-0.1, 0.1, size=4)`. That gives 80 children + 20 parents = 100. Then repeat: evaluate → keep top 20 → breed → repeat."
       - |
         ```python
         population = [np.random.uniform(-1, 1, size=4) for _ in range(100)]
 
         for gen in range(10):
-            # Evaluate
             scored = []
             for weights in population:
                 policy = lambda obs, w=weights: weighted_policy(obs, w)
                 score = evaluate(policy, env, n=5)
                 scored.append((score, weights))
 
-            # Sort and keep top 20
             scored.sort(key=lambda x: -x[0])
             top_20 = [w for _, w in scored[:20]]
-
             print(f"Gen {gen+1}: best = {scored[0][0]:.1f}")
 
-            # Breed next generation
-            population = list(top_20)  # keep parents
+            population = list(top_20)
             for parent in top_20:
                 for _ in range(4):
                     child = parent + np.random.uniform(-0.1, 0.1, size=4)
@@ -606,19 +600,12 @@ blocks:
     number: 1
     title: "Strategy 3 — Tweak and Observe"
     description: |
-      Take your best weights from the genetic algorithm. Try to compute a "gradient" by:
+      In the Gradient Descent chapter, you computed gradients by nudging each parameter slightly and measuring how the output changed (finite differences). Can you apply that same trick here?
 
-      1. For each weight i (0 to 3):
-         - Add 0.01 to weight i, play 10 games, record the average score
-         - Subtract 0.01 from weight i, play 10 games, record the average score
-         - The gradient for weight i ≈ (score_plus - score_minus) / 0.02
-      2. Update all weights: `weights += learning_rate * gradient`
-      3. Repeat 50 times
-
-      Does this converge to a good solution?
+      Take your best weights from the genetic algorithm. Estimate the gradient of the average score with respect to each weight, update the weights in the uphill direction, and repeat 50 times. Does this converge to a good solution?
     provided_code: []
     hints:
-      - "This is the same finite-difference gradient you used in the Gradient Descent chapter — but applied to game scores instead of loss functions."
+      - "For each weight i: add a small epsilon (e.g. 0.01), play 10 games and record the average score. Subtract epsilon, play 10 games. The gradient for that weight ≈ (score_plus - score_minus) / (2 × epsilon). Then update: `weights += learning_rate * gradient`."
       - |
         ```python
         weights = best_weights.copy()  # from genetic algorithm
@@ -919,12 +906,14 @@ blocks:
       - "If action = 'go right' and the discounted reward was POSITIVE (good action), should the model make 'go right' MORE or LESS likely next time?"
       - "If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen?"
       - "In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?"
+      - "To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?"
     hints:
       - "Good action → make it more likely (increase probability). Bad action → make it less likely (decrease probability). To increase reward instead of decreasing loss, move in the gradient direction (ascent) instead of against it (descent). Gradient ASCENT."
+      - "The function is log! log(a × b) = log(a) + log(b). And log is smooth and differentiable. So you want the gradient of log(probability of chosen action) — that's your learning signal."
     solution:
       code: null
       text: |
-        Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses.
+        Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses. Use log(p) as the quantity to differentiate — it turns products into sums and has clean gradients.
 
   - type: exercise
     kind: coding
@@ -933,7 +922,7 @@ blocks:
     number: 3
     title: "Derive the Gradient"
     description: |
-      You need the gradient of "how likely the chosen action was" with respect to the weights. Specifically, the gradient of $\log(p)$ where $p$ is the probability of the action you took.
+      You just figured out that $\log(p)$ is the right quantity to differentiate. Now work out the gradient.
 
       You already know from the Gradient Descent chapter that the derivative of sigmoid is $\text{sigmoid}(z) \cdot (1 - \text{sigmoid}(z))$, and that $\log'(x) = 1/x$.
 
