@@ -489,16 +489,17 @@ print("total_error: OK")</code></pre>
 
 <!-- Exercise 4.2 -->
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Solve the Normal Equations</h3>
+  <h3>Exercise 4.2 &mdash; The Best Line, Without Guessing</h3>
   <div class="question">
-    <p><em>The derivation below uses calculus &mdash; read it to understand where the equations come from, but your job is to translate the <strong>result</strong> into code and solve it.</em></p>
-    <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing &mdash; both partial derivatives are zero. Differentiate (each term by the chain rule) and set to zero:</p>
-    <p>$$\frac{\partial E}{\partial m} = \sum_i 2(m x_i + c - y_i)\,x_i = 0 \qquad \frac{\partial E}{\partial c} = \sum_i 2(m x_i + c - y_i) = 0$$</p>
-    <p>Divide by 2 and regroup &mdash; two <em>linear</em> equations in $(m, c)$, the <strong>normal equations</strong>:</p>
-    <p>$$m\textstyle\sum x_i^2 + c\sum x_i = \sum x_i y_i \qquad m\textstyle\sum x_i + c\,n = \sum y_i$$</p>
-    <p>For the factory data: $\sum x^2 = 14$, $\sum x = 6$, $\sum xy = 8 + 22 + 48 = 78$, $\sum y = 35$, $n = 3$:</p>
-    <p>$$14m + 6c = 78 \qquad 6m + 3c = 35$$</p>
-    <p><strong>Task:</strong> Use <code>solve_equations</code> on those two equations. The test also nudges your answer in every direction to confirm no neighbor does better &mdash; the definition of a minimum.</p>
+    <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing &mdash; both partial derivatives are zero.</p>
+    <p><strong>Your task:</strong></p>
+    <ol>
+      <li>Write the partial derivative $\frac{\partial E}{\partial m}$ &mdash; differentiate each term of $E = \sum_i (mx_i + c - y_i)^2$ with respect to $m$.</li>
+      <li>Set it to zero and simplify. You should get a linear equation in $m$ and $c$.</li>
+      <li>Do the same for $\frac{\partial E}{\partial c}$.</li>
+      <li>Plug in the factory data values and use <code>solve_equations</code> from Part 2 to find $m$ and $c$.</li>
+    </ol>
+    <p>Use <code>solve_equations</code> on the two equations you derived. The test also nudges your answer in every direction to confirm no neighbor does better &mdash; the definition of a minimum.</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; scaffold and verification</div>
 <pre><code># YOUR CODE — solve the two normal equations for m and c
@@ -517,7 +518,7 @@ print(f"best line: y = {m:.3f}x + {c:.3f}   (error {best:.4f})")</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Encode the two normal equations as: <code>[[14, 6, 78], [6, 3, 35]]</code> and pass them to <code>solve_equations</code>.</p>
+      <p>After setting each partial derivative to zero, you get two linear equations in $m$ and $c$. Compute the sums ($\sum x_i^2$, $\sum x_i$, $\sum x_i y_i$, $\sum y_i$, $n$) from the factory data and plug them in, then pass the two equations to <code>solve_equations</code>.</p>
     </div>
   </details>
 
