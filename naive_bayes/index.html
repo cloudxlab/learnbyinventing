@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naive Bayes — Learn By Inventing</title>
+  <link rel="stylesheet" href="../assets/lbi.css" />
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html">&larr; All chapters</a>
+</nav>
+
+<h1>Learning Naive Bayes by Inventing It</h1>
+<p class="chapter-intro">You will discover the Naive Bayes classifier yourself &mdash; step by step, from counting to a working ML model.</p>
+
+<div class="global-controls">
+  <button id="reveal-all">Reveal all hints &amp; solutions</button>
+  <button id="hide-all">Hide all</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1: Counting and Probability
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 1: Counting and Probability</h2>
+  <p class="part-intro">Before any algorithm, let&rsquo;s learn to count carefully. That&rsquo;s all probability is &mdash; careful counting.</p>
+</div>
+
+<section class="exercise" id="ex-1-1">
+  <h3>Exercise 1.1 &mdash; Meet the Data</h3>
+  <div class="question">
+    <p>Here are 14 days of weather observations. For each day we recorded the outlook, temperature, humidity, and wind &mdash; and whether we played tennis.</p>
+    <table>
+      <tr><th>Day</th><th>Outlook</th><th>Temp</th><th>Humidity</th><th>Wind</th><th>Play?</th></tr>
+      <tr><td>1</td><td>Sunny</td><td>Hot</td><td>High</td><td>Weak</td><td>No</td></tr>
+      <tr><td>2</td><td>Sunny</td><td>Hot</td><td>High</td><td>Strong</td><td>No</td></tr>
+      <tr><td>3</td><td>Overcast</td><td>Hot</td><td>High</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>4</td><td>Rainy</td><td>Mild</td><td>High</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>5</td><td>Rainy</td><td>Cool</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>6</td><td>Rainy</td><td>Cool</td><td>Normal</td><td>Strong</td><td>No</td></tr>
+      <tr><td>7</td><td>Overcast</td><td>Cool</td><td>Normal</td><td>Strong</td><td>Yes</td></tr>
+      <tr><td>8</td><td>Sunny</td><td>Mild</td><td>High</td><td>Weak</td><td>No</td></tr>
+      <tr><td>9</td><td>Sunny</td><td>Cool</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>10</td><td>Rainy</td><td>Mild</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>11</td><td>Sunny</td><td>Mild</td><td>Normal</td><td>Strong</td><td>Yes</td></tr>
+      <tr><td>12</td><td>Overcast</td><td>Mild</td><td>High</td><td>Strong</td><td>Yes</td></tr>
+      <tr><td>13</td><td>Overcast</td><td>Hot</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+      <tr><td>14</td><td>Rainy</td><td>Mild</td><td>High</td><td>Strong</td><td>No</td></tr>
+    </table>
+    <p><strong>Tasks (pen &amp; paper):</strong></p>
+    <ol>
+      <li>Count the number of <strong>Yes</strong> days and <strong>No</strong> days.</li>
+      <li>What fraction of all days resulted in &ldquo;Yes&rdquo;?</li>
+      <li>Without looking at any weather features, if someone asked &ldquo;Will we play tomorrow?&rdquo;, what would you guess?</li>
+    </ol>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; load the data in Python</div>
+<pre><code>data = [
+    {"Outlook": "Sunny",    "Temperature": "Hot",  "Humidity": "High",   "Wind": "Weak",   "Play": "No"},
+    {"Outlook": "Sunny",    "Temperature": "Hot",  "Humidity": "High",   "Wind": "Strong", "Play": "No"},
+    {"Outlook": "Overcast", "Temperature": "Hot",  "Humidity": "High",   "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Rainy",    "Temperature": "Mild", "Humidity": "High",   "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Rainy",    "Temperature": "Cool", "Humidity": "Normal", "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Rainy",    "Temperature": "Cool", "Humidity": "Normal", "Wind": "Strong", "Play": "No"},
+    {"Outlook": "Overcast", "Temperature": "Cool", "Humidity": "Normal", "Wind": "Strong", "Play": "Yes"},
+    {"Outlook": "Sunny",    "Temperature": "Mild", "Humidity": "High",   "Wind": "Weak",   "Play": "No"},
+    {"Outlook": "Sunny",    "Temperature": "Cool", "Humidity": "Normal", "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Rainy",    "Temperature": "Mild", "Humidity": "Normal", "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Sunny",    "Temperature": "Mild", "Humidity": "Normal", "Wind": "Strong", "Play": "Yes"},
+    {"Outlook": "Overcast", "Temperature": "Mild", "Humidity": "High",   "Wind": "Strong", "Play": "Yes"},
+    {"Outlook": "Overcast", "Temperature": "Hot",  "Humidity": "Normal", "Wind": "Weak",   "Play": "Yes"},
+    {"Outlook": "Rainy",    "Temperature": "Mild", "Humidity": "High",   "Wind": "Strong", "Play": "No"},
+]</code></pre>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Go through the &ldquo;Play?&rdquo; column and tally: Yes appears 9 times, No appears 5 times.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Yes: 9 days, No: 5 days. Fraction of Yes = 9/14 &asymp; 0.643. Since Yes is more common, a reasonable default guess is &ldquo;Yes&rdquo;.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-1-2">
+  <h3>Exercise 1.2 &mdash; Your First Prediction Rule</h3>
+  <div class="question">
+    <p>Imagine you have <strong>no weather information at all</strong>. A friend calls and asks: &ldquo;Should I come to play tennis?&rdquo;</p>
+    <ol>
+      <li>What would you predict? Why?</li>
+      <li>What is the probability of Play = Yes? Express it as a fraction.</li>
+      <li>What is the probability of Play = No?</li>
+      <li>Do these two probabilities add up to 1? Why must they?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers:</strong>
+      <ol>
+        <li>Prediction: &hellip;</li>
+        <li>P(Yes) = &hellip;</li>
+        <li>P(No) = &hellip;</li>
+        <li>Sum = &hellip; because &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>P(Yes) = (number of Yes days) / (total days) = 9/14. Since there are only two outcomes, P(No) = 1 &minus; P(Yes) = 5/14.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>P(Yes) = 9/14 &asymp; 0.643, P(No) = 5/14 &asymp; 0.357. We&rsquo;d predict Yes since it&rsquo;s more likely. They sum to 1 because every day is either Yes or No &mdash; there are no other possibilities.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Prior Probability</h3>
+  <div class="question">
+    <p>P(Play = Yes) = 9/14. In probability and machine learning, this is called a &ldquo;prior&rdquo; probability. Why is it called &ldquo;prior&rdquo;?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> Because it was computed before computers existed</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> Because it uses the first column of the data</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> It&rsquo;s what you&rsquo;d predict <em>before</em> looking at any features &mdash; your default belief based only on past outcomes</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> It always equals 0.5</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>&ldquo;Prior&rdquo; means &ldquo;before.&rdquo; Before what?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The prior probability is your belief <em>prior to</em> (before) seeing any evidence (features). It&rsquo;s the base rate: 9 out of 14 days were Yes, so without knowing the weather, your best guess is Yes. Once you look at features like Outlook or Wind, you&rsquo;ll <em>update</em> this prior &mdash; that&rsquo;s what the rest of this chapter is about.</p></div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2: One Feature — Does Weather Help?
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 2: One Feature &mdash; Does Weather Help?</h2>
+  <p class="part-intro">The prior says &ldquo;Yes&rdquo; 64% of the time. But surely the weather matters. Let&rsquo;s see how one feature changes our prediction.</p>
+</div>
+
+<section class="exercise" id="ex-2-1">
+  <h3>Exercise 2.1 &mdash; Counting with a Condition</h3>
+  <div class="question">
+    <p>Look at the data table and answer <strong>by hand</strong> (just count the rows):</p>
+    <ol>
+      <li>Of the <strong>9 Yes days</strong>, how many have Outlook = Sunny?</li>
+      <li>Of the <strong>5 No days</strong>, how many have Outlook = Sunny?</li>
+      <li>Compute the fractions: &ldquo;Among Yes days, what fraction is Sunny?&rdquo; and &ldquo;Among No days, what fraction is Sunny?&rdquo;</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your answers:</strong>
+      <ol>
+        <li>Sunny &amp; Yes days: &hellip; out of 9</li>
+        <li>Sunny &amp; No days: &hellip; out of 5</li>
+        <li>Fraction among Yes: &hellip; / 9 = &hellip; &nbsp;&nbsp; Fraction among No: &hellip; / 5 = &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Filter the table to only Yes rows (days 3, 4, 5, 7, 9, 10, 11, 12, 13). Now count how many of those have Outlook = Sunny.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Yes &amp; Sunny: days 9 and 11 &rarr; 2 out of 9. No &amp; Sunny: days 1, 2, 8 &rarr; 3 out of 5.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Among Yes days: 2 out of 9 are Sunny &rarr; 2/9 &asymp; 0.222.<br/>
+      Among No days: 3 out of 5 are Sunny &rarr; 3/5 = 0.600.<br/>
+      This is interesting: Sunny is much more common on No days!</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-2-2">
+  <h3>Exercise 2.2 &mdash; The Key Question</h3>
+  <div class="question">
+    <p>It&rsquo;s a <strong>Sunny</strong> day. You want to decide: is it more likely a Yes day or a No day?</p>
+    <p>You have two pieces of information:</p>
+    <ul>
+      <li>From Ex 2.1: Among Yes days, 2/9 are Sunny. Among No days, 3/5 are Sunny.</li>
+      <li>From Ex 1.2: P(Yes) = 9/14, P(No) = 5/14.</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Compute: (fraction of Sunny among Yes) &times; P(Yes) = ?</li>
+      <li>Compute: (fraction of Sunny among No) &times; P(No) = ?</li>
+      <li>Which product is larger? What would you predict for a Sunny day?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your calculation:</strong>
+      <ol>
+        <li>Score(Yes) = (2/9) &times; (9/14) = &hellip;</li>
+        <li>Score(No) = (3/5) &times; (5/14) = &hellip;</li>
+        <li>Winner: &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Score(Yes) = (2/9) &times; (9/14). Notice that the 9s cancel: 2/14 &asymp; 0.143.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Score(No) = (3/5) &times; (5/14) = 3/14 &asymp; 0.214. Since 0.214 > 0.143, No wins.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Score(Yes) = 2/14 &asymp; 0.143. Score(No) = 3/14 &asymp; 0.214. <strong>No wins</strong> &mdash; on Sunny days, we predict &ldquo;No&rdquo;.</p>
+      <p>Notice what happened: the prior said Yes (64%), but the evidence from the Sunny outlook flipped the prediction to No. The feature <em>overrode</em> the prior because Sunny is strongly associated with No days.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-2-3">
+  <h3>Exercise 2.3 &mdash; Try Other Outlooks</h3>
+  <div class="question">
+    <p>Repeat the same calculation from Ex 2.2 for:</p>
+    <ol>
+      <li><strong>Overcast</strong> days: compute Score(Yes) and Score(No). What do you predict?</li>
+      <li><strong>Rainy</strong> days: compute Score(Yes) and Score(No). What do you predict?</li>
+    </ol>
+    <p><em>You&rsquo;ll need to count how many Overcast and Rainy days appear among Yes days and No days first.</em></p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Overcast: Yes days with Overcast = days 3, 7, 12, 13 &rarr; 4 out of 9. No days with Overcast = 0 out of 5.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Overcast: Score(Yes) = (4/9)&times;(9/14) = 4/14. Score(No) = (0/5)&times;(5/14) = 0. Yes wins easily.<br/>
+      Rainy: Among Yes days, Rainy = days 4, 5, 10 &rarr; 3/9. Among No days, Rainy = days 6, 14 &rarr; 2/5.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><strong>Overcast:</strong> Score(Yes) = 4/14 &asymp; 0.286, Score(No) = 0. Predict <strong>Yes</strong>. Every Overcast day was a Yes day!</p>
+      <p><strong>Rainy:</strong> Score(Yes) = (3/9)&times;(9/14) = 3/14 &asymp; 0.214. Score(No) = (2/5)&times;(5/14) = 2/14 &asymp; 0.143. Predict <strong>Yes</strong>.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-2-4">
+  <h3>Exercise 2.4 &mdash; Code It: <code>count_where</code></h3>
+  <div class="question">
+    <p>Now let&rsquo;s automate the counting. Write a function that counts how many rows match a set of conditions.</p>
+<pre><code>def count_where(data, conditions):
+    """
+    Count rows in data where ALL conditions are met.
+    conditions: dict like {"Outlook": "Sunny", "Play": "Yes"}
+    Returns: int
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert count_where(data, {"Play": "Yes"}) == 9
+assert count_where(data, {"Play": "No"}) == 5
+assert count_where(data, {"Outlook": "Sunny", "Play": "Yes"}) == 2
+assert count_where(data, {"Outlook": "Sunny", "Play": "No"}) == 3
+assert count_where(data, {"Outlook": "Overcast"}) == 4
+assert count_where(data, {"Outlook": "Overcast", "Play": "No"}) == 0
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop through each row in data. For each row, check if <code>row[key] == value</code> for every (key, value) pair in conditions. If all match, increment a counter.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use Python&rsquo;s <code>all()</code>: <code>all(row[k] == v for k, v in conditions.items())</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-2-5">
+  <h3>Exercise 2.5 &mdash; Code It: <code>probability</code></h3>
+  <div class="question">
+    <p>Write a function that computes a conditional probability using <code>count_where</code>.</p>
+<pre><code>def probability(data, event, given):
+    """
+    Compute P(event | given).
+    event: dict of conditions for the event, e.g. {"Outlook": "Sunny"}
+    given: dict of conditions for the given, e.g. {"Play": "Yes"}
+    Returns: float
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code># P(Outlook=Sunny | Play=Yes) = 2/9
+assert abs(probability(data, {"Outlook": "Sunny"}, {"Play": "Yes"}) - 2/9) &lt; 0.001
+# P(Outlook=Sunny | Play=No) = 3/5
+assert abs(probability(data, {"Outlook": "Sunny"}, {"Play": "No"}) - 3/5) &lt; 0.001
+# P(Wind=Strong | Play=Yes) = 3/9
+assert abs(probability(data, {"Wind": "Strong"}, {"Play": "Yes"}) - 3/9) &lt; 0.001
+# P(Wind=Strong | Play=No) = 3/5
+assert abs(probability(data, {"Wind": "Strong"}, {"Play": "No"}) - 3/5) &lt; 0.001
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>P(event | given) = (count of rows matching BOTH event AND given) / (count of rows matching given). Combine the two dicts: <code>{**given, **event}</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-2-6">
+  <h3>Exercise 2.6 &mdash; Predict with One Feature</h3>
+  <div class="question">
+    <p>Write a function that predicts the class using a single feature:</p>
+<pre><code>def predict_one_feature(data, feature_name, feature_value, label_col, labels):
+    """
+    For each label, compute:  score = P(feature_value | label) * P(label)
+    Return the label with the highest score.
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert predict_one_feature(data, "Outlook", "Sunny", "Play", ["Yes", "No"]) == "No"
+assert predict_one_feature(data, "Outlook", "Overcast", "Play", ["Yes", "No"]) == "Yes"
+assert predict_one_feature(data, "Outlook", "Rainy", "Play", ["Yes", "No"]) == "Yes"
+assert predict_one_feature(data, "Wind", "Strong", "Play", ["Yes", "No"]) == "No"
+assert predict_one_feature(data, "Wind", "Weak", "Play", ["Yes", "No"]) == "Yes"
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For each label in labels: compute <code>p_label = probability(data, {label_col: label}, {})</code> &mdash; wait, that won&rsquo;t work because <code>given</code> is empty. Use <code>count_where(data, {label_col: label}) / len(data)</code> for the prior. Then compute <code>p_feature_given_label = probability(data, {feature_name: feature_value}, {label_col: label})</code>. Multiply them.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Use <code>max(labels, key=lambda label: score(label))</code> to pick the label with the highest score.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 3: Two Features — Combining Evidence
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 3: Two Features &mdash; Combining Evidence</h2>
+  <p class="part-intro">One feature helped. Can two features help more? Let&rsquo;s combine evidence.</p>
+</div>
+
+<section class="exercise" id="ex-3-1">
+  <h3>Exercise 3.1 &mdash; Two Features by Hand</h3>
+  <div class="question">
+    <p>It&rsquo;s a <strong>Sunny</strong> and <strong>Hot</strong> day. Should we play?</p>
+    <p>We already know how to use one feature. For two features, try this: multiply the contribution of each feature separately, along with the prior.</p>
+    <p><strong>Compute by hand:</strong></p>
+    <ol>
+      <li>From the data, find:
+        <ul>
+          <li>P(Sunny | Yes) = ?</li>
+          <li>P(Hot | Yes) = ?</li>
+          <li>P(Yes) = ?</li>
+        </ul>
+      </li>
+      <li>Multiply them: Score(Yes) = P(Sunny | Yes) &times; P(Hot | Yes) &times; P(Yes)</li>
+      <li>Do the same for No: Score(No) = P(Sunny | No) &times; P(Hot | No) &times; P(No)</li>
+      <li>Which score is higher? What do you predict?</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your calculation:</strong>
+      <ol>
+        <li>P(Sunny|Yes) = &hellip;, P(Hot|Yes) = &hellip;, P(Yes) = &hellip;</li>
+        <li>Score(Yes) = &hellip; &times; &hellip; &times; &hellip; = &hellip;</li>
+        <li>P(Sunny|No) = &hellip;, P(Hot|No) = &hellip;, P(No) = &hellip;</li>
+        <li>Score(No) = &hellip; &times; &hellip; &times; &hellip; = &hellip;</li>
+        <li>Prediction: &hellip;</li>
+      </ol>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Among Yes days: Hot appears on days 3, 13 &rarr; 2 out of 9. Among No days: Hot appears on days 1, 2 &rarr; 2 out of 5.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Score(Yes) = (2/9) &times; (2/9) &times; (9/14) = 4/126 &asymp; 0.032.<br/>
+      Score(No) = (3/5) &times; (2/5) &times; (5/14) = 6/70 &asymp; 0.086.<br/>
+      No wins &mdash; Sunny + Hot strongly suggests no tennis.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Score(Yes) &asymp; 0.032, Score(No) &asymp; 0.086. Predict <strong>No</strong>. This matches our intuition: both Sunny and Hot are associated with No days.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-3-2">
+  <h3>Exercise 3.2 &mdash; Try Another Combination</h3>
+  <div class="question">
+    <p>Compute Score(Yes) and Score(No) for a <strong>Rainy</strong> and <strong>Cool</strong> day.</p>
+    <ol>
+      <li>Count P(Rainy | Yes), P(Cool | Yes), P(Rainy | No), P(Cool | No).</li>
+      <li>Compute Score(Yes) and Score(No).</li>
+      <li>What do you predict?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Among Yes: Rainy on days 4,5,10 &rarr; 3/9. Cool on days 5,7,9 &rarr; 3/9.<br/>
+      Among No: Rainy on days 6,14 &rarr; 2/5. Cool on day 6 &rarr; 1/5.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Score(Yes) = (3/9) &times; (3/9) &times; (9/14) = 9/126 &asymp; 0.071.<br/>
+      Score(No) = (2/5) &times; (1/5) &times; (5/14) = 2/70 &asymp; 0.029.<br/>
+      Predict <strong>Yes</strong>.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; The Big Assumption</h3>
+  <div class="question">
+    <p>In Exercise 3.1, you multiplied P(Sunny | Yes) &times; P(Hot | Yes). This multiplication is only mathematically valid under a specific assumption. What is it?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> Outlook and Temperature must have the same number of possible values</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> Outlook and Temperature are <em>independent</em> given the label &mdash; knowing one doesn&rsquo;t tell you about the other (once you already know whether we played)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> The dataset must have at least 100 rows</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> All feature probabilities must be greater than 0.5</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>When can you multiply two probabilities to get their joint probability? Think back to basic probability rules.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Multiplying probabilities P(A) &times; P(B) gives P(A and B) <strong>only when A and B are independent</strong>. We&rsquo;re assuming that Outlook and Temperature are independent <em>given the class label</em>. This is often not true in reality (Sunny and Hot are correlated!), but the assumption simplifies the math enormously and works surprisingly well in practice. This is the &ldquo;naive&rdquo; in Naive Bayes &mdash; it naively assumes feature independence.</p></div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-3-3">
+  <h3>Exercise 3.3 &mdash; Code It: <code>predict_two_features</code></h3>
+  <div class="question">
+    <p>Write a function that predicts using two features:</p>
+<pre><code>def predict_two_features(data, f1_name, f1_val, f2_name, f2_val, label_col, labels):
+    """
+    For each label, compute:
+      score = P(f1_val | label) * P(f2_val | label) * P(label)
+    Return the label with the highest score.
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code>assert predict_two_features(data, "Outlook", "Sunny", "Temperature", "Hot",
+                            "Play", ["Yes", "No"]) == "No"
+assert predict_two_features(data, "Outlook", "Rainy", "Temperature", "Cool",
+                            "Play", ["Yes", "No"]) == "Yes"
+assert predict_two_features(data, "Outlook", "Overcast", "Temperature", "Mild",
+                            "Play", ["Yes", "No"]) == "Yes"
+assert predict_two_features(data, "Outlook", "Sunny", "Wind", "Strong",
+                            "Play", ["Yes", "No"]) == "No"
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>This is just like <code>predict_one_feature</code> but with one more multiplication in the score: <code>p_f1 * p_f2 * p_label</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 4: N Features — The General Algorithm
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 4: N Features &mdash; The General Algorithm</h2>
+  <p class="part-intro">You&rsquo;ve done it for 1 feature and 2 features. Now let&rsquo;s generalize to any number of features.</p>
+</div>
+
+<section class="exercise" id="ex-4-1">
+  <h3>Exercise 4.1 &mdash; Three Features by Hand</h3>
+  <div class="question">
+    <p>It&rsquo;s <strong>Sunny</strong>, <strong>Hot</strong>, and <strong>High</strong> humidity. Compute Score(Yes) and Score(No) using all three features.</p>
+    <ol>
+      <li>You already have P(Sunny|Yes) and P(Hot|Yes). Now find P(High|Yes) and P(High|No) from the data.</li>
+      <li>Score(Yes) = P(Sunny|Yes) &times; P(Hot|Yes) &times; P(High|Yes) &times; P(Yes)</li>
+      <li>Score(No) = P(Sunny|No) &times; P(Hot|No) &times; P(High|No) &times; P(No)</li>
+      <li>Which class wins?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Among Yes days: Humidity=High on days 3, 4, 8, 12 &mdash; wait, day 8 is a No day. Recount: days 3, 4, 12 &rarr; 3 out of 9.<br/>
+      Among No days: days 1, 2, 8, 14 &rarr; 4 out of 5.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Score(Yes) = (2/9)(2/9)(3/9)(9/14) = 12/1134 &asymp; 0.0106.<br/>
+      Score(No) = (3/5)(2/5)(4/5)(5/14) = 24/350 &asymp; 0.069.<br/>
+      No wins convincingly.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>Score(Yes) &asymp; 0.011, Score(No) &asymp; 0.069. Predict <strong>No</strong>. Adding the humidity feature reinforced the prediction &mdash; High humidity is strongly associated with No days.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-4-2">
+  <h3>Exercise 4.2 &mdash; Generalize to N Features</h3>
+  <div class="question">
+    <p>You&rsquo;ve seen the pattern: for each label, multiply the prior by the conditional probability of each feature. Now write the general version:</p>
+<pre><code>def predict(data, features, label_col, labels):
+    """
+    features: dict mapping feature_name -> feature_value,
+              e.g. {"Outlook": "Sunny", "Temperature": "Hot", "Humidity": "High"}
+    label_col: name of the label column, e.g. "Play"
+    labels: list of possible labels, e.g. ["Yes", "No"]
+
+    For each label, compute:
+      score = P(label) * P(f1_val|label) * P(f2_val|label) * ... * P(fn_val|label)
+    Return the label with the highest score.
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code># Sunny, Hot, High → No
+assert predict(data, {"Outlook": "Sunny", "Temperature": "Hot", "Humidity": "High"},
+               "Play", ["Yes", "No"]) == "No"
+
+# Overcast, Mild, Normal → Yes
+assert predict(data, {"Outlook": "Overcast", "Temperature": "Mild", "Humidity": "Normal"},
+               "Play", ["Yes", "No"]) == "Yes"
+
+# All four features: Rainy, Cool, Normal, Weak → Yes
+assert predict(data, {"Outlook": "Rainy", "Temperature": "Cool",
+                      "Humidity": "Normal", "Wind": "Weak"},
+               "Play", ["Yes", "No"]) == "Yes"
+
+# All four features: Sunny, Hot, High, Strong → No
+assert predict(data, {"Outlook": "Sunny", "Temperature": "Hot",
+                      "Humidity": "High", "Wind": "Strong"},
+               "Play", ["Yes", "No"]) == "No"
+
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Loop through the features dict. For each (feature_name, feature_value) pair, multiply the running score by <code>probability(data, {feature_name: feature_value}, {label_col: label})</code>.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Start with <code>score = count_where(data, {label_col: label}) / len(data)</code> (the prior). Then for each feature: <code>score *= probability(data, {fname: fval}, {label_col: label})</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-4-3">
+  <h3>Exercise 4.3 &mdash; Test on All Training Rows</h3>
+  <div class="question">
+    <p>Run your <code>predict</code> function on <strong>every row</strong> in the dataset and compare to the actual label.</p>
+<pre><code>correct = 0
+for row in data:
+    features = {k: v for k, v in row.items() if k != "Play"}
+    predicted = predict(data, features, "Play", ["Yes", "No"])
+    actual = row["Play"]
+    match = "✓" if predicted == actual else "✗"
+    print(f"{match} predicted={predicted}, actual={actual}")
+    if predicted == actual:
+        correct += 1
+
+print(f"\nAccuracy: {correct}/{len(data)} = {correct/len(data):.1%}")</code></pre>
+    <ol>
+      <li>How many does it get right?</li>
+      <li>Which rows (if any) does it get wrong? Look at those rows &mdash; can you see why?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>With the naive independence assumption, the classifier should get most rows right on this small dataset. Don&rsquo;t worry if a few are wrong &mdash; that&rsquo;s expected given the naive assumption.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 5: The Zero-Frequency Problem
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 5: The Zero-Frequency Problem</h2>
+  <p class="part-intro">Your algorithm has a fatal flaw. Let&rsquo;s find it and fix it.</p>
+</div>
+
+<section class="exercise" id="ex-5-1">
+  <h3>Exercise 5.1 &mdash; Break Your Code</h3>
+  <div class="question">
+    <p>Look at the data: Outlook = Overcast appears on days 3, 7, 12, 13. What is the Play label for <strong>all</strong> of those days?</p>
+    <p>Now answer:</p>
+    <ol>
+      <li>What is P(Overcast | No)?</li>
+      <li>If you try to predict for a new day with Outlook = Overcast and any other features, what happens to Score(No)?</li>
+      <li>Is this a reasonable prediction? What if you had Overcast + Strong Wind + High Humidity &mdash; conditions that historically lean toward No?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>All Overcast days are Yes days. So P(Overcast | No) = 0/5 = 0.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>Score(No) = P(Overcast|No) &times; &hellip; &times; P(No) = 0 &times; &hellip; = <strong>0</strong>. No matter how much other evidence points to No, one zero kills the entire product. This is the <strong>zero-frequency problem</strong>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p>P(Overcast | No) = 0. This makes Score(No) = 0 regardless of all other features. The algorithm becomes blind to all other evidence. Just because we haven&rsquo;t <em>seen</em> Overcast on a No day doesn&rsquo;t mean it&rsquo;s impossible &mdash; it just means our dataset is small.</p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-5-2">
+  <h3>Exercise 5.2 &mdash; Fix It: Laplace Smoothing</h3>
+  <div class="question">
+    <p>The fix is beautifully simple: pretend you&rsquo;ve seen every combination at least once.</p>
+    <p><strong>The idea:</strong> Instead of computing P(Overcast | No) = 0/5, add 1 to the numerator (pretend you saw one extra Overcast-No day) and add k to the denominator (where k is the number of possible values for that feature).</p>
+    <p>For Outlook, k = 3 (Sunny, Overcast, Rainy). So:</p>
+    <ul>
+      <li>P<sub>smooth</sub>(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125</li>
+    </ul>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Compute P<sub>smooth</sub>(Sunny | No) with k=3. Compare to the unsmoothed version.</li>
+      <li>Write <code>probability_smooth(data, event, given, k)</code>:</li>
+    </ol>
+<pre><code>def probability_smooth(data, event, given, k):
+    """
+    Smoothed conditional probability.
+    Adds 1 to the numerator and k to the denominator.
+    k = number of possible values for the event's feature.
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code># P_smooth(Overcast | No) = (0+1)/(5+3) = 1/8
+assert abs(probability_smooth(data, {"Outlook": "Overcast"}, {"Play": "No"}, 3) - 1/8) &lt; 0.001
+
+# P_smooth(Sunny | No) = (3+1)/(5+3) = 4/8 = 0.5
+assert abs(probability_smooth(data, {"Outlook": "Sunny"}, {"Play": "No"}, 3) - 0.5) &lt; 0.001
+
+# P_smooth(Sunny | Yes) = (2+1)/(9+3) = 3/12 = 0.25
+assert abs(probability_smooth(data, {"Outlook": "Sunny"}, {"Play": "Yes"}, 3) - 0.25) &lt; 0.001
+
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>The numerator is <code>count_where(data, {**given, **event}) + 1</code> and the denominator is <code>count_where(data, given) + k</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-5-3">
+  <h3>Exercise 5.3 &mdash; Update Your Predict Function</h3>
+  <div class="question">
+    <p>Write <code>predict_smooth</code> &mdash; like your <code>predict</code> from Part 4, but using <code>probability_smooth</code> instead of <code>probability</code>.</p>
+    <p>You&rsquo;ll need to know k (number of possible values) for each feature. Compute this from the data.</p>
+<pre><code>def predict_smooth(data, features, label_col, labels):
+    """
+    Like predict(), but uses Laplace smoothing.
+    For each feature, k = number of distinct values of that feature in the data.
+    """
+    # Your code here
+    pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code># Same predictions as before on normal cases
+assert predict_smooth(data, {"Outlook": "Sunny", "Temperature": "Hot",
+                              "Humidity": "High", "Wind": "Strong"},
+                       "Play", ["Yes", "No"]) == "No"
+
+assert predict_smooth(data, {"Outlook": "Overcast", "Temperature": "Mild",
+                              "Humidity": "Normal", "Wind": "Weak"},
+                       "Play", ["Yes", "No"]) == "Yes"
+
+# Now this works without the zero-frequency problem!
+assert predict_smooth(data, {"Outlook": "Overcast", "Temperature": "Hot",
+                              "Humidity": "High", "Wind": "Strong"},
+                       "Play", ["Yes", "No"]) == "Yes"
+
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>To find k for a feature: <code>k = len(set(row[feature_name] for row in data))</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; Why Smoothing Works</h3>
+  <div class="question">
+    <p>Laplace smoothing adds 1 to every count. What would happen if you added <strong>1000</strong> instead of 1?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> The classifier would become more accurate because it has more &ldquo;data&rdquo;</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> Nothing would change &mdash; the relative ordering of scores stays the same</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> All smoothed probabilities would approach 1/k (uniform) &mdash; the fake counts would overwhelm the real data, and the classifier would ignore the actual evidence</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> Python would crash with an overflow error</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>With smoothing of 1000: P(Sunny|Yes) = (2 + 1000) / (9 + 3000) &asymp; 1002/3009 &asymp; 1/3. P(Overcast|Yes) = (4 + 1000) / (9 + 3000) &asymp; 1004/3009 &asymp; 1/3. They become nearly identical.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Large smoothing values drown out the real data. P(Sunny|Yes) = (2+1000)/(9+3000) &asymp; 0.333 and P(Overcast|Yes) = (4+1000)/(9+3000) &asymp; 0.334 &mdash; nearly identical. The classifier can no longer distinguish features because the fake counts dominate. A smoothing of 1 is the standard choice: just enough to avoid zeros without distorting the real signal.</p></div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 6: The NaiveBayes Class
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 6: The NaiveBayes Class</h2>
+  <p class="part-intro">You have all the pieces. Now wrap them into a reusable class with the standard ML interface: <code>fit</code> and <code>predict</code>.</p>
+</div>
+
+<section class="exercise" id="ex-6-1">
+  <h3>Exercise 6.1 &mdash; Design the Interface</h3>
+  <div class="question">
+    <p>Before writing code, think about what <code>fit(X, y)</code> needs to compute and store so that <code>predict(X)</code> can work later without re-scanning all the training data.</p>
+    <p><strong>Think about:</strong></p>
+    <ol>
+      <li>What are the possible labels? (e.g., Yes and No)</li>
+      <li>For each label, how many training examples had that label? (the priors)</li>
+      <li>For each label AND each feature AND each feature value, how many times did that combination appear? (the conditional counts)</li>
+      <li>For each feature, how many distinct values does it have? (needed for smoothing)</li>
+    </ol>
+    <div class="answer-prompt">
+      <strong>Your design:</strong>
+      <p>After <code>fit(X, y)</code>, <code>self</code> should contain:</p>
+      <ul>
+        <li>self.labels = &hellip;</li>
+        <li>self.label_counts = &hellip;</li>
+        <li>self.feature_counts = &hellip;</li>
+        <li>self.feature_values = &hellip;</li>
+        <li>self.total = &hellip;</li>
+      </ul>
+    </div>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>A good data structure: <code>self.label_counts</code> is a dict like <code>{"Yes": 9, "No": 5}</code>. <code>self.feature_counts</code> could be a nested dict: <code>feature_counts[label][feature_name][feature_value] = count</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-6-2">
+  <h3>Exercise 6.2 &mdash; Implement <code>NaiveBayes</code></h3>
+  <div class="question">
+    <p>Implement the full class:</p>
+<pre><code>class NaiveBayes:
+    def __init__(self, smoothing=1):
+        """smoothing: Laplace smoothing parameter (default 1)."""
+        pass
+
+    def fit(self, X, y):
+        """
+        X : list of dicts (each dict maps feature_name → feature_value)
+        y : list of labels
+        Precompute and store all the counts needed for prediction.
+        """
+        pass
+
+    def predict(self, X):
+        """
+        X : list of dicts
+        Returns: list of predicted labels, one per row.
+        """
+        pass</code></pre>
+    <p><strong>Test cases:</strong></p>
+<pre><code>X = [{"Outlook": row["Outlook"], "Temperature": row["Temperature"],
+      "Humidity": row["Humidity"], "Wind": row["Wind"]} for row in data]
+y = [row["Play"] for row in data]
+
+nb = NaiveBayes()
+nb.fit(X, y)
+predictions = nb.predict(X)
+accuracy = sum(p == a for p, a in zip(predictions, y)) / len(y)
+print(f"Training accuracy: {accuracy:.1%}")
+
+# Test on new data
+new_days = [
+    {"Outlook": "Sunny", "Temperature": "Cool", "Humidity": "High", "Wind": "Strong"},
+    {"Outlook": "Overcast", "Temperature": "Hot", "Humidity": "Normal", "Wind": "Weak"},
+    {"Outlook": "Rainy", "Temperature": "Mild", "Humidity": "Normal", "Wind": "Weak"},
+]
+preds = nb.predict(new_days)
+print(f"Predictions: {preds}")
+# Expected: ["No", "Yes", "Yes"]
+assert preds == ["No", "Yes", "Yes"]
+print("All tests passed!")</code></pre>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>In <code>fit</code>: loop through <code>zip(X, y)</code>. For each (row, label), increment <code>self.label_counts[label]</code> and <code>self.feature_counts[label][feature_name][feature_value]</code>. Also collect <code>self.feature_values[feature_name]</code> as a set of all observed values.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body">
+      <p>In <code>predict</code>: for each row, compute a score for each label. The prior is <code>self.label_counts[label] / self.total</code>. For each feature, the smoothed conditional probability is <code>(count + smoothing) / (label_count + smoothing * k)</code> where k = number of distinct values for that feature.</p>
+    </div>
+  </details>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body">
+      <p>To get the count: <code>self.feature_counts[label][feature_name].get(feature_value, 0)</code>. The <code>.get(..., 0)</code> handles unseen values (returns 0 instead of KeyError).</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-6-3">
+  <h3>Exercise 6.3 &mdash; A Bigger Dataset</h3>
+  <div class="question">
+    <p>Test your <code>NaiveBayes</code> class on a spam detection problem. Each email is represented by the presence/absence of certain words:</p>
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; spam dataset</div>
+<pre><code>spam_data = [
+    {"free": "yes", "money": "yes", "urgent": "yes", "meeting": "no",  "label": "spam"},
+    {"free": "yes", "money": "no",  "urgent": "yes", "meeting": "no",  "label": "spam"},
+    {"free": "yes", "money": "yes", "urgent": "no",  "meeting": "no",  "label": "spam"},
+    {"free": "no",  "money": "yes", "urgent": "yes", "meeting": "no",  "label": "spam"},
+    {"free": "yes", "money": "yes", "urgent": "yes", "meeting": "yes", "label": "spam"},
+    {"free": "no",  "money": "no",  "urgent": "no",  "meeting": "yes", "label": "ham"},
+    {"free": "no",  "money": "no",  "urgent": "no",  "meeting": "no",  "label": "ham"},
+    {"free": "yes", "money": "no",  "urgent": "no",  "meeting": "yes", "label": "ham"},
+    {"free": "no",  "money": "no",  "urgent": "yes", "meeting": "yes", "label": "ham"},
+    {"free": "no",  "money": "no",  "urgent": "no",  "meeting": "yes", "label": "ham"},
+    {"free": "no",  "money": "yes", "urgent": "no",  "meeting": "yes", "label": "ham"},
+    {"free": "no",  "money": "no",  "urgent": "no",  "meeting": "yes", "label": "ham"},
+]
+
+X_spam = [{k: v for k, v in row.items() if k != "label"} for row in spam_data]
+y_spam = [row["label"] for row in spam_data]</code></pre>
+    </div>
+    <p><strong>Tasks:</strong></p>
+    <ol>
+      <li>Train your <code>NaiveBayes</code> on this dataset.</li>
+      <li>Compute training accuracy.</li>
+      <li>Predict on these new emails:
+<pre><code>new_emails = [
+    {"free": "yes", "money": "yes", "urgent": "no", "meeting": "no"},   # likely spam?
+    {"free": "no",  "money": "no",  "urgent": "no", "meeting": "yes"},  # likely ham?
+    {"free": "yes", "money": "no",  "urgent": "yes", "meeting": "yes"}, # tricky!
+]</code></pre>
+      </li>
+      <li>Do the predictions match your intuition?</li>
+    </ol>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Same code as before: <code>nb = NaiveBayes(); nb.fit(X_spam, y_spam); nb.predict(new_emails)</code>. If your class is written correctly, it works on any dataset &mdash; that&rsquo;s the power of a general implementation.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 7: Bonus Challenges
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Part 7: Bonus Challenges</h2>
+</div>
+
+<section class="exercise" id="ex-bonus-a">
+  <h3>Challenge A &mdash; Predict Probabilities</h3>
+  <div class="question">
+    <p>Right now, <code>predict</code> returns just the winning label. Add a <code>predict_proba</code> method that returns the <strong>probability</strong> of each class.</p>
+    <p>To convert scores to probabilities, divide each score by the sum of all scores:</p>
+    <p>For example, if Score(Yes) = 0.03 and Score(No) = 0.07, then:</p>
+    <ul>
+      <li>P(Yes) = 0.03 / (0.03 + 0.07) = 0.3</li>
+      <li>P(No) = 0.07 / (0.03 + 0.07) = 0.7</li>
+    </ul>
+<pre><code>def predict_proba(self, X):
+    """
+    X : list of dicts
+    Returns: list of dicts, each mapping label → probability.
+    e.g. [{"Yes": 0.3, "No": 0.7}, ...]
+    """
+    pass</code></pre>
+    <p><strong>Test:</strong> The probabilities for each row should sum to 1.0.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>Compute all scores as before. Then: <code>total = sum(scores.values())</code> and <code>probs = {label: s / total for label, s in scores.items()}</code>.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-bonus-b">
+  <h3>Challenge B &mdash; Compare with scikit-learn</h3>
+  <div class="question">
+    <p>Scikit-learn has a built-in <code>CategoricalNB</code>. Compare your results:</p>
+<pre><code>from sklearn.preprocessing import OrdinalEncoder
+from sklearn.naive_bayes import CategoricalNB
+import numpy as np
+
+# Encode string features as integers
+enc = OrdinalEncoder()
+X_encoded = enc.fit_transform([[row[f] for f in ["Outlook","Temperature","Humidity","Wind"]]
+                                for row in data])
+y_encoded = [1 if row["Play"]=="Yes" else 0 for row in data]
+
+clf = CategoricalNB(alpha=1.0)  # alpha=1.0 is Laplace smoothing
+clf.fit(X_encoded, y_encoded)
+
+# Compare predictions
+sk_preds = clf.predict(X_encoded)
+print("sklearn predictions:", ["Yes" if p==1 else "No" for p in sk_preds])
+print("Your predictions:   ", nb.predict(X))</code></pre>
+    <p>Do the predictions match? If not, investigate why.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>They should match exactly, since both use the same algorithm (categorical Naive Bayes with Laplace smoothing of 1). If they differ, check whether your smoothing formula matches scikit-learn&rsquo;s.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+<section class="exercise" id="ex-bonus-c">
+  <h3>Challenge C &mdash; What About Continuous Features?</h3>
+  <div class="question">
+    <p>Your classifier works with categorical features (Sunny, Rainy, etc.). But what if a feature is a number, like actual temperature (72&deg;F, 85&deg;F, etc.)?</p>
+    <ol>
+      <li>Why can&rsquo;t you directly count P(Temperature=72.3 | Yes)? (How many training rows have that exact value?)</li>
+      <li>One approach: assume numerical features follow a bell curve (Gaussian distribution) within each class. Instead of counting, you&rsquo;d compute the mean and standard deviation per class, then use the bell curve to get the probability.</li>
+      <li>Another approach: bin the numbers into categories (e.g., Cold: &lt;60, Mild: 60&ndash;80, Hot: &gt;80) and use your existing categorical classifier.</li>
+    </ol>
+    <p>Try the binning approach on a dataset of your choice.</p>
+  </div>
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body">
+      <p>For binning: write a function <code>bin_value(x, bins)</code> that maps a number to a category string. Apply it to all numerical features before training.</p>
+    </div>
+  </details>
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+      <p><em>Solution will be added later.</em></p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     REFLECTION
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="part">
+  <h2>Reflection &mdash; What Did You Just Build?</h2>
+</div>
+
+<section class="exercise" id="reflection">
+  <h3>Reflection</h3>
+  <div class="question">
+    <p>You started by counting rows in a table. From there, you:</p>
+    <ol>
+      <li>Discovered that <strong>prior probability</strong> (just counting labels) gives a baseline prediction.</li>
+      <li>Found that <strong>conditional probabilities</strong> (counting features within each class) improve predictions.</li>
+      <li>Learned to <strong>combine multiple features</strong> by multiplying their conditional probabilities &mdash; under the <strong>naive independence assumption</strong>.</li>
+      <li>Discovered and fixed the <strong>zero-frequency problem</strong> with Laplace smoothing.</li>
+      <li>Wrapped it all in a reusable class with <code>fit</code> and <code>predict</code>.</li>
+    </ol>
+    <p>This is the <strong>Naive Bayes classifier</strong> &mdash; one of the oldest and most practical algorithms in machine learning. Despite its &ldquo;naive&rdquo; assumption, it excels at text classification (spam detection, sentiment analysis), medical diagnosis, and any problem with many categorical features.</p>
+    <p>The mathematical name for what you computed is <strong>Bayes&rsquo; theorem</strong>: updating a prior belief using evidence. You invented it from scratch.</p>
+  </div>
+</section>
+
+
+<script src="../assets/lbi.js"></script>
+</body>
+</html>
