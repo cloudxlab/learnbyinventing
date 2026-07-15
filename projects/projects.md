@@ -176,3 +176,11 @@ tokenization, embeddings, attention blocks, and the training loop. Your goal
 is to connect each piece to something you built in this book — the attention
 scores are the recommender chapter's `uM.T @ uM`, the training loop is your
 `fit_net`, the loss landscape is the one you descended in Chapter 15.
+
+---
+
+<footer>
+Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a>
+
+&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.
+</footer>

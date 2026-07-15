@@ -128,3 +128,11 @@ tree depth) appear in the Gradient Descent and Decision Tree chapters.
 | 7 | Hard | Recursive merge sort (to find the median) | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/practice_problems/05_recursion/07_hard_recursive_merge_sort.ipynb) |
 | 8 | Hard | Recursive learning-rate decay schedule | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/practice_problems/05_recursion/08_hard_recursive_lr_decay.ipynb) |
 | 9 | Hard | Recursive depth of a decision tree | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/practice_problems/05_recursion/09_hard_recursive_tree_depth.ipynb) |
+
+---
+
+<footer>
+Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a>
+
+&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.
+</footer>
