@@ -703,31 +703,47 @@ blocks:
         The action at step 100 most directly affects step 101. Each subsequent step is influenced by many intervening actions. So nearby rewards should count more, and distant rewards should be discounted.
 
   - type: exercise
-    kind: coding
+    kind: conceptual
     id: ex-6-4
     part: 6
     number: 4
-    title: "Invent Discounted Rewards"
+    title: "Design Your Own Credit System"
     description: |
-      Here's an idea: for each step t, compute its "return" as:
+      You agreed that nearby rewards should count more than distant ones. Now design a formula.
 
-      $$R_t = r_t + \gamma \cdot r_{t+1} + \gamma^2 \cdot r_{t+2} + \gamma^3 \cdot r_{t+3} + \ldots$$
+      Suppose you played 5 steps and got rewards [1, 1, 1, 1, 1]. You want to compute a "total credit" for the action at step 0.
+    prompts:
+      - "If you just sum all future rewards equally, what's the credit for step 0? (1+1+1+1+1 = 5). What's the problem with this?"
+      - "What if each future reward was worth a little LESS than the one before it — say 99% as much? Step 0's own reward counts fully (×1), step 1's reward counts ×0.99, step 2's counts ×0.99², etc. What would the credit for step 0 be?"
+      - "What should the credit for the LAST step (step 4) be? It has no future rewards."
+      - "What would you call that 0.99 multiplier?"
+    hints:
+      - "With the 0.99 multiplier: credit for step 0 = 1 + 0.99×1 + 0.99²×1 + 0.99³×1 + 0.99⁴×1 ≈ 4.90. Credit for step 4 = just 1 (no future). The 0.99 is a 'discount factor' — it makes distant rewards fade away."
+    solution:
+      code: null
+      text: |
+        Credit for step t = reward[t] + 0.99 × reward[t+1] + 0.99² × reward[t+2] + ...
 
-      where $\gamma$ (gamma) = 0.99 is a "discount factor." Rewards far in the future get multiplied by $0.99^{50}$, $0.99^{100}$, etc. — they fade away.
+        This is called the **discounted return**. The multiplier (0.99) is called the **discount factor** (gamma). It controls how much you care about distant vs. nearby rewards.
 
-      Write `compute_discounted_rewards(rewards, gamma=0.99)` that takes a list of rewards (one per step) and returns the discounted return for each step.
+  - type: exercise
+    kind: coding
+    id: ex-6-5
+    part: 6
+    number: 5
+    title: "Code Your Credit System"
+    description: |
+      Write `compute_discounted_rewards(rewards, gamma=0.99)` that implements the credit system you just designed. It takes a list of rewards (one per step) and returns the discounted return for each step.
     provided_code:
       - label: "test"
         code: |
-          # Test: if rewards = [1, 1, 1, 1, 1], gamma = 0.99
-          # R_0 = 1 + 0.99 + 0.99^2 + 0.99^3 + 0.99^4
-          # R_4 = 1 (last step, no future)
           test_rewards = [1, 1, 1, 1, 1]
           result = compute_discounted_rewards(test_rewards, gamma=0.99)
           print("Discounted rewards:", result)
-          # R_0 should be ~4.90, R_4 should be 1.0
+          # Step 0 should be ~4.90, step 4 should be 1.0
     hints:
-      - "Work backwards! Start from the last step (R_T = r_T). Then R_{T-1} = r_{T-1} + gamma * R_T. Then R_{T-2} = r_{T-2} + gamma * R_{T-1}. And so on."
+      - "Think about it from the end. The last step's credit is just its own reward. The second-to-last step's credit is its reward + gamma × (last step's credit). Can you see a pattern working backwards?"
+      - "Start from the last step and work backwards: `running = 0`. For each step t from the end: `running = rewards[t] + gamma * running`. Store `running` as that step's credit."
       - |
         ```python
         def compute_discounted_rewards(rewards, gamma=0.99):
@@ -751,17 +767,73 @@ blocks:
 
   - type: exercise
     kind: coding
-    id: ex-6-5
+    id: ex-6-6
     part: 6
-    number: 5
-    title: "Normalize the Returns"
+    number: 6
+    title: "Look at the Raw Numbers"
     description: |
-      The discounted returns can be large numbers (like 100+). Normalize them: subtract the mean and divide by the standard deviation. Write `normalize(values)`.
+      Play a game, compute discounted rewards, and look at the values. What do you notice?
+    provided_code:
+      - label: "inspect"
+        code: |
+          # Play one game with your best policy
+          obs, info = env.reset()
+          rewards = []
+          done = False
+          while not done:
+              action = 1 if obs[2] > 0 else 0
+              obs, reward, terminated, truncated, info = env.step(action)
+              rewards.append(reward)
+              done = terminated or truncated
 
-      Why normalize? After normalization, roughly half the actions have positive returns (better than average) and half have negative (worse than average). This gives a balanced signal for learning.
-    provided_code: []
+          disc = compute_discounted_rewards(rewards)
+          print(f"Game lasted {len(rewards)} steps")
+          print(f"First step's credit:  {disc[0]:.1f}")
+          print(f"Last step's credit:   {disc[-1]:.1f}")
+          print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
     hints:
-      - "`mean = np.mean(values); std = np.std(values); return (values - mean) / (std + 1e-8)`. The `1e-8` prevents division by zero."
+      - "The first step's credit is a large number (like 40–60) because it includes all future rewards. The last step is just 1.0. All values are positive — can you see a problem? If ALL actions get positive credit, the model can't tell which ones were GOOD vs. just OK."
+    solution:
+      code: null
+      text: |
+        All the discounted rewards are positive (ranging from 1 to ~50+). That means every action looks "good." But some were clearly better than others — we need a way to separate above-average actions from below-average ones.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-6-7
+    part: 6
+    number: 7
+    title: "Fix the All-Positive Problem"
+    description: |
+      Every action has positive credit, so the model thinks all actions were good. That's not useful.
+    prompts:
+      - "If the average credit is 30, and action A got credit 45 while action B got credit 15, which was better?"
+      - "What if you subtracted the average from each value? A would become +15 (above average = good!) and B would become -15 (below average = bad). Does this help?"
+      - "After subtracting the mean, some values might be ±50 while others are ±5. Should you also scale them? How?"
+    hints:
+      - "Subtract the mean so that above-average actions are positive and below-average are negative. Divide by the standard deviation to keep the scale consistent. This is just standard normalization!"
+    solution:
+      code: null
+      text: |
+        Subtract the mean and divide by the standard deviation. Now roughly half the actions have positive values (better than average) and half have negative (worse than average). This gives a clean signal for learning.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-8
+    part: 6
+    number: 8
+    title: "Write normalize()"
+    description: |
+      Write a `normalize(values)` function that subtracts the mean and divides by the standard deviation.
+    provided_code:
+      - label: "test"
+        code: |
+          test = [40, 35, 30, 20, 10, 1]
+          print("Before:", test)
+          print("After:", normalize(test))
+          # After normalization: positive = above average, negative = below average
+    hints:
+      - "Use numpy: `np.mean(values)` and `np.std(values)`. Add a tiny number (1e-8) to the standard deviation to prevent division by zero."
     solution:
       code: |
         def normalize(values):
@@ -775,21 +847,28 @@ blocks:
 
   - type: part
     number: 7
-    title: "Teaching a Model to Play — REINFORCE"
+    title: "Teaching a Model to Play"
     intro: |
-      So far you've been hand-tuning weights or using evolution. Now for a powerful idea: what if a model LEARNS the weights by playing the game over and over?
+      So far you've been hand-tuning weights or using evolution. But there's something unsatisfying — you're searching OUTSIDE the game. You try weights, play a full game, check the score, try new weights. What if the model could learn FROM each game it plays?
 
-  - type: reveal
-    text: |
-      Here's the key insight:
-
-      1. The model sees the observation and outputs a **probability** of going right (e.g., 70%)
-      2. We sample an action from that probability (go right 70% of the time)
-      3. We play the whole game, collecting rewards
-      4. For actions that led to **high reward** — we adjust the model to make those actions MORE likely
-      5. For actions that led to **low reward** — we adjust the model to make those actions LESS likely
-
-      Even an untrained model says SOMETHING — "go right 50% of the time." We play, and the rewards tell us which of those random choices were accidentally good. Then we nudge the model to repeat the good accidents.
+  - type: exercise
+    kind: conceptual
+    id: ex-7-0
+    part: 7
+    number: 0
+    title: "Why Probabilities?"
+    description: |
+      Your current policy is deterministic: if `weights @ obs > 0`, always go right. Always. Every single time.
+    prompts:
+      - "If the policy always makes the same decision in the same state, can it ever discover that the OTHER action might have been better?"
+      - "What if instead of 'always go right when score > 0', the model said 'go right with 70% probability'? Sometimes it would go left — accidentally. What could you learn from those accidents?"
+      - "If an accidental action leads to a HIGHER reward than usual, what should the model do next time?"
+    hints:
+      - "A deterministic policy can't explore — it always does the same thing. A probabilistic policy sometimes tries the 'wrong' action. If that accident works out well, the model should increase the probability of that action. If it works out badly, decrease it. The randomness IS the learning signal."
+    solution:
+      code: null
+      text: |
+        A deterministic policy is stuck — it can't discover better actions. A probabilistic policy explores by sometimes taking random actions. When an accident leads to high reward, increase its probability. When it leads to low reward, decrease it. Exploration drives learning.
 
   - type: exercise
     kind: coding
@@ -798,13 +877,9 @@ blocks:
     number: 1
     title: "A Probabilistic Policy"
     description: |
-      Build a simple linear model that outputs a probability:
+      Convert your `weighted_policy` from a hard yes/no decision into a probability. Instead of "go right if `weights @ obs > 0`", output a PROBABILITY of going right.
 
-      $$p(\text{right}) = \text{sigmoid}(\mathbf{w} \cdot \mathbf{obs})$$
-
-      where sigmoid(z) = 1 / (1 + exp(-z)). The model has 4 weights (one per observation).
-
-      Initialize weights to zeros. Given an observation, compute the probability and sample an action.
+      You need a function that takes any number and squashes it to a value between 0 and 1. You've seen this before — what function does that?
     provided_code:
       - label: "sigmoid"
         code: |
@@ -812,17 +887,8 @@ blocks:
               z = np.clip(z, -500, 500)
               return 1.0 / (1.0 + np.exp(-z))
     hints:
-      - |
-        ```python
-        weights = np.zeros(4)
-
-        def prob_right(obs, weights):
-            return sigmoid(np.dot(weights, obs))
-
-        def sample_action(obs, weights):
-            p = prob_right(obs, weights)
-            return 1 if np.random.random() < p else 0
-        ```
+      - "The sigmoid function! `sigmoid(weights @ obs)` gives a probability between 0 and 1. When `weights @ obs` is large and positive, sigmoid → 1 (almost certainly go right). When large and negative, sigmoid → 0 (almost certainly go left). When 0, sigmoid → 0.5 (coin flip)."
+      - "To sample an action from the probability: generate a random number between 0 and 1. If it's less than the probability, go right (1). Otherwise go left (0)."
     solution:
       code: |
         weights = np.zeros(4)
@@ -842,117 +908,126 @@ blocks:
       text: null
 
   - type: exercise
-    kind: coding
-    id: ex-7-2
+    kind: conceptual
+    id: ex-7-2a
     part: 7
     number: 2
-    title: "Play and Record"
+    title: "How Should the Model Learn?"
     description: |
-      Play one full episode using the probabilistic policy. At each step, record:
-      - The observation
-      - The action taken
-      - The reward
+      Your model outputs a probability and samples an action. After the game, you have discounted rewards telling you which actions were good (positive) and which were bad (negative).
+    prompts:
+      - "If action = 'go right' and the discounted reward was POSITIVE (good action), should the model make 'go right' MORE or LESS likely next time?"
+      - "If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen?"
+      - "In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?"
+    hints:
+      - "Good action → make it more likely (increase probability). Bad action → make it less likely (decrease probability). To increase reward instead of decreasing loss, move in the gradient direction (ascent) instead of against it (descent). Gradient ASCENT."
+    solution:
+      code: null
+      text: |
+        Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses.
 
-      Also compute the **gradient of log(probability of the chosen action)** with respect to the weights.
+  - type: exercise
+    kind: coding
+    id: ex-7-2b
+    part: 7
+    number: 3
+    title: "Derive the Gradient"
+    description: |
+      You need the gradient of "how likely the chosen action was" with respect to the weights. Specifically, the gradient of $\log(p)$ where $p$ is the probability of the action you took.
 
-      For a linear-sigmoid model, this gradient has a neat form:
-      - If action = 1 (went right): gradient = $(1 - p) \cdot \text{obs}$
-      - If action = 0 (went left): gradient = $-p \cdot \text{obs}$
+      You already know from the Gradient Descent chapter that the derivative of sigmoid is $\text{sigmoid}(z) \cdot (1 - \text{sigmoid}(z))$, and that $\log'(x) = 1/x$.
 
-      where $p$ = probability of going right.
+      Using the chain rule, work out: what is the gradient of $\log(\text{sigmoid}(\mathbf{w} \cdot \mathbf{obs}))$ with respect to $\mathbf{w}$?
     provided_code: []
     hints:
-      - "This gradient comes from calculus: $\\nabla_w \\log p = (1-p) \\cdot \\text{obs}$ and $\\nabla_w \\log(1-p) = -p \\cdot \\text{obs}$. You don't need to derive it — just use the formula."
-      - |
-        ```python
-        def play_episode(env, weights):
-            obs, _ = env.reset()
-            observations, actions, rewards, gradients = [], [], [], []
-            done = False
-            while not done:
-                p = prob_right(obs, weights)
-                action = 1 if np.random.random() < p else 0
-
-                # Gradient of log-probability
-                if action == 1:
-                    grad = (1 - p) * obs
-                else:
-                    grad = -p * obs
-
-                observations.append(obs)
-                actions.append(action)
-                gradients.append(grad)
-
-                obs, reward, terminated, truncated, _ = env.step(action)
-                rewards.append(reward)
-                done = terminated or truncated
-            return observations, actions, rewards, gradients
-        ```
+      - "Chain rule: $\\frac{d}{dw} \\log(\\sigma(w \\cdot obs))$ = $\\frac{1}{\\sigma} \\cdot \\sigma(1-\\sigma) \\cdot obs$ = $(1-\\sigma) \\cdot obs$ = $(1-p) \\cdot obs$. The sigmoid derivative and the 1/sigmoid cancel beautifully!"
+      - "That's the gradient when you went right (action=1). When you went left (action=0), you need $\\log(1-p)$ instead. By similar math: gradient = $-p \\cdot obs$."
+      - "Summary: action=1 (right) → gradient = $(1-p) \\cdot obs$. Action=0 (left) → gradient = $-p \\cdot obs$."
     solution:
-      code: |
-        def play_episode(env, weights):
-            obs, _ = env.reset()
-            observations, actions, rewards, gradients = [], [], [], []
-            done = False
-            while not done:
-                p = prob_right(obs, weights)
-                action = 1 if np.random.random() < p else 0
-                if action == 1:
-                    grad = (1 - p) * obs
-                else:
-                    grad = -p * obs
-                observations.append(obs)
-                actions.append(action)
-                gradients.append(grad)
-                obs, reward, terminated, truncated, _ = env.step(action)
-                rewards.append(reward)
-                done = terminated or truncated
-            return observations, actions, rewards, gradients
-      text: null
+      code: null
+      text: |
+        - Action = 1 (went right): gradient = $(1-p) \cdot \text{obs}$
+        - Action = 0 (went left): gradient = $-p \cdot \text{obs}$
+
+        This tells you which direction to push the weights to make the chosen action more likely.
 
   - type: exercise
     kind: coding
     id: ex-7-3
     part: 7
-    number: 3
-    title: "The REINFORCE Update"
+    number: 4
+    title: "Play, Record, and Learn"
     description: |
-      Now put it together:
+      Now put it all together. Write `play_episode(env, weights)` that:
 
-      1. Play one episode (collect observations, actions, rewards, gradients)
-      2. Compute discounted rewards and normalize them
-      3. For each step: multiply the gradient by the normalized discounted reward
-      4. Sum all the weighted gradients
-      5. Update: `weights += learning_rate * total_gradient`
+      1. Plays one full game using the probabilistic policy
+      2. At each step, records: observation, action, reward, and the gradient you derived above
 
-      This is **gradient ascent** — we want MORE reward, not less (unlike gradient descent where we minimized loss).
+      Then write `reinforce_update(env, weights, lr)` that:
+
+      1. Plays an episode
+      2. Computes discounted rewards and normalizes them
+      3. Multiplies each step's gradient by its normalized reward
+      4. Sums all the weighted gradients
+      5. Updates: `weights += lr * total_gradient` (gradient ASCENT!)
     provided_code: []
     hints:
+      - "For play_episode: at each step, compute `p = prob_right(obs, weights)`, sample an action, then compute the gradient: `(1-p)*obs` if action=1, `(-p)*obs` if action=0. Store everything in lists."
+      - |
+        ```python
+        def play_episode(env, weights):
+            obs, _ = env.reset()
+            observations, actions, rewards, gradients = [], [], [], []
+            done = False
+            while not done:
+                p = prob_right(obs, weights)
+                action = 1 if np.random.random() < p else 0
+                grad = (1 - p) * obs if action == 1 else -p * obs
+                observations.append(obs)
+                actions.append(action)
+                gradients.append(grad)
+                obs, reward, terminated, truncated, _ = env.step(action)
+                rewards.append(reward)
+                done = terminated or truncated
+            return observations, actions, rewards, gradients
+        ```
       - |
         ```python
         def reinforce_update(env, weights, lr=0.01):
-            obs_list, actions, rewards, gradients = play_episode(env, weights)
+            _, _, rewards, gradients = play_episode(env, weights)
             disc_rewards = compute_discounted_rewards(rewards)
             norm_rewards = normalize(disc_rewards)
-
             total_gradient = np.zeros(4)
             for grad, r in zip(gradients, norm_rewards):
                 total_gradient += grad * r
-
             weights += lr * total_gradient
             return weights, sum(rewards)
         ```
     solution:
       code: |
+        def play_episode(env, weights):
+            obs, _ = env.reset()
+            observations, actions, rewards, gradients = [], [], [], []
+            done = False
+            while not done:
+                p = prob_right(obs, weights)
+                action = 1 if np.random.random() < p else 0
+                grad = (1 - p) * obs if action == 1 else -p * obs
+                observations.append(obs)
+                actions.append(action)
+                gradients.append(grad)
+                obs, reward, terminated, truncated, _ = env.step(action)
+                rewards.append(reward)
+                done = terminated or truncated
+            return observations, actions, rewards, gradients
+
         def reinforce_update(env, weights, lr=0.01):
-            obs_list, actions, rewards, gradients = play_episode(env, weights)
+            _, _, rewards, gradients = play_episode(env, weights)
             disc_rewards = compute_discounted_rewards(rewards)
             norm_rewards = normalize(disc_rewards)
-
             total_gradient = np.zeros(4)
             for grad, r in zip(gradients, norm_rewards):
                 total_gradient += grad * r
-
             weights += lr * total_gradient
             return weights, sum(rewards)
       text: null
@@ -961,7 +1036,7 @@ blocks:
     kind: coding
     id: ex-7-4
     part: 7
-    number: 4
+    number: 5
     title: "Train the Agent!"
     description: |
       Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?
@@ -970,18 +1045,18 @@ blocks:
         code: |
           import matplotlib.pyplot as plt
 
-          def plot_scores(scores, window=50):
+          def plot_scores(scores, window=50, title="Training"):
               plt.figure(figsize=(10, 4))
               plt.plot(scores, alpha=0.3, label="episode score")
-              # Moving average
               avg = [np.mean(scores[max(0,i-window):i+1]) for i in range(len(scores))]
               plt.plot(avg, label=f"{window}-episode average")
               plt.xlabel("Episode")
               plt.ylabel("Score")
-              plt.title("REINFORCE Training")
+              plt.title(title)
               plt.legend()
               plt.show()
     hints:
+      - "Initialize `weights = np.zeros(4)`. Loop: `weights, score = reinforce_update(env, weights)`. Append score to a list. Print progress every 100 episodes."
       - |
         ```python
         weights = np.zeros(4)
@@ -991,8 +1066,7 @@ blocks:
             scores.append(score)
             if (episode + 1) % 100 == 0:
                 print(f"Episode {episode+1}: avg last 100 = {np.mean(scores[-100:]):.1f}")
-
-        plot_scores(scores)
+        plot_scores(scores, title="REINFORCE Training")
         ```
     solution:
       code: |
@@ -1004,19 +1078,22 @@ blocks:
             if (episode + 1) % 100 == 0:
                 print(f"Episode {episode+1}: avg last 100 = {np.mean(scores[-100:]):.1f}")
 
-        plot_scores(scores)
+        plot_scores(scores, title="REINFORCE Training")
         print(f"\nFinal weights: {weights}")
         print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
       text: null
 
   - type: reveal
     text: |
-      You just invented the **REINFORCE** algorithm (Williams, 1992)! The key insight:
+      You just invented the **REINFORCE** algorithm (Williams, 1992)! Look at what happened:
 
-      - Good actions (high discounted reward) → gradient gets amplified → model repeats them more
-      - Bad actions (low/negative normalized reward) → gradient gets reversed → model avoids them
+      - The model started knowing nothing (all weights = 0, coin-flip decisions)
+      - It played games, making random choices
+      - Good accidents (high reward) → gradient got amplified → model repeats those choices
+      - Bad accidents (low reward) → gradient got reversed → model avoids those choices
+      - Over hundreds of games, the model converged on a good policy
 
-      No one told the model the rules of physics. It learned by playing, failing, and adjusting — just like you did in Part 1, but automatically.
+      No one told the model the rules of physics. It learned entirely from its own experience — just like you did in Part 1, but automatically.
 
   # ═══════════════════════════════════════════════════
   # PART 8: Predicting Value — Toward Deep Q-Learning
@@ -1024,51 +1101,54 @@ blocks:
 
   - type: part
     number: 8
-    title: "Predicting Value — Toward Deep Q-Learning"
+    title: "Predicting Value"
     intro: |
-      REINFORCE has a problem: it has to finish the entire episode before learning. What if we could PREDICT how much future reward we'll get from a given state? Then we could learn step by step, without waiting.
+      REINFORCE works, but notice something: it has to finish the ENTIRE game before it can learn anything. It plays 200 steps, then looks back and assigns credit. Can we do better?
 
   - type: exercise
     kind: conceptual
     id: ex-8-1
     part: 8
     number: 1
-    title: "Good State, Bad State"
+    title: "You Can Already Predict"
     description: |
-      Think about these situations:
+      Think about two situations mid-game:
     prompts:
-      - "The pole is nearly vertical and barely moving. Is this a good state or bad state? What total future reward would you expect?"
-      - "The pole is almost horizontal and falling fast. Good or bad? Expected future reward?"
-      - "If you had a model that could predict future reward from any state, how would that help you learn?"
+      - "The pole is nearly vertical, barely moving. How many more steps do you think you'll survive? What's your expected future reward from here?"
+      - "The pole is nearly horizontal, falling fast. Expected future reward?"
+      - "You just made an intuitive prediction about future reward based on the state. If a MODEL could make this prediction, why would that be useful for learning?"
     hints:
-      - "Nearly vertical = good, expect high future reward (many more steps to survive). Nearly horizontal = bad, expect very low future reward (about to end). A reward predictor could tell you immediately whether an action made things better or worse — no need to wait until the end."
+      - "You could learn after EVERY step instead of waiting until the end! Take action → see next state → model predicts future reward for next state. If the predicted future is better than you expected, the action was good. If worse, the action was bad. Instant feedback!"
     solution:
       code: null
       text: |
-        A nearly vertical pole has high expected future reward — you'll survive many more steps. A nearly fallen pole has low expected future reward. If we could predict this, we'd know after each action whether it helped or hurt, without finishing the whole episode.
+        If you can predict future reward from any state, you get instant feedback. After each action, compare the predicted value of the next state to what you expected. No need to wait for the game to end.
 
   - type: exercise
     kind: coding
     id: ex-8-2
     part: 8
     number: 2
-    title: "Build a Value Model"
+    title: "Build a Value Predictor"
     description: |
-      Build a simple linear model that predicts total future reward from a state:
+      Build a simple linear model: given a state (observation), predict the total future reward.
 
       $$V(\text{obs}) = \mathbf{v} \cdot \text{obs}$$
 
-      Train it: play episodes using your REINFORCE policy, compute actual discounted rewards at each step, and use the MSE loss to train the value model to predict those rewards. Use gradient descent on the value weights.
+      To train it, you need data: play episodes using your REINFORCE policy, compute actual discounted rewards at each step (you already have `compute_discounted_rewards`!), and train the model to predict those rewards using the MSE loss from the Gradient Descent chapter.
     provided_code: []
     hints:
-      - "For each step in the episode, you have the observation and the actual discounted return. The loss is $(V(obs) - actual\\_return)^2$. The gradient is $2 \\cdot (V(obs) - actual\\_return) \\cdot obs$."
+      - "This is linear regression from the Gradient Descent chapter! Input = observation (4 numbers). Target = actual discounted return at that step. Loss = $(V(obs) - target)^2$. Gradient = $2 \\cdot (V(obs) - target) \\cdot obs$."
       - |
         ```python
         value_weights = np.zeros(4)
 
         def predict_value(obs, value_weights):
             return np.dot(value_weights, obs)
-
+        ```
+      - |
+        Train it by playing episodes and fitting to discounted returns:
+        ```python
         def train_value(observations, disc_rewards, value_weights, lr=0.001):
             for obs, target in zip(observations, disc_rewards):
                 pred = predict_value(obs, value_weights)
@@ -1092,66 +1172,95 @@ blocks:
       text: null
 
   - type: exercise
-    kind: coding
-    id: ex-8-3
+    kind: conceptual
+    id: ex-8-3a
     part: 8
     number: 3
-    title: "Temporal Difference Learning"
+    title: "The Waiting Problem"
     description: |
-      Instead of waiting for the full episode to compute discounted returns, use the value model itself to estimate future reward. At each step:
+      Your value model works — but it still needs `compute_discounted_rewards`, which requires the FULL list of rewards from a completed episode.
+    prompts:
+      - "Can you think of a way to estimate the discounted return at step t WITHOUT finishing the game?"
+      - "You have: the reward at step t, and the value model's prediction for the NEXT state. The discounted return at step t is: reward[t] + gamma × (discounted return at step t+1). But the discounted return at step t+1 is approximately... what?"
+      - "So the discounted return at step t is approximately: reward[t] + gamma × V(next_state). Does this require finishing the game?"
+    hints:
+      - "The value model already predicts the discounted return! So instead of waiting, use: `estimated_return = reward + gamma * V(next_state)`. This only needs the current step's reward and the next state. No waiting!"
+    solution:
+      code: null
+      text: |
+        Use the value model itself as the estimate: `target = reward + gamma × V(next_state)`. You only need the current reward and the next state — both available immediately. No need to finish the episode!
 
-      $$\text{TD target} = r_t + \gamma \cdot V(s_{t+1})$$
+  - type: exercise
+    kind: coding
+    id: ex-8-3b
+    part: 8
+    number: 4
+    title: "Step-by-Step Value Learning"
+    description: |
+      Implement the idea you just derived. At each step, compute:
 
-      The actual reward you got PLUS the predicted future value of the next state. Train the value model using this target instead of the full discounted return.
+      - `target = reward + gamma * V(next_state)` (your estimate of the true return)
+      - `error = target - V(current_state)` (how wrong the value model was)
+      - Update: `value_weights += lr * error * obs`
 
-      Update rule: $\mathbf{v} \leftarrow \mathbf{v} + \alpha \cdot (r_t + \gamma \cdot V(s_{t+1}) - V(s_t)) \cdot s_t$
-
-      The term $(r_t + \gamma \cdot V(s_{t+1}) - V(s_t))$ is called the **TD error**.
+      Write `td_update(obs, reward, next_obs, done, value_weights)`. When the game is done, `V(next_state) = 0` (no future rewards).
     provided_code: []
     hints:
+      - "When `done` is True, set `next_v = 0` since there's no future. Otherwise `next_v = predict_value(next_obs, value_weights)`."
+      - "The error `target - V(current)` tells you something interesting: was the actual outcome BETTER or WORSE than what the model predicted? Positive error = better than expected. Negative = worse."
       - |
         ```python
         def td_update(obs, reward, next_obs, done, value_weights, gamma=0.99, lr=0.001):
             current_v = predict_value(obs, value_weights)
             next_v = 0 if done else predict_value(next_obs, value_weights)
-            td_target = reward + gamma * next_v
-            td_error = td_target - current_v
-            value_weights += lr * td_error * obs
-            return value_weights, td_error
+            target = reward + gamma * next_v
+            error = target - current_v
+            value_weights += lr * error * obs
+            return value_weights, error
         ```
     solution:
       code: |
         def td_update(obs, reward, next_obs, done, value_weights, gamma=0.99, lr=0.001):
             current_v = predict_value(obs, value_weights)
             next_v = 0.0 if done else predict_value(next_obs, value_weights)
-            td_target = reward + gamma * next_v
-            td_error = td_target - current_v
-            value_weights += lr * td_error * obs
-            return value_weights, td_error
+            target = reward + gamma * next_v
+            error = target - current_v
+            value_weights += lr * error * obs
+            return value_weights, error
       text: null
 
   - type: exercise
-    kind: coding
-    id: ex-8-4
+    kind: conceptual
+    id: ex-8-4a
     part: 8
-    number: 4
-    title: "Advantage — Better Than Expected?"
+    number: 5
+    title: "What Does the Error Mean?"
     description: |
-      The TD error tells you something powerful: whether the action was **better or worse than expected**.
+      Look at the error from `td_update`: `error = reward + gamma * V(next_state) - V(current_state)`.
+    prompts:
+      - "If the error is positive, it means: what you actually got (reward + predicted future) is MORE than what you expected (V(current)). Was the action that got you here good or bad?"
+      - "If the error is negative, was the action good or bad?"
+      - "Compare this error to the normalized discounted rewards from REINFORCE. Which is a better signal for telling the actor which actions were good?"
+    hints:
+      - "Positive error = action was BETTER than expected. Negative = WORSE than expected. This 'better or worse than expected' signal is much less noisy than raw rewards, because it's relative to a learned baseline (the value model's prediction), not just the episode average."
+    solution:
+      code: null
+      text: |
+        The error measures **advantage** — was the outcome better or worse than expected? Positive = good action, negative = bad action. It's less noisy than raw discounted rewards because the value model provides a per-state baseline instead of the crude episode-wide average.
 
-      $$A_t = r_t + \gamma \cdot V(s_{t+1}) - V(s_t)$$
-
-      - If $A_t > 0$: the action led to a state that's BETTER than expected → good action!
-      - If $A_t < 0$: the action led to a state WORSE than expected → bad action.
-
-      This is called the **advantage**. It's much less noisy than using raw rewards because it compares against a baseline (what the value model expected).
-
-      Compute advantages for a full episode and compare them to the normalized discounted rewards from Part 6. Which signal is less noisy?
+  - type: exercise
+    kind: coding
+    id: ex-8-4b
+    part: 8
+    number: 6
+    title: "Compare the Signals"
+    description: |
+      Play an episode and compute both: (1) the normalized discounted rewards from REINFORCE, and (2) the TD errors (advantages) from the value model. Compare their standard deviations. Which signal is more stable?
     provided_code: []
     hints:
+      - "Play an episode with `play_episode`. Get discounted rewards and normalize them. Then replay the same states computing TD errors. Print the std of each."
       - |
         ```python
-        # Play an episode and compute advantages
         obs, _ = env.reset()
         advantages = []
         rewards_list = []
@@ -1161,11 +1270,15 @@ blocks:
             next_obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
             v_current = predict_value(obs, value_weights)
-            v_next = 0 if done else predict_value(next_obs, value_weights)
+            v_next = 0.0 if done else predict_value(next_obs, value_weights)
             advantage = reward + 0.99 * v_next - v_current
             advantages.append(advantage)
             rewards_list.append(reward)
             obs = next_obs
+
+        norm_disc = normalize(compute_discounted_rewards(rewards_list))
+        print(f"Advantage std: {np.std(advantages):.4f}")
+        print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
         ```
     solution:
       code: |
@@ -1184,21 +1297,21 @@ blocks:
             rewards_list.append(reward)
             obs = next_obs
 
-        disc = compute_discounted_rewards(rewards_list)
-        norm_disc = normalize(disc)
+        norm_disc = normalize(compute_discounted_rewards(rewards_list))
         print(f"Advantage std: {np.std(advantages):.4f}")
         print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
       text: null
 
   - type: reveal
     text: |
-      You just invented the core of **value-based reinforcement learning**:
+      You just invented several things at once:
 
       - A model that predicts future reward from a state = the **value function** (or **critic**)
-      - Training it step-by-step using $r + \gamma V(s')$ = **Temporal Difference (TD) learning**
-      - Using a neural network instead of linear weights = **Deep Q-Network (DQN)**
+      - Training it step-by-step using `reward + gamma × V(next_state)` = **Temporal Difference (TD) learning**
+      - The error `reward + gamma × V(next) - V(current)` = the **advantage** (or **TD error**)
+      - With a neural network instead of linear weights = **Deep Q-Network (DQN)**
 
-      The value model doesn't pick actions — it just evaluates states. That's why it's called the **critic**: it watches the policy (the actor) play and judges how well it's doing.
+      The value model doesn't pick actions — it just evaluates states. That's why it's called the **critic**: it watches the policy play and judges how well it's doing.
 
   # ═══════════════════════════════════════════════════
   # PART 9: Best of Both Worlds — Actor-Critic
@@ -1223,15 +1336,15 @@ blocks:
     description: |
       Think about how to combine the actor and critic:
     prompts:
-      - "The actor picks actions. The critic evaluates states. At each step, what should the critic provide to the actor?"
-      - "In Part 7 (REINFORCE), you multiplied gradients by normalized discounted rewards. What should you multiply by instead?"
-      - "Both models learn. What does the actor's loss depend on? What does the critic's loss depend on?"
+      - "In REINFORCE, you multiplied gradients by normalized discounted rewards. But you now have a better signal — the advantage (TD error). What should you multiply the gradients by instead?"
+      - "Both models learn at the same time. What does the actor learn from? What does the critic learn from?"
+      - "REINFORCE waits until the end of the episode. With a critic providing advantages at each step, do you still need to wait?"
     hints:
-      - "The critic provides the ADVANTAGE — was the action better or worse than expected? The actor uses advantages instead of raw discounted rewards. The actor learns to repeat high-advantage actions. The critic learns to better predict value (MSE between predicted and actual)."
+      - "The actor uses advantages instead of discounted rewards — gradient × advantage. The critic learns to predict value (minimizes TD error). And no, you don't need to wait — you can update BOTH models at every single step!"
     solution:
       code: null
       text: |
-        The critic provides advantages to the actor. The actor's update uses advantage × gradient (instead of discounted_reward × gradient). The critic trains to minimize prediction error (TD error squared). Both improve simultaneously — the critic gives better feedback as it learns, and the actor makes better decisions as it learns.
+        Actor update: gradient × advantage (instead of gradient × discounted_reward). Critic update: minimize TD error (same as before). Both update every step — no need to finish the episode. The critic provides instant feedback to the actor, and gets better at predicting as the actor improves.
 
   - type: exercise
     kind: coding
@@ -1240,17 +1353,19 @@ blocks:
     number: 2
     title: "Build Actor-Critic"
     description: |
-      Combine the actor (probabilistic policy) and critic (value model) into a single training loop:
+      Combine the actor and critic into a single training loop. At each step within an episode:
 
-      1. Actor picks action, observe reward and next state
-      2. Critic computes advantage: $A = r + \gamma V(s') - V(s)$
-      3. Update actor: `actor_weights += actor_lr * advantage * gradient`
-      4. Update critic: `critic_weights += critic_lr * td_error * obs`
-      5. Repeat step-by-step within the episode (no need to wait until episode end!)
+      1. Actor picks action (probabilistic, using sigmoid)
+      2. Observe reward and next state
+      3. Critic computes advantage (TD error)
+      4. Update actor weights using advantage × gradient
+      5. Update critic weights using TD error
 
       Train for 2000 episodes. Plot the scores.
     provided_code: []
     hints:
+      - "You already have all the pieces. The actor is `prob_right` + `sample_action` from Part 7. The critic is `predict_value` + TD error from Part 8. The new part is doing both updates at each step."
+      - "Actor gradient: `(1-p)*obs` if action=1, `(-p)*obs` if action=0. Actor update: `actor_weights += actor_lr * td_error * grad`. Critic update: `critic_weights += critic_lr * td_error * obs`."
       - |
         ```python
         actor_weights = np.zeros(4)
@@ -1264,39 +1379,26 @@ blocks:
             obs, _ = env.reset()
             total_reward = 0
             done = False
-
             while not done:
-                # Actor picks action
                 p = prob_right(obs, actor_weights)
                 action = 1 if np.random.random() < p else 0
+                grad = (1 - p) * obs if action == 1 else -p * obs
 
-                # Actor gradient
-                if action == 1:
-                    grad = (1 - p) * obs
-                else:
-                    grad = -p * obs
-
-                # Step
                 next_obs, reward, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
                 total_reward += reward
 
-                # Critic: compute advantage
                 v_current = predict_value(obs, critic_weights)
                 v_next = 0 if done else predict_value(next_obs, critic_weights)
                 td_error = reward + gamma * v_next - v_current
 
-                # Update actor with advantage
                 actor_weights += actor_lr * td_error * grad
-
-                # Update critic
                 critic_weights += critic_lr * td_error * obs
-
                 obs = next_obs
 
             scores.append(total_reward)
             if (episode + 1) % 200 == 0:
-                print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
+                print(f"Episode {episode+1}: avg = {np.mean(scores[-200:]):.1f}")
         ```
     solution:
       code: |
@@ -1315,10 +1417,7 @@ blocks:
             while not done:
                 p = prob_right(obs, actor_weights)
                 action = 1 if np.random.random() < p else 0
-                if action == 1:
-                    grad = (1 - p) * obs
-                else:
-                    grad = -p * obs
+                grad = (1 - p) * obs if action == 1 else -p * obs
 
                 next_obs, reward, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
@@ -1337,14 +1436,85 @@ blocks:
             if (episode + 1) % 200 == 0:
                 print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
 
-        plot_scores(scores)
+        plot_scores(scores, title="Actor-Critic Training")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-9-3
+    part: 9
+    number: 3
+    title: "The Grand Comparison"
+    description: |
+      You've built four approaches. Let's see them side by side. Run each one and plot their learning curves together:
+
+      1. **Random** — baseline (random actions)
+      2. **Genetic Algorithm** — 10 generations of evolution
+      3. **REINFORCE** — 1000 episodes of policy gradient
+      4. **Actor-Critic** — 2000 episodes of combined learning
+
+      Which learns fastest? Which achieves the highest score?
+    provided_code:
+      - label: "comparison plotting"
+        code: |
+          def plot_comparison(results):
+              plt.figure(figsize=(12, 5))
+              for name, scores in results.items():
+                  avg = [np.mean(scores[max(0,i-50):i+1]) for i in range(len(scores))]
+                  plt.plot(avg, label=name)
+              plt.xlabel("Episode")
+              plt.ylabel("50-episode average score")
+              plt.title("Comparison of RL Approaches")
+              plt.legend()
+              plt.show()
+    hints:
+      - "For the genetic algorithm, you'll need to adapt it to record a score per 'episode' — you can record the best score each generation, or evaluate the current best weights each episode."
+      - "Collect scores as `{'Random': [...], 'REINFORCE': [...], 'Actor-Critic': [...]}` and pass to `plot_comparison`."
+    solution:
+      code: |
+        # Random baseline
+        random_scores = []
+        for _ in range(1000):
+            random_scores.append(play_game(lambda obs: np.random.choice([0, 1]), env))
+
+        # REINFORCE
+        w_reinforce = np.zeros(4)
+        reinforce_scores = []
+        for _ in range(1000):
+            w_reinforce, score = reinforce_update(env, w_reinforce, lr=0.01)
+            reinforce_scores.append(score)
+
+        # Actor-Critic
+        aw = np.zeros(4)
+        cw = np.zeros(4)
+        ac_scores = []
+        for _ in range(1000):
+            obs, _ = env.reset()
+            total = 0
+            done = False
+            while not done:
+                p = prob_right(obs, aw)
+                action = 1 if np.random.random() < p else 0
+                grad = (1 - p) * obs if action == 1 else -p * obs
+                next_obs, reward, terminated, truncated, _ = env.step(action)
+                done = terminated or truncated
+                total += reward
+                v_cur = predict_value(obs, cw)
+                v_nxt = 0.0 if done else predict_value(next_obs, cw)
+                td_err = reward + 0.99 * v_nxt - v_cur
+                aw += 0.01 * td_err * grad
+                cw += 0.005 * td_err * obs
+                obs = next_obs
+            ac_scores.append(total)
+
+        plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-Critic': ac_scores})
       text: null
 
   - type: exercise
     kind: challenge
-    id: ex-9-3
+    id: ex-9-4
     part: 9
-    number: 3
+    number: 4
     title: "Go Deeper — Neural Network Actor-Critic"
     description: |
       Replace the linear models with small neural networks. Use one hidden layer of 32 neurons with ReLU activation. You can use numpy (manual backprop) or PyTorch/TensorFlow.
@@ -1369,6 +1539,7 @@ blocks:
               # You'll need to implement backprop for this!
     hints:
       - "If using PyTorch, this becomes much simpler — `nn.Linear(4, 32)`, `nn.ReLU()`, `nn.Linear(32, 1)`, and `loss.backward()` handles all the gradient computation."
+      - "With numpy, you'll need the ReLU derivative: `d_relu = (self.z1 > 0).astype(float)`. Chain rule for w2: `d_w2 = self.h.T @ d_output`. For w1: `d_w1 = x.T @ (d_output @ self.w2.T * d_relu)`."
     solution: null
 
   # ═══════════════════════════════════════════════════
