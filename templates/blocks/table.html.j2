@@ -1,0 +1,27 @@
+<section class="exercise" id="{{ block.id | default('') }}">
+  <div class="question">
+{% if block.title %}
+    <p>{{ block.title | md_inline }}</p>
+{% endif %}
+{% if block.description %}
+    {{ block.description | md }}
+{% endif %}
+    <table>
+      <tr>
+{% for header in block.headers %}
+        <th>{{ header | md_inline }}</th>
+{% endfor %}
+      </tr>
+{% for row in block.rows %}
+      <tr>
+{% for cell in row %}
+        <td>{{ cell | md_inline }}</td>
+{% endfor %}
+      </tr>
+{% endfor %}
+    </table>
+{% if block.after %}
+    {{ block.after | md }}
+{% endif %}
+  </div>
+</section>

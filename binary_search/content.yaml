@@ -1,0 +1,859 @@
+chapter:
+  id: binary_search
+  title: "Binary Search and Approximations"
+  intro: |
+    A single idea powers this entire chapter: if you know a function is **monotone** (always increasing or always decreasing), you can find any target value in it by repeatedly halving your search interval. You will apply this idea to approximate square roots, cube roots, nth roots, and logarithms — without ever using `math.sqrt`, `math.log`, or `**`.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/binary_search/binary_search.ipynb"
+  mathjax: true
+  footer: |
+    You approximated square roots, cube roots, nth roots, and logarithms — all without using any built-in math functions. The single idea of halving a search interval is one of the most powerful tools in all of computer science.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 0: The Core Idea
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 0
+    title: "The Core Idea"
+    intro: null
+
+  - type: exercise
+    kind: coding
+    id: ex-0-1
+    part: 0
+    number: 1
+    title: "Guess My Number"
+    description: |
+      Suppose someone thinks of an integer between 1 and 1000 (inclusive). You can ask "Is it less than, equal to, or greater than X?" and they will answer honestly.
+
+      **Question 1:** If you always guess randomly, how many guesses might you need in the worst case?
+
+      **Question 2:** If you always guess the *middle* of the remaining range, how many guesses do you need in the worst case? Try it on paper for the range [1, 1000].
+
+      **Key insight:** Each "guess the middle" halves the range. After k guesses the range has shrunk from 1000 to roughly $1000 / 2^k$. How many times can you halve 1000 before you reach 1?
+
+      ```
+      # How many halvings to go from n to 1?
+      # Each step: n -> n/2 -> n/4 -> ...
+      # After k steps: n / 2^k <= 1  →  k >= log2(n)
+      ```
+
+      **Write a function** `count_halvings(n)` that returns how many times you can halve `n` (starting from a whole number) before reaching 1 or below.
+
+      ```
+      count_halvings(1000)  # about 10
+      count_halvings(1)     # 0
+      count_halvings(16)    # 4
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert count_halvings(1) == 0
+          assert count_halvings(16) == 4
+          assert count_halvings(1000) == 9   # floor(log2(1000))
+          print("count_halvings: OK")
+          print(f"To find a number in [1..1000], at most {count_halvings(1000)+1} guesses needed.")
+    hints:
+      - "Use a loop. Start with a counter at 0. While `n > 1`, divide `n` by 2 (integer division) and increment the counter."
+      - "The answer is `floor(log2(n))`. For n=1000: $2^9 = 512$ and $2^{10} = 1024$, so `count_halvings(1000) = 9`. You need at most 10 guesses (one more than the number of halvings)."
+    solution:
+      code: |
+        def count_halvings(n):
+            count = 0
+            while n > 1:
+                n = n // 2
+                count += 1
+            return count
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 1: Square Root via Binary Search
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Square Root via Binary Search"
+    intro: |
+      The square root of `n` is the number `x` such that `x * x = n`. For example, sqrt(25) = 5 because 5 * 5 = 25.
+
+      **Before you code — think about the search:**
+
+      If you want sqrt(25), you know the answer is between **0** and **25**. Why?
+
+      Now suppose you could make one guess to narrow that range as much as possible. What single guess would eliminate the most possibilities? And once you check that guess, how do you decide which half of the range to keep?
+
+      Keep narrowing until `mid * mid` is within `precision` of `n`.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Square Root"
+    description: |
+      Write `sqrt_binary_search(n, precision)` that returns an approximation of sqrt(n).
+
+      **Arguments:**
+
+      - `n`: a non-negative number
+      - `precision`: how close `mid*mid` must be to `n` (e.g., 0.0001)
+
+      **Before you code:**
+
+      - What is the initial `low`? What is the initial `high`?
+      - When `mid*mid < n`, should you move `low` or `high` to `mid`?
+      - When does the loop stop?
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(sqrt_binary_search(25,  0.0001) - 5.0)    < 0.001
+          assert abs(sqrt_binary_search(2,   0.0001) - 1.4142) < 0.001
+          assert abs(sqrt_binary_search(0,   0.0001) - 0.0)    < 0.001
+          assert abs(sqrt_binary_search(144, 0.0001) - 12.0)   < 0.001
+          print("sqrt_binary_search: OK")
+          print(f"sqrt(2) ≈ {sqrt_binary_search(2, 1e-9):.9f}  (math.sqrt = {math.sqrt(2):.9f})")
+    hints:
+      - "Start with `low = 0` and `high = max(1, n)`. Using `max(1, n)` handles the case where `n < 1` (e.g., sqrt(0.25) = 0.5, which is larger than 0.25)."
+      - "Inside the loop: `mid = (low + high) / 2`. If `mid * mid < n`, the guess is too small, so move `low = mid`. Otherwise move `high = mid`. Stop when `abs(mid * mid - n) < precision`."
+    solution:
+      code: |
+        def sqrt_binary_search(n, precision):
+            if n == 0:
+                return 0.0
+            low, high = 0, max(1, n)
+            while True:
+                mid = (low + high) / 2
+                if abs(mid * mid - n) < precision:
+                    return mid
+                if mid * mid < n:
+                    low = mid
+                else:
+                    high = mid
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-1-plot
+    part: 1
+    number: 2
+    title: "Visualise the Convergence"
+    description: |
+      Run the plotting helper below to see how the search interval [low, high] narrows with each step.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_binary_search_convergence(n, precision, title="Binary search convergence"):
+              low, high = 0, max(1, n)
+              intervals = [(low, high)]
+              while True:
+                  mid = (low + high) / 2
+                  if abs(mid * mid - n) < precision:
+                      break
+                  if mid * mid < n:
+                      low = mid
+                  else:
+                      high = mid
+                  intervals.append((low, high))
+
+              steps = range(len(intervals))
+              widths = [h - l for l, h in intervals]
+              fig, axes = plt.subplots(1, 2, figsize=(10, 3))
+              axes[0].plot(steps, widths, marker="o", ms=3)
+              axes[0].set_xlabel("step")
+              axes[0].set_ylabel("interval width")
+              axes[0].set_title("Interval narrows each step")
+              axes[0].set_yscale("log")
+              mids = [(l + h) / 2 for l, h in intervals]
+              axes[1].plot(steps, mids, marker="o", ms=3)
+              axes[1].axhline(math.sqrt(n), color="red", linestyle="--",
+                              label=f"true sqrt({n})")
+              axes[1].set_xlabel("step")
+              axes[1].set_ylabel("midpoint guess")
+              axes[1].set_title("Midpoint converges to answer")
+              axes[1].legend()
+              plt.suptitle(title)
+              plt.tight_layout()
+              plt.show()
+              print(f"Converged in {len(intervals)} steps.")
+
+          plot_binary_search_convergence(2, 1e-9, title="sqrt(2) search")
+    hints: null
+    solution: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Cube Root via Binary Search
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Cube Root via Binary Search"
+    intro: |
+      The cube root of `n` is the number `x` such that `x * x * x = n`. For example, cuberoot(27) = 3 because 3 * 3 * 3 = 27.
+
+      This is more interesting than sqrt because:
+
+      - The cube root of a **negative** number is also negative (cuberoot(-8) = -2).
+      - For `|n| < 1`, the cube root is **larger** than `|n|` (cuberoot(0.001) = 0.1).
+
+      **Before you code — think about these cases:**
+
+      1. cuberoot(27): search range [0, 27]. Standard.
+      2. cuberoot(-64): cube root of |-64| = 4, then negate → -4.
+      3. cuberoot(0.001): |n| < 1, so the answer is between 0 and 1, not 0 and 0.001. Use range [0, 1] when |n| < 1.
+
+      **Stopping rule:** Stop when `abs(mid**3 - abs(n)) < precision`.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Cube Root"
+    description: |
+      Write `cuberoot_binary_search(n, precision)`.
+
+      You already built `sqrt_binary_search` — adapt it. The core binary search loop is the same; what changes is the check and the edge cases.
+
+      **Think about:**
+
+      - What do you check instead of `mid * mid`?
+      - Negative numbers: what is `(-2)³`? How can you handle negatives by working on `abs(n)` and fixing the sign at the end?
+      - Numbers between -1 and 1: cuberoot(0.001) = 0.1, which is *larger* than 0.001. What does that mean for your initial `high`?
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(cuberoot_binary_search(27,    1e-6) - 3.0)    < 1e-4
+          assert abs(cuberoot_binary_search(8,     1e-6) - 2.0)    < 1e-4
+          assert abs(cuberoot_binary_search(-64,   1e-6) - (-4.0)) < 1e-4
+          assert abs(cuberoot_binary_search(0.001, 1e-6) - 0.1)    < 1e-4
+          assert abs(cuberoot_binary_search(0,     1e-6) - 0.0)    < 1e-4
+          print("cuberoot_binary_search: OK")
+          print(f"cuberoot(-125) ≈ {cuberoot_binary_search(-125, 1e-9):.6f}  (expect -5.0)")
+    hints:
+      - "Handle the sign separately: work on `abs(n)`, find the positive cube root, then negate the result if the original `n` was negative."
+      - "For `abs_n < 1`, the cube root is larger than the value (e.g., cuberoot(0.001) = 0.1). So set `high = 1` instead of `high = abs_n` to ensure the answer is within the search range."
+      - "The binary search loop is the same pattern as sqrt: `mid = (low + high) / 2`. If `mid**3 < abs_n`, move `low = mid`; otherwise move `high = mid`."
+    solution:
+      code: |
+        def cuberoot_binary_search(n, precision):
+            if n == 0:
+                return 0
+            abs_n = abs(n)
+            low = 0
+            high = abs_n if abs_n >= 1 else 1
+            while True:
+                mid = (low + high) / 2
+                if abs(mid ** 3 - abs_n) < precision:
+                    return -mid if n < 0 else mid
+                if mid ** 3 < abs_n:
+                    low = mid
+                else:
+                    high = mid
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Nth Root via Binary Search
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Nth Root via Binary Search"
+    intro: |
+      You just wrote `sqrt_binary_search` and `cuberoot_binary_search`. Look at them side by side. The only thing that changes is the **check function**:
+
+      | Function | Check |
+      |----------|-------|
+      | sqrt | `mid * mid` |
+      | cuberoot | `mid * mid * mid` |
+      | nth root | `mid ** n` |
+
+      **Before you code:**
+
+      - What range should `low` and `high` be for the nth root?
+        - If `x >= 1`: range is [0, x] (the nth root is always ≤ x for n ≥ 1).
+        - If `0 < x < 1`: the nth root is **larger** than x, so use range [0, 1].
+      - For **odd** n, negative x values have real roots. For **even** n, they do not.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Nth Root"
+    description: |
+      Write `nth_root(x, n, precision=1e-9)` that returns the real nth root of x.
+
+      For simplicity, assume x ≥ 0 (handle negatives as a bonus below).
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(nth_root(16,  2) - 4.0)             < 1e-6
+          assert abs(nth_root(27,  3) - 3.0)             < 1e-6
+          assert abs(nth_root(81,  4) - 3.0)             < 1e-6
+          assert abs(nth_root(32,  5) - 2.0)             < 1e-6
+          assert abs(nth_root(1,   7) - 1.0)             < 1e-6
+          assert abs(nth_root(0.5, 2) - math.sqrt(0.5))  < 1e-6
+          print("nth_root: OK")
+    hints:
+      - "Generalise your sqrt code: replace `mid * mid` with `mid ** n`. Set `high = max(1, x)` to handle values less than 1."
+      - "The stopping condition is `abs(mid**n - x) < precision`. The rest of the binary search logic is identical to the sqrt version."
+    solution:
+      code: |
+        def nth_root(x, n, precision=1e-9):
+            if x == 0:
+                return 0
+            low, high = 0, max(1, x)
+            while True:
+                mid = (low + high) / 2
+                if abs(mid ** n - x) < precision:
+                    return mid
+                if mid ** n < x:
+                    low = mid
+                else:
+                    high = mid
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Verify with Python's Built-in"
+    description: |
+      Python can compute nth roots with `x ** (1/n)`. Verify that your function gives the same answer for a range of values.
+    provided_code:
+      - label: "verification code"
+        code: |
+          for x, n in [(16, 2), (27, 3), (81, 4), (32, 5), (2, 10)]:
+              mine = nth_root(x, n)
+              builtin = x ** (1 / n)
+              print(f"nth_root({x}, {n}) = {mine:.9f}  |  "
+                    f"{x}**(1/{n}) = {builtin:.9f}  |  diff = {abs(mine-builtin):.2e}")
+    hints: null
+    solution: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 3
+    title: "When Binary Search Applies"
+    question: |
+      Binary search works for square root, cube root, and nth root. What property of these functions makes binary search possible?
+    options:
+      - label: A
+        text: "They all use exponents"
+      - label: B
+        text: "They are all monotonically increasing — a larger input always gives a larger output, so the midpoint test tells you which half to keep"
+        correct: true
+      - label: C
+        text: "They all return values between 0 and 1"
+      - label: D
+        text: "They can all be computed without importing any library"
+    hints:
+      - "Think about the guess-and-check process. When your guess is too high, you discard the upper half. When does that logic break?"
+    solution:
+      text: |
+        Binary search requires a monotonic function — one where increasing the input always increases (or always decreases) the output. This lets you decide which half of the search range to discard at each step. If a function went up and down, the midpoint test couldn't tell you which direction the answer lies. Square root, cube root, and nth root (for positive inputs) are all monotonically increasing.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Log Base 10 via Binary Search
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Log Base 10 via Binary Search"
+    intro: |
+      So far you searched for a VALUE `x` such that `x**n == target`. Now flip the problem: search for an **EXPONENT** `y` such that `10**y == x`.
+
+      This is exactly the definition of the logarithm:
+
+      $$\log_{10}(x) = y \quad \Leftrightarrow \quad 10^y = x$$
+
+      **Why does binary search still work?** The function $f(y) = 10^y$ is strictly increasing. So if `10**mid < x`, the true exponent must be larger: move `low = mid`. If `10**mid > x`, move `high = mid`.
+
+      **Before you code — think about the bracket:**
+
+      Before you can search, you need to know where to look. How would you find a range [low, high] such that the answer is definitely inside? Think about what `10**0` and `10**1` equal — when do you need to look beyond that range? What about when `x < 1`?
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Log Base 10"
+    description: |
+      Write `log10_binary_search(x, tol=1e-7)`.
+
+      You have already built binary search for roots — this is the same idea applied to exponents. The new challenge is figuring out the initial search bracket, since the exponent could be any real number.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(log10_binary_search(100)  - 2.0)    < 1e-6
+          assert abs(log10_binary_search(1000) - 3.0)    < 1e-6
+          assert abs(log10_binary_search(0.01) - (-2.0)) < 1e-6
+          assert abs(log10_binary_search(1)    - 0.0)    < 1e-9
+          assert abs(log10_binary_search(2)    - math.log10(2)) < 1e-6
+          print("log10_binary_search: OK")
+          print(f"log10(2) ≈ {log10_binary_search(2):.8f}  (math.log10 = {math.log10(2):.8f})")
+    hints:
+      - "The key difference from root-finding: you are searching for an *exponent*, not a value. The bracket `[low, high]` contains possible exponents, and you check `10**mid` against `x`."
+      - "For the bracket-finding step: start with a small range and keep expanding. For `x >= 1`, double `high` until `10**high >= x`. For `x < 1`, double the magnitude of `low` until `10**low <= x`."
+      - "Inside the binary search loop: `mid = (low + high) / 2`. If `10**mid < x`, the exponent is too small — set `low = mid`. Otherwise set `high = mid`. Stop when `high - low < 1e-12`."
+    solution:
+      code: |
+        def log10_binary_search(x, tol=1e-7):
+            if x >= 1:
+                low, high = 0.0, 1.0
+                while 10 ** high < x:
+                    high *= 2
+            else:
+                low, high = -1.0, 0.0
+                while 10 ** low > x:
+                    low *= 2
+            while high - low > 1e-12:
+                mid = (low + high) / 2
+                if 10 ** mid < x:
+                    low = mid
+                else:
+                    high = mid
+            return (low + high) / 2
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-plot
+    part: 4
+    number: 2
+    title: "Visualise the Log Search"
+    description: |
+      Run the plotting helper below to visualise the search for the exponent y such that $10^y = x$.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_log10_search(x):
+              if x <= 0:
+                  raise ValueError("x must be positive")
+              if x >= 1:
+                  low, high = 0.0, 1.0
+                  while 10**high < x:
+                      high *= 2
+              else:
+                  low, high = -1.0, 0.0
+                  while 10**low > x:
+                      low *= 2
+              mids = []
+              for _ in range(60):
+                  mid = (low + high) / 2
+                  mids.append(mid)
+                  if high - low < 1e-12:
+                      break
+                  if 10**mid < x:
+                      low = mid
+                  else:
+                      high = mid
+              true_log = math.log10(x)
+              fig, ax = plt.subplots(figsize=(8, 3))
+              ax.plot(range(len(mids)), mids, marker="o", ms=3,
+                      label="mid guess for y")
+              ax.axhline(true_log, color="red", linestyle="--",
+                         label=f"true log10({x}) = {true_log:.5f}")
+              ax.set_xlabel("step")
+              ax.set_ylabel("y (exponent guess)")
+              ax.set_title(f"Binary search for log10({x})")
+              ax.legend()
+              plt.tight_layout()
+              plt.show()
+
+          plot_log10_search(2)
+    hints: null
+    solution: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: Log Base N via Binary Search
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Log Base N via Binary Search"
+    intro: |
+      Now generalise: instead of searching for `y` such that `10**y == x`, search for `y` such that `n**y == x` for any base `n`.
+
+      **When n > 1:** $f(y) = n^y$ is strictly increasing. Same logic as log10.
+
+      **When 0 < n < 1:** $f(y) = n^y$ is strictly **decreasing**. For example: $0.5^2 = 0.25 < 0.5^1 = 0.5$. As y increases, $n^y$ decreases.
+
+      For the case 0 < n < 1, the comparisons flip:
+
+      - If `n**mid > x`, we need a larger exponent → `low = mid`.
+      - If `n**mid < x`, we need a smaller exponent → `high = mid`.
+
+      **Before you code:**
+
+      - Verify by hand: `log_base_n(0.04, 5) = -2` because $5^{-2} = 1/25 = 0.04$.
+      - With base=5 (> 1), $f(y) = 5^y$ is increasing. x=0.04 < 1 so y must be negative. Start with `low=-1, high=0`; keep `low *= 2` until `5**low <= 0.04`.
+
+      **Raise `ValueError`** if `x <= 0`, `n <= 0`, or `n == 1`.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Log Base N"
+    description: |
+      Write `log_base_n(x, n, tol=1e-7)`.
+
+      The bracket-finding logic is the same as log10, but with `n**y` instead of `10**y`. For `0 < n < 1`, you will need to flip the comparison in the binary search step.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(log_base_n(8,    2) - 3.0)             < 1e-6
+          assert abs(log_base_n(81,   3) - 4.0)             < 1e-6
+          assert abs(log_base_n(0.04, 5) - (-2.0))          < 1e-6
+          assert abs(log_base_n(10,   2) - math.log(10, 2)) < 1e-6
+          assert abs(log_base_n(100, 10) - 2.0)             < 1e-6
+          print("log_base_n: OK")
+          print(f"log2(10) ≈ {log_base_n(10, 2):.8f}  (math.log = {math.log(10, 2):.8f})")
+    hints:
+      - "Start from your `log10_binary_search` and replace every `10` with `n`. The tricky part is handling `0 < n < 1` where the function is decreasing."
+      - "For the binary search step when `n > 1`: if `n**mid < x`, move `low = mid`. When `0 < n < 1`: if `n**mid > x`, move `low = mid` (the comparison flips because the function is decreasing)."
+    solution:
+      code: |
+        def log_base_n(x, n, tol=1e-7):
+            if x <= 0 or n <= 0 or n == 1:
+                raise ValueError("x and n must be positive, n != 1")
+            if n > 1:
+                if x >= 1:
+                    low, high = 0.0, 1.0
+                    while n ** high < x:
+                        high *= 2
+                else:
+                    low, high = -1.0, 0.0
+                    while n ** low > x:
+                        low *= 2
+                while high - low > 1e-12:
+                    mid = (low + high) / 2
+                    if n ** mid < x:
+                        low = mid
+                    else:
+                        high = mid
+            else:
+                # 0 < n < 1: n**y is decreasing
+                if x <= 1:
+                    low, high = 0.0, 1.0
+                    while n ** high > x:
+                        high *= 2
+                else:
+                    low, high = -1.0, 0.0
+                    while n ** low < x:
+                        low *= 2
+                while high - low > 1e-12:
+                    mid = (low + high) / 2
+                    if n ** mid > x:
+                        low = mid
+                    else:
+                        high = mid
+            return (low + high) / 2
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Change of Base Formula"
+    description: |
+      The **change of base formula** says:
+
+      $$\log_b(x) = \frac{\log_a(x)}{\log_a(b)}$$
+
+      Verify this using your `log_base_n` function: `log_base_n(x, b)` should equal `log_base_n(x, a) / log_base_n(b, a)` for any a.
+
+      ```
+      # log2(8) using base-10 logs:
+      # log10(8) / log10(2) = log2(8)
+      ```
+    provided_code:
+      - label: "verification code"
+        code: |
+          def verify_change_of_base(x, b, a=10):
+              direct = log_base_n(x, b)
+              via_change = log_base_n(x, a) / log_base_n(b, a)
+              print(f"log_{b}({x}) directly    = {direct:.8f}")
+              print(f"log_{b}({x}) via base {a} = {via_change:.8f}")
+              print(f"Difference: {abs(direct - via_change):.2e}")
+              assert abs(direct - via_change) < 1e-5
+              print("Change of base verified!")
+
+          verify_change_of_base(8, 2)
+          verify_change_of_base(81, 3)
+          verify_change_of_base(1000, 10)
+    hints: null
+    solution: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: Bonus — Binary Search on Sorted Arrays
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Bonus — Binary Search on Sorted Arrays"
+    intro: |
+      Everything so far searched a **continuous range** of numbers. But the same halving idea works on a **sorted array** — and this is the version you will meet everywhere, from databases to `bisect` in the standard library.
+
+      The setup changes slightly:
+
+      - Instead of `lo` and `hi` being numbers, they are **indices** into the array.
+      - Instead of stopping at a precision, you stop when the indices cross.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Is It There?"
+    description: |
+      Write `contains(arr, x)` that returns `True` if `x` occurs in the **sorted** list `arr`. Look at the middle element, decide which half could contain `x`, and repeat. No `in`, no walking the whole list: for a million items your function should look at ~20 elements at most.
+    provided_code:
+      - label: "test cell"
+        code: |
+          arr = [1, 3, 5, 7, 9, 11]
+          assert contains(arr, 7) == True
+          assert contains(arr, 1) == True
+          assert contains(arr, 11) == True
+          assert contains(arr, 4) == False
+          assert contains(arr, 0) == False
+          assert contains(arr, 12) == False
+          assert contains([], 5) == False
+          print("contains: OK")
+    hints:
+      - "Use two index variables: `lo = 0` and `hi = len(arr) - 1`. While `lo <= hi`, compute `mid = (lo + hi) // 2`. If `arr[mid] == x`, return `True`. If `arr[mid] < x`, set `lo = mid + 1`. Otherwise set `hi = mid - 1`."
+    solution:
+      code: |
+        def contains(arr, x):
+            lo, hi = 0, len(arr) - 1
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                if arr[mid] == x:
+                    return True
+                elif arr[mid] < x:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+            return False
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "First and Last"
+    description: |
+      If the array has **duplicates**, "is it there" isn't enough — you often need *where does it start* and *where does it end*.
+
+      Write `find_first(arr, x)` and `find_last(arr, x)` that return the index of the first / last occurrence of `x` in the sorted list `arr`, or `-1` if it's absent.
+
+      **Hint:** when you find a match, don't stop — remember the index, then keep searching the half where an even earlier (or later) match could still hide.
+    provided_code:
+      - label: "test cell"
+        code: |
+          arr = [1, 2, 2, 2, 3, 5, 5]
+          assert find_first(arr, 2) == 1
+          assert find_last(arr, 2) == 3
+          assert find_first(arr, 5) == 5
+          assert find_last(arr, 5) == 6
+          assert find_first(arr, 4) == -1
+          assert find_last(arr, 4) == -1
+          assert find_first(arr, 1) == 0 and find_last(arr, 1) == 0
+          print("find_first / find_last: OK")
+    hints:
+      - "For `find_first`: when `arr[mid] == x`, record `result = mid` and then search *left* (`hi = mid - 1`) in case there is an earlier occurrence. For `find_last`, do the mirror: search *right* (`lo = mid + 1`) after a match."
+      - "Initialise `result = -1`. Run a standard binary search loop. When you find a match, update `result` and keep searching the appropriate half. Return `result` at the end."
+    solution:
+      code: |
+        def find_first(arr, x):
+            lo, hi = 0, len(arr) - 1
+            result = -1
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                if arr[mid] == x:
+                    result = mid
+                    hi = mid - 1      # keep searching left
+                elif arr[mid] < x:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+            return result
+
+        def find_last(arr, x):
+            lo, hi = 0, len(arr) - 1
+            result = -1
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                if arr[mid] == x:
+                    result = mid
+                    lo = mid + 1      # keep searching right
+                elif arr[mid] < x:
+                    lo = mid + 1
+                else:
+                    hi = mid - 1
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-3
+    part: 6
+    number: 3
+    title: "Counting Without Counting"
+    description: |
+      A sensor logs a **billion** readings, each one `0`, `1` or `2`, and the log is sorted. Your boss wants to know how many `1`s there are. Walking the array is a billion steps; you can answer it in about sixty.
+
+      Write `count_val(arr, x)` that returns how many times `x` occurs in the sorted list `arr`, by combining `find_first` and `find_last`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          readings = [0]*5 + [1]*3 + [2]*4
+          assert count_val(readings, 0) == 5
+          assert count_val(readings, 1) == 3
+          assert count_val(readings, 2) == 4
+          assert count_val(readings, 7) == 0
+
+          big = [0]*400000 + [1]*300000 + [2]*300000
+          assert count_val(big, 1) == 300000
+          print("count_val: OK")
+    hints:
+      - "If `find_first` returns `-1`, the value is absent — return 0. Otherwise the count is `find_last(arr, x) - find_first(arr, x) + 1`."
+    solution:
+      code: |
+        def count_val(arr, x):
+            first = find_first(arr, x)
+            if first == -1:
+                return 0
+            return find_last(arr, x) - first + 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-4
+    part: 6
+    number: 4
+    title: "Common Elements, Small vs Huge"
+    description: |
+      You have a small list of IDs and a **huge sorted** list of registered IDs, and you want the ones that appear in both. Checking each small ID against every huge ID costs $m \times n$ comparisons; binary-searching each small ID costs only $m \times \log(n)$.
+
+      Write `commons(small, huge)` that returns the elements of `small` (in order) that occur in the sorted list `huge`. Reuse your `contains`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          big = list(range(0, 2_000_000, 2))   # a million even numbers
+          assert commons([5, 10, 999_999, 1_000_000], big) == [10, 1_000_000]
+          assert commons([1, 3, 7], big) == []
+          assert commons([0, 2, 4], big) == [0, 2, 4]
+          print("commons: OK — 4 lookups x ~20 steps beats 4 x 1,000,000")
+    hints:
+      - "Loop through each element of `small`, call `contains(huge, element)`, and collect those that return `True`. A list comprehension makes this a one-liner."
+    solution:
+      code: |
+        def commons(small, huge):
+            return [x for x in small if contains(huge, x)]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-5
+    part: 6
+    number: 5
+    title: "Finding the Bottom of a Valley"
+    description: |
+      One last twist. This array isn't sorted — it goes **down, then up**, like a valley:
+
+      ```
+      [10, 9, 8, 6.5, 4.1, 3.2, 2, 4, 4.5, 6]
+      ```
+
+      Binary search still works! Compare `arr[mid]` with `arr[mid + 1]`:
+
+      - if `arr[mid] > arr[mid + 1]`, you are on the **downhill** slope — the minimum must be to the right;
+      - otherwise you are on the **uphill** slope (or at the bottom) — the minimum is at `mid` or to its left.
+
+      Write `find_min_convex(arr)` that returns the **minimum value** of such a valley-shaped array.
+
+      Hold on to this idea: "walk downhill until it stops going down" is exactly how **gradient descent** trains machine-learning models — you will meet it again in the Gradient Descent chapter.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert find_min_convex([10, 9, 8, 6.5, 4.1, 3.2, 2, 4, 4.5, 6]) == 2
+          assert find_min_convex([5, 3, 1, 2, 8]) == 1
+          assert find_min_convex([3, 2, 1]) == 1      # all downhill
+          assert find_min_convex([1, 2, 3]) == 1      # all uphill
+          assert find_min_convex([7]) == 7
+          print("find_min_convex: OK")
+    hints:
+      - "Use `lo = 0` and `hi = len(arr) - 1`. In each step, compute `mid = (lo + hi) // 2`. If `mid < len(arr) - 1` and `arr[mid] > arr[mid + 1]`, the minimum is to the right: `lo = mid + 1`. Otherwise `hi = mid`."
+      - "Stop when `lo == hi`. At that point `arr[lo]` is the minimum. This works because you are always discarding the half that cannot contain the minimum."
+    solution:
+      code: |
+        def find_min_convex(arr):
+            lo, hi = 0, len(arr) - 1
+            while lo < hi:
+                mid = (lo + hi) // 2
+                if arr[mid] > arr[mid + 1]:
+                    lo = mid + 1      # minimum is to the right
+                else:
+                    hi = mid          # minimum is at mid or left
+            return arr[lo]
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-6-1
+    part: 6
+    number: 6
+    title: "Binary Search Complexity"
+    question: |
+      A sorted list has 1,000,000 elements. What is the maximum number of comparisons binary search needs to find an element (or confirm it's missing)?
+    options:
+      - label: A
+        text: "1,000,000"
+      - label: B
+        text: "1,000"
+      - label: C
+        text: "About 20"
+        correct: true
+      - label: D
+        text: "About 500,000"
+    hints:
+      - "Each comparison cuts the remaining elements in half. How many times can you halve 1,000,000 before reaching 1?"
+    solution:
+      text: |
+        Binary search makes at most log₂(n) comparisons. log₂(1,000,000) ≈ 19.9, so about 20 comparisons. That's the power of halving: even for a million items, you only need ~20 steps. Compare this to a simple scan, which might need all 1,000,000 comparisons in the worst case.
+
+  # ═══════════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: null
+    title: "Summary"
+    intro: null
+
+  - type: table
+    id: ex-summary
+    title: null
+    description: |
+      You applied **one idea** — binary search on a continuous range — to five different problems:
+    headers: ["Function", "Searching for", "Check condition"]
+    rows:
+      - ["`sqrt_binary_search(n, p)`", "x such that x² = n", "`mid*mid` vs `n`"]
+      - ["`cuberoot_binary_search(n, p)`", "x such that x³ = n", "`mid**3` vs `n` (handle sign)"]
+      - ["`nth_root(x, n, p)`", "x such that x^n = target", "`mid**n` vs `target`"]
+      - ["`log10_binary_search(x, tol)`", "y such that 10^y = x", "`10**mid` vs `x`"]
+      - ["`log_base_n(x, n, tol)`", "y such that n^y = x", "`n**mid` vs `x` (flip if n<1)"]
+    after: |
+      **Binary search works whenever the function is monotone** — that single property guarantees the interval always shrinks and the answer is always inside it.
+
+      In the bonus part you moved the same idea onto **sorted arrays** — `contains`, `find_first` / `find_last`, `count_val`, `commons` — plus one valley-shaped twist, `find_min_convex`, that points straight at gradient descent.

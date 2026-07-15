@@ -1,0 +1,161 @@
+{% if block.kind == 'mcq' %}
+<section class="exercise mcq" id="{{ block.id | default('') }}">
+  <h3>Quick Check {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <div class="question">
+    {{ block.question | md }}
+  </div>
+  <div class="mcq-options" data-correct="{{ block.options | selectattr('correct', 'defined') | selectattr('correct') | map(attribute='label') | first }}">
+{% for option in block.options %}
+    <label class="mcq-option">
+      <input type="radio" name="{{ block.id }}" value="{{ option.label }}" />
+      <span><strong>{{ option.label }}.</strong> {{ option.text }}</span>
+    </label>
+{% endfor %}
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+{% if block.hints is defined and block.hints %}
+{% for hint_text in block.hints %}
+  <details class="hint"{% if block.hints | length > 1 %} data-level="{{ loop.index }}"{% endif %}>
+    <summary>Hint{% if block.hints | length > 1 %} {{ loop.index }}{% endif %}</summary>
+    <div class="hint-body">{{ hint_text | md }}</div>
+  </details>
+{% endfor %}
+{% endif %}
+{% if block.solution is defined and block.solution %}
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body">
+{% if block.solution.text is defined and block.solution.text %}
+      {{ block.solution.text | md }}
+{% endif %}
+{% if block.solution.code is defined and block.solution.code %}
+      <pre><code>{{ block.solution.code | escape_html }}</code></pre>
+{% endif %}
+    </div>
+  </details>
+{% endif %}
+</section>
+
+{% elif block.kind == 'conceptual' %}
+<section class="exercise" id="{{ block.id | default('') }}">
+  <h3>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <div class="question">
+{% if block.description is defined and block.description %}
+    {{ block.description | md }}
+{% endif %}
+{% if block.prompts is defined %}
+{% for prompt in block.prompts %}
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      {{ prompt | md_inline }}
+    </div>
+{% endfor %}
+{% endif %}
+{% if block.provided_code is defined %}
+{% for pc in block.provided_code %}
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; {{ pc.label }}</div>
+      <pre><code>{{ pc.code | escape_html }}</code></pre>
+    </div>
+{% endfor %}
+{% endif %}
+  </div>
+{% if block.hints is defined and block.hints %}
+{% for hint_text in block.hints %}
+  <details class="hint" data-level="{{ loop.index }}">
+    <summary>Hint {{ loop.index }}</summary>
+    <div class="hint-body">{{ hint_text | md }}</div>
+  </details>
+{% endfor %}
+{% endif %}
+{% if block.solution is defined and block.solution %}
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+{% if block.solution.text is defined and block.solution.text %}
+      {{ block.solution.text | md }}
+{% endif %}
+{% if block.solution.code is defined and block.solution.code %}
+      <pre><code>{{ block.solution.code | escape_html }}</code></pre>
+{% endif %}
+    </div>
+  </details>
+{% endif %}
+</section>
+
+{% elif block.kind == 'challenge' %}
+<section class="exercise" id="{{ block.id | default('') }}">
+  <h3>{{ block.title }}</h3>
+  <div class="question">
+    {{ block.description | md }}
+{% if block.provided_code is defined %}
+{% for pc in block.provided_code %}
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; {{ pc.label }}</div>
+      <pre><code>{{ pc.code | escape_html }}</code></pre>
+    </div>
+{% endfor %}
+{% endif %}
+  </div>
+{% if block.hints is defined and block.hints %}
+{% for hint_text in block.hints %}
+  <details class="hint" data-level="{{ loop.index }}">
+    <summary>Hint {{ loop.index }}</summary>
+    <div class="hint-body">{{ hint_text | md }}</div>
+  </details>
+{% endfor %}
+{% endif %}
+{% if block.solution is defined and block.solution %}
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+{% if block.solution.text is defined and block.solution.text %}
+      {{ block.solution.text | md }}
+{% endif %}
+{% if block.solution.code is defined and block.solution.code %}
+      <pre><code>{{ block.solution.code | escape_html }}</code></pre>
+{% endif %}
+    </div>
+  </details>
+{% endif %}
+</section>
+
+{% else %}
+{# Default: coding exercise #}
+<section class="exercise" id="{{ block.id | default('') }}">
+  <h3>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <div class="question">
+    {{ block.description | md }}
+{% if block.provided_code is defined %}
+{% for pc in block.provided_code %}
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; {{ pc.label }}</div>
+      <pre><code>{{ pc.code | escape_html }}</code></pre>
+    </div>
+{% endfor %}
+{% endif %}
+  </div>
+{% if block.hints is defined and block.hints %}
+{% for hint_text in block.hints %}
+  <details class="hint" data-level="{{ loop.index }}">
+    <summary>Hint {{ loop.index }}</summary>
+    <div class="hint-body">{{ hint_text | md }}</div>
+  </details>
+{% endfor %}
+{% endif %}
+{% if block.solution is defined and block.solution %}
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+{% if block.solution.text is defined and block.solution.text %}
+      {{ block.solution.text | md }}
+{% endif %}
+{% if block.solution.code is defined and block.solution.code %}
+      <pre><code>{{ block.solution.code | escape_html }}</code></pre>
+{% endif %}
+    </div>
+  </details>
+{% endif %}
+</section>
+{% endif %}
