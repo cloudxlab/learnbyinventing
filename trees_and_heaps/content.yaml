@@ -1,0 +1,1002 @@
+chapter:
+  id: trees_and_heaps
+  title: "Trees & Heaps -- Inventing Fast Lookup"
+  intro: |
+    You keep a collection of numbers. Items are **inserted**, **deleted**, and
+    **searched** constantly. What is the best data structure?
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/trees_and_heaps/trees_and_heaps.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented binary search trees and heaps from scratch -- insert, find, delete, in-order traversal, heap push/pop, scheduling, heap sort, iterative traversal, and expression parsing. These are the foundations that power databases, schedulers, and compilers.
+
+blocks:
+  # --- Intro table ---
+  - type: table
+    id: intro-comparison
+    headers: [Structure, insert, find, delete]
+    rows:
+      - ["plain list", "O(1) append", "O(n) scan", "O(n) find + O(n) shift"]
+      - ["sorted list", "O(n) shift", "O(log n) binary search", "O(n) shift"]
+      - ["dictionary", "O(1)", "O(1)", "O(1) -- but heavy memory, no ordering"]
+
+  - type: reveal
+    text: |
+      Each structure is fast at some operations and slow at others.
+      In this chapter you will invent a structure that does **all three in O(log n)**
+      while keeping the data ordered -- the **binary search tree** -- and then a
+      specialized cousin that powers every task scheduler: the **heap**.
+
+  # ===============================================================
+  # PART 1: Warm-Up -- Trees That Compute
+  # ===============================================================
+
+  - type: part
+    number: 1
+    title: "Warm-Up -- Trees That Compute"
+    intro: |
+      A **tree** is nodes connected downward: each node holds a value and has up to
+      two children, `left` and `right`.
+
+      Here is the arithmetic expression `2 * 3 + 4` drawn as a tree:
+
+      ```
+              +
+             / \
+            *   4
+           / \
+          2   3
+      ```
+
+      Leaves are numbers; internal nodes are operators. This is exactly how compilers
+      see your code (Python, SQL, C++ -- everything is parsed into trees).
+
+      The `Node` class and a tree printer are provided -- run this cell as-is.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Evaluate an Expression Tree"
+    description: |
+      Write `evaluate(node)` that computes the value of an expression tree.
+
+      **Before you code:**
+
+      - If the node's value is a number (leaf) -- what is the answer?
+      - If it is `"+"` -- what two smaller problems must you solve first?
+        (This is recursion on a tree: each child is a smaller tree.)
+
+      Support `+`, `-`, `*`, `/`.
+
+      ```python
+      evaluate(expr)   # 10   (2*3 + 4)
+      ```
+    provided_code:
+      - label: "Node class and tree printer"
+        code: |
+          class Node:
+              def __init__(self, val, left=None, right=None):
+                  self.val = val
+                  self.left = left
+                  self.right = right
+
+          def print_tree(node, indent=0):
+              """Prints the tree sideways: root at the left, right child on top."""
+              if node is None:
+                  return
+              print_tree(node.right, indent + 1)
+              print("     " * indent + str(node.val))
+              print_tree(node.left, indent + 1)
+
+
+          # The tree for 2 * 3 + 4:
+          expr = Node("+", Node("*", Node(2), Node(3)), Node(4))
+          print_tree(expr)
+      - label: "test cases"
+        code: |
+          assert evaluate(expr) == 10
+          assert evaluate(Node(42)) == 42
+          assert evaluate(Node("-", Node(10), Node(4))) == 6
+          print("evaluate: OK")
+    hints:
+      - "Check whether `node.val` is numeric (a leaf). If so, return it directly. Otherwise, recursively evaluate the left and right children first, then apply the operator stored in `node.val`."
+      - "Use `isinstance(node.val, (int, float))` to detect leaves. For operators, compute `l = evaluate(node.left)` and `r = evaluate(node.right)`, then branch on `node.val` being `\"+\"`, `\"-\"`, `\"*\"`, or `\"/\"`."
+    solution:
+      code: |
+        def evaluate(node):
+            if isinstance(node.val, (int, float)):
+                return node.val
+            l = evaluate(node.left)
+            r = evaluate(node.right)
+            if node.val == "+":
+                return l + r
+            elif node.val == "-":
+                return l - r
+            elif node.val == "*":
+                return l * r
+            elif node.val == "/":
+                return l / r
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Build a Tree Yourself"
+    description: |
+      Build the tree for `(2 + 3) * (10 - 4)` using `Node`, print it with
+      `print_tree`, and check that `evaluate` returns `30`.
+
+      Notice: the tree needs **no parentheses**. The structure *is* the precedence.
+    provided_code:
+      - label: "test"
+        code: |
+          print_tree(expr2)
+          assert evaluate(expr2) == 30
+          print("expr2: OK")
+    hints:
+      - "The root is `\"*\"`. Its left child is `\"+\"` with children `2` and `3`. Its right child is `\"-\"` with children `10` and `4`."
+      - '`expr2 = Node("*", Node("+", Node(2), Node(3)), Node("-", Node(10), Node(4)))`'
+    solution:
+      code: |
+        expr2 = Node("*", Node("+", Node(2), Node(3)), Node("-", Node(10), Node(4)))
+      text: null
+
+  # ===============================================================
+  # PART 2: The Binary Search Tree
+  # ===============================================================
+
+  - type: part
+    number: 2
+    title: "The Binary Search Tree"
+    intro: |
+      Back to our fast-lookup problem. Here is the one rule that makes a tree searchable:
+
+      > **BST rule:** everything in a node's **left** subtree is *smaller* than the
+      > node's value; everything in the **right** subtree is *larger*.
+
+      Play with the animation before coding: [BST Visualization](https://www.cs.usfca.edu/~galles/visualization/BST.html).
+      Insert 10, 12, 1, 11, 13, 3 and watch where each lands.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Insert"
+    description: |
+      Write `insert(node, val)` that inserts `val` into the tree rooted at `node`
+      and **returns the root** of the resulting tree.
+
+      **Think recursively:**
+
+      - If `node` is `None` -- where does the new value go?
+      - If `val < node.val` -- which subtree does it belong to?
+        Insert it there and reattach: `node.left = insert(node.left, val)`.
+
+      ```python
+      root = None
+      for v in [10, 12, 1, 11, 13, 3]:
+          root = insert(root, v)
+      print_tree(root)
+      ```
+
+      Compare the printed tree with what the animation showed you.
+    provided_code:
+      - label: "tests"
+        code: |
+          assert root.val == 10
+          assert root.left.val == 1
+          assert root.right.val == 12
+          assert root.left.right.val == 3
+          assert root.right.left.val == 11
+          assert root.right.right.val == 13
+          print("insert: OK")
+    hints:
+      - "Base case: if `node is None`, return `Node(val)`. Recursive case: if `val < node.val`, recurse left; otherwise recurse right. Always return `node` at the end so the parent can reattach."
+      - |
+        ```python
+        def insert(node, val):
+            if node is None:
+                return Node(val)
+            if val < node.val:
+                node.left = insert(node.left, val)
+            else:
+                node.right = insert(node.right, val)
+            return node
+        ```
+    solution:
+      code: |
+        def insert(node, val):
+            if node is None:
+                return Node(val)
+            if val < node.val:
+                node.left = insert(node.left, val)
+            else:
+                node.right = insert(node.right, val)
+            return node
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Find"
+    description: |
+      Write `contains(node, val)` that returns `True` if `val` is in the tree.
+
+      **The payoff:** at each node you compare once and discard *half* the tree --
+      the same halving you invented in the Binary Search chapter.
+      That is why find is O(log n)... *if* the tree is balanced (more on that soon).
+
+      ```python
+      contains(root, 11)   # True
+      contains(root, 7)    # False
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          assert contains(root, 11) == True
+          assert contains(root, 10) == True
+          assert contains(root, 13) == True
+          assert contains(root, 7)  == False
+          assert contains(None, 5)  == False
+          print("contains: OK")
+    hints:
+      - "Base case: if `node is None`, return `False`. If `val == node.val`, return `True`. Otherwise go left or right depending on whether `val` is smaller or larger."
+    solution:
+      code: |
+        def contains(node, val):
+            if node is None:
+                return False
+            if val == node.val:
+                return True
+            if val < node.val:
+                return contains(node.left, val)
+            else:
+                return contains(node.right, val)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Walk the Tree in Order"
+    description: |
+      Write `in_order(node)` that returns a list of all values using this recipe:
+      first everything in the left subtree, then the node itself, then the right subtree.
+
+      ```python
+      in_order(root)   # ?
+      ```
+
+      Run it. **Look carefully at the output.** What did you just get for free?
+      (You have invented *tree sort*: insert n values, walk once, sorted output.)
+    provided_code:
+      - label: "tests"
+        code: |
+          result = in_order(root)
+          print(result)
+          assert result == [1, 3, 10, 11, 12, 13]
+
+          # tree sort on random data:
+          values = random.sample(range(1000), 50)
+          r = None
+          for v in values:
+              r = insert(r, v)
+          assert in_order(r) == sorted(values)
+          print("in_order: OK -- the BST keeps data sorted at all times")
+    hints:
+      - "Base case: if `node is None`, return an empty list `[]`. Recursive case: `return in_order(node.left) + [node.val] + in_order(node.right)`."
+    solution:
+      code: |
+        def in_order(node):
+            if node is None:
+                return []
+            return in_order(node.left) + [node.val] + in_order(node.right)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "Find the Minimum"
+    description: |
+      Where does the smallest value in a BST live? Trace it on the picture.
+
+      Write `find_min(node)` that returns the smallest value in a non-empty tree.
+      No comparisons needed -- just walking.
+
+      ```python
+      find_min(root)   # 1
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          assert find_min(root) == 1
+          assert find_min(root.right) == 11
+          assert find_min(Node(42)) == 42
+          print("find_min: OK")
+    hints:
+      - "The minimum is the leftmost node. Keep going left until there is no left child: `while node.left: node = node.left`. Return `node.val`."
+    solution:
+      code: |
+        def find_min(node):
+            while node.left:
+                node = node.left
+            return node.val
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4b
+    part: 2
+    number: 5
+    title: "...and the Maximum"
+    description: |
+      Mirror image: write `find_max(node)` returning the largest value. Same rule --
+      no comparisons, just walk. Both of these run in O(height): on a balanced tree
+      of a million values, about 20 steps to either extreme.
+    provided_code:
+      - label: "tests"
+        code: |
+          assert find_max(root) == 13
+          assert find_max(root.left) == 3
+          assert find_max(Node(42)) == 42
+          print("find_max: OK")
+    hints:
+      - "Mirror of `find_min`: keep going right until there is no right child."
+    solution:
+      code: |
+        def find_max(node):
+            while node.right:
+                node = node.right
+            return node.val
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-5
+    part: 2
+    number: 6
+    title: "Delete"
+    description: |
+      Deletion is the tricky one.
+
+      Write `delete(node, val)` that removes `val` and returns the root of the
+      resulting subtree. Think about what happens in each case:
+
+      - What if the node you want to delete has **no children**?
+      - What if it has **one child**?
+      - What if it has **two children** -- this is the tricky one. If removing it
+        leaves a "hole", what value could you put there that would keep the BST
+        property? (Hint: you just wrote `find_min`.)
+
+      ```python
+      root = delete(root, 1)     # leaf
+      root = delete(root, 12)    # two children
+      in_order(root)             # [3, 10, 11, 13]
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          # rebuild a fresh tree
+          root = None
+          for v in [10, 12, 1, 11, 13, 3]:
+              root = insert(root, v)
+
+          root = delete(root, 1)     # case: node with one child (1 has right child 3)
+          assert in_order(root) == [3, 10, 11, 12, 13]
+
+          root = delete(root, 13)    # case: leaf
+          assert in_order(root) == [3, 10, 11, 12]
+
+          root = delete(root, 10)    # case: two children (the root itself!)
+          assert in_order(root) == [3, 11, 12]
+
+          root = delete(root, 99)    # deleting a missing value changes nothing
+          assert in_order(root) == [3, 11, 12]
+          print("delete: OK")
+
+          # stress test: delete everything in random order
+          values = random.sample(range(500), 100)
+          r = None
+          for v in values:
+              r = insert(r, v)
+          random.shuffle(values)
+          remaining = sorted(values)
+          for v in values:
+              r = delete(r, v)
+              remaining.remove(v)
+              assert in_order(r) == remaining, f"tree broken after deleting {v}"
+          print("delete stress test: OK")
+    hints:
+      - "First, search for the node as in `contains`. When you find it, handle the three cases. For the two-children case: `node.val = find_min(node.right)`, then `node.right = delete(node.right, node.val)`."
+      - "For the leaf case, return `None`. For one child, return whichever child exists (left or right). The successor is guaranteed to have at most one child because it is the *leftmost* node in the right subtree -- it cannot have a left child."
+      - |
+        ```python
+        def delete(node, val):
+            if node is None:
+                return None
+            if val < node.val:
+                node.left = delete(node.left, val)
+            elif val > node.val:
+                node.right = delete(node.right, val)
+            else:
+                # found it
+                if node.left is None:
+                    return node.right
+                if node.right is None:
+                    return node.left
+                # two children
+                node.val = find_min(node.right)
+                node.right = delete(node.right, node.val)
+            return node
+        ```
+    solution:
+      code: |
+        def delete(node, val):
+            if node is None:
+                return None
+            if val < node.val:
+                node.left = delete(node.left, val)
+            elif val > node.val:
+                node.right = delete(node.right, val)
+            else:
+                # Found the node to delete
+                if node.left is None:
+                    return node.right
+                if node.right is None:
+                    return node.left
+                # Two children: replace with in-order successor
+                node.val = find_min(node.right)
+                node.right = delete(node.right, node.val)
+            return node
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-balance
+    part: 2
+    number: 7
+    title: "The Catch -- Balance"
+    description: |
+      Insert `1, 2, 3, 4, 5, 6, 7` in that order and print the tree. What shape do you get?
+
+      Every insert went right: the "tree" is a chain -- a glorified linked list, and
+      find is back to O(n). Sorted input is the *worst* input for a plain BST.
+
+      Self-balancing trees (AVL, Red-Black) fix this by rotating nodes on insert to keep
+      the height at log n. Watch one rebalance itself:
+      [Red-Black Tree Visualization](https://www.cs.usfca.edu/~galles/visualization/RedBlack.html) -- insert 1...10 in order
+      and watch it stay shallow. (Databases use B-Trees -- the same idea, made disk-friendly.)
+    provided_code:
+      - label: "demonstration"
+        code: |
+          chain = None
+          for v in [1, 2, 3, 4, 5, 6, 7]:
+              chain = insert(chain, v)
+          print_tree(chain)
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 8
+    title: "BST Search Complexity"
+    question: "You insert the numbers 1, 2, 3, 4, 5 (in that order) into an empty BST. What does the tree look like, and how many comparisons does finding the value 5 require?"
+    options:
+      - label: A
+        text: "A balanced tree with 3 levels -- finding 5 takes 3 comparisons"
+      - label: B
+        text: "A straight chain leaning right (like a linked list) -- finding 5 takes 5 comparisons"
+        correct: true
+      - label: C
+        text: "A straight chain leaning left -- finding 5 takes 1 comparison"
+      - label: D
+        text: "The BST refuses to insert sorted data"
+    hints:
+      - "When you insert 2 into a tree containing only 1, where does 2 go? Then where does 3 go relative to 2?"
+    solution:
+      text: "Each new value is larger than all existing values, so it always goes to the right child. The tree becomes 1->2->3->4->5, a chain with no left children -- effectively a linked list. Finding 5 requires walking all 5 nodes. This is the worst case for BSTs: O(n) instead of the hoped-for O(log n). Balanced BST variants (AVL, Red-Black) prevent this by rebalancing after insertions."
+
+  # ===============================================================
+  # PART 3: The Scheduler Problem & The Heap
+  # ===============================================================
+
+  - type: part
+    number: 3
+    title: "The Scheduler Problem & The Heap"
+    intro: |
+      You are building a task scheduler (like Unix cron). Tasks arrive at any time:
+
+      - task1: run at 1:00pm
+      - task2: run at 12:30pm
+      - task3: run at 2:00pm
+
+      The scheduler repeatedly needs just **one** thing: *the earliest task*.
+      So the operations are: `add(task)`, `pop_earliest()`. Nothing else. No search,
+      no arbitrary delete.
+
+      **Before reading on**, rate each strategy (fill the ?s in your head):
+
+      | Strategy | add | pop earliest |
+      |----------|-----|-------------|
+      | unsorted list | O(1) | O(?) scan |
+      | keep list sorted | O(?) | O(1) |
+      | BST | O(log n) | O(log n) |
+      | one slot per second for 1000 days | O(1) | O(?) -- and how much memory? |
+
+      The BST wins -- but it maintains *total* order, and we only ever ask for the min.
+      Can a structure that promises **less** do the job with less work?
+      It exists: the **min-heap**.
+
+      ### The Heap Shape
+
+      A min-heap is a binary tree with one weak promise:
+
+      > **Heap rule:** every node is <= its children. (Nothing about left vs right!)
+
+      So the minimum is always... where?
+
+      Because the shape is always a "filled top-down, left-to-right" tree, we don't
+      need Node objects at all -- we can store it in a **plain list**:
+
+      ```
+              1
+            /   \
+           3     2          stored as:  [1, 3, 2, 8, 5]
+          / \
+         8   5
+      ```
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "The Index Arithmetic"
+    description: |
+      For the node at list index `i`, figure out (try it on the picture above):
+
+      - `parent(i)` = ?
+      - `left_child(i)` = ?
+      - `right_child(i)` = ?
+
+      Write the three functions.
+
+      ```python
+      parent(3)       # 1   (8's parent is 3)
+      left_child(1)   # 3
+      right_child(0)  # 2
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          assert parent(3) == 1 and parent(4) == 1 and parent(1) == 0 and parent(2) == 0
+          assert left_child(0) == 1 and right_child(0) == 2
+          assert left_child(1) == 3 and right_child(1) == 4
+          print("index arithmetic: OK")
+    hints:
+      - "Try the formulas on the picture. For 0-indexed arrays: `parent(i) = (i - 1) // 2`, `left_child(i) = 2*i + 1`, `right_child(i) = 2*i + 2`."
+    solution:
+      code: |
+        def parent(i):
+            return (i - 1) // 2
+
+        def left_child(i):
+            return 2 * i + 1
+
+        def right_child(i):
+            return 2 * i + 2
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Push"
+    description: |
+      To add a value, append it at the end of the list (this keeps the shape correct).
+      But the heap rule might now be broken -- the new value could be smaller than its
+      parent. How would you fix this?
+
+      Write `heap_push(heap, val)` (in place).
+
+      ```python
+      h = [1, 3, 2, 8, 5]
+      heap_push(h, 0)
+      h   # [0, 3, 1, 8, 5, 2]  -- 0 climbed to the top
+      ```
+
+      How many swaps can a push cost at most, for a heap of n items?
+      (The tree has $\log_2(n)$ levels -- that is the whole point.)
+    provided_code:
+      - label: "tests"
+        code: |
+          h = [1, 3, 2, 8, 5]
+          heap_push(h, 0)
+          assert h == [0, 3, 1, 8, 5, 2]
+
+          h = []
+          for v in [5, 3, 8, 1]:
+              heap_push(h, v)
+          assert h[0] == 1, "minimum must be at the root"
+          print("heap_push: OK")
+    hints:
+      - "Append the value, then set `i = len(heap) - 1`. While `i > 0` and `heap[i] < heap[parent(i)]`, swap them and set `i = parent(i)`."
+    solution:
+      code: |
+        def heap_push(heap, val):
+            heap.append(val)
+            i = len(heap) - 1
+            while i > 0 and heap[i] < heap[parent(i)]:
+                heap[i], heap[parent(i)] = heap[parent(i)], heap[i]
+                i = parent(i)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Pop the Minimum"
+    description: |
+      The minimum is `heap[0]`. Removing it leaves a hole at the root. To keep the
+      shape, move the **last** element into the root position. But now the heap rule
+      might be broken -- how would you fix it?
+
+      Write `heap_pop(heap)` that removes and returns the minimum. In place.
+
+      **Edge case to think about:** why must you swap with the *smaller* child?
+      What if a node has only a left child?
+
+      ```python
+      h = [1, 3, 2, 8, 5]
+      heap_pop(h)   # 1
+      heap_pop(h)   # 2
+      heap_pop(h)   # 3
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          h = [1, 3, 2, 8, 5]
+          assert heap_pop(h) == 1
+          assert heap_pop(h) == 2
+          assert heap_pop(h) == 3
+          assert heap_pop(h) == 5
+          assert heap_pop(h) == 8
+          assert h == []
+
+          # stress: pushes and pops always yield values in sorted order
+          values = [random.randint(0, 1000) for _ in range(500)]
+          h = []
+          for v in values:
+              heap_push(h, v)
+          popped = [heap_pop(h) for _ in range(len(values))]
+          assert popped == sorted(values)
+          print("heap_pop: OK")
+    hints:
+      - "Save `heap[0]` as the result. Move the last element to position 0 (`heap[0] = heap.pop()`). Then sink: start at `i = 0`, find the smaller child, swap if needed, repeat."
+      - "Be careful with the edge case: if the heap has only one element, just `return heap.pop()`. When sinking, check that `left_child(i) < len(heap)` before accessing children. If only a left child exists (no right child), compare only with the left child."
+    solution:
+      code: |
+        def heap_pop(heap):
+            if len(heap) == 1:
+                return heap.pop()
+            result = heap[0]
+            heap[0] = heap.pop()
+            i = 0
+            while True:
+                smallest = i
+                l = left_child(i)
+                r = right_child(i)
+                if l < len(heap) and heap[l] < heap[smallest]:
+                    smallest = l
+                if r < len(heap) and heap[r] < heap[smallest]:
+                    smallest = r
+                if smallest == i:
+                    break
+                heap[i], heap[smallest] = heap[smallest], heap[i]
+                i = smallest
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "The Scheduler, Solved"
+    description: |
+      Your heap works on anything comparable -- including tuples, which Python
+      compares by first element. So a task is just `(time, name)`.
+
+      Write `run_scheduler(tasks)` that takes a list of `(time, name)` tuples,
+      pushes them all into a heap, then pops until empty, returning the task names
+      in execution order.
+
+      ```python
+      run_scheduler([(1300, "task1"), (1230, "task2"), (1400, "task3"), (1100, "task4")])
+      # ["task4", "task2", "task1", "task3"]
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          order = run_scheduler([(1300, "task1"), (1230, "task2"), (1400, "task3"), (1100, "task4")])
+          assert order == ["task4", "task2", "task1", "task3"]
+          print("run_scheduler: OK")
+    hints:
+      - "Push each task tuple into the heap. When you pop, you get `(time, name)`. Collect the `name` part from each popped tuple into a result list."
+    solution:
+      code: |
+        def run_scheduler(tasks):
+            h = []
+            for task in tasks:
+                heap_push(h, task)
+            result = []
+            while h:
+                time, name = heap_pop(h)
+                result.append(name)
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-5
+    part: 3
+    number: 5
+    title: "Heap Sort, and the Standard Library"
+    description: |
+      1. You already proved it in the stress test: push n values, pop n values -> sorted.
+         Package it as `heap_sort(lst)` returning a new sorted list.
+         Each of the 2n operations costs O(log n) -- so heap sort is **O(n log n)**,
+         in place-able, no merging needed.
+      2. Python ships your invention as the `heapq` module: `heapq.heappush`,
+         `heapq.heappop`, and `heapq.heapify` (which builds a heap from a list in O(n)).
+         Verify your heap agrees with it.
+
+      ```python
+      heap_sort([5, 2, 9, 1])   # [1, 2, 5, 9]
+      ```
+    provided_code:
+      - label: "tests"
+        code: |
+          import heapq
+
+          assert heap_sort([5, 2, 9, 1]) == [1, 2, 5, 9]
+          assert heap_sort([]) == []
+
+          # agree with the standard library on random data
+          data = [random.randint(0, 100) for _ in range(200)]
+          mine = list(data)
+          h = []
+          for v in mine:
+              heap_push(h, v)
+
+          theirs = list(data)
+          heapq.heapify(theirs)
+
+          assert heap_pop(h) == heapq.heappop(theirs)
+          assert heap_pop(h) == heapq.heappop(theirs)
+          assert heap_pop(h) == heapq.heappop(theirs)
+          print("heap_sort + heapq agreement: OK")
+    hints:
+      - "Create an empty heap, push all values from `lst`, then pop them all into a result list. The result is sorted because the heap always gives you the minimum."
+    solution:
+      code: |
+        def heap_sort(lst):
+            h = []
+            for v in lst:
+                heap_push(h, v)
+            result = []
+            while h:
+                result.append(heap_pop(h))
+            return result
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 6
+    title: "Heap Property"
+    question: "In a min-heap, which of the following is guaranteed?"
+    options:
+      - label: A
+        text: "The left child is always smaller than the right child"
+      - label: B
+        text: "Every parent is smaller than or equal to both its children, and the root is the overall minimum"
+        correct: true
+      - label: C
+        text: "The tree is sorted from left to right at every level"
+      - label: D
+        text: "The smallest element is always at the bottom-left"
+    hints:
+      - "The heap property is about parent-child relationships, not about siblings."
+    solution:
+      text: "The min-heap property guarantees only that each parent <= its children. This means the root is the minimum (it's smaller than its children, which are smaller than theirs, etc.). But siblings have NO ordering guarantee -- the left child can be larger than the right child or vice versa. The heap is NOT fully sorted; it only guarantees the minimum is accessible in O(1) and can be removed in O(log n)."
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-2
+    part: 3
+    number: 7
+    title: "Heap vs BST"
+    question: "Both a BST and a min-heap store elements. When would you choose a heap over a BST?"
+    options:
+      - label: A
+        text: "When you need to search for arbitrary elements quickly"
+      - label: B
+        text: "When you repeatedly need the minimum (or maximum) element and don't need to search for arbitrary values"
+        correct: true
+      - label: C
+        text: "When you need to iterate elements in sorted order"
+      - label: D
+        text: "When the data contains duplicates"
+    hints:
+      - "What operation is O(1) in a heap but O(log n) in a BST? And what operation is easy in a BST but hard in a heap?"
+    solution:
+      text: "A heap excels at one thing: quickly accessing and removing the min (or max). The root gives you the min in O(1), and removal is O(log n). But finding an arbitrary element requires scanning the entire heap -- O(n). A BST gives O(log n) search for any element and O(n) sorted traversal, but the minimum requires walking to the leftmost node -- O(log n). Choose a heap for priority queues (always need the \"next most urgent\"); choose a BST when you need general search or sorted iteration."
+
+  # ===============================================================
+  # PART 4 (Bonus): Two More Tree Tricks
+  # ===============================================================
+
+  - type: part
+    number: 4
+    title: "Two More Tree Tricks"
+    intro: ""
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "In-Order Without Recursion"
+    description: |
+      Your `in_order` from Exercise 2.3 relies on Python's call stack. But recursion
+      is not magic -- it's just a stack that Python manages for you. Prove it.
+
+      Write `in_order_iter(node)` that returns the same list as `in_order`, using
+      **no recursion** -- manage a plain list as your own stack:
+
+      1. From the current node, push nodes while walking left as far as you can.
+      2. Pop a node -- that's the next value in order.
+      3. Move to the popped node's right child and repeat, until both the stack and
+         the current node are exhausted.
+    provided_code:
+      - label: "tests"
+        code: |
+          assert in_order_iter(root) == in_order(root)
+          assert in_order_iter(None) == []
+
+          values = random.sample(range(1000), 100)
+          r = None
+          for v in values:
+              r = insert(r, v)
+          assert in_order_iter(r) == sorted(values)
+          print("in_order_iter: OK -- recursion was just a hidden stack all along")
+    hints:
+      - "Initialize `stack = []` and `current = node`. Loop while `current is not None or stack`. Inner loop: while `current`, push it and go left. Then pop, record the value, and set `current = popped.right`."
+      - |
+        ```python
+        def in_order_iter(node):
+            result, stack, current = [], [], node
+            while current or stack:
+                while current:
+                    stack.append(current)
+                    current = current.left
+                current = stack.pop()
+                result.append(current.val)
+                current = current.right
+            return result
+        ```
+    solution:
+      code: |
+        def in_order_iter(node):
+            result, stack, current = [], [], node
+            while current or stack:
+                while current:
+                    stack.append(current)
+                    current = current.left
+                current = stack.pop()
+                result.append(current.val)
+                current = current.right
+            return result
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "From Text to Tree: a Tiny Parser"
+    description: |
+      In Part 1 you evaluated expression trees that were built by hand. Real programs
+      receive expressions as **strings**: `"((3+4)*(9-10))"`. Turning the string into
+      a tree is called **parsing** -- it's the front half of every compiler (your
+      `evaluate` from Exercise 1.1 is the back half).
+
+      Write `parse(s)` for **fully parenthesized** expressions with the operators
+      `+`, `-`, `*` and non-negative integer numbers (no spaces):
+
+      - If the current character is a digit, read the whole number -- that's a leaf `Node`.
+      - If it is `'('`: parse the left sub-expression, read the operator, parse the
+        right sub-expression, expect `')'` -- that's an operator `Node`.
+
+      A recursive helper that takes the current position `i` and returns
+      `(node, next_position)` works beautifully.
+    provided_code:
+      - label: "tests"
+        code: |
+          assert evaluate(parse("((3+4)*(9-10))")) == -7
+          assert evaluate(parse("(((3*4)+7)-12)")) == 7
+          assert evaluate(parse("(2+3)")) == 5
+
+          leaf = parse("42")
+          assert leaf.val == 42
+          assert leaf.left is None and leaf.right is None
+
+          print_tree(parse("((3+4)*(9-10))"))
+          print("parse: OK -- you just wrote the front half of a compiler")
+    hints:
+      - "Write a helper `_parse(s, i)` that returns `(node, next_i)`. If `s[i]` is a digit, read all consecutive digits to form the number. If `s[i] == '('`, skip it, parse left, read the operator, parse right, skip `')'`."
+      - "To read a multi-digit number: `start = i; while i < len(s) and s[i].isdigit(): i += 1`, then `num = int(s[start:i])`. The main `parse(s)` function calls `_parse(s, 0)` and returns just the node."
+    solution:
+      code: |
+        def parse(s):
+            def _parse(s, i):
+                if i < len(s) and s[i].isdigit():
+                    start = i
+                    while i < len(s) and s[i].isdigit():
+                        i += 1
+                    return Node(int(s[start:i])), i
+                # must be '('
+                i += 1  # skip '('
+                left, i = _parse(s, i)
+                op = s[i]
+                i += 1  # skip operator
+                right, i = _parse(s, i)
+                i += 1  # skip ')'
+                return Node(op, left, right), i
+            node, _ = _parse(s, 0)
+            return node
+      text: null
+
+  # ===============================================================
+  # Summary
+  # ===============================================================
+
+  - type: table
+    id: summary
+    headers: [Structure, You built, Sweet spot]
+    rows:
+      - ["Expression tree", "`evaluate` -- recursion on trees", "how compilers see code"]
+      - ["Binary search tree", "`insert`, `contains`, `in_order`, `find_min`, `delete`", "ordered data with frequent insert/delete, all O(log n) *if balanced*"]
+      - ["Min-heap", "`heap_push`, `heap_pop`, `run_scheduler`, `heap_sort`", "only need the min: schedulers, priority queues, O(log n) with a plain list"]
+
+  - type: reveal
+    text: |
+      **What you just invented -- the trade-off ladder you climbed:**
+
+      - A **dictionary** promises the most (any-key O(1)) and pays in memory and lost ordering.
+      - A **BST** promises total order and pays log n per operation -- plus a balance headache
+        (solved by AVL / Red-Black trees; B-Trees take the same idea to disk in every database).
+      - A **heap** promises the least -- just the minimum -- and is the simplest and fastest of all.
+
+      **Choosing a data structure = paying only for the promises you actually use.**
+
+      Bonus tricks: `in_order_iter` showed that recursion is just a stack you can
+      manage yourself, and `parse` turned a string into an expression tree -- text in,
+      `evaluate`-ready tree out.

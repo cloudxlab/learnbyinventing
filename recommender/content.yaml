@@ -1,0 +1,576 @@
+chapter:
+  id: recommender
+  title: "Inventing a Recommender System"
+  intro: |
+    How does Netflix know what you should watch next? How does Spotify build your Discover Weekly? Nobody at those companies watches movies on your behalf and takes notes. The trick is beautifully simple:
+
+    > **Find people whose taste matches yours, and recommend what *they* loved and you haven't seen yet.**
+
+    This is called **collaborative filtering**, and in this chapter you will invent it from scratch -- using *real* movie ratings collected from a live class of students. By the end you will compute, for any person in the class, the three movies they are most likely to enjoy.
+
+    The plan:
+
+    1. **Clean the data** -- real data is messy: missing ratings, people who barely rated anything, generous vs stingy raters.
+    2. **Measure taste similarity** -- invent cosine similarity, then compute *every* pair of similarities in a single matrix multiplication.
+    3. **Recommend** -- combine similarity with ratings to score unseen movies.
+    4. **Bonus** -- how would this scale to Netflix size? Invent the MapReduce trick for multiplying gigantic sparse matrices.
+
+    You'll need `pandas` and `numpy`. If you know a little pandas (reading a CSV, selecting columns) you're ready; we'll introduce everything else as we go.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/recommender/recommender.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented a collaborative-filtering recommender system from scratch -- data cleaning, cosine similarity, matrix tricks, and real movie recommendations. That's the real thing. Production systems at Netflix, Spotify, and Amazon work on exactly these principles.
+
+blocks:
+  - type: part
+    number: 0
+    title: "The Data"
+    intro: |
+      Run the cell below as-is. It loads `movies_ratings.csv` -- 25 Bollywood movies rated 0-5 by 18 people (a real class!). Rows are movies, columns are people, and an empty cell means *that person never rated that movie*. Pandas shows these as `NaN` (Not a Number).
+
+  - type: exercise
+    kind: challenge
+    id: ex-0-load
+    part: 0
+    number: 0
+    title: "Load the Data"
+    description: |
+      Run the cell below as-is to load the dataset.
+    provided_code:
+      - label: "load the data"
+        code: |
+          import pandas as pd
+          import numpy as np
+
+          try:
+              df = pd.read_csv("movies_ratings.csv", index_col="Movies_Name")
+          except FileNotFoundError:
+              url = ("https://raw.githubusercontent.com/cloudxlab/learnbyinventing/"
+                     "main/recommender/movies_ratings.csv")
+              df = pd.read_csv(url, index_col="Movies_Name")
+
+          print("shape (movies, people):", df.shape)
+          df.head(8)
+
+  - type: part
+    number: 1
+    title: "Cleaning Real Data"
+    intro: ""
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Drop People Who Barely Rated Anything"
+    description: |
+      Look at the data: the table is full of `NaN`. Some people rated almost every movie; a few rated *nothing at all*. Someone with 0 or 2 ratings tells us nothing about their taste -- keeping them would only add noise.
+
+      **Your task:** build a DataFrame called `ratings` that keeps only the people (columns) who rated **at least 3 movies**.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert ratings.shape == (25, 15)              # 18 people -> 15
+          assert "Yukta" not in ratings.columns         # 0 ratings
+          assert "SandeepGiri" in ratings.columns       # 15 ratings -- stays
+          print("Kept:", list(ratings.columns))
+    hints:
+      - "`df.count()` gives the number of *non-NaN* values in each column. Print it -- which three people rated nothing?"
+      - "`df.drop(columns=[...])` returns a copy without those columns, or select the columns you want to keep with `df[list_of_names]`. Build the list of names from the count: `keep = df.columns[df.count() >= 3]`."
+    solution:
+      code: |
+        keep = df.columns[df.count() >= 3]
+        ratings = df[keep]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Generous Raters vs Stingy Raters"
+    description: |
+      Print `ratings.mean().sort_values()`. Notice something? Bhaskar's *average* rating is about **1.7** while Venu's is about **4.1**. Does Venu love every movie and Bhaskar hate them all? More likely they just use the scale differently -- a 3 from Bhaskar might mean the same as a 5 from Venu.
+
+      If we compare raw numbers, the stingy and generous raters will look like they disagree even when their *taste* is identical. We need to put everyone on the same scale.
+
+      **The fix -- min-max scaling, per person:** You derived a normalization formula in the Loops & Arrays chapter that maps any value to [0, 1] using the minimum and maximum. Apply that same idea here, column by column, so each person's lowest rating becomes 0 and highest becomes 1.
+
+      **Your task:** create `scaled` from `ratings` using that formula, applied column-by-column.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert np.allclose(scaled.min(), 0)           # every person's lowest -> 0
+          assert np.allclose(scaled.max(), 1)           # every person's highest -> 1
+          assert scaled.isna().sum().sum() == ratings.isna().sum().sum()   # NaNs untouched
+          print("NaNs remaining:", int(scaled.isna().sum().sum()))
+    hints:
+      - "Pandas broadcasting does the per-column work for you: `ratings - ratings.min()` subtracts each column's min from that column."
+      - "One worry: what if someone gave *every* movie the same rating? Then `max - min = 0` and we'd divide by zero. Check first: `(ratings.max() > ratings.min()).all()` -- you'll find this data is safe. Then: `scaled = (ratings - ratings.min()) / (ratings.max() - ratings.min())`."
+      - "`NaN` stays `NaN` through arithmetic -- exactly what we want. We haven't invented ratings for anyone; we've only rescaled the ones that exist."
+    solution:
+      code: |
+        scaled = (ratings - ratings.min()) / (ratings.max() - ratings.min())
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Filling the Holes"
+    description: |
+      The similarity math coming in Part 2 can't handle `NaN` -- we need a number in every cell. But which number?
+
+      Think about the options before reading on:
+
+      - Fill with **0**? That says "this person would *hate* this movie" -- a strong claim we have no evidence for.
+      - Fill with **1**? Same problem, opposite direction.
+      - Fill with **that person's average scaled rating**? That says "no opinion -- assume they'd feel about it the way they feel about a typical movie." Neutral. This is the one.
+
+      **Your task:** create `filled` from `scaled`, replacing each `NaN` with the *mean of that person's column*.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert filled.isna().sum().sum() == 0
+          # SandeepGiri never rated Mughal-e-Azam, so that cell must be his scaled mean:
+          assert abs(filled.loc["Mughal-e-Azam", "SandeepGiri"] - 0.3538) < 1e-3
+          print(filled.head(5).round(2))
+    hints:
+      - "`scaled.mean()` gives the per-column means (pandas skips NaN automatically)."
+      - "`scaled.fillna(...)` accepts a Series of per-column values. So: `filled = scaled.fillna(scaled.mean())`."
+    solution:
+      code: |
+        filled = scaled.fillna(scaled.mean())
+      text: null
+
+  - type: part
+    number: 2
+    title: "Measuring Taste"
+    intro: ""
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "How Similar Are Two People?"
+    description: |
+      Each person is now a column of 25 numbers -- a **vector** in 25-dimensional space (one dimension per movie).
+
+      Two people with similar taste should have vectors pointing in a similar *direction*. You already know the dot product from the Secrets of Prediction chapter. Think about these questions:
+
+      - The dot product of two identical vectors is large. The dot product of perpendicular vectors is 0. So the dot product tells you something about *alignment*. But it also depends on the vectors' lengths -- how can you remove the length effect?
+      - What if you divided the dot product by both vectors' lengths? What would that give you for identical vectors? For perpendicular vectors?
+
+      This quantity -- the dot product divided by the product of lengths -- is called **cosine similarity**: 1 means identical taste, 0 means unrelated taste. It measures *direction only*, which is one more defense against scale differences between raters.
+
+      **Your task:** write `similarity(a, b)` for two columns of `filled`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          me = filled["SandeepGiri"]
+          assert abs(similarity(me, me) - 1.0) < 1e-9        # identical vectors
+          assert abs(similarity(me, filled["Abhishek"]) - 0.8198) < 1e-3
+          print("sim(SandeepGiri, Abhishek) =",
+                round(similarity(me, filled["Abhishek"]), 4))
+    hints:
+      - |
+        The formula you should have arrived at:
+
+        $$\cos\theta = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}|\,|\vec{b}|}$$
+      - "Dot product: `(a * b).sum()`. Length of a vector: `np.sqrt((a ** 2).sum())`."
+      - "Cosine similarity is: `(a * b).sum() / (np.sqrt((a**2).sum()) * np.sqrt((b**2).sum()))`."
+    solution:
+      code: |
+        def cosine_similarity(a, b):
+            return (a * b).sum() / (np.sqrt((a ** 2).sum()) * np.sqrt((b ** 2).sum()))
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Unit Vectors"
+    description: |
+      We want the similarity between *every* pair of people -- that's $15 \times 15 = 225$ numbers. Calling `similarity` in a double loop would work, but there is a spectacular shortcut. It starts with one observation:
+
+      > What happens to the similarity formula when both vectors already have length 1? Simplify the formula and see what's left.
+
+      A vector divided by its own length has length 1 (a **unit vector**).
+
+      **Your task:** build the numpy array `uM` where every column of `M = filled.values` is scaled to length 1.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert uM.shape == (25, 15)
+          assert np.allclose((uM ** 2).sum(axis=0), 1)   # every column has length 1
+          print("all 15 columns are unit vectors")
+    hints:
+      - "`M = filled.values` gives a 25x15 numpy array. Column lengths: `np.sqrt((M ** 2).sum(axis=0))` -- `axis=0` means \"sum down each column\", giving 15 lengths."
+      - "`uM = M / np.sqrt((M ** 2).sum(axis=0))` divides each column by its own length (numpy broadcasting matches the 15 lengths to the 15 columns)."
+    solution:
+      code: |
+        M = filled.values
+        lengths = np.sqrt((M ** 2).sum(axis=0))
+        uM = M / lengths
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "All 225 Similarities at Once"
+    description: |
+      Here's the payoff. Remember how matrix multiplication works: entry $(i, j)$ of $AB$ is the dot product of **row $i$ of $A$** with **column $j$ of $B$**.
+
+      So what is $uM^T uM$? Row $i$ of $uM^T$ is *column $i$ of $uM$* -- person $i$'s unit vector. So entry $(i, j)$ is the dot product of person $i$'s unit vector with person $j$'s unit vector... which is exactly their cosine similarity. **One operation computes the entire similarity table.** This is not a toy trick -- it is precisely how real recommender systems (and the attention layers inside LLMs!) compute all-pairs similarity.
+
+      **Your task:** compute `S = uM.T @ uM`, then wrap it as a labeled DataFrame:
+
+      ```python
+      sim = pd.DataFrame(S, index=filled.columns, columns=filled.columns)
+      ```
+
+      Before running the tests, predict: what should the diagonal of `S` be, and why? Should `S` equal its own transpose?
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert S.shape == (15, 15)
+          assert np.allclose(np.diag(S), 1)   # everyone matches themselves perfectly
+          assert np.allclose(S, S.T)          # sim(a, b) == sim(b, a)
+          assert abs(sim.loc["SandeepGiri", "Abhishek"] - 0.8198) < 1e-3
+          sim.round(2)
+    hints:
+      - "The diagonal should be all 1.0 because each person's unit vector dotted with itself gives 1. And $S$ should be symmetric because `sim(a, b) == sim(b, a)`."
+      - "`S = uM.T @ uM` is all you need -- numpy handles the 15x25 times 25x15 multiplication, yielding a 15x15 result."
+    solution:
+      code: |
+        S = uM.T @ uM
+        sim = pd.DataFrame(S, index=filled.columns, columns=filled.columns)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "Your Taste Twin"
+    description: |
+      **Your task:** write `most_similar(person)` returning the name of the person with the highest similarity to `person` -- *excluding* the person themselves (everyone's best match would otherwise be themselves, similarity 1.0).
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert most_similar("SandeepGiri") == "Madhuri"
+          for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
+              print(p, "->", most_similar(p),
+                    round(sim[p].drop(p).max(), 3))
+    hints:
+      - "`sim[person]` is a Series of similarities, indexed by name."
+      - "`.drop(person)` removes the self-entry; `.idxmax()` returns the index label (the name) of the largest value."
+    solution:
+      code: |
+        def most_similar(person):
+            return sim[person].drop(person).idxmax()
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 5
+    title: "Why Normalize Ratings?"
+    question: |
+      Before computing cosine similarity, you applied min-max scaling to each person's ratings. Why is this normalization step important?
+    options:
+      - label: A
+        text: "It makes the computation faster"
+      - label: B
+        text: "Without normalization, a generous rater (who gives 4s and 5s to everything) would appear similar to another generous rater even if their actual preferences are completely different"
+        correct: true
+      - label: C
+        text: "Python requires values between 0 and 1 for cosine similarity"
+      - label: D
+        text: "It removes missing values from the matrix"
+    hints:
+      - "Person A rates everything 4-5. Person B also rates everything 4-5. Their raw ratings are similar -- but do they actually like the same movies?"
+    solution:
+      text: "A generous rater gives high scores to everything, while a stingy rater gives lower scores. Without normalization, two generous raters look similar (both have high numbers) even if they prefer completely different movies. Min-max scaling converts each person's ratings to a 0-1 scale relative to THEIR OWN range, so a \"1.0\" means \"this person's favorite\" regardless of whether the raw rating was 3 or 5. This captures preference patterns rather than rating habits."
+
+  - type: part
+    number: 3
+    title: "Making Recommendations"
+    intro: ""
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "What Haven't You Seen?"
+    description: |
+      We only want to recommend movies the person *hasn't rated yet* -- no point suggesting a movie they already gave 5 stars.
+
+      Careful: which table remembers what was actually rated? Not `filled` -- we erased that information when we filled the NaNs. Go back to `ratings`.
+
+      **Your task:** write `unrated_movies(person)` returning a list of movie names the person never rated.
+    provided_code:
+      - label: "test cell"
+        code: |
+          mine = unrated_movies("SandeepGiri")
+          assert len(mine) == 10
+          assert "Dangal" in mine and "Mughal-e-Azam" in mine
+          print("SandeepGiri hasn't rated:", mine)
+    hints:
+      - "`ratings[person].isna()` is a boolean Series; `ratings.index[boolean_series]` selects the matching movie names."
+      - "`return list(ratings.index[ratings[person].isna()])`"
+    solution:
+      code: |
+        def unrated_movies(person):
+            return list(ratings.index[ratings[person].isna()])
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "The Recommender"
+    description: |
+      Now assemble the pieces. To score a candidate movie $m$ for a person $p$:
+
+      $$\text{score}(m, p) = \sum_{\text{person } q} \text{rating}(m, q) \cdot \text{sim}(p, q)$$
+
+      In words: everyone in the class votes with their (filled, scaled) rating of $m$, but people whose taste matches $p$'s get a louder voice. A movie loved by your taste twins scores high; a movie loved only by people you disagree with scores low.
+
+      Look closely -- that sum is a dot product: the movie's row of `filled` dotted with $p$'s column of `sim`. So *all* candidate scores at once is:
+
+      ```python
+      scores = filled.loc[candidates] @ sim[person]
+      ```
+
+      **Your task:** write `recommend(person, k=3)` that scores every unrated movie and returns the `k` movie names with the highest scores, best first.
+    provided_code:
+      - label: "test cell"
+        code: |
+          recs = recommend("SandeepGiri", 3)
+          assert len(recs) == 3
+          assert all(m in unrated_movies("SandeepGiri") for m in recs)
+          assert recs[0] == "Dangal"
+          print("SandeepGiri should watch:", recs)
+          print("Abhishek should watch:  ", recommend("Abhishek", 3))
+    hints:
+      - "Get the list of candidate movies with `unrated_movies(person)`, then compute scores via the matrix expression `filled.loc[candidates] @ sim[person]`."
+      - "`scores.sort_values(ascending=False).index[:k]` gives you the top-k movie names. Wrap in `list(...)` to return a plain list."
+    solution:
+      code: |
+        def recommend(person, k=3):
+            candidates = unrated_movies(person)
+            scores = filled.loc[candidates] @ sim[person]
+            return list(scores.sort_values(ascending=False).index[:k])
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 3
+    title: "The Cold Start Problem"
+    question: |
+      A brand-new user signs up and hasn't rated any movies yet. What happens when the recommender tries to find their taste twin?
+    options:
+      - label: A
+        text: "The system recommends the most popular movies by default"
+      - label: B
+        text: "Cosine similarity can't be computed -- the user's rating vector is all zeros (or NaN), so there's no direction to compare"
+        correct: true
+      - label: C
+        text: "The system assigns random ratings and proceeds normally"
+      - label: D
+        text: "The user is automatically matched with the most active rater"
+    hints:
+      - "Cosine similarity divides by the vector length. What is the length of a zero vector?"
+    solution:
+      text: "Cosine similarity requires dividing by the vector's length (its norm). A user with no ratings has a zero vector -- its length is 0, causing division by zero. Even if you fill NaNs with zeros (as you did for existing users), a user who has rated NOTHING has a flat zero vector with no direction. This is the \"cold start problem\" -- collaborative filtering can't work without some initial data. Real systems handle this with content-based recommendations, popularity-based defaults, or by asking new users to rate a few items."
+
+  - type: reveal
+    text: |
+      You just built a working collaborative-filtering recommender on real data. Try `recommend(...)` on a few more people -- do the suggestions make sense given who their taste twin is?
+
+      One honest limitation to notice: what would `recommend("YouJustJoined")` do for a brand-new person with *zero* ratings? Nothing useful -- there's no vector to compare. This is the famous **cold-start problem**, and it's why every streaming service pesters new users to "pick a few titles you like" before showing recommendations.
+
+  - type: part
+    number: 4
+    title: "Two More Recommender Moves"
+    intro: ""
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Ask Your Five Best Taste Twins"
+    description: |
+      `recommend()` let *everyone* vote, weighted by similarity. Real systems often do something blunter and cheaper: find your **top 5 most similar people**, pool their **top 5 favorite movies**, and drop anything you've already seen. No scores, no weighted sums -- just "what do people like me love?"
+
+      **Your task:** write three functions:
+
+      - `top5_similar_people(person)` -- the 5 most similar people (by `sim`, excluding the person), most similar first.
+      - `top5_favorites(person)` -- the person's 5 highest-**rated** movies. Use `ratings` (their real opinions), and `.dropna()` before sorting.
+      - `recommend_by_friends(person)` -- pool the friends' favorites in order, remove movies `person` has already rated, and drop duplicates while keeping first appearance.
+
+      Then compare with `recommend(person, 3)` from Part 3 -- do the two strategies agree?
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert top5_similar_people("SandeepGiri") == ["Madhuri", "Stuti", "Prabha", "Aakash", "Gurpreet"]
+          assert len(top5_favorites("Abhishek")) == 5
+
+          friend_recs = recommend_by_friends("SandeepGiri")
+          assert set(friend_recs) == {"Mughal-e-Azam", "Dangal", "Yeh Jawaani Hai Deewani"}
+          assert all(m in unrated_movies("SandeepGiri") for m in friend_recs)
+          print("friends say:", friend_recs)
+          print("weighted votes said:", recommend("SandeepGiri", 3))
+    hints:
+      - "For `top5_similar_people`: `sim[person].drop(person).sort_values(ascending=False).index[:5]` -- wrap in `list(...)`."
+      - "For `top5_favorites`: `ratings[person].dropna().sort_values(ascending=False).index[:5]`. For `recommend_by_friends`: loop over the 5 friends, collect their top 5, skip movies the person has already rated, and use a set to track what you've already added to avoid duplicates."
+    solution:
+      code: |
+        def top5_similar_people(person):
+            return list(sim[person].drop(person).sort_values(ascending=False).index[:5])
+
+        def top5_favorites(person):
+            return list(ratings[person].dropna().sort_values(ascending=False).index[:5])
+
+        def recommend_by_friends(person):
+            friends = top5_similar_people(person)
+            rated = set(ratings.index[ratings[person].notna()])
+            seen = set()
+            result = []
+            for friend in friends:
+                for movie in top5_favorites(friend):
+                    if movie not in rated and movie not in seen:
+                        seen.add(movie)
+                        result.append(movie)
+            return result
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Flip the Matrix: Similar Movies"
+    description: |
+      Everything we built compared **people** -- the columns of `filled`. But the same data read the other way compares **movies**: each *row* is a movie's vector of 15 ratings, and two movies whose rows point the same way are liked by the same people.
+
+      This powers the other famous recommendation sentence: *"customers who watched this also watched..."* -- no user profile needed at all.
+
+      **Your task:** repeat the Part 2 trick along the other axis:
+
+      1. Scale each **row** of `M = filled.values` to length 1. Row lengths: `np.sqrt((M ** 2).sum(axis=1, keepdims=True))` (`keepdims` makes the division broadcast row-wise).
+      2. `S_items = uMr @ uMr.T` -- note the transpose moved to the *other* side: entry (i, j) is now row-dot-row, movie i against movie j.
+      3. Wrap it: `msim = pd.DataFrame(S_items, index=filled.index, columns=filled.index)`.
+      4. Write `most_similar_movie(name)` (mirror of `most_similar`).
+
+      **What you invented:** **item-item collaborative filtering** -- the variant Amazon famously chose, because with millions of users and thousands of items, item-item similarities are fewer, more stable, and reusable for every visitor.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert S_items.shape == (25, 25)
+          assert np.allclose(S_items, S_items.T)
+          assert np.allclose(np.diag(S_items), 1)
+          assert most_similar_movie("Sholay") == "3 Idiots"
+          for movie in ["Sholay", "Dangal", "Pathaan"]:
+              print(f"people who liked {movie!r} also liked:",
+                    most_similar_movie(movie))
+    hints:
+      - "Row lengths use `axis=1`: `np.sqrt((M ** 2).sum(axis=1, keepdims=True))`. Then `uMr = M / row_lengths`."
+      - "For the similarity matrix: `S_items = uMr @ uMr.T` gives a 25x25 matrix. For `most_similar_movie`: same pattern as `most_similar` but using `msim` instead of `sim`."
+    solution:
+      code: |
+        M = filled.values
+        row_lengths = np.sqrt((M ** 2).sum(axis=1, keepdims=True))
+        uMr = M / row_lengths
+        S_items = uMr @ uMr.T
+        msim = pd.DataFrame(S_items, index=filled.index, columns=filled.index)
+
+        def most_similar_movie(name):
+            return msim[name].drop(name).idxmax()
+      text: null
+
+  - type: part
+    number: 5
+    title: "Scaling to Netflix -- MapReduce Matrix Multiplication"
+    intro: |
+      Our class matrix was 25x15. Netflix has ~300 million users and ~20,000 titles. The user-similarity matrix alone would have $3\times10^8 \times 3\times10^8$ entries -- no single machine can even *hold* that, let alone compute it.
+
+      Two observations rescue us:
+
+      1. **The matrix is almost entirely zeros.** A typical user rates a few dozen titles out of 20,000. Why store the zeros at all? Keep only the non-zero entries as `(row, col, value)` triples.
+      2. **Matrix multiplication decomposes into independent little jobs.** Recall: $(AB)_{ij} = \sum_k A_{ik} B_{kj}$. Each non-zero pair $A_{ik}, B_{kj}$ contributes one product $A_{ik} \cdot B_{kj}$ to one output cell $(i, j)$ -- and every contribution can be computed on a *different machine*, then summed up per cell. That "compute little contributions anywhere, then group and sum by key" pattern is called **MapReduce**, and it's how the giants do it.
+
+  - type: exercise
+    kind: challenge
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Sparse MapReduce Matrix Multiplication"
+    description: |
+      **Your task:** write `sparse_matmul(A_triples, B_triples)` where each argument is a list of `(row, col, value)` triples of the non-zero entries. Return a dict mapping `(i, j) -> value` for the non-zero entries of the product.
+    provided_code:
+      - label: "test cell"
+        code: |
+          # Dense 2x2 you can verify by hand:
+          # [[1,2],[3,4]] @ [[5,6],[7,8]] = [[19,22],[43,50]]
+          A = [(0, 0, 1), (0, 1, 2), (1, 0, 3), (1, 1, 4)]
+          B = [(0, 0, 5), (0, 1, 6), (1, 0, 7), (1, 1, 8)]
+          assert sparse_matmul(A, B) == {(0, 0): 19, (0, 1): 22, (1, 0): 43, (1, 1): 50}
+
+          # Truly sparse: two entries each, in a huge (implicit) matrix
+          A = [(0, 2, 5.0), (3, 1, 2.0)]
+          B = [(2, 0, 4.0), (1, 7, 3.0)]
+          assert sparse_matmul(A, B) == {(0, 0): 20.0, (3, 7): 6.0}
+          print("sparse_matmul works -- zeros never stored, never multiplied")
+    hints:
+      - "For each `(i, k, a)` in A, find every `(k2, j, b)` in B with `k2 == k`, and add `a * b` into `out[(i, j)]`. Use `out.get((i, j), 0)` to handle the first contribution to a cell."
+      - "A double loop over the triples works. For a cleaner version, first group B's triples into a dict keyed by row: `{k: [(j, b), ...]}` -- that's the \"group by key\" half of MapReduce. Then for each `(i, k, a)` in A, look up `B_by_row[k]` and loop over its entries."
+    solution:
+      code: |
+        def sparse_matmul(A_triples, B_triples):
+            # Group B's triples by row for fast lookup
+            B_by_row = {}
+            for k, j, b in B_triples:
+                B_by_row.setdefault(k, []).append((j, b))
+            # For each A entry, multiply with matching B entries
+            out = {}
+            for i, k, a in A_triples:
+                if k in B_by_row:
+                    for j, b in B_by_row[k]:
+                        out[(i, j)] = out.get((i, j), 0) + a * b
+            return out
+      text: null
+
+  - type: part
+    number: 6
+    title: "What You Invented"
+    intro: |
+      This is **collaborative filtering** -- recommending purely from the pattern of who-likes-what, knowing nothing about the movies themselves (no genres, no actors, no plots). The alternative, **content-based filtering**, compares movie *features* instead; modern systems blend both.
+
+      And that `uM.T @ uM` trick -- all-pairs similarity as a single matrix product -- will meet you again in the most unexpected place: it's the heart of the *attention* mechanism inside transformers, where every word in a sentence computes its similarity to every other word. Same math, different vectors.
+
+  - type: table
+    id: summary
+    headers: [Idea, What it does]
+    rows:
+      - ["Dropping sparse raters", "Fewer than 3 ratings tells us nothing about taste"]
+      - ["Per-person min-max scaling", "Puts generous and stingy raters on the same 0-1 scale"]
+      - ["Fill NaN with the person's mean", "A neutral \"no opinion\" value -- invents no fake enthusiasm"]
+      - ["Cosine similarity", "Compares taste *direction*, ignoring rating magnitude"]
+      - ["Unit vectors + `uM.T @ uM`", "The entire 15x15 similarity table in one matrix multiplication"]
+      - ["Similarity-weighted scoring", "Your taste twins' opinions count the most"]
+      - ["Friend-pooling", "Top-5 similar people's top-5 favorites, minus what you've seen"]
+      - ["Item-item similarity (`uMr @ uMr.T`)", "\"Customers who watched this also watched...\""]
+      - ["Sparse MapReduce matmul", "Store only non-zeros; split the multiplication into independent jobs"]

@@ -1,0 +1,942 @@
+chapter:
+  id: information_theory
+  title: "Information Theory — Lossless Compression"
+  intro: |
+    You can only send **0s and 1s** over a wire. Your job is to design a scheme that converts any message into bits — and lets the receiver convert it back without any confusion. By the end of this chapter you will invent a method that produces the **shortest possible binary encoding** for any alphabet and any set of letter frequencies.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/information_theory/information_theory.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented Huffman coding from scratch — prefix-free codes, variable-length encoding, greedy tree construction, Shannon entropy, and a full compressor/decompressor. That's the real thing.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 1: Two Symbols: A and B
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Two Symbols — A and B"
+    intro: |
+      You need to transmit messages that contain only the letters **A** and **B**. The wire only carries 0s and 1s.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Design the Encoding"
+    description: |
+      You need to decide: what bit string does A become? What does B become?
+
+      **Before you code:**
+
+      - You have two symbols and two possible 1-bit strings: `"0"` and `"1"`.
+      - Try: A → `"0"`, B → `"1"`.
+      - Encode `"AABBA"` by hand. What do you get?
+      - Now decode it back. Do you get the original?
+
+      Write a function `encode_ab(message)` that takes a string of As and Bs and returns a binary string.
+
+      Write a function `decode_ab(bits)` that takes a binary string and returns the original message.
+
+      ```python
+      encode_ab("AABBA")   # "00110"
+      encode_ab("BA")      # "10"
+      decode_ab("00110")   # "AABBA"
+      decode_ab("10")      # "BA"
+      ```
+    provided_code:
+      - label: "encoding map"
+        code: |
+          SCHEME_AB = {"A": "0", "B": "1"}
+    hints:
+      - "For `encode_ab`, iterate over each character in the message and look it up in `SCHEME_AB`. Concatenate the results."
+      - "For `decode_ab`, each bit maps to exactly one symbol. Build a reverse dict `{\"0\": \"A\", \"1\": \"B\"}` and look up each bit character."
+    solution:
+      code: |
+        SCHEME_AB = {"A": "0", "B": "1"}
+
+        def encode_ab(message):
+            return "".join(SCHEME_AB[c] for c in message)
+
+        def decode_ab(bits):
+            reverse = {v: k for k, v in SCHEME_AB.items()}
+            return "".join(reverse[b] for b in bits)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Check for Ambiguity"
+    description: |
+      Would any other encoding cause confusion?
+
+      Try: A → `"0"`, B → `"00"`.
+
+      - Encode `"AB"` → ?
+      - Encode `"BA"` → ?
+      - Are they the same bit string?
+
+      **Key definition:** A code is **prefix-free** if no codeword is the start (prefix) of another.
+
+      - A=`"0"`, B=`"00"` is **NOT** prefix-free: `"0"` is a prefix of `"00"`.
+      - A=`"0"`, B=`"1"` **IS** prefix-free.
+
+      Write `is_prefix_free(scheme)` that checks whether a given dict `{symbol: bits}` is prefix-free.
+
+      ```python
+      is_prefix_free({"A": "0", "B": "1"})    # True
+      is_prefix_free({"A": "0", "B": "00"})   # False  ("0" is prefix of "00")
+      is_prefix_free({"A": "0", "B": "10"})   # True
+      ```
+    hints:
+      - "Compare every pair of codewords. For codewords `c1` and `c2` (where `c1 != c2`), check if `c2.startswith(c1)`. If any pair fails, the code is not prefix-free."
+      - "Use a nested loop: `for c1 in codes: for c2 in codes: if c1 != c2 and c2.startswith(c1): return False`."
+    solution:
+      code: |
+        def is_prefix_free(scheme):
+            codes = list(scheme.values())
+            for i, c1 in enumerate(codes):
+                for j, c2 in enumerate(codes):
+                    if i != j and c2.startswith(c1):
+                        return False
+            return True
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Three Symbols: A, B, and C
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Three Symbols — A, B, and C"
+    intro: |
+      Now messages contain **A**, **B**, and **C**. You still can only send 0s and 1s.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Why One Bit Each No Longer Works"
+    description: |
+      With 1 bit you can only represent 2 different things (`"0"` and `"1"`). You have 3 symbols — so at least one must get a longer code.
+
+      **Option 1 — Fixed-width (2 bits each):**
+
+      A → `"00"`, B → `"01"`, C → `"10"`
+      (We skip `"11"` — it goes unused.)
+
+      Write `encode_fixed(message)` and `decode_fixed(bits)` using this fixed 2-bit scheme.
+
+      ```python
+      encode_fixed("ABC")    # "000110"
+      encode_fixed("CAB")    # "100001"
+      decode_fixed("000110") # "ABC"
+      decode_fixed("100001") # "CAB"
+      ```
+    provided_code:
+      - label: "scheme and reverse lookup"
+        code: |
+          FIXED_SCHEME = {"A": "00", "B": "01", "C": "10"}
+          FIXED_REVERSE = {v: k for k, v in FIXED_SCHEME.items()}
+    hints:
+      - "Encoding: join `FIXED_SCHEME[c]` for each character. Decoding: split the bit string into 2-character chunks and look up each in `FIXED_REVERSE`."
+      - "To split into chunks: `[bits[i:i+2] for i in range(0, len(bits), 2)]`."
+    solution:
+      code: |
+        FIXED_SCHEME = {"A": "00", "B": "01", "C": "10"}
+        FIXED_REVERSE = {v: k for k, v in FIXED_SCHEME.items()}
+
+        def encode_fixed(message):
+            return "".join(FIXED_SCHEME[c] for c in message)
+
+        def decode_fixed(bits):
+            return "".join(
+                FIXED_REVERSE[bits[i:i+2]]
+                for i in range(0, len(bits), 2)
+            )
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Variable-Length Prefix-Free Encoding"
+    description: |
+      **Option 2 — Variable length:**
+
+      A → `"0"`, B → `"10"`, C → `"11"`
+
+      This uses only 1 bit for A, and 2 bits for B and C. Is it prefix-free?
+
+      - Is `"0"` a prefix of `"10"`? `"10"` starts with `"1"`, not `"0"`. ✓
+      - Is `"0"` a prefix of `"11"`? `"11"` starts with `"1"`, not `"0"`. ✓
+      - Is `"10"` a prefix of `"11"`? They share `"1"` but differ at position 2. ✓
+
+      **How do you decode variable-length codes?**
+
+      Walk through the bits one at a time, accumulating characters until the accumulated string matches a known codeword — then emit the symbol and reset.
+
+      Write `encode_var(message)` and `decode_var(bits)` using A=`"0"`, B=`"10"`, C=`"11"`.
+
+      ```python
+      encode_var("ABC")    # "01011"  (0 + 10 + 11)
+      encode_var("CAB")    # "11010"  (11 + 0 + 10)
+      decode_var("01011")  # "ABC"
+      decode_var("11010")  # "CAB"
+      ```
+    provided_code:
+      - label: "scheme"
+        code: |
+          VAR_SCHEME = {"A": "0", "B": "10", "C": "11"}
+    hints:
+      - "Encoding is the same as before — just join each symbol's code. The interesting part is decoding."
+      - "For decoding, build a reverse dict `{bits: symbol}`. Then walk bit by bit: maintain a `current` string. Append each bit. When `current` is in the reverse dict, emit the symbol and reset `current = \"\"`."
+      - "The prefix-free property guarantees that the moment `current` matches a codeword, it cannot also be a prefix of a longer codeword. So there is never any ambiguity about when to emit."
+    solution:
+      code: |
+        VAR_SCHEME = {"A": "0", "B": "10", "C": "11"}
+
+        def encode_var(message):
+            return "".join(VAR_SCHEME[c] for c in message)
+
+        def decode_var(bits):
+            reverse = {v: k for k, v in VAR_SCHEME.items()}
+            result = []
+            current = ""
+            for b in bits:
+                current += b
+                if current in reverse:
+                    result.append(reverse[current])
+                    current = ""
+            return "".join(result)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Compare the Two Schemes"
+    description: |
+      For the message `"AAABBC"`:
+
+      - Fixed scheme (2 bits/symbol): how many bits total?
+      - Variable scheme: how many bits total?
+      - Which is shorter?
+
+      Verify that the variable scheme `{"A":"0","B":"10","C":"11"}` is prefix-free.
+
+      ```python
+      is_prefix_free(VAR_SCHEME)  # True
+      ```
+    provided_code:
+      - label: "comparison code"
+        code: |
+          message = "AAABBC"
+          fixed_encoded = encode_fixed(message)
+          var_encoded   = encode_var(message)
+
+          print(f"Message:          {message}  ({len(message)} symbols)")
+          print(f"Fixed encoding:   {fixed_encoded}  ({len(fixed_encoded)} bits)")
+          print(f"Variable encoding:{var_encoded}  ({len(var_encoded)} bits)")
+          print(f"Is prefix-free:   {is_prefix_free(VAR_SCHEME)}")
+    hints:
+      - "Fixed: 6 symbols × 2 bits = 12 bits. Variable: 3×1 + 2×2 + 1×2 = 9 bits. The variable scheme wins because the most frequent symbol (A) gets the shortest code."
+    solution:
+      code: null
+      text: |
+        Fixed scheme: 6 symbols × 2 bits = **12 bits** (`"000000010110"`).
+
+        Variable scheme: 3×1 + 2×2 + 1×2 = **9 bits** (`"000101011"`).
+
+        The variable scheme is shorter because the most frequent symbol (A) gets a 1-bit code instead of 2 bits. The prefix-free property is confirmed: no codeword is a prefix of another.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 4
+    title: "Why Prefix-Free Matters"
+    question: |
+      In a prefix-free code, no codeword is a prefix of another. Why is this property essential for decoding?
+    options:
+      - label: A
+        text: "It makes the codes shorter"
+      - label: B
+        text: "Without it, the decoder can't tell where one codeword ends and the next begins — the bit stream becomes ambiguous"
+        correct: true
+      - label: C
+        text: "It ensures all codewords have the same length"
+      - label: D
+        text: "It prevents errors during transmission"
+    hints:
+      - "Imagine codes A=0, B=01. When you see the bits '01', is it 'AB' (0 then 1) or just 'B' (01)? How would you know?"
+    solution:
+      text: |
+        If code A=0 is a prefix of code B=01, then the bit sequence '01' is ambiguous: it could be A followed by a '1' (start of another symbol) or it could be B. The decoder has no separators between symbols — only the prefix-free property guarantees that the moment you match a codeword, you KNOW it's complete and can't be the start of a longer codeword. This allows unique, unambiguous decoding of any bit stream.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Frequencies Matter (A, B, C, D)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Frequencies Matter (A, B, C, D)"
+    intro: |
+      Now add a fourth symbol **D**. Suppose you know how often each symbol appears:
+
+      | Symbol | Frequency |
+      |--------|-----------|
+      | A      | 50%       |
+      | B      | 25%       |
+      | C      | 20%       |
+      | D      | 5%        |
+
+      **Question:** Does the order in which you assign short vs. long codes matter? Let us find out.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Average Bits Per Symbol"
+    description: |
+      Write `avg_bits(scheme, frequencies)` that computes the **expected** number of bits per symbol.
+
+      **Think it through:** In the fixed 2-bit scheme, every symbol costs 2 bits, so the average is obviously 2. But in a variable-length scheme, A costs 1 bit and appears 50% of the time, B costs 2 bits and appears 25% of the time, and so on. What operation combines "how often" with "how many bits" into an overall average?
+
+      **Try by hand first:** For scheme `{A:"0", B:"01", C:"10", D:"11"}` with frequencies A=50%, B=25%, C=20%, D=5%:
+
+      - A contributes 0.50 × 1 bit = ?
+      - B contributes 0.25 × 2 bits = ?
+      - C contributes 0.20 × 2 bits = ?
+      - D contributes 0.05 × 2 bits = ?
+      - Total = ?
+
+      Now generalize this into a function.
+
+      ```python
+      frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+      scheme = {"A": "00", "B": "01", "C": "10", "D": "11"}
+      avg_bits(scheme, frequencies)  # 2.0
+      ```
+    hints:
+      - |
+        The average bits per symbol is a weighted average: $$\text{avg bits} = \sum_{\text{symbol}} \text{frequency}(\text{symbol}) \times \text{len}(\text{code}(\text{symbol}))$$ Loop over each symbol, multiply frequency by code length, and sum.
+      - "`return sum(frequencies[s] * len(scheme[s]) for s in frequencies)`"
+    solution:
+      code: |
+        def avg_bits(scheme, frequencies):
+            return sum(
+                frequencies[s] * len(scheme[s])
+                for s in frequencies
+            )
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Try Three Schemes"
+    description: |
+      Compare these three prefix-free schemes on the same frequencies:
+
+      | Scheme | A | B | C | D |
+      |--------|---|---|---|---|
+      | 1. Fixed 2-bit | `00` | `01` | `10` | `11` |
+      | 2. Short codes for common | `0` | `10` | `110` | `111` |
+      | 3. Short codes for rare (reversed) | `111` | `110` | `10` | `0` |
+
+      For each scheme:
+
+      1. Check it is prefix-free.
+      2. Compute the average bits per symbol.
+
+      Which scheme gives the shortest encoding?
+    provided_code:
+      - label: "comparison code"
+        code: |
+          scheme1 = {"A": "00",  "B": "01",  "C": "10",  "D": "11"}
+          scheme2 = {"A": "0",   "B": "10",  "C": "110", "D": "111"}
+          scheme3 = {"A": "111", "B": "110", "C": "10",  "D": "0"}
+
+          frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+
+          for name, scheme in [("Scheme 1 (fixed)", scheme1),
+                               ("Scheme 2 (short for common)", scheme2),
+                               ("Scheme 3 (short for rare)", scheme3)]:
+              pf   = is_prefix_free(scheme)
+              avg  = avg_bits(scheme, frequencies)
+              print(f"{name}: prefix-free={pf}, avg bits={avg:.4f}")
+    hints:
+      - "Scheme 2 gives the shortest encoding. A (the most frequent at 50%) gets 1 bit, while D (the rarest at 5%) gets 3 bits. Scheme 3 does the opposite and wastes bits on the common symbols."
+      - "Scheme 1: 2.0 bits/symbol. Scheme 2: 0.50×1 + 0.25×2 + 0.20×3 + 0.05×3 = 1.75. Scheme 3: 0.50×3 + 0.25×3 + 0.20×2 + 0.05×1 = 2.70."
+    solution:
+      code: null
+      text: |
+        All three schemes are prefix-free. The average bits per symbol are:
+
+        - **Scheme 1 (fixed):** 0.50×2 + 0.25×2 + 0.20×2 + 0.05×2 = **2.0000**
+        - **Scheme 2 (short for common):** 0.50×1 + 0.25×2 + 0.20×3 + 0.05×3 = **1.7500**
+        - **Scheme 3 (short for rare):** 0.50×3 + 0.25×3 + 0.20×2 + 0.05×1 = **2.7000**
+
+        **Scheme 2 wins** because it assigns the shortest codes to the most frequent symbols. Scheme 3 does the opposite and is the worst of the three.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Measure on Real Data"
+    description: |
+      Generate a random message of 1000 symbols according to the given frequencies, then measure how many bits each scheme actually produces.
+
+      Run the code above and observe which scheme produces the fewest bits on real data. Does it match the theoretical `avg_bits` you computed?
+    provided_code:
+      - label: "message generator and comparison"
+        code: |
+          import random
+
+          def generate_message(frequencies, n, seed=42):
+              random.seed(seed)
+              symbols = list(frequencies.keys())
+              probs   = list(frequencies.values())
+              cumulative = []
+              total = 0
+              for p in probs:
+                  total += p
+                  cumulative.append(total)
+              result = []
+              for _ in range(n):
+                  r = random.random()
+                  for i, threshold in enumerate(cumulative):
+                      if r < threshold:
+                          result.append(symbols[i])
+                          break
+              return "".join(result)
+
+
+          def encode_with_scheme(message, scheme):
+              return "".join(scheme[c] for c in message)
+
+
+          frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+          message = generate_message(frequencies, 1000)
+          print(f"Message length: {len(message)} symbols")
+
+          for name, scheme in [("Scheme 1 (fixed)", scheme1),
+                               ("Scheme 2 (short for common)", scheme2),
+                               ("Scheme 3 (short for rare)", scheme3)]:
+              encoded = encode_with_scheme(message, scheme)
+              print(f"{name}: {len(encoded)} bits  "
+                    f"({len(encoded)/len(message):.3f} bits/symbol)")
+    hints:
+      - "The measured bits/symbol should be very close to the theoretical `avg_bits` values. With 1000 symbols the law of large numbers kicks in and the actual frequencies are close to the expected ones."
+    solution:
+      code: null
+      text: |
+        With 1000 symbols generated from the given frequencies, the measured bits per symbol closely match the theoretical `avg_bits` values:
+
+        - **Scheme 1 (fixed):** ~2000 bits (2.000 bits/symbol)
+        - **Scheme 2 (short for common):** ~1750 bits (1.750 bits/symbol)
+        - **Scheme 3 (short for rare):** ~2700 bits (2.700 bits/symbol)
+
+        The law of large numbers ensures that in a long message the actual symbol frequencies closely track the expected frequencies, so the measured average converges to the theoretical value.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Finding the Shortest Encoding
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Finding the Shortest Encoding"
+    intro: |
+      Scheme 2 was shorter than the fixed scheme. But is it the *shortest possible*?
+
+      **Key insight:** Give the **shortest codes to the most frequent symbols**. The rare symbols are used infrequently, so making their codes long barely hurts.
+
+      But *how* do you decide which symbols to group together? Think about it: if you had to start combining symbols into groups of two, which ones would you pair first? Why?
+
+      Once you pair two symbols, you can treat the pair as a single "super-symbol" whose frequency is the sum of its parts. Now you have a smaller problem — what do you do next?
+
+      Keep this idea in mind as you work through the exercises below.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Build the Tree by Hand"
+    description: |
+      You have four symbols with frequencies: A=50%, B=25%, C=20%, D=5%.
+
+      You want to build a binary tree where each leaf is a symbol, and you assign codes by tracing from root to leaf (0 for left, 1 for right). Symbols deeper in the tree get longer codes.
+
+      **Your task:** Trace the process by hand.
+
+      - Which two symbols would you combine first? Try different pairings — which gives the shortest codes?
+      - Now treat that pair as a single super-symbol and look at what remains. Pick two to combine again.
+      - Repeat until everything is merged into one tree.
+
+      Draw the tree you get. What code does each symbol end up with?
+
+      ```python
+      # A = ?   B = ?   C = ?   D = ?
+      ```
+    provided_code:
+      - label: "verify the codes"
+        code: |
+          expected_codes = {
+              "A": "0",    # root → left
+              "B": "10",   # root → right → left
+              "D": "110",  # root → right → right → left
+              "C": "111",  # root → right → right → right
+          }
+          print("Expected Huffman codes:", expected_codes)
+          print("Average bits:", avg_bits(expected_codes,
+                {"A":0.50,"B":0.25,"C":0.20,"D":0.05}))
+    hints:
+      - "Trace each path from the root. Going left appends `\"0\"`, going right appends `\"1\"`. A is at depth 1 (left), B at depth 2 (right then left), D at depth 3 (right, right, left), C at depth 3 (right, right, right)."
+    solution:
+      code: null
+      text: |
+        Step-by-step tree construction (always merge the two smallest):
+
+        1. Start: A=0.50, B=0.25, C=0.20, D=0.05
+        2. Merge D (0.05) and C (0.20) → DC=0.25. Remaining: A=0.50, B=0.25, DC=0.25
+        3. Merge B (0.25) and DC (0.25) → BDC=0.50. Remaining: A=0.50, BDC=0.50
+        4. Merge A (0.50) and BDC (0.50) → root=1.00
+
+        Resulting codes (0=left, 1=right):
+
+        ```
+        A = "0"     (depth 1)
+        B = "10"    (depth 2)
+        D = "110"   (depth 3)
+        C = "111"   (depth 3)
+        ```
+
+        Average bits: 0.50×1 + 0.25×2 + 0.20×3 + 0.05×3 = **1.75 bits/symbol**
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Automate the Tree Building"
+    description: |
+      Represent the tree using nested tuples:
+
+      - A **leaf** is just a string: `"A"`, `"B"`, etc.
+      - An **internal node** is a tuple of its two children: `(left, right)`.
+
+      So the tree from the example is:
+
+      ```python
+      ("A", ("B", ("D", "C")))
+      ```
+
+      Translate the process you just did by hand into code. Start with `(frequency, symbol)` pairs and repeat the combining step until one tree remains.
+
+      ```python
+      build_huffman_tree({"A":0.50,"B":0.25,"C":0.20,"D":0.05})
+      # ("A", ("B", ("D", "C")))   (or equivalent — ties may be broken differently)
+      ```
+    hints:
+      - "Start with `nodes = [(freq, symbol) for symbol, freq in frequencies.items()]`. Sort the list. Pop the first two (smallest frequencies). Combine them. Append the combined node. Re-sort. Repeat."
+      - "The loop runs while `len(nodes) > 1`. After popping two items `(f1, n1)` and `(f2, n2)`, append `(f1+f2, (n1, n2))` and sort again. When done, return `nodes[0][1]` (the tree without the frequency)."
+    solution:
+      code: |
+        def build_huffman_tree(frequencies):
+            nodes = [(freq, symbol)
+                     for symbol, freq in frequencies.items()]
+            nodes.sort()
+            while len(nodes) > 1:
+                f1, n1 = nodes.pop(0)
+                f2, n2 = nodes.pop(0)
+                nodes.append((f1 + f2, (n1, n2)))
+                nodes.sort()
+            return nodes[0][1]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Assign Codes from the Tree"
+    description: |
+      Now walk the tree recursively to assign binary codes.
+
+      Write `assign_codes(tree, prefix="")` that:
+
+      - If `tree` is a string (a leaf/symbol), return `{tree: prefix}`.
+        Handle the edge case where `prefix` is empty (single-symbol alphabet) by returning `{tree: "0"}`.
+      - If `tree` is a tuple `(left, right)`:
+        - Recursively assign codes to `left` with prefix `prefix + "0"`.
+        - Recursively assign codes to `right` with prefix `prefix + "1"`.
+        - Merge and return the combined dict.
+
+      ```python
+      assign_codes(("A", ("B", ("D", "C"))))
+      # {"A": "0", "B": "10", "D": "110", "C": "111"}
+      ```
+    hints:
+      - "Check the type: `if isinstance(tree, str)` means it is a leaf. Otherwise it is a tuple with two children."
+      - "To merge two dicts in Python: `{**left_codes, **right_codes}` or `left_codes.update(right_codes); return left_codes`."
+    solution:
+      code: |
+        def assign_codes(tree, prefix=""):
+            if isinstance(tree, str):
+                return {tree: prefix if prefix else "0"}
+            left, right = tree
+            codes = {}
+            codes.update(assign_codes(left,  prefix + "0"))
+            codes.update(assign_codes(right, prefix + "1"))
+            return codes
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Huffman Scheme"
+    description: |
+      Combine `build_huffman_tree` and `assign_codes` into one function.
+
+      Write `huffman_scheme(frequencies)` that returns the complete `{symbol: bits}` dict.
+
+      ```python
+      huffman_scheme({"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05})
+      # {"A": "0", "B": "10", ...}  (exact codes may vary if ties are broken differently)
+      ```
+
+      Verify:
+
+      1. The scheme is prefix-free.
+      2. `avg_bits` is ≤ 2.0 (the fixed-width baseline).
+    hints:
+      - "This is a two-liner: build the tree, then assign codes from it. `return assign_codes(build_huffman_tree(frequencies))`."
+    solution:
+      code: |
+        def huffman_scheme(frequencies):
+            tree = build_huffman_tree(frequencies)
+            return assign_codes(tree)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-5
+    part: 4
+    number: 5
+    title: "Information-Theoretic Lower Bound (Entropy)"
+    description: |
+      Your Huffman code assigns A (50%) a 1-bit code, B (25%) a 2-bit code, D (5%) a 3-bit code. Do you see a pattern between frequency and code length?
+
+      **Think about it:**
+
+      - A appears 50% = 1/2 of the time and gets 1 bit. Notice: $\log_2(1/0.50) = \log_2(2) = 1$.
+      - B appears 25% = 1/4 of the time and gets 2 bits. Notice: $\log_2(1/0.25) = \log_2(4) = 2$.
+      - For a symbol with frequency $p$, the "ideal" code length is $\log_2(1/p)$.
+
+      **Your challenge:** If each symbol could have *exactly* its ideal code length $\log_2(1/p)$, what would the average bits per symbol be? Use the same weighted-average idea from `avg_bits`, but with the ideal lengths instead of actual code lengths.
+
+      Write `entropy(frequencies)` and compare it to your Huffman average. No lossless code can do better than this theoretical minimum.
+
+      ```python
+      entropy({"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05})
+      # ≈ 1.68 bits/symbol
+      ```
+    hints:
+      - |
+        The ideal length for frequency $p$ is $\log_2(1/p) = -\log_2(p)$. The weighted average is: $$H = \sum p \cdot \log_2(1/p) = -\sum p \cdot \log_2(p)$$ This is **Shannon's entropy**. Use `math.log2(p)`. Skip terms where $p = 0$.
+      - "`return -sum(p * math.log2(p) for p in frequencies.values() if p > 0)`"
+    solution:
+      code: |
+        import math
+
+        def entropy(frequencies):
+            return -sum(
+                p * math.log2(p)
+                for p in frequencies.values()
+                if p > 0
+            )
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-plot
+    part: 4
+    number: 6
+    title: "Visualisation — Encoding Efficiency"
+    description: |
+      Run the plotting helper below to compare fixed-width, Huffman, and entropy visually.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_comparison(frequencies):
+              schemes = {
+                  "Fixed width": {s: format(i, "02b")
+                                  for i, s in enumerate(frequencies)},
+                  "Huffman":     huffman_scheme(frequencies),
+              }
+              names = list(schemes.keys()) + ["Entropy"]
+              values = ([avg_bits(s, frequencies) for s in schemes.values()]
+                        + [entropy(frequencies)])
+              colors = ["steelblue", "seagreen", "tomato"]
+              fig, ax = plt.subplots(figsize=(6, 3))
+              bars = ax.bar(names, values, color=colors)
+              ax.bar_label(bars, fmt="%.3f", padding=3)
+              ax.set_ylabel("bits per symbol")
+              ax.set_title("Encoding efficiency")
+              ax.set_ylim(0, max(values) * 1.2)
+              plt.tight_layout()
+              plt.show()
+
+          frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+          plot_comparison(frequencies)
+    hints: []
+    solution:
+      code: null
+      text: |
+        This is a provided plotting helper — no code to write. Run the cell to see a bar chart comparing fixed-width encoding (2.0 bits/symbol), Huffman (~1.75 bits/symbol), and the entropy lower bound (~1.68 bits/symbol). Huffman gets close to entropy but cannot quite reach it because it must assign whole-number bit lengths.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 7
+    title: "Huffman Optimality"
+    question: |
+      Huffman coding assigns shorter codes to more frequent symbols. Is this always the most efficient possible prefix-free encoding?
+    options:
+      - label: A
+        text: "No — there are always better encodings that Huffman misses"
+      - label: B
+        text: "Yes — Huffman is provably optimal among all prefix-free codes that assign a whole number of bits per symbol"
+        correct: true
+      - label: C
+        text: "Yes, but only for alphabets with exactly 4 symbols"
+      - label: D
+        text: "No — fixed-length codes are always more efficient"
+    hints:
+      - "Huffman is a greedy algorithm that always merges the two least frequent nodes. Can you do better with a different merge order?"
+    solution:
+      text: |
+        Huffman coding is provably optimal among prefix-free codes with integer bit lengths per symbol. No rearrangement of the merge order or code assignments can beat it. The only caveat: it assigns whole bits per symbol. Arithmetic coding can use fractional bits (e.g., 1.3 bits for a symbol), getting slightly closer to the entropy bound. But among integer-length prefix-free codes, Huffman is the best possible.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: Generalized Encode and Decode
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Generalized Encode and Decode"
+    intro: |
+      Now put everything together into two clean functions.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "`encode(data, frequencies)`"
+    description: |
+      Write `encode(data, frequencies)` that:
+
+      1. Builds the Huffman scheme from `frequencies`.
+      2. Encodes `data` (a string) using that scheme.
+      3. Returns `(encoded_bits, scheme)`.
+
+      ```python
+      frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+      bits, scheme = encode("AABCD", frequencies)
+      print(bits)    # e.g. "001010110111"  (depends on exact tree)
+      print(scheme)  # {"A": "0", "B": "10", ...}
+      ```
+    hints:
+      - "Build the scheme with `huffman_scheme(frequencies)`, then join the codes: `\"\".join(scheme[c] for c in data)`. Return both."
+    solution:
+      code: |
+        def encode(data, frequencies):
+            scheme = huffman_scheme(frequencies)
+            bits = "".join(scheme[c] for c in data)
+            return bits, scheme
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "`decode(encoded_data, scheme)`"
+    description: |
+      Write `decode(encoded_data, scheme)` that:
+
+      1. Builds a reverse lookup: `{bits: symbol}`.
+      2. Walks through `encoded_data` one bit at a time.
+      3. When the accumulated bits match a codeword, emit the symbol and reset.
+      4. Returns the decoded string.
+
+      ```python
+      decode(bits, scheme) == "AABCD"   # True
+      ```
+
+      **Before you code:** Why does the prefix-free property guarantee this works? Could two different symbols ever produce the same accumulated prefix at the same step?
+    hints:
+      - "Build `reverse = {v: k for k, v in scheme.items()}`. Then iterate bit by bit: `current += bit`. When `current in reverse`, append `reverse[current]` and reset `current = \"\"`."
+      - "The prefix-free property guarantees that the moment your accumulated string matches a codeword, it is the *only* possible match. No longer codeword starts with this string, so there is no risk of \"reading too few bits.\""
+    solution:
+      code: |
+        def decode(encoded_data, scheme):
+            reverse = {v: k for k, v in scheme.items()}
+            result = []
+            current = ""
+            for bit in encoded_data:
+                current += bit
+                if current in reverse:
+                    result.append(reverse[current])
+                    current = ""
+            return "".join(result)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "Round-Trip on a Longer Message"
+    description: |
+      Generate a 500-symbol message using the given frequencies and verify that `decode(encode(message)) == message`. Then measure the compression ratio.
+    provided_code:
+      - label: "round-trip test"
+        code: |
+          frequencies = {"A": 0.50, "B": 0.25, "C": 0.20, "D": 0.05}
+          message = generate_message(frequencies, 500)
+
+          bits, scheme = encode(message, frequencies)
+          recovered = decode(bits, scheme)
+
+          assert recovered == message, "Round-trip failed!"
+          print("Round-trip: OK")
+          print(f"Original:  {len(message)} symbols  "
+                f"(at 8 bits/symbol ASCII = {len(message)*8} bits)")
+          print(f"Encoded:   {len(bits)} bits")
+          print(f"Ratio:     {len(bits) / (len(message)*8):.3f}  (lower is better)")
+          print(f"Huffman avg bits/symbol: {avg_bits(scheme, frequencies):.3f}")
+    hints:
+      - "If your round-trip fails, double-check that `decode` correctly resets the accumulator after each match. Also verify that your `encode` uses the same scheme as `decode`."
+    solution:
+      code: null
+      text: |
+        No new code to write — this exercise uses the provided round-trip test. Running it confirms that `decode(encode(message)) == message` for a 500-symbol message.
+
+        Typical output: ~875 encoded bits for 500 symbols (1.75 bits/symbol), compared to 4000 bits at 8-bit ASCII. The compression ratio is about 0.219, meaning Huffman reduces the message to roughly 22% of the naive ASCII size.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-4
+    part: 5
+    number: 4
+    title: "Try Different Alphabets"
+    description: |
+      Your `encode` and `decode` work on any alphabet and any frequencies. Try them on English-like letter frequencies.
+
+      Observe: the most frequent letters (e, t, a) get short codes (3-4 bits), while the rarest (q, z) get long codes (8+ bits). On average this saves many bits compared to fixed-width encoding.
+    provided_code:
+      - label: "English letter frequencies"
+        code: |
+          english_freqs = {
+              "e": 0.127, "t": 0.091, "a": 0.082, "o": 0.075, "i": 0.070,
+              "n": 0.067, "s": 0.063, "h": 0.061, "r": 0.060, "d": 0.043,
+              "l": 0.040, "u": 0.028, "c": 0.028, "m": 0.024, "w": 0.024,
+              "f": 0.022, "g": 0.020, "y": 0.020, "p": 0.019, "b": 0.015,
+              "v": 0.010, "k": 0.008, "j": 0.002, "x": 0.002, "q": 0.001,
+              "z": 0.001,
+          }
+
+          scheme = huffman_scheme(english_freqs)
+          avg   = avg_bits(scheme, english_freqs)
+          h     = entropy(english_freqs)
+
+          print(f"English alphabet Huffman: {avg:.3f} bits/symbol")
+          print(f"Entropy lower bound:      {h:.3f} bits/symbol")
+          print(f"vs. fixed 5-bit ASCII:    5.000 bits/symbol")
+          print()
+          print("Codes for most frequent letters:")
+          for sym in ["e", "t", "a", "o", "i"]:
+              print(f"  {sym}: {scheme[sym]}  ({len(scheme[sym])} bits)")
+          print("Codes for rarest letters:")
+          for sym in ["q", "z", "j", "x"]:
+              print(f"  {sym}: {scheme[sym]}  ({len(scheme[sym])} bits)")
+    hints:
+      - "With 26 letters, fixed-width needs $\\lceil \\log_2 26 \\rceil = 5$ bits per symbol. Huffman gets close to the entropy (~4.17 bits/symbol), saving about 1 bit per character."
+    solution:
+      code: null
+      text: |
+        No new code to write — this exercise uses the provided English-frequency test. Running it shows:
+
+        - **Huffman average:** ~4.205 bits/symbol
+        - **Entropy lower bound:** ~4.176 bits/symbol
+        - **Fixed 5-bit ASCII:** 5.000 bits/symbol
+
+        The most frequent letters (e, t, a) get short codes of 3-4 bits, while the rarest (q, z) get 9-10 bits. On average, Huffman saves about 0.8 bits per character compared to fixed-width encoding.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 5
+    title: "Entropy as a Lower Bound"
+    question: |
+      The entropy of an alphabet with frequencies {A: 50%, B: 25%, C: 12.5%, D: 12.5%} is exactly 1.75 bits per symbol. Your Huffman code achieves exactly 1.75 bits per symbol. Is it always possible to match the entropy exactly?
+    options:
+      - label: A
+        text: "Yes — Huffman always matches entropy exactly"
+      - label: B
+        text: "No — this case works because the frequencies are all powers of 1/2, giving exact integer code lengths. For other frequency distributions, Huffman gets close but can't go below the entropy bound"
+        correct: true
+      - label: C
+        text: "No — entropy is a theoretical concept that can never be achieved"
+      - label: D
+        text: "Yes, but only if you use more than 4 symbols"
+    hints:
+      - "Entropy says A's ideal code length is log₂(1/0.50) = 1 bit, B's is 2 bits, C's is 3 bits. These are all whole numbers. What if a symbol's ideal length were 1.5 bits?"
+    solution:
+      text: |
+        When all ideal code lengths (-log₂(p)) happen to be integers (because frequencies are powers of 1/2), Huffman achieves entropy exactly. But for arbitrary frequencies like {A: 40%, B: 35%, C: 25%}, the ideal lengths are non-integers (e.g., 1.32 bits for A). Since Huffman must assign whole bits, it rounds up — the result is close to entropy but slightly above it. Entropy is the theoretical lower bound: no lossless code can do better on average, and only power-of-2 distributions can match it with integer codes.
+
+  # ═══════════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════════
+
+  - type: reveal
+    text: |
+      **What you just invented**
+
+      You just invented **Huffman coding** (1952), one of the most important algorithms in data compression. It is still used today inside ZIP files, JPEG images, and MP3 audio.
+
+      The key ideas you discovered:
+
+  - type: table
+    id: summary
+    headers: [Idea, What you built]
+    rows:
+      - ["Prefix-free codes prevent ambiguity", "`is_prefix_free(scheme)`"]
+      - ["Shorter codes for common symbols saves bits", "`avg_bits(scheme, frequencies)`"]
+      - ["Greedy: always merge the two rarest", "`build_huffman_tree(frequencies)`"]
+      - ["Walk tree to assign codes", "`assign_codes(tree)`"]
+      - ["No code can beat Shannon entropy", "`entropy(frequencies)`"]
+      - ["Full compressor", "`encode(data, frequencies)`"]
+      - ["Full decompressor", "`decode(bits, scheme)`"]
+
+  - type: reveal
+    text: |
+      **Huffman coding is provably optimal among all codes that assign a fixed bit-string to each symbol.**

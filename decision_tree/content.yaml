@@ -1,0 +1,1963 @@
+chapter:
+  id: decision_tree
+  title: "Learning Decision Trees by Inventing Them"
+  intro: |
+    You won't be taught — you will *discover*. Every step builds on the last. Trust the process.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/decision_tree/decision_tree.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented a decision tree classifier from scratch — impurity, split search, recursive tree growth, and a full ML interface. That's the real thing. sklearn's `DecisionTreeClassifier` works on exactly these principles.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 1: What Is Impurity?
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "What Is Impurity?"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Think About Mixing"
+    description: |
+      Imagine a bag of coloured balls — some **Red**, some **Black**.
+
+      We want a number that captures how **mixed** the bag is:
+
+      - A bag of **all Red** → not mixed at all → impurity = **0**
+      - A bag of **all Black** → not mixed at all → impurity = **0**
+      - A bag of **half Red, half Black** → maximally mixed → impurity = **1**
+
+      ```
+      impurity(0.5, 0.5)  →  1       # maximally mixed: impurity is 1
+      impurity(0, 1)      →  0       # all one colour:  impurity is 0
+      impurity(1, 0)      →  0
+      ```
+
+      > **Important:** Here **impurity = 0** means *completely pure* (easy to classify), and **impurity = 1** means *maximally mixed* (hard to classify).
+
+      **Before coding, answer these questions:**
+
+      1. If a bag has 80% Red and 20% Black, would its impurity be closer to 0 or 1? Why?
+      2. What is `impurity(0.9, 0.1)`? Higher or lower than `impurity(0.8, 0.2)`?
+      3. What mathematical property must the function `impurity(p, q)` have when `p = 1 - q`?
+      4. Is `impurity(p, q)` the same as `impurity(q, p)`? Why should it be?
+    hints:
+      - "Think about symmetry: swapping the labels (calling Red \"Black\" and Black \"Red\") shouldn't change how mixed the bag is. What does that mean for `impurity(p, q)` vs `impurity(q, p)`?"
+      - "The function should be **symmetric** — `impurity(p, q) == impurity(q, p)`. It should peak when `p == q == 0.5` and be zero at the extremes (`p = 0` or `p = 1`)."
+    solution:
+      code: null
+      text: |
+        1. Closer to 0. The bag is mostly one colour (80% Red), so it is fairly pure and easy to classify. Impurity should be low.
+        2. `impurity(0.9, 0.1)` is **lower** than `impurity(0.8, 0.2)`. The 90/10 bag is more dominated by one colour, hence purer.
+        3. Because `q = 1 - p`, the function is really a function of one variable. It must equal 0 at the endpoints (`p = 0` and `p = 1`) and reach its maximum at `p = 0.5`. It should be a smooth, symmetric, concave curve.
+        4. Yes. Swapping the label names (calling Red "Black" and Black "Red") does not change how mixed the bag is, so the function must be symmetric: `impurity(p, q) == impurity(q, p)`.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Invent the Formula"
+    description: |
+      We're going to invent the formula for `impurity(p, q)` where:
+
+      - `p` = fraction of Red balls (between 0 and 1)
+      - `q` = fraction of Black balls (between 0 and 1)
+      - `p + q = 1` always
+
+      **Step A:** Consider the function $f(p) = p \times (1 - p)$. Fill in the table below by computing it:
+
+      | p | 1-p | p × (1-p) |
+      |---|-----|-----------|
+      | 0.0 | 1.0 | ? |
+      | 0.2 | | ? |
+      | 0.4 | | ? |
+      | 0.5 | | ? |
+      | 0.6 | | ? |
+      | 0.8 | | ? |
+      | 1.0 | | ? |
+
+      **Tasks:**
+
+      1. Compute the table values in Python and print them.
+      2. What is the **maximum** value of $p \times (1 - p)$? At what `p` does it occur?
+      3. What are the **minimum** values? When do they occur?
+      4. Plot $f(p) = p \times (1 - p)$ for $p \in [0, 1]$ using the helper below.
+      5. Does this function behave like our desired impurity? Where are its max and min?
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_impurity_candidate(f, title="Candidate impurity function"):
+              ps = [i/100 for i in range(101)]
+              vals = [f(p) for p in ps]
+              plt.figure(figsize=(7, 4))
+              plt.plot(ps, vals, 'b-', linewidth=2)
+              plt.xlabel('p (fraction of Red)')
+              plt.ylabel('value')
+              plt.title(title)
+              plt.grid(True)
+              plt.show()
+    hints:
+      - "Start with $p = 0$: what is $0 \\times (1 - 0)$? Then $p = 0.5$: what is $0.5 \\times 0.5$?"
+      - "The maximum of $p(1-p)$ is $0.25$ at $p = 0.5$. It's zero at $p = 0$ and $p = 1$. The shape is right (parabola opening downward), but the peak value is $0.25$ instead of $1$."
+    solution:
+      code: |
+        for p in [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]:
+            print(f"{p:.1f}  {1-p:.1f}  {p*(1-p):.2f}")
+
+        plot_impurity_candidate(lambda p: p * (1 - p), title="f(p) = p * (1-p)")
+      text: |
+        Completed table:
+
+        | p | 1-p | p × (1-p) |
+        |---|-----|-----------|
+        | 0.0 | 1.0 | 0.00 |
+        | 0.2 | 0.8 | 0.16 |
+        | 0.4 | 0.6 | 0.24 |
+        | 0.5 | 0.5 | 0.25 |
+        | 0.6 | 0.4 | 0.24 |
+        | 0.8 | 0.2 | 0.16 |
+        | 1.0 | 0.0 | 0.00 |
+
+        The **maximum** is 0.25 at `p = 0.5`. The **minimum** is 0 at `p = 0` and `p = 1`. The function has the right shape (zero at the extremes, peaks in the middle) but its peak is 0.25 instead of 1.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Scale It"
+    description: |
+      From Exercise 1.2, you found that $f(p) = p \times (1-p)$ peaks at $p = 0.5$ with a value of $0.25$.
+
+      But we want `impurity(0.5, 0.5) = 1` (max impurity = 1, not 0.25).
+
+      So we need a function that:
+
+      - Returns **1** when `p = 0.5` (most uncertain)
+      - Returns **0** when `p = 0` or `p = 1` (most certain)
+
+      **Your task:**
+
+      Take $f(p) = p \times (1 - p)$ and apply a simple transformation so that its maximum becomes 1.
+
+      1. Find the transformation mathematically (algebra only, no code yet).
+      2. Write the resulting formula.
+      3. Verify by plugging in: $p = 0.5$, $p = 0$, $p = 1$.
+      4. Write it in Python as `def impurity(p, q)` and plot it.
+
+      **Your derivation:**
+
+      - Maximum of f(p) = p*(1-p) is ... at p = ...
+      - Transformation: ...
+      - Final formula: `impurity(p) = ...`
+      - Check p=0.5: ...
+      - Check p=0: ...
+      - Check p=1: ...
+    hints:
+      - "If the maximum is $0.25$, what simple operation turns $0.25$ into $1$?"
+      - "Multiply by $4$: $\\text{impurity}(p, q) = 4 \\times p \\times q$. Verify: $4 \\times 0.5 \\times 0.5 = 1$."
+    solution:
+      code: |
+        def impurity(p, q):
+            """
+            Returns the impurity of a set with fraction p of Red and q of Black.
+            impurity(0.5, 0.5) = 1  (most mixed)
+            impurity(1, 0)     = 0  (all same)
+            impurity(0, 1)     = 0
+            """
+            return 4 * p * q
+
+        # Verify:
+        print(impurity(0.5, 0.5))  # 1
+        print(impurity(0, 1))      # 0
+        print(impurity(1, 0))      # 0
+        print(impurity(0.8, 0.2))  # 0.64
+
+        # Ordering:
+        print(impurity(0.8, 0.2) < impurity(0.7, 0.3))  # True
+        print(impurity(0.7, 0.3) < impurity(0.6, 0.4))  # True
+
+        plot_impurity_candidate(lambda p: impurity(p, 1 - p),
+                                title="My impurity function")
+      text: |
+        **Derivation:**
+
+        - Maximum of `f(p) = p*(1-p)` is **0.25** at `p = 0.5`.
+        - Transformation: multiply by 4 to scale the peak from 0.25 to 1.
+        - Final formula: `impurity(p, q) = 4 * p * q`
+        - Check p=0.5: `4 * 0.5 * 0.5 = 1`
+        - Check p=0: `4 * 0 * 1 = 0`
+        - Check p=1: `4 * 1 * 0 = 0`
+
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "Explore the Function"
+    description: |
+      Now that you have `impurity(p, q)`, explore it.
+
+      **Tasks:**
+
+      1. Compute and print the impurity for the following bags. Do the results match your intuition?
+
+      | Bag | Contents | p | q |
+      |-----|----------|---|---|
+      | A | 9 Red, 1 Black | 0.9 | 0.1 |
+      | B | 7 Red, 3 Black | 0.7 | 0.3 |
+      | C | 6 Red, 4 Black | 0.6 | 0.4 |
+      | D | 5 Red, 5 Black | 0.5 | 0.5 |
+      | E | 3 Red, 7 Black | 0.3 | 0.7 |
+      | F | 10 Red, 0 Black | 1.0 | 0.0 |
+
+      2. Is bag A more or less certain than bag B? Does `impurity` agree?
+      3. Is `impurity(0.3, 0.7)` equal to `impurity(0.7, 0.3)`? Why should it be?
+      4. What is the impurity of a bag with 50 Red, 50 Black, and 50 Green (3 classes)?
+         - *Bonus:* Can you extend your formula? Think about what $p \times (1-p)$ means for each pair of classes.
+    hints:
+      - "Just plug the values into your `impurity(p, q)` function. Remember: higher impurity = more mixed."
+    solution:
+      code: |
+        bags = [
+            ("A", 0.9, 0.1),
+            ("B", 0.7, 0.3),
+            ("C", 0.6, 0.4),
+            ("D", 0.5, 0.5),
+            ("E", 0.3, 0.7),
+            ("F", 1.0, 0.0),
+        ]
+
+        for name, p, q in bags:
+            print(f"Bag {name}: impurity({p}, {q}) = {impurity(p, q):.4f}")
+
+        # Results:
+        # Bag A: 0.3600   Bag B: 0.8400   Bag C: 0.9600
+        # Bag D: 1.0000   Bag E: 0.8400   Bag F: 0.0000
+      text: |
+        2. Bag A (impurity 0.36) is **more certain** than bag B (0.84). The impurity function agrees: a 90/10 split is purer than 70/30.
+        3. Yes, `impurity(0.3, 0.7) == impurity(0.7, 0.3) == 0.84`. This must hold because swapping colour labels does not change how mixed the bag is. Our formula `4*p*q` is symmetric.
+        4. For 3 classes with equal fractions (1/3 each), you can extend to Gini-style: `1 - (p1^2 + p2^2 + p3^2) = 1 - 3*(1/3)^2 = 1 - 1/3 = 2/3 ≈ 0.667`.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 5
+    title: "Impurity Interpretation"
+    question: |
+      A group contains 50 apples and 50 oranges. Another group contains 95 apples and 5 oranges. Which group has higher impurity?
+    options:
+      - label: A
+        text: "The 95/5 group — it has more items"
+      - label: B
+        text: "The 50/50 group — it is the most mixed, so predicting the label of a random item is hardest"
+        correct: true
+      - label: C
+        text: "Both have the same impurity"
+      - label: D
+        text: "Impurity can only be computed with the formula, not by intuition"
+    hints:
+      - "If you randomly pick an item from each group, in which group are you more likely to guess wrong?"
+    solution:
+      text: |
+        Impurity measures how mixed a group is. The 50/50 group is maximally mixed — a random guess has only 50% chance of being right. The 95/5 group is nearly pure — guessing "apple" is right 95% of the time. Higher impurity means the group is harder to predict, which is exactly what the impurity formula you built captures: it peaks at a 50/50 split and approaches 0 for pure groups.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Impurity of a List
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Impurity of a List"
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "From Fractions to Lists"
+    description: |
+      So far, `impurity(p, q)` takes fractions directly. But in practice, you have a **list** like:
+
+      ```python
+      ["R", "B", "B", "R", "R"]
+      ```
+
+      You need to compute `p` and `q` from the list yourself.
+
+      **Tasks:**
+
+      1. For the list `["R", "B", "B", "R", "R"]`, manually compute:
+         - Count of "R"
+         - Count of "B"
+         - Total count
+         - `p` (fraction of R)
+         - `q` (fraction of B)
+      2. Write a function `list_impurity(items)` that:
+         - Takes a list of "R" and "B" strings
+         - Computes `p` and `q`
+         - Returns `impurity(p, q)`
+         - **Edge case:** What should it return for an empty list `[]`? Decide and document your choice.
+      3. Test your function:
+         ```python
+         list_impurity(["R", "B", "B", "R", "R"])   # what do you expect?
+         list_impurity(["R", "R", "R", "R"])         # all same → what value?
+         list_impurity(["B", "B", "B", "B"])         # all same → what value?
+         list_impurity(["R", "B"])                   # exactly half → what value?
+         list_impurity([])                           # empty → your decision
+         ```
+      4. Try these additional lists and rank them by impurity (most mixed to least mixed):
+         ```python
+         list_A = ["R", "R", "R", "R", "R", "R", "R", "R", "B", "B"]
+         list_B = ["R", "R", "R", "R", "R", "B", "B", "B", "B", "B"]
+         list_C = ["R", "R", "R", "R", "R", "R", "R", "B", "B", "B"]
+         ```
+    hints:
+      - "Use `items.count(\"R\")` and `len(items)` to compute the fractions."
+      - "For the empty list edge case, returning `0` is a reasonable choice — an empty set has no mixing."
+    solution:
+      code: |
+        def list_impurity(items):
+            """
+            Computes the impurity of a list of "R" and "B" elements.
+            Returns 0 for an empty list (no mixing possible).
+            """
+            if len(items) == 0:
+                return 0
+            total = len(items)
+            count_r = items.count("R")
+            count_b = total - count_r
+            p = count_r / total
+            q = count_b / total
+            return impurity(p, q)
+
+        # Tests:
+        print(list_impurity(["R", "B", "B", "R", "R"]))  # 0.96
+        print(list_impurity(["R", "R", "R", "R"]))        # 0
+        print(list_impurity(["B", "B", "B", "B"]))        # 0
+        print(list_impurity(["R", "B"]))                  # 1.0
+        print(list_impurity([]))                          # 0
+
+        # Ranking:
+        list_A = ["R"]*8 + ["B"]*2  # p=0.8  imp=0.64
+        list_B = ["R"]*5 + ["B"]*5  # p=0.5  imp=1.0
+        list_C = ["R"]*7 + ["B"]*3  # p=0.7  imp=0.84
+        # Most mixed to least: B (1.0) > C (0.84) > A (0.64)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Weighted Impurity of Two Groups"
+    description: |
+      When we split a list into two parts, we get two separate impurity values — one for each part.
+
+      But how do we combine them into one number?
+
+      **Think about it:** If one group has 100 items and another has 2 items, should they count equally?
+
+      **Your task:**
+
+      1. Invent a formula for the **total impurity** of two groups, `left` and `right`, that accounts for their sizes.
+         - What should happen if one group is empty?
+         - What should happen if both groups are identical?
+      2. Write a function `total_impurity(left, right)` that takes two lists and returns a single number.
+      3. Test it:
+         ```python
+         total_impurity(["R", "R", "R"], ["B", "B", "B"])  # perfectly separated
+         total_impurity(["R", "B", "R"], ["B", "R", "B"])  # each group is mixed
+         total_impurity(["R"]*9 + ["B"], ["B"])             # unequal sizes
+         ```
+      4. Reflection: For the last test case, the right group has 1 item (`["B"]`) so it's pure (impurity = 0). But it only has 1 item out of 11 total. Does your formula give it less weight? It should.
+    hints:
+      - "Think about **weighted average**. A group with more items should have more influence on the total."
+      - "$\\text{total} = \\frac{|L|}{|L|+|R|} \\times \\text{impurity}(L) + \\frac{|R|}{|L|+|R|} \\times \\text{impurity}(R)$"
+    solution:
+      code: |
+        def total_impurity(left, right):
+            """
+            Returns the weighted total impurity of two groups.
+            Each group's impurity is weighted by its size relative
+            to the combined total.
+            """
+            n_left = len(left)
+            n_right = len(right)
+            n_total = n_left + n_right
+            if n_total == 0:
+                return 0
+            return (n_left / n_total) * list_impurity(left) \
+                 + (n_right / n_total) * list_impurity(right)
+
+        # Tests:
+        print(total_impurity(["R","R","R"], ["B","B","B"]))
+        # 0.0 — perfectly separated, each group is pure
+
+        print(total_impurity(["R","B","R"], ["B","R","B"]))
+        # ~0.889 — both groups are 2/3 vs 1/3
+
+        print(total_impurity(["R"]*9 + ["B"], ["B"]))
+        # ~0.327 — left is slightly impure (10/11 weight),
+        #           right is pure (1/11 weight)
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Finding the Best Split
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Finding the Best Split"
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Splitting a List at a Position"
+    description: |
+      You are given an ordered list:
+
+      ```python
+      items = ["R", "B", "B", "R", "R"]
+      ```
+
+      You can **split** it at position `k` (0-indexed), meaning:
+
+      - **Left part:** `items[:k]` — the first `k` items
+      - **Right part:** `items[k:]` — the remaining items
+
+      For example, splitting at position `k=2`:
+
+      - Left: `["R", "B"]`
+      - Right: `["B", "R", "R"]`
+
+      **Tasks:**
+
+      1. For `items = ["R", "B", "B", "R", "R"]`, print the left and right parts for **every possible split position** `k = 1, 2, 3, 4`.
+         - (Why not `k=0` or `k=5`? What would those give?)
+      2. For each split position, compute `total_impurity(left, right)`. Print all values.
+      3. Which split position gives the **minimum** total impurity?
+         - What are the left and right groups at that position?
+         - Does that split make intuitive sense?
+    hints:
+      - "Use a loop: `for k in range(1, len(items))`. Print `items[:k]` and `items[k:]` for each."
+    solution:
+      code: |
+        items = ["R", "B", "B", "R", "R"]
+
+        for k in range(1, len(items)):
+            left = items[:k]
+            right = items[k:]
+            imp = total_impurity(left, right)
+            print(f"k={k}: left={left}, right={right}, "
+                  f"total_impurity={imp:.4f}")
+
+        # k=0 gives left=[] (empty) — no meaningful split.
+        # k=5 gives right=[] (empty) — no meaningful split.
+        #
+        # Results:
+        # k=1: left=['R'],    right=['B','B','R','R'] → 0.75
+        # k=2: left=['R','B'],right=['B','R','R']     → 0.9333
+        # k=3: left=['R','B','B'], right=['R','R']    → 0.5333
+        # k=4: left=['R','B','B','R'], right=['R']    → 0.75
+        #
+        # k=3 gives the minimum total impurity (0.5333).
+        # Left=['R','B','B'] and Right=['R','R'] — the right
+        # group is pure and the left is mostly B.
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "The Best Split Function"
+    description: |
+      Now automate it: write a function `find_best_split_position(items)` that:
+
+      - Tries every possible split position `k = 1` to `len(items) - 1`
+      - Computes `total_impurity` at each position
+      - Returns the position `k` that gives the **minimum** total impurity
+
+      **Tasks:**
+
+      1. Implement `find_best_split_position(items)`. It should return the best `k` and the minimum total impurity.
+      2. Test it on these lists:
+         ```python
+         ["R", "B", "B", "R", "R"]
+         ["R", "R", "R", "B", "B", "B"]
+         ["B", "R", "B", "R", "B", "R"]
+         ["R", "R", "R", "R", "B"]
+         ```
+      3. For `["R", "R", "R", "B", "B", "B"]`, the answer should be obvious from visual inspection. Does your function agree?
+      4. For `["B", "R", "B", "R", "B", "R"]` (perfectly alternating), what split position does it find? Are there multiple "tied" positions?
+    hints:
+      - "Track `best_k` and `min_impurity` as you loop. Update them whenever you find a lower impurity."
+      - "Initialize `min_impurity = float('inf')` so any real value will be smaller."
+    solution:
+      code: |
+        def find_best_split_position(items):
+            """
+            Finds the split position k that minimises
+            total_impurity(items[:k], items[k:]).
+            Returns (best_k, min_impurity).
+            """
+            best_k = None
+            min_imp = float('inf')
+            for k in range(1, len(items)):
+                left = items[:k]
+                right = items[k:]
+                imp = total_impurity(left, right)
+                if imp < min_imp:
+                    min_imp = imp
+                    best_k = k
+            return best_k, min_imp
+
+        # Tests:
+        for lst in [["R","B","B","R","R"],
+                    ["R","R","R","B","B","B"],
+                    ["B","R","B","R","B","R"],
+                    ["R","R","R","R","B"]]:
+            best_k, min_imp = find_best_split_position(lst)
+            print(f"{lst}")
+            print(f"  best k={best_k}, left={lst[:best_k]}, "
+                  f"right={lst[best_k:]}, impurity={min_imp:.4f}")
+
+        # ["R","R","R","B","B","B"] → k=3 (obvious visual boundary)
+        # ["B","R","B","R","B","R"] → all positions are equally
+        #   mixed, so the first k with minimum is returned.
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Visualise the Split Scores"
+    description: |
+      Use the plotting helper below to visualise how total impurity changes at each split position.
+
+      **Tasks:**
+
+      1. Run `plot_split_scores` on all four test lists from Exercise 3.2.
+      2. For `["R", "R", "R", "B", "B", "B"]`: is the minimum sharp or flat? Why?
+      3. For `["B", "R", "B", "R", "B", "R"]`: what does the plot look like? Is there a clear winner?
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_split_scores(items, title=None):
+              ks = list(range(1, len(items)))
+              scores = [total_impurity(items[:k], items[k:]) for k in ks]
+              best_k = ks[scores.index(min(scores))]
+              plt.figure(figsize=(8, 4))
+              plt.plot(ks, scores, 'b-o')
+              plt.axvline(x=best_k, color='red', linestyle='--',
+                          label=f'best k={best_k}')
+              plt.xlabel('Split position k')
+              plt.ylabel('Total impurity')
+              plt.title(title or f'Split scores for {items}')
+              plt.legend(); plt.grid(True); plt.show()
+    hints:
+      - "A \"sharp\" minimum means one position is clearly best. A \"flat\" minimum means several positions are nearly equal — the data doesn't have a clean boundary."
+    solution:
+      code: |
+        test_lists = [
+            ["R", "B", "B", "R", "R"],
+            ["R", "R", "R", "B", "B", "B"],
+            ["B", "R", "B", "R", "B", "R"],
+            ["R", "R", "R", "R", "B"],
+        ]
+
+        for lst in test_lists:
+            plot_split_scores(lst)
+      text: |
+        For `["R","R","R","B","B","B"]` the minimum is **sharp** at k=3 because there is a clean boundary between the two colours.
+
+        For `["B","R","B","R","B","R"]` the plot is nearly **flat** — no split position is much better than any other because the data is perfectly interleaved. There is no clear winner.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Splitting Real Data — Height & Gender
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Splitting Real Data — Height & Gender"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Meet the Dataset"
+    description: |
+      You are given a dataset of students in a class. Each student has a **height** (in cm) and a **gender** ("M" or "F").
+
+      **Before coding, answer these questions:**
+
+      1. Just by looking at the data, at roughly what height does gender start being predominantly Male?
+      2. If you had to draw a single horizontal line through the data to separate M from F as cleanly as possible, where would you draw it?
+      3. Is a perfect separation possible? Why or why not?
+    provided_code:
+      - label: "dataset"
+        code: |
+          import random
+          random.seed(42)
+
+          heights = [158, 162, 165, 167, 168, 170, 171, 172, 174, 175,
+                     176, 178, 179, 180, 181, 182, 183, 185, 187, 190]
+          genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
+                     "M",  "M",  "M",  "M",  "F",  "M",  "M",  "M",  "M",  "M"]
+    hints:
+      - "Look for the region where the labels switch from mostly \"F\" to mostly \"M\". Notice there are some outliers (e.g. \"M\" at 168, \"F\" at 174 and 181)."
+    solution:
+      code: null
+      text: |
+        1. Around height 170-175, gender starts being predominantly Male. Below ~167 it is mostly Female.
+        2. A split line around 167-170 cm would separate M from F most cleanly.
+        3. A perfect separation is **not** possible because there are outliers: e.g. "M" at 168, "F" at 174, and "F" at 181. These points violate any single threshold.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Visualise the Data"
+    description: |
+      Run the plotting helper below to see the data.
+
+      Call `plot_height_gender(heights, genders)` to see the scatter plot.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_height_gender(heights, genders, split_height=None,
+                                 title="Height vs Gender"):
+              colors = {"M": "blue", "F": "red"}
+              y_jitter = {"M": 1, "F": 0}
+              plt.figure(figsize=(10, 3))
+              for h, g in zip(heights, genders):
+                  plt.scatter(h, y_jitter[g], color=colors[g], s=80, zorder=5)
+                  plt.text(h, y_jitter[g] + 0.05, g, ha='center', fontsize=8)
+              if split_height is not None:
+                  plt.axvline(x=split_height, color='green', linestyle='--',
+                              linewidth=2, label=f'split at {split_height}')
+                  plt.legend()
+              plt.yticks([0, 1], ["F", "M"])
+              plt.xlabel("Height (cm)")
+              plt.title(title)
+              plt.grid(axis='x'); plt.tight_layout(); plt.show()
+    hints: []
+    solution:
+      code: |
+        plot_height_gender(heights, genders)
+      text: |
+        The scatter plot shows F (red) clustered at the lower heights and M (blue) at the higher heights, with some overlap in the 168-181 range.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Split by Height Threshold"
+    description: |
+      Now the key idea: instead of splitting at a *position* in a list, we split at a **threshold value** in a feature.
+
+      For a given threshold `t`:
+
+      - **Left group:** all rows where `height <= t`
+      - **Right group:** all rows where `height > t`
+
+      **Tasks:**
+
+      1. Write a function `split_by_threshold(heights, genders, t)` that:
+         - Splits the data at threshold `t`
+         - Returns `(left_genders, right_genders)`
+      2. Test it: `split_by_threshold(heights, genders, 172)` should return the genders of everyone with height <= 172 and height > 172.
+      3. For the thresholds below, compute and print `total_impurity(left, right)`:
+         ```python
+         t = 160, 165, 170, 172, 175, 178, 182, 185, 188
+         ```
+      4. Which threshold gives the lowest total impurity? Verify visually using `plot_height_gender` with `split_height=t`.
+    hints:
+      - "Use list comprehensions: `[g for h, g in zip(heights, genders) if h <= t]` for the left group."
+    solution:
+      code: |
+        def split_by_threshold(heights, genders, t):
+            """
+            Splits the dataset at threshold t on height.
+            Returns (left_genders, right_genders) where:
+              left_genders  = genders where height <= t
+              right_genders = genders where height > t
+            """
+            left_genders  = [g for h, g in zip(heights, genders) if h <= t]
+            right_genders = [g for h, g in zip(heights, genders) if h > t]
+            return left_genders, right_genders
+
+        # Test:
+        left, right = split_by_threshold(heights, genders, 172)
+        print("Left (height <= 172):", left)
+        print("Right (height > 172):", right)
+        print("Total impurity:", total_impurity(left, right))
+
+        # Scan thresholds:
+        for t in [160, 165, 170, 172, 175, 178, 182, 185, 188]:
+            left, right = split_by_threshold(heights, genders, t)
+            imp = total_impurity(left, right)
+            print(f"t={t}: left={len(left)}, right={len(right)}, "
+                  f"impurity={imp:.4f}")
+      text: |
+        The threshold `t = 167` gives the lowest total impurity. At that split the left group (height <= 167) is [F, F, F, F] (pure) and the right group is mostly M with a few F outliers.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Find the Best Threshold Automatically"
+    description: |
+      Instead of manually trying thresholds, automate it.
+
+      **Key insight:** You only need to try thresholds at the **unique values in your data**. Why? Because splitting at 173.5 vs 174 makes no difference if there's no data point between them.
+
+      **Tasks:**
+
+      1. Write `find_best_threshold(heights, genders)` that:
+         - Tries every unique height value as a threshold
+         - Computes `total_impurity` for each
+         - Returns the threshold with minimum total impurity, and that minimum impurity value
+      2. Run it and print the result. Does it match your manual inspection?
+      3. Visualise the best threshold using `plot_height_gender(heights, genders, split_height=best_t)`.
+      4. **Reflection:** What are the genders in the left and right groups at the best threshold? Is the split clean?
+    hints:
+      - "Get unique thresholds with `sorted(set(heights))`. Skip the last one (splitting there puts everything on the left)."
+      - "Same pattern as `find_best_split_position`: track `best_t` and `min_imp`, update in a loop."
+    solution:
+      code: |
+        def find_best_threshold(heights, genders):
+            """
+            Finds the height threshold that minimises total_impurity.
+            Returns (best_threshold, min_impurity).
+            """
+            best_t = None
+            min_imp = float('inf')
+            for t in sorted(set(heights)):
+                left = [g for h, g in zip(heights, genders) if h <= t]
+                right = [g for h, g in zip(heights, genders) if h > t]
+                if not left or not right:
+                    continue
+                imp = total_impurity(left, right)
+                if imp < min_imp:
+                    min_imp = imp
+                    best_t = t
+            return best_t, min_imp
+
+        best_t, best_imp = find_best_threshold(heights, genders)
+        print(f"Best threshold: height <= {best_t}")
+        print(f"Minimum total impurity: {best_imp:.4f}")
+
+        left, right = split_by_threshold(heights, genders, best_t)
+        print(f"Left group:  {left}")
+        print(f"Right group: {right}")
+
+        plot_height_gender(heights, genders, split_height=best_t)
+      text: |
+        The best threshold is `height <= 167`. The left group is all F (pure). The right group is mostly M but contains a few F outliers (at 170, 174, 181), so the split is good but not perfect.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-5
+    part: 4
+    number: 5
+    title: "Plot Impurity vs Threshold"
+    description: |
+      Use the plotting helper below to visualise how impurity changes as the threshold varies.
+
+      Run `plot_threshold_scores(heights, genders)` and observe the curve.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_threshold_scores(heights, genders,
+                                    title="Impurity vs Threshold"):
+              unique_heights = sorted(set(heights))
+              scores = []
+              for t in unique_heights:
+                  left = [g for h, g in zip(heights, genders) if h <= t]
+                  right = [g for h, g in zip(heights, genders) if h > t]
+                  if left and right:
+                      scores.append((t, total_impurity(left, right)))
+              ts, imps = zip(*scores)
+              best_t = ts[imps.index(min(imps))]
+              plt.figure(figsize=(9, 4))
+              plt.plot(ts, imps, 'b-o')
+              plt.axvline(x=best_t, color='red', linestyle='--',
+                          label=f'best t={best_t}')
+              plt.xlabel('Threshold (height cm)')
+              plt.ylabel('Total impurity')
+              plt.title(title)
+              plt.legend(); plt.grid(True); plt.show()
+    hints: []
+    solution:
+      code: |
+        plot_threshold_scores(heights, genders)
+      text: |
+        The curve shows impurity dropping to a minimum at `t = 167`, then rising again. The minimum is relatively sharp, confirming that 167 is the best single-feature split for this dataset.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 6
+    title: "What a Threshold Means"
+    question: |
+      Your algorithm found that the best split for a height-based gender classifier is at 167 cm. What does this threshold mean for prediction?
+    options:
+      - label: A
+        text: "Everyone shorter than 167 cm is male"
+      - label: B
+        text: "People below 167 cm get the majority label of the left group, and people at or above get the majority label of the right group"
+        correct: true
+      - label: C
+        text: "167 cm is the average height in the dataset"
+      - label: D
+        text: "People exactly at 167 cm cannot be classified"
+    hints:
+      - "The threshold splits the data into two groups. Each group predicts the most common label within it."
+    solution:
+      text: |
+        The threshold divides the data into two groups. Each group makes predictions based on its own majority label. If the left group (height < 167) is mostly female, it predicts "female" for everyone in it. If the right group (height >= 167) is mostly male, it predicts "male". The threshold isn't the average — it's the split point that minimizes impurity (maximizes the purity of both groups).
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: A Decision Node — The Job Offer
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "A Decision Node — The Job Offer"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "What Is a Decision Tree Node?"
+    description: |
+      Before we build a full tree from data, let's understand the structure of a decision tree by **constructing one by hand**.
+
+      A decision tree is made of **nodes**. There are two kinds:
+
+      - **Boundary node:** Has a rule — "if feature X <= value, go left; else go right." Has two children.
+      - **Leaf node:** Has a final answer — just `True` (YES) or `False` (NO). No children.
+
+      Here is a tree for deciding whether to accept a job offer:
+
+      ```
+      Is salary > 1000?
+      ├── NO  → Reject the offer
+      └── YES → Is distance <= 40?
+                 ├── YES → Accept the offer
+                 └── NO  → Reject the offer
+      ```
+
+      **Before coding, answer these questions:**
+
+      1. If a job pays 800 and is 20km away — what does the tree say?
+      2. If a job pays 1200 and is 30km away — what does the tree say?
+      3. If a job pays 1500 and is 60km away — what does the tree say?
+      4. If a job pays 1000 exactly — which branch do you take? (Careful: the rule is `salary > 1000`.)
+
+      **Your answers:**
+
+      1. salary=800, distance=20 → ...
+      2. salary=1200, distance=30 → ...
+      3. salary=1500, distance=60 → ...
+      4. salary=1000, distance=any → ...
+    hints:
+      - "Trace each case from the root. The first check is `salary > 1000`. If NO (salary <= 1000), you immediately reject."
+    solution:
+      code: null
+      text: |
+        1. **salary=800, distance=20:** salary <= 1000, so we go left → **Reject** (NO). We never even check distance.
+        2. **salary=1200, distance=30:** salary > 1000, go right → distance <= 40, go left → **Accept** (YES).
+        3. **salary=1500, distance=60:** salary > 1000, go right → distance > 40, go right → **Reject** (NO).
+        4. **salary=1000, distance=any:** The rule is `salary > 1000`. Since 1000 is NOT greater than 1000, we go left → **Reject** (NO). (Equivalently: salary <= 1000 means go left.)
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Build the DecisionTreeNode Class"
+    description: |
+      Design a class `DecisionTreeNode` that can be either a **boundary node** or a **leaf node**.
+
+      **Requirements:**
+
+      - A **leaf node** stores a boolean `decision` (`True` = YES, `False` = NO).
+      - A **boundary node** stores:
+        - `boundary` — the feature name (a string, e.g. `"salary"`)
+        - `boundary_value` — the threshold (a number)
+        - `left` — the child node for when `feature <= boundary_value`
+        - `right` — the child node for when `feature > boundary_value`
+      - A method `check(features)` that:
+        - Takes a dict like `{"salary": 1200, "distance": 30}`
+        - Traverses the tree
+        - Returns the leaf's boolean `decision`
+
+      **Also create two helper functions:**
+
+      - `YES()` — returns a leaf node with decision `True`
+      - `NO()` — returns a leaf node with decision `False`
+
+      **Tasks:**
+
+      1. Implement `DecisionTreeNode`, `YES()`, and `NO()`.
+      2. Build the job offer tree manually:
+         ```
+         Is salary <= 1000? → NO()
+         Else: Is distance <= 40? → YES() else NO()
+         ```
+      3. Test it against your answers from Exercise 5.1.
+
+      **Class structure hint:**
+
+      ```python
+      class DecisionTreeNode:
+          def __init__(self, ...):
+              # your attributes here
+              pass
+
+          def check(self, features):
+              # if leaf: return decision
+              # if boundary: go left or right
+              pass
+      ```
+    hints:
+      - "Use a single class with optional parameters. If `decision` is not `None`, it's a leaf. Otherwise it's a boundary node with `boundary`, `boundary_value`, `left`, `right`."
+      - "In `check()`: if it's a leaf, return `self.decision`. Otherwise, compare `features[self.boundary]` to `self.boundary_value` and recurse into `self.left` or `self.right`."
+    solution:
+      code: |
+        class DecisionTreeNode:
+            def __init__(self, decision=None, boundary=None,
+                         boundary_value=None, left=None, right=None):
+                self.decision = decision
+                self.boundary = boundary
+                self.boundary_value = boundary_value
+                self.left = left
+                self.right = right
+
+            def check(self, features):
+                if self.decision is not None:
+                    return self.decision
+                if features[self.boundary] <= self.boundary_value:
+                    return self.left.check(features)
+                else:
+                    return self.right.check(features)
+
+        def YES():
+            return DecisionTreeNode(decision=True)
+
+        def NO():
+            return DecisionTreeNode(decision=False)
+
+        # Build the job-offer tree:
+        job_tree = DecisionTreeNode(
+            boundary="salary", boundary_value=1000,
+            left=NO(),
+            right=DecisionTreeNode(
+                boundary="distance", boundary_value=40,
+                left=YES(),
+                right=NO()
+            )
+        )
+
+        # Test:
+        print(job_tree.check({"salary": 800,  "distance": 20}))  # False
+        print(job_tree.check({"salary": 1200, "distance": 30}))  # True
+        print(job_tree.check({"salary": 1500, "distance": 60}))  # False
+        print(job_tree.check({"salary": 1000, "distance": 15}))  # False
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "A Bigger Tree"
+    description: |
+      Now build a more complex tree by hand. This tree has 3 levels:
+
+      ```
+      Is salary <= 1000?
+      ├── YES → NO (reject)
+      └── NO (salary > 1000):
+          Is distance <= 40?
+          ├── YES (close enough):
+          │   Is coffee == 1?         ← 1 means "office has free coffee"
+          │   ├── YES → YES (accept)
+          │   └── NO  → NO (reject)
+          └── NO (too far) → NO (reject)
+      ```
+
+      **Tasks:**
+
+      1. Build this tree using `DecisionTreeNode`, `YES()`, and `NO()`.
+      2. Test with these job offers:
+
+      | salary | distance | coffee | Expected |
+      |--------|----------|--------|----------|
+      | 1200 | 30 | 1 | YES |
+      | 1200 | 30 | 0 | NO |
+      | 1200 | 60 | 1 | NO |
+      | 900 | 10 | 1 | NO |
+
+      3. Extend the tree by adding one more rule of your own. Document what you added.
+    hints:
+      - "Nest the `DecisionTreeNode` constructors. The outermost node splits on `salary`, its right child splits on `distance`, and that node's left child splits on `coffee`."
+    solution:
+      code: |
+        job_tree_v2 = DecisionTreeNode(
+            boundary="salary", boundary_value=1000,
+            left=NO(),
+            right=DecisionTreeNode(
+                boundary="distance", boundary_value=40,
+                left=DecisionTreeNode(
+                    boundary="coffee", boundary_value=0,
+                    left=NO(),     # coffee <= 0 → no coffee → reject
+                    right=YES()    # coffee > 0  → has coffee → accept
+                ),
+                right=NO()
+            )
+        )
+
+        # Test:
+        tests = [
+            {"salary": 1200, "distance": 30, "coffee": 1},  # True
+            {"salary": 1200, "distance": 30, "coffee": 0},  # False
+            {"salary": 1200, "distance": 60, "coffee": 1},  # False
+            {"salary": 900,  "distance": 10, "coffee": 1},  # False
+        ]
+        for job in tests:
+            result = job_tree_v2.check(job)
+            print(f"salary={job['salary']}, distance={job['distance']}, "
+                  f"coffee={job['coffee']}  →  {result}")
+      text: |
+        Note: we split on `coffee <= 0` (go left = NO) vs `coffee > 0` (go right = YES). This is equivalent to checking `coffee == 1`.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: Multiple Features — Finding the Best Split
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Multiple Features — Finding the Best Split"
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Add a Second Feature: Weight"
+    description: |
+      Now the dataset has **two features**: height and weight. We want to find which feature and which threshold gives the best split.
+    provided_code:
+      - label: "extended dataset"
+        code: |
+          data = [
+              {"height": 158, "weight": 52, "gender": "F"},
+              {"height": 162, "weight": 55, "gender": "F"},
+              {"height": 165, "weight": 58, "gender": "F"},
+              {"height": 167, "weight": 61, "gender": "F"},
+              {"height": 168, "weight": 70, "gender": "M"},
+              {"height": 170, "weight": 60, "gender": "F"},
+              {"height": 171, "weight": 73, "gender": "M"},
+              {"height": 172, "weight": 75, "gender": "M"},
+              {"height": 174, "weight": 63, "gender": "F"},
+              {"height": 175, "weight": 78, "gender": "M"},
+              {"height": 176, "weight": 80, "gender": "M"},
+              {"height": 178, "weight": 82, "gender": "M"},
+              {"height": 179, "weight": 84, "gender": "M"},
+              {"height": 180, "weight": 85, "gender": "M"},
+              {"height": 181, "weight": 66, "gender": "F"},
+              {"height": 182, "weight": 88, "gender": "M"},
+              {"height": 183, "weight": 90, "gender": "M"},
+              {"height": 185, "weight": 92, "gender": "M"},
+              {"height": 187, "weight": 95, "gender": "M"},
+              {"height": 190, "weight": 98, "gender": "M"},
+          ]
+    hints: []
+    solution:
+      code: null
+      text: |
+        The dataset is loaded and printed. Notice that weight tends to be higher for M than for F, but there are some overlaps (e.g. F at weight 63 with height 174, and F at weight 66 with height 181). The question is: does splitting on **weight** produce a cleaner separation than splitting on **height**?
+
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Find the Best Feature and Threshold"
+    description: |
+      **The question:** Should we split on **height** or **weight**, and at what value?
+
+      Write a function `find_decision_boundary(data, features, label)` that:
+
+      - Takes a list of dicts (`data`), a list of feature names (`features`), and the label column name (`label`)
+      - For **each feature**:
+        - Tries every unique value of that feature as a threshold
+        - Computes `total_impurity` for that split
+      - Returns the **best feature name**, the **best threshold**, and the **minimum impurity**
+
+      **Tasks:**
+
+      1. Implement `find_decision_boundary`.
+      2. Run it on the dataset with `features=["height", "weight"]` and `label="gender"`.
+      3. Print the result. Which feature won? At what threshold?
+      4. Does this match what you expected from looking at the data?
+    hints:
+      - "Nested loops: outer loop over features, inner loop over unique values of that feature. Track the best (feature, threshold, impurity) triple."
+      - "Extract unique values: `sorted(set(row[feature] for row in data))`. For each threshold `t`, the left group is `[row[label] for row in data if row[feature] <= t]`."
+    solution:
+      code: |
+        def find_decision_boundary(data, features, label):
+            """
+            Finds the best (feature, threshold) split across all
+            given features.
+            Returns (best_feature, best_threshold, min_impurity).
+            """
+            best_feature = None
+            best_threshold = None
+            min_imp = float('inf')
+
+            for feature in features:
+                unique_vals = sorted(set(row[feature] for row in data))
+                for t in unique_vals:
+                    left  = [row[label] for row in data
+                             if row[feature] <= t]
+                    right = [row[label] for row in data
+                             if row[feature] > t]
+                    if not left or not right:
+                        continue
+                    imp = total_impurity(left, right)
+                    if imp < min_imp:
+                        min_imp = imp
+                        best_feature = feature
+                        best_threshold = t
+            return best_feature, best_threshold, min_imp
+
+        best_feat, best_thresh, best_imp = find_decision_boundary(
+            data, ["height", "weight"], "gender")
+        print(f"Best split: {best_feat} <= {best_thresh}")
+        print(f"Minimum total impurity: {best_imp:.4f}")
+
+        left_group = [row["gender"] for row in data
+                      if row[best_feat] <= best_thresh]
+        right_group = [row["gender"] for row in data
+                       if row[best_feat] > best_thresh]
+        print(f"Left:  {left_group}")
+        print(f"Right: {right_group}")
+      text: |
+        Weight typically wins as the best feature because it separates M and F more cleanly than height does (fewer outliers cross the weight boundary).
+
+  - type: exercise
+    kind: coding
+    id: ex-6-3
+    part: 6
+    number: 3
+    title: "Visualise Both Features"
+    description: |
+      Use the helper below to visualise both the height split and the weight split.
+
+      **Tasks:**
+
+      1. Use `find_decision_boundary` on each feature separately.
+      2. Plot the best height split and the best weight split.
+      3. Which feature gives a cleaner separation?
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_feature_split(data, feature, label, split_value=None,
+                                 title=None):
+              color_map = {"M": "blue", "F": "red"}
+              y_map = {"M": 1, "F": 0}
+              plt.figure(figsize=(10, 3))
+              for row in data:
+                  x = row[feature]; y = y_map[row[label]]
+                  c = color_map[row[label]]
+                  plt.scatter(x, y, color=c, s=80, zorder=5)
+                  plt.text(x, y + 0.06, row[label], ha='center', fontsize=8)
+              if split_value is not None:
+                  plt.axvline(x=split_value, color='green', linestyle='--',
+                              linewidth=2, label=f'split at {split_value}')
+                  plt.legend()
+              plt.yticks([0, 1], ["F", "M"])
+              plt.xlabel(feature)
+              plt.title(title or f"{feature} vs {label}")
+              plt.grid(axis='x'); plt.tight_layout(); plt.show()
+    hints: []
+    solution:
+      code: |
+        best_h, best_ht, imp_h = find_decision_boundary(
+            data, ["height"], "gender")
+        best_w, best_wt, imp_w = find_decision_boundary(
+            data, ["weight"], "gender")
+
+        print(f"Best height split: height <= {best_ht}, "
+              f"impurity = {imp_h:.4f}")
+        print(f"Best weight split: weight <= {best_wt}, "
+              f"impurity = {imp_w:.4f}")
+
+        plot_feature_split(data, "height", "gender",
+            split_value=best_ht,
+            title=f"Height split at {best_ht} (imp={imp_h:.3f})")
+        plot_feature_split(data, "weight", "gender",
+            split_value=best_wt,
+            title=f"Weight split at {best_wt} (imp={imp_w:.3f})")
+      text: |
+        Comparing the two plots, weight gives a cleaner separation (lower impurity) because the M and F weight ranges overlap less than the height ranges.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 7: Growing the Tree — Recursive Splitting
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Growing the Tree — Recursive Splitting"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-7-1
+    part: 7
+    number: 1
+    title: "What Happens After the First Split?"
+    description: |
+      After the first split, you have two groups. Each group may still be impure (mixed).
+
+      The idea: **repeat the splitting** on each group independently, until each group is pure or has only 1 element.
+
+      **Before coding, trace through manually** using the height-only dataset from Part 4:
+
+      ```python
+      heights = [158, 162, 165, 167, 168, 170, 171, 172, 174, 175,
+                 176, 178, 179, 180, 181, 182, 183, 185, 187, 190]
+      genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
+                 "M",  "M",  "M",  "M",  "F",  "M",  "M",  "M",  "M",  "M"]
+      ```
+
+      1. What is the best first split threshold? (You found this in Part 4.)
+      2. After splitting, what are the left and right groups?
+      3. Is the left group pure? Is the right group pure?
+      4. For the impure group(s), what is the best next split?
+      5. Draw this out as a tree structure.
+
+      **Your manual tree sketch:**
+
+      ```
+      height <= ???
+      ├── Left: ???  (pure? yes/no)
+      │   └── If not pure, split again at height <= ???
+      │       ├── ...
+      │       └── ...
+      └── Right: ???  (pure? yes/no)
+          └── If not pure, split again at height <= ???
+              ├── ...
+              └── ...
+      ```
+    hints:
+      - "The best first split from Part 4 is around height 167. After that, neither group is perfectly pure because of the outlier data points."
+    solution:
+      code: null
+      text: |
+        Manual trace using the height-only dataset:
+
+        1. Best first split: `height <= 167` (found in Part 4).
+        2. Left group (height <= 167): genders = [F, F, F, F]. Right group (height > 167): genders = [M, F, M, M, F, M, M, M, M, M, F, M, M, M, M, M].
+        3. Left group is **pure** (all F). Right group is **not pure** (has 3 F among 16).
+        4. For the right group, the next best split isolates the remaining F outliers. The tree continues splitting until each leaf is pure.
+
+        ```
+        height <= 167
+        ├── Left: [F, F, F, F]  → LEAF: F (pure)
+        └── Right: [M, F, M, M, F, M, M, M, M, M, F, M, M, M, M, M]
+            └── Split again on height (or weight if available)
+                to isolate the remaining F outliers...
+        ```
+
+  - type: exercise
+    kind: coding
+    id: ex-7-2
+    part: 7
+    number: 2
+    title: "Stopping Conditions"
+    description: |
+      Before writing the recursive function, think about **when to stop**.
+
+      **When should we NOT split further?**
+
+      1. The group has **only 1 element** — nothing to split.
+      2. The group is **completely pure** — all same label. No need to split.
+      3. *(Optional):* All elements have the **same feature values** — we can't find a meaningful threshold.
+
+      **When we stop, what do we return?** A **leaf node** with the majority label in that group.
+
+      **Tasks:**
+
+      1. Write a helper `majority_label(labels)` that takes a list of labels and returns the most common one. Document your tie-breaking rule.
+      2. Write a helper `is_pure(labels)` that returns `True` if all labels are the same.
+      3. Test both helpers:
+         ```python
+         majority_label(["M", "M", "F", "M"])  # → "M"
+         majority_label(["F", "M"])            # → tie: your choice
+         is_pure(["M", "M", "M"])             # → True
+         is_pure(["M", "M", "F"])             # → False
+         ```
+    hints:
+      - "For `majority_label`, count each label and pick the one with the highest count. For ties, just pick the first one you find."
+      - "For `is_pure`: `return len(set(labels)) <= 1`"
+    solution:
+      code: |
+        def majority_label(labels):
+            """
+            Returns the most common label in the list.
+            Tie-breaking: returns whichever label appears first
+            among those with the highest count.
+            """
+            if not labels:
+                return None
+            counts = {}
+            for label in labels:
+                counts[label] = counts.get(label, 0) + 1
+            return max(counts, key=counts.get)
+
+        def is_pure(labels):
+            """
+            Returns True if all labels are the same (or the list
+            is empty).
+            """
+            return len(set(labels)) <= 1
+
+        # Tests:
+        print(majority_label(["M", "M", "F", "M"]))  # M
+        print(majority_label(["F", "M"]))             # F (tie → first)
+        print(is_pure(["M", "M", "M"]))              # True
+        print(is_pure(["M", "M", "F"]))              # False
+        print(is_pure([]))                            # True
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-3
+    part: 7
+    number: 3
+    title: "Build the Tree Recursively"
+    description: |
+      Now write `build_tree(data, features, label)` that:
+
+      1. **Base case:** If `data` is empty, or has 1 element, or is pure — return a `DecisionTreeNode` leaf with the majority label.
+      2. **Recursive case:**
+         - Find the best feature and threshold using `find_decision_boundary`.
+         - Split `data` into `left_data` and `right_data`.
+         - Recursively call `build_tree` on each.
+         - Return a `DecisionTreeNode` boundary node with the two subtrees.
+
+      **Important:** The leaf node now stores a **label string** (like `"M"` or `"F"`), not just `True`/`False`. You may need to adapt your `DecisionTreeNode` slightly.
+
+      **Tasks:**
+
+      1. Implement `build_tree(data, features, label)`.
+      2. Run it on the height+weight dataset from Part 6.
+      3. Write a helper `print_tree(node, depth=0)` that prints the tree in an indented format:
+
+      ```
+      [height <= 175]
+        LEFT:
+          [weight <= 63]
+            LEFT:  LEAF → F
+            RIGHT: LEAF → M
+        RIGHT:
+          LEAF → M
+      ```
+    hints:
+      - "Think about the safety check: what if `find_decision_boundary` returns a split where all data goes to one side? You need to stop and return a leaf to avoid infinite recursion."
+      - "Split the data: `left_data = [row for row in data if row[best_feat] <= best_thresh]` and similarly for right. If either is empty, return a leaf."
+      - "For `print_tree`: check if `node.decision is not None` (leaf) vs boundary. Use `\"  \" * depth` for indentation and recurse on left/right children."
+    solution:
+      code: |
+        def build_tree(data, features, label):
+            """
+            Recursively builds a decision tree.
+            Returns a DecisionTreeNode (leaf or boundary).
+            """
+            labels = [row[label] for row in data]
+
+            # Base case 1: empty data
+            if len(data) == 0:
+                return DecisionTreeNode(decision=None)
+
+            # Base case 2: pure or single element
+            if is_pure(labels) or len(data) == 1:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            # Recursive case
+            best_feat, best_thresh, best_imp = \
+                find_decision_boundary(data, features, label)
+
+            left_data  = [row for row in data
+                          if row[best_feat] <= best_thresh]
+            right_data = [row for row in data
+                          if row[best_feat] >  best_thresh]
+
+            # Safety: if split doesn't separate, return leaf
+            if len(left_data) == 0 or len(right_data) == 0:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            left_tree  = build_tree(left_data,  features, label)
+            right_tree = build_tree(right_data, features, label)
+
+            return DecisionTreeNode(
+                boundary=best_feat,
+                boundary_value=best_thresh,
+                left=left_tree,
+                right=right_tree
+            )
+
+        def print_tree(node, depth=0, label="ROOT"):
+            indent = "  " * depth
+            if node.decision is not None:
+                print(f"{indent}[{label}] LEAF → {node.decision}")
+            else:
+                print(f"{indent}[{label}] {node.boundary} "
+                      f"<= {node.boundary_value}?")
+                print_tree(node.left,  depth+1, "YES (left)")
+                print_tree(node.right, depth+1, "NO (right)")
+
+        # Build and print:
+        tree = build_tree(data, ["height", "weight"], "gender")
+        print_tree(tree)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-4
+    part: 7
+    number: 4
+    title: "Use the Tree to Predict"
+    description: |
+      Now use your built tree to predict the gender of each row in the original `data`.
+
+      **Tasks:**
+
+      1. Use `tree.check(row)` to predict the gender for each row.
+      2. Compare the prediction to the true label.
+      3. Count how many predictions are correct. What is the **accuracy** (correct / total)?
+      4. Which rows does the tree get wrong? Can you explain why?
+    hints:
+      - "Since the tree was built on this exact data and we didn't limit its depth, it should get 100% accuracy on the training data. If not, check your `build_tree` stopping conditions."
+    solution:
+      code: |
+        correct = 0
+        for row in data:
+            predicted = tree.check(row)
+            true_label = row["gender"]
+            match = "Y" if predicted == true_label else "N"
+            if predicted == true_label:
+                correct += 1
+            print(f"height={row['height']}, weight={row['weight']}: "
+                  f"true={true_label}, pred={predicted}  {match}")
+
+        print(f"\nAccuracy: {correct}/{len(data)} "
+              f"= {correct/len(data)*100:.1f}%")
+      text: |
+        The tree achieves **100% accuracy** on the training data because it keeps splitting until every leaf is pure. This is expected — with no depth limit the tree memorises the training set perfectly. Whether this generalises to new data is another question (see overfitting discussion in Part 9).
+
+  - type: exercise
+    kind: mcq
+    id: mcq-7-1
+    part: 7
+    number: 5
+    title: "Overfitting via Depth"
+    question: |
+      A decision tree is allowed to grow until every leaf contains exactly one data point. It achieves 100% accuracy on the training data. Is this a good model?
+    options:
+      - label: A
+        text: "Yes — 100% accuracy means perfect predictions"
+      - label: B
+        text: "Probably not — it has likely memorized the training data (including noise) and will perform poorly on new, unseen data"
+        correct: true
+      - label: C
+        text: "It depends on whether the data is sorted"
+      - label: D
+        text: "No — decision trees can never achieve 100% accuracy"
+    hints:
+      - "If every leaf has one data point, the tree has essentially memorized the location of each training example. What happens when a new example falls in a slightly different spot?"
+    solution:
+      text: |
+        A tree that splits until every leaf has one point has memorized the training data — it hasn't learned general patterns, just the exact positions of the training examples. This is called overfitting. New data points, even slightly different from training data, may land in the wrong leaf. This is why real decision trees use stopping conditions like max_depth or min_samples_split — they sacrifice some training accuracy to gain the ability to generalize to unseen data.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 8: The Full Decision Tree — fit and predict
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 8
+    title: "The Full Decision Tree — fit and predict"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-8-1
+    part: 8
+    number: 1
+    title: "The Interface"
+    description: |
+      Real ML libraries use a standard interface:
+
+      - `fit(X, y)` — train the model on data `X` (features) and labels `y`
+      - `predict(X)` — given new data, return predictions
+
+      Here, `X` will be a list of dicts (one per sample), and `y` will be a list of labels.
+
+      **Before coding, think about these questions:**
+
+      1. In `fit(X, y)`: how do you know which features to try splitting on?
+      2. In `predict(X)`: `X` is a list of rows — so `predict` should return a **list** of predictions.
+      3. What should a leaf return when `check` is called on it?
+
+      **Your answers:**
+
+      1. Features to split on: ...
+      2. `predict` returns: ...
+      3. Leaf behaviour: ...
+    hints:
+      - "The features are just the keys of the first dict in `X`: `list(X[0].keys())`."
+    solution:
+      code: null
+      text: |
+        1. **Features to split on:** Extract them from the keys of the first dict in X: `list(X[0].keys())`. This way `fit` automatically discovers the available features.
+        2. **`predict` returns:** A list of predicted labels, one per row in X. Each prediction comes from traversing the tree for that row.
+        3. **Leaf behaviour:** A leaf stores the majority label (a string like `"M"` or `"F"`), and `check()` returns it directly.
+
+  - type: exercise
+    kind: coding
+    id: ex-8-2
+    part: 8
+    number: 2
+    title: "Implement SimpleDecisionTree"
+    description: |
+      Wrap everything into a clean class:
+
+      ```python
+      class SimpleDecisionTree:
+          def fit(self, X, y):
+              """
+              X : list of dicts (each dict is one row of features)
+              y : list of labels (strings or booleans)
+              Builds the decision tree and stores it in self.root.
+              """
+              pass
+
+          def predict(self, X):
+              """
+              X : list of dicts
+              Returns a list of predicted labels, one per row.
+              """
+              pass
+      ```
+
+      **Tasks:**
+
+      1. Implement `SimpleDecisionTree` using `build_tree` inside `fit`.
+      2. Combine `X` and `y` inside `fit` to pass to `build_tree`.
+      3. Test it on the height+weight dataset:
+         ```python
+         X = [{"height": row["height"], "weight": row["weight"]}
+              for row in data]
+         y = [row["gender"] for row in data]
+
+         clf = SimpleDecisionTree()
+         clf.fit(X, y)
+         predictions = clf.predict(X)
+         ```
+      4. Compute accuracy.
+      5. Now predict on some **new unseen data**:
+         ```python
+         new_people = [
+             {"height": 163, "weight": 54},   # your guess: F or M?
+             {"height": 185, "weight": 91},   # your guess: F or M?
+             {"height": 172, "weight": 65},   # your guess: F or M?
+         ]
+         ```
+    hints:
+      - "In `fit`: merge `X[i]` and `{label: y[i]}` into one dict per row: `[{**x, \"__label__\": yi} for x, yi in zip(X, y)]`. Use `\"__label__\"` as the label column name when calling `build_tree`."
+      - "In `predict`: `return [self.root.check(row) for row in X]`"
+    solution:
+      code: |
+        class SimpleDecisionTree:
+            def __init__(self):
+                self.root = None
+                self.features = None
+
+            def fit(self, X, y):
+                self.features = list(X[0].keys())
+                label_col = "__label__"
+                combined = [{**x, label_col: yi}
+                            for x, yi in zip(X, y)]
+                self.root = build_tree(combined,
+                                       self.features,
+                                       label_col)
+
+            def predict(self, X):
+                return [self.root.check(row) for row in X]
+
+        # Test:
+        X = [{"height": row["height"], "weight": row["weight"]}
+             for row in data]
+        y = [row["gender"] for row in data]
+
+        clf = SimpleDecisionTree()
+        clf.fit(X, y)
+        predictions = clf.predict(X)
+
+        correct = sum(p == t for p, t in zip(predictions, y))
+        print(f"Training accuracy: {correct}/{len(y)} "
+              f"= {correct/len(y)*100:.1f}%")
+
+        # Predict on new data:
+        new_people = [
+            {"height": 163, "weight": 54},
+            {"height": 185, "weight": 91},
+            {"height": 172, "weight": 65},
+        ]
+        new_preds = clf.predict(new_people)
+        for person, pred in zip(new_people, new_preds):
+            print(f"  height={person['height']}, "
+                  f"weight={person['weight']}  →  {pred}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-8-3
+    part: 8
+    number: 3
+    title: "Print the Learned Tree"
+    description: |
+      Use your `print_tree` function to display the tree learned by `SimpleDecisionTree`.
+
+      **Tasks:**
+
+      1. Call `print_tree(clf.root)`.
+      2. How deep is the tree? Count the levels.
+      3. Does the tree make intuitive sense? Are the splits reasonable?
+      4. What would happen if you trained on a dataset with **more noise** — would the tree be deeper or shallower? Why?
+    hints:
+      - "A noisier dataset means more exceptions to every rule, so the tree has to keep splitting to isolate them — it gets deeper. This is overfitting."
+    solution:
+      code: |
+        print_tree(clf.root)
+      text: |
+        The tree is several levels deep. Each split isolates one or more data points into pure leaves. The first split is on the feature (height or weight) that gives the best separation. Subsequent splits handle the remaining impure groups.
+
+        With **more noise** the tree would be **deeper**, because more exceptions force more splits to achieve purity. This is overfitting: the tree memorises the training data rather than learning a general pattern.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 9: Bonus Challenges
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 9
+    title: "Bonus Challenges"
+    intro: |
+      If you've made it here, you've built a decision tree from scratch — impurity formula, split search, recursive tree growth, and a full ML-style class. Here are open-ended extensions.
+
+  - type: exercise
+    kind: challenge
+    id: ex-9-a
+    part: 9
+    number: 1
+    title: "Max Depth"
+    description: |
+      Your tree keeps splitting until each leaf is pure. This can lead to **overfitting** — the tree memorises the training data but won't generalise to new data.
+
+      Add a `max_depth` parameter to `SimpleDecisionTree` (and `build_tree`):
+
+      - If the current depth equals `max_depth`, stop and return a leaf regardless of purity.
+
+      **Tasks:**
+
+      1. Try `max_depth=1`, `2`, `3`. How does accuracy on the training set change?
+      2. What does the tree look like with `max_depth=1`? This is called a **decision stump**.
+      3. In general: deeper tree = higher training accuracy. Is that always better? Why not?
+    provided_code: []
+    hints:
+      - "Add a `depth` parameter to `build_tree`. In each recursive call, pass `depth + 1`. At the top, check `if depth >= max_depth: return leaf`."
+    solution:
+      code: |
+        def build_tree_depth(data, features, label,
+                             depth=0, max_depth=None):
+            labels = [row[label] for row in data]
+
+            if len(data) == 0:
+                return DecisionTreeNode(decision=None)
+            if is_pure(labels) or len(data) == 1:
+                return DecisionTreeNode(decision=majority_label(labels))
+            # NEW: stop if max depth reached
+            if max_depth is not None and depth >= max_depth:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            best_feat, best_thresh, _ = \
+                find_decision_boundary(data, features, label)
+            left_data  = [r for r in data if r[best_feat] <= best_thresh]
+            right_data = [r for r in data if r[best_feat] >  best_thresh]
+
+            if not left_data or not right_data:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            return DecisionTreeNode(
+                boundary=best_feat, boundary_value=best_thresh,
+                left=build_tree_depth(left_data, features, label,
+                                      depth+1, max_depth),
+                right=build_tree_depth(right_data, features, label,
+                                       depth+1, max_depth)
+            )
+
+        # Test with max_depth = 1, 2, 3:
+        label_col = "__label__"
+        combined = [{**{"height": r["height"], "weight": r["weight"]},
+                     label_col: r["gender"]} for r in data]
+        feats = ["height", "weight"]
+        for md in [1, 2, 3, None]:
+            t = build_tree_depth(combined, feats, label_col,
+                                 max_depth=md)
+            preds = [t.check(r) for r in data]
+            acc = sum(p == r["gender"] for p, r in zip(preds, data))
+            print(f"max_depth={md}: accuracy={acc}/{len(data)}")
+            print_tree(t)
+      text: |
+        With `max_depth=1` the tree is a **decision stump** (one split). Training accuracy is lower but the model is simpler and less likely to overfit.
+
+  - type: exercise
+    kind: challenge
+    id: ex-9-b
+    part: 9
+    number: 2
+    title: "Min Samples to Split"
+    description: |
+      Another way to prevent overfitting: don't split a group if it has fewer than `min_samples` rows.
+
+      Add a `min_samples` parameter: if `len(data) < min_samples`, return a leaf.
+
+      Try `min_samples=1` (default) vs `min_samples=3` vs `min_samples=5`. How does the tree structure change?
+    provided_code: []
+    hints:
+      - "Just add one more base-case check at the top of `build_tree`: `if len(data) < min_samples: return leaf`."
+    solution:
+      code: |
+        def build_tree_ms(data, features, label, min_samples=1):
+            labels = [row[label] for row in data]
+
+            if len(data) == 0:
+                return DecisionTreeNode(decision=None)
+            if is_pure(labels) or len(data) == 1:
+                return DecisionTreeNode(decision=majority_label(labels))
+            # NEW: stop if too few samples
+            if len(data) < min_samples:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            best_feat, best_thresh, _ = \
+                find_decision_boundary(data, features, label)
+            left_data  = [r for r in data if r[best_feat] <= best_thresh]
+            right_data = [r for r in data if r[best_feat] >  best_thresh]
+
+            if not left_data or not right_data:
+                return DecisionTreeNode(decision=majority_label(labels))
+
+            return DecisionTreeNode(
+                boundary=best_feat, boundary_value=best_thresh,
+                left=build_tree_ms(left_data, features, label,
+                                   min_samples),
+                right=build_tree_ms(right_data, features, label,
+                                    min_samples)
+            )
+
+        # Compare min_samples = 1, 3, 5:
+        for ms in [1, 3, 5]:
+            t = build_tree_ms(combined, feats, label_col,
+                              min_samples=ms)
+            preds = [t.check(r) for r in data]
+            acc = sum(p == r["gender"] for p, r in zip(preds, data))
+            print(f"min_samples={ms}: accuracy={acc}/{len(data)}")
+            print_tree(t)
+            print()
+      text: |
+        Higher `min_samples` produces a shallower tree with fewer splits, trading training accuracy for simplicity and better generalisation.
+
+  - type: exercise
+    kind: challenge
+    id: ex-9-c
+    part: 9
+    number: 3
+    title: "A New Dataset"
+    description: |
+      Try your tree on the Iris dataset — a classic ML benchmark.
+
+      ```python
+      from sklearn.datasets import load_iris
+      iris = load_iris()
+
+      feature_names = iris.feature_names  # 4 features
+      X_iris = [dict(zip(feature_names, row)) for row in iris.data]
+      y_iris = [iris.target_names[t] for t in iris.target]
+      ```
+
+      **Tasks:**
+
+      1. Fit your `SimpleDecisionTree` on the Iris dataset.
+      2. Compute training accuracy.
+      3. Print the tree. How deep is it?
+      4. Compare to `sklearn.tree.DecisionTreeClassifier`. Do they make the same splits?
+      5. **Bonus:** Split into train/test sets (80/20) and measure test accuracy.
+    provided_code: []
+    hints:
+      - "Your tree should get ~100% training accuracy on Iris. The first split is usually on `petal width (cm)` at around 0.8 — this separates setosa from the other two perfectly."
+    solution:
+      code: |
+        from sklearn.datasets import load_iris
+
+        iris = load_iris()
+        feature_names = iris.feature_names
+        X_iris = [dict(zip(feature_names, row))
+                  for row in iris.data]
+        y_iris = [iris.target_names[t] for t in iris.target]
+
+        clf_iris = SimpleDecisionTree()
+        clf_iris.fit(X_iris, y_iris)
+
+        preds = clf_iris.predict(X_iris)
+        acc = sum(p == t for p, t in zip(preds, y_iris))
+        print(f"Iris training accuracy: "
+              f"{acc}/{len(y_iris)} = {acc/len(y_iris)*100:.1f}%")
+
+        print("\nTree structure:")
+        print_tree(clf_iris.root)
+
+        # Bonus: train/test split
+        import random
+        random.seed(42)
+        indices = list(range(len(X_iris)))
+        random.shuffle(indices)
+        split = int(0.8 * len(indices))
+        train_idx, test_idx = indices[:split], indices[split:]
+
+        X_train = [X_iris[i] for i in train_idx]
+        y_train = [y_iris[i] for i in train_idx]
+        X_test  = [X_iris[i] for i in test_idx]
+        y_test  = [y_iris[i] for i in test_idx]
+
+        clf2 = SimpleDecisionTree()
+        clf2.fit(X_train, y_train)
+        test_preds = clf2.predict(X_test)
+        test_acc = sum(p == t for p, t in zip(test_preds, y_test))
+        print(f"\nTest accuracy: {test_acc}/{len(y_test)} "
+              f"= {test_acc/len(y_test)*100:.1f}%")
+      text: |
+        The tree should achieve 100% training accuracy. The first split is usually on `petal width (cm)` at around 0.8 cm, perfectly separating setosa from the other two species. Test accuracy is typically 93-97%.
+
+  - type: exercise
+    kind: challenge
+    id: ex-9-d
+    part: 9
+    number: 4
+    title: "What Is Gini Impurity?"
+    description: |
+      The impurity function you invented is based on $p(1-p)$. Look up **Gini impurity**:
+
+      $$\text{Gini} = 1 - \sum_k p_k^2$$
+
+      where the sum is over all classes $k$, and $p_k$ is the fraction of class $k$.
+
+      **Tasks:**
+
+      1. For two classes (R and B), write out the Gini formula in full.
+      2. Is it the same as your formula, or different?
+      3. Replace your `impurity` function with the Gini formula and re-run everything. Do the results change?
+      4. Look up **Entropy** as another impurity measure. Try implementing that too.
+    provided_code: []
+    hints:
+      - "For two classes: $\\text{Gini} = 1 - p^2 - q^2$. Since $q = 1-p$, expand and simplify — compare to $4pq$."
+      - "$1 - p^2 - (1-p)^2 = 2p(1-p)$. Your formula was $4p(1-p)$. They differ by a factor of 2, but this doesn't affect which split wins — both rank splits the same way."
+    solution:
+      code: |
+        def gini_impurity(p, q):
+            """
+            Gini impurity for two classes.
+            Gini = 1 - (p^2 + q^2) = 2*p*q
+            Ranges from 0 (pure) to 0.5 (maximally mixed).
+            """
+            return 1 - (p**2 + q**2)
+
+        def entropy_impurity(p, q):
+            """
+            Entropy for two classes.
+            H = -(p*log2(p) + q*log2(q))
+            Handle p=0 or q=0 as contributing 0.
+            Ranges from 0 (pure) to 1.0 (maximally mixed).
+            """
+            result = 0
+            if p > 0:
+                result -= p * math.log2(p)
+            if q > 0:
+                result -= q * math.log2(q)
+            return result
+
+        # Plot all three:
+        ps = [i/100 for i in range(101)]
+        plt.figure(figsize=(8, 4))
+        plt.plot(ps, [impurity(p, 1-p) for p in ps],
+                 label='Your formula (4pq)')
+        plt.plot(ps, [gini_impurity(p, 1-p) for p in ps],
+                 label='Gini (2pq)', linestyle='--')
+        plt.plot(ps, [entropy_impurity(p, 1-p) for p in ps],
+                 label='Entropy', linestyle=':')
+        plt.xlabel('p'); plt.ylabel('impurity')
+        plt.title('Comparing impurity measures')
+        plt.legend(); plt.grid(True); plt.show()
+      text: |
+        For two classes: `Gini = 1 - p^2 - q^2 = 2pq`. Your formula `4pq` differs from Gini by a factor of 2, but this **does not** affect which split wins — both rank all possible splits identically. Entropy has a slightly different shape (it peaks at 1.0 instead of 0.5) but also ranks splits the same way.
+
+  # ═══════════════════════════════════════════════════════
+  # Reflection
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 10
+    title: "Reflection — What Did You Just Build?"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 10
+    number: 1
+    title: "Reflection"
+    description: |
+      Take a moment to answer these questions in your own words.
+
+      1. **What is impurity?** Why does it matter for decision trees?
+      2. **What is a decision boundary?** How did you find the best one?
+      3. **What is recursive splitting?** When does it stop?
+      4. **What is overfitting?** How does a decision tree overfit, and how can you prevent it?
+      5. **What does `fit` do?** What does `predict` do?
+      6. **What would a Random Forest be?** (Think: what if you built many trees on random subsets of data and features, then took a vote?)
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: reveal
+    text: |
+      **What you just invented:** a complete decision tree classifier — from the impurity measure ($4pq$, equivalent to Gini impurity up to a constant factor), through the greedy split-search algorithm (try every feature and threshold, pick the one that minimizes weighted impurity), to recursive tree growth with stopping conditions, and finally a scikit-learn-style `fit`/`predict` interface. This is exactly how `sklearn.tree.DecisionTreeClassifier` works under the hood.

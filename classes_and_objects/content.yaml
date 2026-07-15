@@ -1,0 +1,777 @@
+chapter:
+  id: classes_and_objects
+  title: "Classes & Objects — Inventing the Model API"
+  intro: |
+    So far your programs kept *data* (lists, dicts) and *behavior* (functions) in separate boxes, and you passed one to the other by hand. A **class** glues them together: an object carries its own data *and* the functions that work on it.
+
+    Why should a machine-learning book care? Because a trained model **is** an object — some learned numbers plus a `predict` function that uses them. By the end of this chapter you will have invented the `fit`/`predict` interface that scikit-learn, Keras and friends all use, hand-built a decision tree out of objects, and saved a model to disk.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/classes_and_objects/classes_and_objects.ipynb"
+  mathjax: false
+  footer: |
+    From here on, everything is objects: the **Ancient Secrets of Prediction** chapter finds best-fit models when no exact fit exists, **Gradient Descent** makes `fit` iterative, and **Decision Trees** learns Part 5's tree from data.
+
+blocks:
+  # ── Quick Reference ──
+  - type: reveal
+    text: |
+      **Python Quick Reference**
+
+      A **class** bundles data and behavior. `self` refers to the current object.
+
+      ```python
+      # Defining a class
+      class Dog:
+          def __init__(self, name, age):   # constructor
+              self.name = name             # store data on the object
+              self.age = age
+
+          def speak(self):                 # method
+              return f"{self.name} says woof!"
+
+      # Creating an object (instance)
+      rex = Dog("Rex", 3)
+      rex.name                 # "Rex"
+      rex.speak()              # "Rex says woof!"
+
+      # Inheritance — reuse & extend
+      class Puppy(Dog):
+          def speak(self):                 # override parent method
+              return f"{self.name} yips!"
+
+      p = Puppy("Max", 1)
+      p.speak()                # "Max yips!"
+      p.age                    # 1 (inherited from Dog)
+
+      # f-strings for formatted output
+      x = 3.14159
+      f"pi is {x:.2f}"         # "pi is 3.14"
+      ```
+
+      - `__init__` runs when you create an object; use it to store initial data on `self`.
+      - Every method's first parameter is `self` — Python passes it automatically.
+      - A subclass inherits all methods and can override any of them.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 1: From Dict to Class
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "From Dict to Class"
+    intro: |
+      You could describe a customer with a dict: `customer = {"name": "Sandeep", "place": "India"}`. It works, but the data has no behavior: any code that wants to *do* something with a customer must live somewhere else.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Customer"
+    description: |
+      Write a class `Customer`:
+
+      - `Customer("Sandeep", "India")` stores the two values on the object (**hint:** define `__init__(self, name, place)` and assign to `self.name`, `self.place`).
+      - A method `describe()` returns `"<name> from <place>"`.
+    provided_code:
+      - label: "test harness"
+        code: |
+          c = Customer("Sandeep", "India")
+          assert c.name == "Sandeep"
+          assert c.place == "India"
+          assert c.describe() == "Sandeep from India"
+          c2 = Customer("Nitin", "Bharat")
+          assert c2.describe() == "Nitin from Bharat"
+          print("Customer: OK")
+    hints:
+      - |
+        Start with the skeleton:
+
+        ```python
+        class Customer:
+            def __init__(self, name, place):
+                self.name = ???
+                self.place = ???
+
+            def describe(self):
+                return ???
+        ```
+
+        Inside `__init__`, assign the parameters to `self.name` and `self.place`.
+      - |
+        For `describe`, use an f-string: `return f"{self.name} from {self.place}"`.
+    solution:
+      code: |
+        class Customer:
+            def __init__(self, name, place):
+                self.name = name
+                self.place = place
+
+            def describe(self):
+                return f"{self.name} from {self.place}"
+      text: null
+
+  - type: reveal
+    text: |
+      **What just happened?**
+
+      - `Customer("Sandeep", "India")` **constructs** an object: Python creates an empty object and calls your `__init__` with it as `self`.
+      - `c.describe()` is exactly `Customer.describe(c)` — the object slides in as `self`. Try it: `Customer.describe(c)` returns the same string.
+      - `c` and `c2` each carry their **own** `name` and `place`. One class, many objects.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: A Model Is an Object — TwoPointLine
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "A Model Is an Object — `TwoPointLine`"
+    intro: |
+      Remember the thermometer from *Expressions & Functions*? Calibration data: current 1 → 30°, current 2 → 35°. What temperature is current 3? You solved it with two loose functions, `fit` and `predict`, and had to carry the `(m, c)` tuple between them yourself. Let the object carry it.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "TwoPointLine"
+    description: |
+      Write a class `TwoPointLine` with:
+
+      - `fit(x, y)` — `x` and `y` are lists of **two** values each: two points `(x[0], y[0])` and `(x[1], y[1])`. Compute the slope `m = (y2 - y1) / (x2 - x1)` and intercept `c = y2 - m * x2`, and store them on `self`.
+      - `predict(xs)` — take a *list* of x values, return the list of `m * x + c`.
+
+      ```python
+      model = TwoPointLine()
+      model.fit([2, 5], [3, 9])
+      model.predict([3])       # [5.0]
+      ```
+    provided_code:
+      - label: "test harness"
+        code: |
+          model = TwoPointLine()
+          model.fit([2, 5], [3, 9])            # the points (2, 3) and (5, 9)
+          assert model.predict([3, 0, 5]) == [5.0, -1.0, 9.0]
+
+          thermo = TwoPointLine()
+          thermo.fit([1, 2], [30, 35])         # the thermometer calibration
+          assert thermo.predict([3]) == [40.0]
+          assert thermo.predict([2.1]) == [35.5]
+
+          # two models live side by side without interfering:
+          assert model.predict([2]) == [3.0]
+          print("TwoPointLine: OK")
+    hints:
+      - |
+        Inside `fit`, compute slope: `self.m = (y[1] - y[0]) / (x[1] - x[0])`, then intercept: `self.c = y[1] - self.m * x[1]`.
+      - |
+        For `predict`, use a list comprehension: `return [self.m * xi + self.c for xi in xs]`.
+    solution:
+      code: |
+        class TwoPointLine:
+            def fit(self, x, y):
+                self.m = (y[1] - y[0]) / (x[1] - x[0])
+                self.c = y[1] - self.m * x[1]
+
+            def predict(self, xs):
+                return [self.m * xi + self.c for xi in xs]
+      text: null
+
+  - type: reveal
+    text: |
+      **You just invented the scikit-learn API**
+
+      ```python
+      from sklearn.linear_model import LinearRegression
+      model = LinearRegression()
+      model.fit(X, y)
+      model.predict(X_new)
+      ```
+
+      Same shape: construct → `fit` stores learned parameters on the object → `predict` uses them. Every model in the rest of this book fits this mold; the only thing that changes is *how* `fit` finds the parameters.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Guard the Gate"
+    description: |
+      `fit` silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make `fit` **raise** a `ValueError` unless both lists have exactly two values (**hint:** `raise ValueError("need exactly two points")`).
+    provided_code:
+      - label: "test harness"
+        code: |
+          model = TwoPointLine()
+          try:
+              model.fit([1, 2, 3], [1, 2, 3])
+              assert False, "fit should have raised ValueError"
+          except ValueError:
+              pass
+
+          model.fit([2, 5], [3, 9])
+          assert model.predict([2]) == [3.0]
+          print("validation: OK")
+    hints:
+      - |
+        At the top of `fit`, add: `if len(x) != 2 or len(y) != 2: raise ValueError("need exactly two points")`.
+    solution:
+      code: |
+        class TwoPointLine:
+            def fit(self, x, y):
+                if len(x) != 2 or len(y) != 2:
+                    raise ValueError("need exactly two points")
+                self.m = (y[1] - y[0]) / (x[1] - x[0])
+                self.c = y[1] - self.m * x[1]
+
+            def predict(self, xs):
+                return [self.m * xi + self.c for xi in xs]
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Inheritance — Classes That Extend Classes
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Inheritance — Classes That Extend Classes"
+    intro: |
+      All animals eat; only dogs bark. Instead of repeating `eat` in every animal class, write it once and **inherit** it.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Animal, Dog, Cat"
+    description: |
+      - `Animal` has a method `eat()` returning `"eating"`.
+      - `Dog(Animal)` adds `bark()` returning `"woof!"` — and must **not** redefine `eat`.
+      - `Cat(Animal)` adds `meow()` returning `"meow"`.
+
+      The class in parentheses — `class Dog(Animal):` — is the parent. Everything the parent can do, the child can do too.
+    provided_code:
+      - label: "test harness"
+        code: |
+          d = Dog()
+          assert d.eat() == "eating"          # inherited: Dog never defines eat
+          assert d.bark() == "woof!"
+          assert Cat().eat() == "eating"
+          assert Cat().meow() == "meow"
+          assert isinstance(d, Animal)        # a Dog IS an Animal
+          print("inheritance: OK")
+    hints:
+      - |
+        `Animal` defines `eat`. `Dog` and `Cat` inherit from `Animal` and only add their own unique methods. Python automatically makes `eat` available to subclasses.
+      - |
+        ```python
+        class Animal:
+            def eat(self):
+                return "eating"
+
+        class Dog(Animal):
+            def bark(self):
+                return ???
+        ```
+
+        Fill in `bark` and write `Cat` similarly with `meow`.
+    solution:
+      code: |
+        class Animal:
+            def eat(self):
+                return "eating"
+
+        class Dog(Animal):
+            def bark(self):
+                return "woof!"
+
+        class Cat(Animal):
+            def meow(self):
+                return "meow"
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 2
+    title: "Quick Check — Why Inherit?"
+    question: |
+      In the `Animal`/`Dog`/`Cat` example, `Dog` inherits from `Animal`. What is the main benefit of this inheritance?
+    options:
+      - label: A
+        text: "Dogs run faster in Python than standalone classes"
+      - label: B
+        text: "Shared behavior (like `speak` or `name`) is defined once in `Animal`, and each subclass only adds or overrides what's different"
+        correct: true
+      - label: C
+        text: "Python requires all classes to inherit from something"
+      - label: D
+        text: "It prevents you from creating `Animal` objects directly"
+    hints:
+      - "What would you have to do if Dog and Cat didn't inherit from Animal? Would any code be duplicated?"
+    solution:
+      text: |
+        Inheritance lets you write shared logic (name storage, common methods) once in the parent class. Dog and Cat only define what's unique to them (their specific `speak()` behavior). Without inheritance, you'd duplicate the shared code in every class. Python does NOT require inheritance (though all classes implicitly inherit from `object`), and inheritance doesn't prevent creating parent instances.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Objects That Contain Objects — Trees
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Objects That Contain Objects — Trees"
+    intro: |
+      An object's attributes can be *other objects* — that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments:
+
+      ```
+              10
+            /    \
+           4      5
+          / \    /  \
+         1  11  15  16
+      ```
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Node with total and count"
+    description: |
+      Write a class `Node`:
+
+      - `Node(val, left=None, right=None)` stores the value and the two children.
+      - `total()` returns this node's `val` plus the totals of its children (skip a child if it is `None`).
+      - `count()` returns how many nodes are in this subtree.
+
+      Notice the recursion: a method calling *the same method on its children*.
+    provided_code:
+      - label: "test harness"
+        code: |
+          tree = Node(10,
+                      Node(4, Node(1), Node(11)),
+                      Node(5, Node(15), Node(16)))
+          assert tree.total() == 62
+          assert tree.count() == 7
+          assert Node(42).total() == 42
+          assert Node(42).count() == 1
+          print("Node total/count: OK")
+    hints:
+      - |
+        In `total()`: start with `result = self.val`. If `self.left is not None`, add `self.left.total()`. Same for `self.right`.
+      - |
+        `count()` follows the same pattern: start with 1 (for this node), then add `self.left.count()` and `self.right.count()` if the children exist.
+    solution:
+      code: |
+        class Node:
+            def __init__(self, val, left=None, right=None):
+                self.val = val
+                self.left = left
+                self.right = right
+
+            def total(self):
+                result = self.val
+                if self.left is not None:
+                    result += self.left.total()
+                if self.right is not None:
+                    result += self.right.total()
+                return result
+
+            def count(self):
+                result = 1
+                if self.left is not None:
+                    result += self.left.count()
+                if self.right is not None:
+                    result += self.right.count()
+                return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "More Tree Methods"
+    description: |
+      Extend your `Node` class (copy it and add methods):
+
+      - `min_val()` / `max_val()` — smallest / largest value in the subtree.
+      - `find(x)` — `True` if `x` appears anywhere in the subtree.
+      - `max_depth()` — length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive `max(self.left.max_depth(), self.right.max_depth()) + 1` crashes on a leaf — handle `None` children.
+      - `apply(func)` — replace **every** node's `val` with `func(val)`, in place.
+    provided_code:
+      - label: "test harness"
+        code: |
+          tree = Node(10,
+                      Node(4, Node(1), Node(11)),
+                      Node(5, Node(15), Node(16)))
+          assert tree.min_val() == 1
+          assert tree.max_val() == 16
+          assert tree.find(11) == True
+          assert tree.find(99) == False
+          assert tree.max_depth() == 3
+          assert Node(7).max_depth() == 1
+
+          tree.apply(lambda v: v * 2)
+          assert tree.total() == 124
+          assert tree.min_val() == 2
+          print("Node methods: OK")
+    hints:
+      - |
+        For `min_val()`: start with `result = self.val`. If `self.left` exists, `result = min(result, self.left.min_val())`. Same for right. Return `result`.
+      - |
+        For `max_depth()`: compute `left_depth = self.left.max_depth() if self.left else 0`, same for right, then return `1 + max(left_depth, right_depth)`.
+      - |
+        For `apply(func)`: set `self.val = func(self.val)`, then recursively call `self.left.apply(func)` and `self.right.apply(func)` if the children exist. No return value needed.
+    solution:
+      code: |
+        class Node:
+            def __init__(self, val, left=None, right=None):
+                self.val = val
+                self.left = left
+                self.right = right
+
+            def total(self):
+                result = self.val
+                if self.left is not None:
+                    result += self.left.total()
+                if self.right is not None:
+                    result += self.right.total()
+                return result
+
+            def count(self):
+                result = 1
+                if self.left is not None:
+                    result += self.left.count()
+                if self.right is not None:
+                    result += self.right.count()
+                return result
+
+            def min_val(self):
+                result = self.val
+                if self.left is not None:
+                    result = min(result, self.left.min_val())
+                if self.right is not None:
+                    result = min(result, self.right.min_val())
+                return result
+
+            def max_val(self):
+                result = self.val
+                if self.left is not None:
+                    result = max(result, self.left.max_val())
+                if self.right is not None:
+                    result = max(result, self.right.max_val())
+                return result
+
+            def find(self, x):
+                if self.val == x:
+                    return True
+                if self.left is not None and self.left.find(x):
+                    return True
+                if self.right is not None and self.right.find(x):
+                    return True
+                return False
+
+            def max_depth(self):
+                left_depth = self.left.max_depth() if self.left else 0
+                right_depth = self.right.max_depth() if self.right else 0
+                return 1 + max(left_depth, right_depth)
+
+            def apply(self, func):
+                self.val = func(self.val)
+                if self.left is not None:
+                    self.left.apply(func)
+                if self.right is not None:
+                    self.right.apply(func)
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: A Decision Tree Is an Object
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "A Decision Tree Is an Object"
+    intro: |
+      You get a job offer. Do you take it? Your (very rational) rules:
+
+      1. If the salary score is below 1 → **No**.
+      2. Otherwise, if the learning opportunity score is below 1 → **No**.
+      3. Otherwise, if the distance score is below 1 → **Yes**; too far → **No**.
+
+      That is a tree of decisions — and you can build it from objects.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "DecisionNode, Yes, No"
+    description: |
+      - `DecisionNode(criteria, boundary, left, right)` stores all four. Its method `answer(circumstance)` looks up `circumstance[self.criteria]` (circumstance is a dict) and **delegates**: How should the node decide which child to ask? What role does the `boundary` play?
+      - `Yes(DecisionNode)` and `No(DecisionNode)` are leaf classes: their `answer` ignores the circumstance and returns `True` / `False`. Give them their own no-argument `__init__`.
+
+      No `if`-chains about salaries anywhere — the *structure* of the objects encodes the rules.
+    provided_code:
+      - label: "tree construction and test"
+        code: |
+          # the offer tree: salary -> learningOpp -> dist
+          dist = DecisionNode("dist", 1, Yes(), No())            # close enough -> Yes
+          learning = DecisionNode("learningOpp", 1, No(), dist)  # no learning -> No
+          offer_tree = DecisionNode("salary", 1, No(), learning) # low salary -> No
+
+          assert offer_tree.answer({"salary": 2,   "learningOpp": 3, "dist": 0.5}) == True
+          assert offer_tree.answer({"salary": 0.5, "learningOpp": 3, "dist": 0.5}) == False
+          assert offer_tree.answer({"salary": 2,   "learningOpp": 0, "dist": 0.5}) == False
+          assert offer_tree.answer({"salary": 2,   "learningOpp": 3, "dist": 5})   == False
+          print("DecisionNode: OK")
+    hints:
+      - |
+        In `DecisionNode.answer()`: get the feature value with `val = circumstance[self.criteria]`. If `val < self.boundary`, return `self.left.answer(circumstance)`; otherwise return `self.right.answer(circumstance)`.
+      - |
+        `Yes` and `No` inherit from `DecisionNode`. Their `__init__` takes no arguments (besides `self`) and does not need to call the parent constructor. Their `answer` method just returns `True` or `False` without looking at the argument.
+    solution:
+      code: |
+        class DecisionNode:
+            def __init__(self, criteria, boundary, left, right):
+                self.criteria = criteria
+                self.boundary = boundary
+                self.left = left
+                self.right = right
+
+            def answer(self, circumstance):
+                val = circumstance[self.criteria]
+                if val < self.boundary:
+                    return self.left.answer(circumstance)
+                else:
+                    return self.right.answer(circumstance)
+
+        class Yes(DecisionNode):
+            def __init__(self):
+                pass
+
+            def answer(self, circumstance):
+                return True
+
+        class No(DecisionNode):
+            def __init__(self):
+                pass
+
+            def answer(self, circumstance):
+                return False
+      text: null
+
+  - type: reveal
+    text: |
+      **This is a real decision tree**
+
+      You built its structure by hand. The *Decision Trees* chapter later in this book answers the natural next question: given a table of past decisions, how can `fit` discover the right criteria and boundaries **automatically**? Same object, learned instead of hand-crafted.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 2
+    title: "Quick Check — Classes vs. Dicts"
+    question: |
+      You built a decision tree using `DecisionNode`, `Yes`, and `No` classes. Could you have represented the same tree using nested dictionaries instead? What would you lose?
+    options:
+      - label: A
+        text: "Dictionaries can't be nested, so it's impossible"
+      - label: B
+        text: "It would work, but you'd lose the ability to call methods like `.predict()` directly on the tree — you'd need separate functions that know the dict structure"
+        correct: true
+      - label: C
+        text: "Dictionaries are faster, so you'd actually gain performance"
+      - label: D
+        text: "You'd lose nothing — classes and dicts are interchangeable"
+    hints:
+      - "Think about how you call `tree.predict(answers)`. What makes that possible? Could you do the same with a dict?"
+    solution:
+      text: |
+        Nested dicts CAN represent a tree structure, but you'd need standalone functions like `predict(tree_dict, answers)` that manually check keys and navigate the nesting. With classes, the behavior lives WITH the data: `tree.predict(answers)` knows how to traverse itself. Classes bundle data + behavior together, making the code more organized and the API cleaner. You could use dicts, but the code would be more fragile — any change to the dict structure would break all the functions that depend on it.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: Saving Objects to Files
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Saving Objects to Files"
+    intro: |
+      Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it.
+
+      JSON can store dicts, lists, numbers, strings and booleans — but not your objects. So the plan is: **object → dict → JSON file**, and back.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "to_dict and from_dict"
+    description: |
+      - `to_dict(node)` — a `Yes` leaf becomes `{"leaf": True}`, a `No` leaf becomes `{"leaf": False}`, and an inner node becomes `{"criteria": ..., "boundary": ..., "left": <dict>, "right": <dict>}` (children converted recursively). **Hint:** `isinstance(node, Yes)` tells leaves apart.
+      - `from_dict(d)` — the exact inverse, rebuilding real objects.
+
+      The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.
+    provided_code:
+      - label: "test harness"
+        code: |
+          import json
+
+          d = to_dict(offer_tree)
+          assert d["criteria"] == "salary"
+          assert d["boundary"] == 1
+          assert d["left"] == {"leaf": False}
+
+          with open("offer_tree.json", "w") as f:
+              json.dump(d, f)
+          with open("offer_tree.json") as f:
+              loaded = from_dict(json.load(f))
+
+          for case in [{"salary": 2,   "learningOpp": 3, "dist": 0.5},
+                       {"salary": 0.5, "learningOpp": 3, "dist": 0.5},
+                       {"salary": 2,   "learningOpp": 0, "dist": 0.5},
+                       {"salary": 2,   "learningOpp": 3, "dist": 5}]:
+              assert loaded.answer(case) == offer_tree.answer(case)
+          print("save/load: OK")
+    hints:
+      - |
+        For `to_dict`: check `isinstance(node, Yes)` and `isinstance(node, No)` first (before checking `DecisionNode`, since `Yes` and `No` are subclasses). Return the leaf dict, or recursively build the inner-node dict.
+      - |
+        For `from_dict`: check if `"leaf"` is a key in the dict. If so, return `Yes()` or `No()` based on the boolean value. Otherwise, rebuild the `DecisionNode` with recursive calls to `from_dict` for `left` and `right`.
+    solution:
+      code: |
+        def to_dict(node):
+            if isinstance(node, Yes):
+                return {"leaf": True}
+            if isinstance(node, No):
+                return {"leaf": False}
+            return {
+                "criteria": node.criteria,
+                "boundary": node.boundary,
+                "left": to_dict(node.left),
+                "right": to_dict(node.right),
+            }
+
+        def from_dict(d):
+            if "leaf" in d:
+                return Yes() if d["leaf"] else No()
+            return DecisionNode(
+                d["criteria"],
+                d["boundary"],
+                from_dict(d["left"]),
+                from_dict(d["right"]),
+            )
+      text: null
+
+  - type: reveal
+    text: |
+      **Aside — `pickle`**
+
+      Python's `pickle` module can serialize almost any object in one line (`pickle.dump(offer_tree, f)`), no `to_dict` needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via `joblib`), while model *configs* travel as JSON or YAML.
+
+  # ═══════════════════════════════════════════════════════
+  # Bonus Challenge — FitPlane
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Bonus Challenge — `FitPlane`"
+    intro: |
+      `TwoPointLine` fits a line through 2 points. In 3D, **three** points determine a plane `z = a*x + b*y + d` — and finding `a`, `b`, `d` means solving three linear equations.
+
+  - type: exercise
+    kind: challenge
+    id: ex-bonus
+    part: 7
+    number: 1
+    title: "FitPlane"
+    description: |
+      `TwoPointLine` fits a line through 2 points. In 3D, **three** points determine a plane `z = a*x + b*y + d` — and finding `a`, `b`, `d` means solving three linear equations:
+
+      ```
+      x1*a + y1*b + 1*d = z1
+      x2*a + y2*b + 1*d = z2
+      x3*a + y3*b + 1*d = z3
+      ```
+
+      You already own a tool for that: paste your `solve_equations` (and its helpers) from the *Loops and Arrays* chapter into the cell, then write `FitPlane`:
+
+      - `fit(points)` — `points` is a list of three `(x, y, z)` tuples. Build the three equations `[x, y, 1, z]` and solve for `(a, b, d)`.
+      - `predict(points)` — a list of `(x, y)` tuples in, a list of `a*x + b*y + d` out.
+    provided_code:
+      - label: "test harness"
+        code: |
+          plane = FitPlane()
+          plane.fit([(1, 1, 6), (2, 1, 8), (1, 2, 9)])   # these lie on z = 2x + 3y + 1
+          assert plane.predict([(2, 2)]) == [11.0]
+          assert plane.predict([(0, 0), (1, 1)]) == [1.0, 6.0]
+          print("FitPlane: OK")
+    hints:
+      - |
+        In `fit`, build equations from each point: for `(x, y, z)`, the equation is `[x, y, 1, z]`. Pass the list of three equations to `solve_equations`. Store the resulting `a`, `b`, `d` on `self`.
+      - |
+        In `predict`: for each `(x, y)` tuple, compute `self.a * x + self.b * y + self.d` and collect the results in a list.
+    solution:
+      code: |
+        def solve_equations(eqs):
+            """Gaussian elimination: each eq is [a1, a2, ..., an, b]."""
+            n = len(eqs)
+            # Make a copy so we don't mutate the input
+            m = [row[:] for row in eqs]
+
+            # Forward elimination
+            for col in range(n):
+                # Find pivot
+                max_row = col
+                for row in range(col + 1, n):
+                    if abs(m[row][col]) > abs(m[max_row][col]):
+                        max_row = row
+                m[col], m[max_row] = m[max_row], m[col]
+
+                pivot = m[col][col]
+                for row in range(col + 1, n):
+                    factor = m[row][col] / pivot
+                    for j in range(col, n + 1):
+                        m[row][j] -= factor * m[col][j]
+
+            # Back substitution
+            result = [0.0] * n
+            for i in range(n - 1, -1, -1):
+                result[i] = m[i][n]
+                for j in range(i + 1, n):
+                    result[i] -= m[i][j] * result[j]
+                result[i] /= m[i][i]
+            return result
+
+        class FitPlane:
+            def fit(self, points):
+                eqs = [[x, y, 1, z] for x, y, z in points]
+                sol = solve_equations(eqs)
+                self.a = sol[0]
+                self.b = sol[1]
+                self.d = sol[2]
+
+            def predict(self, points):
+                return [self.a * x + self.b * y + self.d
+                        for x, y in points]
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════════
+
+  - type: table
+    id: summary
+    title: "Summary"
+    description: null
+    headers: [Part, You built, The idea]
+    rows:
+      - ["1", "`Customer`", "`__init__`, `self`, methods — data + behavior in one place"]
+      - ["2", "`TwoPointLine`", "**the `fit`/`predict` model API**, input validation"]
+      - ["3", "`Animal` → `Dog`, `Cat`", "inheritance"]
+      - ["4", "`Node.total/count/min_val/max_val/find/max_depth/apply`", "recursion on object trees"]
+      - ["5", "`DecisionNode`, `Yes`, `No`", "a decision tree as objects; leaves via inheritance"]
+      - ["6", "`to_dict` / `from_dict`", "serialization — models that survive the program"]
+      - ["Bonus", "`FitPlane`", "fit = solving equations (three points → a plane)"]
+    after: null

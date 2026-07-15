@@ -1,0 +1,1217 @@
+chapter:
+  id: expressions_and_functions
+  title: "Learning Expressions and Functions by Inventing Them"
+  intro: |
+    You won't be taught — you will *discover*. Every step builds on the last. Trust the process.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/expressions_and_functions/expressions_and_functions.ipynb"
+  mathjax: true
+  footer: |
+    You've just built a small mathematical toolkit — digit manipulation, formulas as functions, multi-argument functions, line equations, and numerical derivatives. The next chapter, gradient descent, picks up exactly two of these ideas — the line equation `y = mx + c` and the numerical derivative — and turns them into an algorithm that **searches** for the best `m` and `c` on its own, instead of you computing them by hand from two points.
+
+blocks:
+  # ───────────────────────────────────────────────────
+  # Syntax Overview (provided reference)
+  # ───────────────────────────────────────────────────
+  - type: reveal
+    text: |
+      ## Python Quick Reference
+
+      This chapter uses **variables**, **arithmetic**, and **functions**. Here is the syntax you need.
+
+      ```python
+      # Variables — a name that holds a value
+      x = 42
+      name = "hello"
+
+      # Arithmetic: +  -  *  /  //  %  **
+      result = 3 + 4 * 2      # 11 (multiplication first)
+      remainder = 17 % 5       # 2
+      power = 2 ** 10          # 1024
+      int_div = 7 // 2         # 3 (drops the decimal)
+
+      # Functions — reusable blocks of code
+      def add(a, b):
+          return a + b         # indentation matters!
+
+      add(3, 5)                # 8
+
+      # Calling a function inside a function
+      def hypotenuse(base, height):
+          return (base**2 + height**2) ** 0.5
+
+      # Printing output
+      print("answer:", add(3, 5))
+      ```
+
+      - `def` starts a function; the body is indented 4 spaces.
+      - `return` sends a value back to the caller.
+      - `**` is exponentiation; `** 0.5` is the square root.
+
+  - type: exercise
+    kind: coding
+    id: ex-setup
+    part: 0
+    number: 0
+    title: "Setup"
+    description: |
+      Run this cell before starting.
+    provided_code:
+      - label: "setup"
+        code: |
+          import math
+          import matplotlib.pyplot as plt
+          %matplotlib inline
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # ═══════════════════════════════════════════════════
+  # PART 1: Pulling Numbers Apart
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Pulling Numbers Apart"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "How Is a Number Built?"
+    description: |
+      Take the number `2784`. In your head, break it into place values:
+
+      ```
+      2784 = 2000 + 700 + 80 + 4
+           = 2*1000 + 7*100 + 8*10 + 4*1
+      ```
+
+      Python has two operators that are perfect for taking numbers apart like this:
+
+      - `%` — the **modulo** operator, gives the *remainder* of a division
+      - `//` — **integer division**, gives the result of a division with the remainder thrown away
+
+      **Before coding, answer these questions:**
+
+      1. What do you expect `2784 % 10` to be?
+      2. What do you expect `2784 // 10` to be?
+      3. Which of the two — `%` or `//` — do you expect gives you the **last digit** of a number? Which gives you the number **with the last digit chopped off**?
+      4. Will your answer to #3 still hold for `50`, for `7`, and for `100`? Reason about it before running anything.
+    hints:
+      - "Think about what \"remainder when dividing by 10\" means. If you divide 2784 by 10 you get 278 with a remainder of 4. The remainder *is* the last digit."
+      - "`%` gives the last digit, `//` chops it off. Try: `2784 % 10 → 4`, `2784 // 10 → 278`. This works for any non-negative integer because base-10 place values are powers of 10."
+    solution:
+      code: |
+        print(2784 % 10)   # 4
+        print(2784 // 10)  # 278
+
+        print(50 % 10, 50 // 10)    # 0 5
+        print(7 % 10, 7 // 10)      # 7 0
+        print(100 % 10, 100 // 10)  # 0 10
+      text: |
+        1. `2784 % 10` is `4` (the remainder when dividing by 10).
+        2. `2784 // 10` is `278` (the quotient with remainder thrown away).
+        3. `%` gives the **last digit**; `//` gives the number **with the last digit chopped off**.
+        4. Yes: `50 % 10 = 0`, `50 // 10 = 5`; `7 % 10 = 7`, `7 // 10 = 0`; `100 % 10 = 0`, `100 // 10 = 10`. The pattern holds for all non-negative integers.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Extract the Last Digit"
+    description: |
+      Write a function `last_digit(n)` that returns the last digit of a non-negative integer `n`.
+
+      **Example:**
+
+      ```python
+      last_digit(2784)  # Output: 4
+      last_digit(7)      # Output: 7
+      last_digit(100)    # Output: 0
+      last_digit(0)      # Output: 0
+      ```
+    hints:
+      - "You already figured out which operator gives the last digit in Exercise 1.1. The entire function body is a single `return` statement using that operator and the number `10`."
+      - "`return n % 10`"
+    solution:
+      code: |
+        def last_digit(n):
+            """Returns the last digit of a non-negative integer n."""
+            return n % 10
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Remove the Last Digit"
+    description: |
+      Write a function `remove_last_digit(n)` that returns `n` with its last digit chopped off.
+
+      **Example:**
+
+      ```python
+      remove_last_digit(2784)  # Output: 278
+      remove_last_digit(7)     # Output: 0
+      remove_last_digit(100)   # Output: 10
+      ```
+
+      **Think about it:** what should `remove_last_digit(0)` return? Decide before you run it, then check.
+    hints:
+      - "Use the other operator from Exercise 1.1 — the one that gives the quotient with the remainder thrown away."
+      - "`return n // 10`. For `n = 0`: `0 // 10 = 0`, which makes sense — chopping a digit off zero still leaves zero."
+    solution:
+      code: |
+        def remove_last_digit(n):
+            """Returns n with its last digit removed."""
+            return n // 10
+      text: |
+        `remove_last_digit(0)` returns `0`, since `0 // 10 = 0`.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "Verify the Round Trip"
+    description: |
+      Here's a sanity check: for any `n`, you should be able to rebuild it from `remove_last_digit(n)` and `last_digit(n)`.
+
+      **Tasks:**
+
+      1. For `n = 2784`, compute `remove_last_digit(n) * 10 + last_digit(n)` by hand (using the values from Exercises 1.2 and 1.3). Does it equal `n`?
+      2. Write a function `check_roundtrip(n)` that returns `True` if `remove_last_digit(n) * 10 + last_digit(n) == n`, `False` otherwise.
+      3. Test it on at least 5 different numbers, including `0` and a single-digit number.
+    hints:
+      - "The key insight is that `n // 10` and `n % 10` are the quotient and remainder of dividing by 10, and by definition `quotient * 10 + remainder == n`. This always holds for non-negative integers."
+    solution:
+      code: |
+        def check_roundtrip(n):
+            """Returns True if remove_last_digit(n) * 10 + last_digit(n) == n."""
+            return remove_last_digit(n) * 10 + last_digit(n) == n
+      text: |
+        By hand for `n = 2784`: `278 * 10 + 4 = 2784`. Yes, it equals `n`. This always holds because `n // 10` and `n % 10` are the quotient and remainder of dividing by 10, and `quotient * 10 + remainder == n` by definition.
+
+  # ═══════════════════════════════════════════════════
+  # PART 2: A Function Built from a Formula — Simple Interest
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "A Function Built from a Formula — Simple Interest"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "The Formula"
+    description: |
+      When you deposit or borrow money, it grows over time due to **interest**. The formula for **Simple Interest** is:
+
+      ```
+      Interest = (Principal * Rate * Time) / 100
+      ```
+
+      where:
+
+      - `Principal` — the amount deposited or borrowed
+      - `Rate` — the interest rate per year, as a percentage
+      - `Time` — the number of years
+
+      **Before coding, answer these questions:**
+
+      1. If you deposit `1000` at a rate of `5%` for `2` years, what's the interest, by hand?
+      2. What happens to the interest if `Time = 0`? Does that match your intuition about lending money for zero years?
+    hints:
+      - "Plug the numbers in: `(1000 * 5 * 2) / 100 = 10000 / 100 = 100`. If Time is 0, any product with 0 is 0 — no time, no interest."
+    solution:
+      code: null
+      text: |
+        1. `(1000 * 5 * 2) / 100 = 10000 / 100 = 100`. The interest is **100**.
+        2. If `Time = 0`, then `(Principal * Rate * 0) / 100 = 0`. The interest is zero, which makes sense: no time has passed, so no interest has accrued.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Write `calculate_interest`"
+    description: |
+      Write a function `calculate_interest(principal, rate, time)` that returns the simple interest using the formula above.
+
+      **Example:**
+
+      ```python
+      calculate_interest(1000, 5, 2)    # Output: 100.0
+      calculate_interest(1500, 4.3, 3)  # Output: 193.5
+      calculate_interest(500, 10, 0)    # Output: 0.0
+      ```
+    hints:
+      - "Translate the formula directly: `return (principal * rate * time) / 100`."
+    solution:
+      code: |
+        def calculate_interest(principal, rate, time):
+            """Returns the simple interest = (principal * rate * time) / 100"""
+            return (principal * rate * time) / 100
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Explore the Formula"
+    description: |
+      **Tasks:**
+
+      1. Fix `principal = 1000` and `rate = 5`. Compute the interest for `time = 1, 2, 3, ..., 10`. What pattern do you notice in how the interest grows as `time` increases by 1 each time?
+      2. Now fix `principal = 1000` and `time = 1`. Compute the interest for `rate = 1, 2, ..., 10`. Is the pattern the same kind of growth as in #1?
+      3. In one sentence, describe what you'd call this kind of growth (hint: it's the same shape as the line `y = m*x + c` you may already know).
+    hints:
+      - "When you hold the other variables constant, interest grows by the same amount each step. For example, with principal=1000, rate=5: time=1 gives 50, time=2 gives 100, time=3 gives 150. The increase is always 50."
+      - "This constant-step growth is called **linear growth**. Interest is a linear function of time (and also a linear function of rate, when the other variable is fixed)."
+    solution:
+      code: |
+        print("Varying time (principal=1000, rate=5):")
+        for time in range(1, 11):
+            interest = calculate_interest(1000, 5, time)
+            print(f"  time={time:<3} interest={interest}")
+
+        print("\nVarying rate (principal=1000, time=1):")
+        for rate in range(1, 11):
+            interest = calculate_interest(1000, rate, 1)
+            print(f"  rate={rate:<3} interest={interest}")
+      text: |
+        The interest increases by the same amount (50) each time `time` goes up by 1. The same constant-step pattern appears when varying `rate`. This is **linear growth** — the same shape as the line `y = m*x + c`.
+
+  # ═══════════════════════════════════════════════════
+  # PART 3: Functions with Several Arguments — Distance Formulas
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Functions with Several Arguments — Distance Formulas"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "The Hypotenuse"
+    description: |
+      For a right triangle with legs `base` and `height`, the **Pythagorean theorem** says:
+
+      ```
+      hypotenuse**2 = base**2 + height**2
+      ```
+
+      **Before coding:** work out by hand — if `base = 3` and `height = 4`, what is the hypotenuse?
+    hints:
+      - "$3^2 + 4^2 = 9 + 16 = 25$, and $\\sqrt{25} = 5$. This is the most famous Pythagorean triple: 3-4-5."
+    solution:
+      code: null
+      text: |
+        $3^2 + 4^2 = 9 + 16 = 25$, and $\sqrt{25} = 5$. The hypotenuse is **5**.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Write `calculate_hypotenuse`"
+    description: |
+      Write `calculate_hypotenuse(base, height)` that returns the hypotenuse using the formula above. You can use `** 0.5` or `math.sqrt` to take the square root.
+
+      **Example:**
+
+      ```python
+      calculate_hypotenuse(3, 4)    # Output: 5.0
+      calculate_hypotenuse(5, 12)   # Output: 13.0
+      calculate_hypotenuse(0, 0)    # Output: 0.0
+      ```
+    hints:
+      - "Compute the sum of squares first, then take the square root: `return math.sqrt(base**2 + height**2)`."
+    solution:
+      code: |
+        def calculate_hypotenuse(base, height):
+            """Returns the hypotenuse of a right triangle with the given legs."""
+            return math.sqrt(base**2 + height**2)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Distance Between Two Points (2D)"
+    description: |
+      A point on a flat plane is given by an `(x, y)` pair. The distance between two points `(x1, y1)` and `(x2, y2)` is *exactly* the hypotenuse of the right triangle formed by their horizontal and vertical separations.
+
+      **Before coding:**
+
+      1. For the points `(0, 0)` and `(3, 4)`, what are the lengths of the horizontal leg (`base`) and vertical leg (`height`) of the right triangle between them?
+      2. Using your answer to #1 and the hypotenuse formula from Exercise 3.2, write out — in words or algebra, not code yet — the formula for `find_distance_2d(x1, y1, x2, y2)`.
+
+      **Your derivation:**
+
+      - base = ...
+      - height = ...
+      - find_distance_2d(x1, y1, x2, y2) = ...
+    hints:
+      - "The horizontal leg is the difference in x-coordinates: `x2 - x1`. The vertical leg is the difference in y-coordinates: `y2 - y1`. The distance is then the hypotenuse of that triangle."
+      - "$\\text{distance} = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$"
+    solution:
+      code: null
+      text: |
+        - base = `x2 - x1` (horizontal separation) = `3 - 0 = 3`
+        - height = `y2 - y1` (vertical separation) = `4 - 0 = 4`
+        - `find_distance_2d(x1, y1, x2, y2) = sqrt((x2 - x1)**2 + (y2 - y1)**2)`
+
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "Write `find_distance_2d`"
+    description: |
+      Write `find_distance_2d(x1, y1, x2, y2)` that returns the distance between the two points. You can use `math.sqrt`.
+
+      **Example:**
+
+      ```python
+      find_distance_2d(0, 0, 3, 4)   # Output: 5.0
+      find_distance_2d(1, 2, 4, 6)   # Output: 5.0
+      ```
+    hints:
+      - "You can reuse `calculate_hypotenuse` by passing it the differences: `return calculate_hypotenuse(x2 - x1, y2 - y1)`. Or write the full formula directly."
+    solution:
+      code: |
+        def find_distance_2d(x1, y1, x2, y2):
+            """Returns the Euclidean distance between (x1, y1) and (x2, y2)."""
+            return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-5
+    part: 3
+    number: 5
+    title: "Extend to 3D"
+    description: |
+      A point in 3D space has three coordinates: `(x, y, z)`.
+
+      **Before coding:** extend your 2D distance formula to three dimensions. What term do you need to add, and why?
+
+      **Your derivation:**
+
+      calculate_distance_3d(x1, y1, z1, x2, y2, z2) = ...
+    hints:
+      - "The pattern generalizes naturally: add a $(z_2 - z_1)^2$ term under the square root. The 3D distance is $\\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2 + (z_2 - z_1)^2}$."
+    solution:
+      code: null
+      text: |
+        Add a $(z_2 - z_1)^2$ term under the square root:
+
+        `calculate_distance_3d(x1, y1, z1, x2, y2, z2) = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)`
+
+        Each new dimension contributes one more squared-difference term. The pattern extends naturally to any number of dimensions.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-6
+    part: 3
+    number: 6
+    title: "Write `calculate_distance_3d`"
+    description: |
+      Write `calculate_distance_3d(x1, y1, z1, x2, y2, z2)` that returns the distance between the two 3D points.
+
+      **Example:**
+
+      ```python
+      calculate_distance_3d(0, 0, 0, 1, 1, 1)  # Output: 1.7320508075688772
+      calculate_distance_3d(2, 3, 5, 2, 3, 5)  # Output: 0.0
+      calculate_distance_3d(1, 2, 3, 4, 6, 9)  # Output: 7.810249675906654
+      ```
+    hints:
+      - "Same as 2D but with one more squared difference: `return math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)`."
+    solution:
+      code: |
+        def calculate_distance_3d(x1, y1, z1, x2, y2, z2):
+            """Returns the Euclidean distance between two 3D points."""
+            return math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-7
+    part: 3
+    number: 7
+    title: "A Different Kind of Distance: Manhattan"
+    description: |
+      Imagine a taxi that can only drive along a grid of streets — no diagonal shortcuts. The distance it travels between two points is called the **Manhattan distance**.
+
+      **Before coding:**
+
+      1. From `(2, 3)` to `(5, 1)`, how far would the taxi have to drive if it can only move horizontally and vertically (never diagonally)?
+      2. Write the formula using absolute values: `manhattan_distance(x1, y1, x2, y2) = ?`. (Python's absolute value function is `abs(...)`.)
+
+      **Your derivation:**
+
+      manhattan_distance(x1, y1, x2, y2) = ...
+    hints:
+      - "The taxi drives `|5 - 2| = 3` blocks horizontally and `|1 - 3| = 2` blocks vertically, totalling `3 + 2 = 5`."
+      - "$\\text{manhattan} = |x_2 - x_1| + |y_2 - y_1|$. In Python: `abs(x2 - x1) + abs(y2 - y1)`."
+    solution:
+      code: null
+      text: |
+        1. From `(2, 3)` to `(5, 1)`: horizontally `|5 - 2| = 3`, vertically `|1 - 3| = 2`, total = `3 + 2 = 5`.
+        2. `manhattan_distance(x1, y1, x2, y2) = abs(x2 - x1) + abs(y2 - y1)`
+
+  - type: exercise
+    kind: coding
+    id: ex-3-8
+    part: 3
+    number: 8
+    title: "Write `manhattan_distance`"
+    description: |
+      **Example:**
+
+      ```python
+      manhattan_distance(2, 3, 5, 1)    # Output: 5
+      manhattan_distance(0, 0, 0, 0)    # Output: 0
+      manhattan_distance(-1, -1, 1, 1)  # Output: 4
+      ```
+    hints:
+      - "`return abs(x2 - x1) + abs(y2 - y1)`"
+    solution:
+      code: |
+        def manhattan_distance(x1, y1, x2, y2):
+            """Returns the Manhattan (taxicab) distance between (x1, y1) and (x2, y2)."""
+            return abs(x2 - x1) + abs(y2 - y1)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-9
+    part: 3
+    number: 9
+    title: "Compare the Two Distances"
+    description: |
+      **Tasks:**
+
+      1. For the points `(0, 0)` and `(3, 4)`, compute both `find_distance_2d` and `manhattan_distance`. Which is bigger?
+      2. Will the Manhattan distance ever be *smaller* than the Euclidean distance, for the same two points? Reason about it, or try a few pairs of points to support your answer.
+      3. Find a pair of points for which the two distances come out *equal*. What do those points have in common?
+    provided_code:
+      - label: "comparison table"
+        code: |
+          points = [
+              (0, 0, 3, 4),
+              (0, 0, 5, 0),
+              (1, 1, 4, 1),
+              (0, 0, 2, 2),
+          ]
+
+          print(f"{'points':<22} {'euclidean':<12} {'manhattan'}")
+          print("-" * 46)
+          for x1, y1, x2, y2 in points:
+              euclidean = find_distance_2d(x1, y1, x2, y2)
+              manhattan = manhattan_distance(x1, y1, x2, y2)
+              print(f"({x1},{y1})->({x2},{y2}){'':>6} {euclidean:<12.4f} {manhattan}")
+    hints:
+      - "Manhattan distance is always >= Euclidean distance (the diagonal shortcut is never longer than going around the sides). They're equal when movement is purely along one axis — meaning one of the coordinate differences is zero."
+      - "Try `(0, 0)` to `(5, 0)`: the Euclidean distance is 5 and the Manhattan distance is also 5, because there's no vertical component. Any pair of points that share an x-coordinate or a y-coordinate will give equal distances."
+    solution:
+      code: |
+        points = [
+            (0, 0, 3, 4),
+            (0, 0, 5, 0),
+            (1, 1, 4, 1),
+            (0, 0, 2, 2),
+        ]
+
+        print(f"{'points':<22} {'euclidean':<12} {'manhattan'}")
+        print("-" * 46)
+        for x1, y1, x2, y2 in points:
+            euclidean = find_distance_2d(x1, y1, x2, y2)
+            manhattan = manhattan_distance(x1, y1, x2, y2)
+            print(f"({x1},{y1})->({x2},{y2}){'':>6} {euclidean:<12.4f} {manhattan}")
+      text: |
+        1. For `(0,0)` to `(3,4)`: Euclidean = `5.0`, Manhattan = `7`. Manhattan is bigger.
+        2. Manhattan distance is *never* smaller than Euclidean distance. The straight-line path (Euclidean) is always the shortest; going along grid lines (Manhattan) is always at least as long. This follows from the triangle inequality.
+        3. The two are equal when movement is purely along one axis — e.g. `(0,0)` to `(5,0)`: both give `5`. This happens whenever one of the coordinate differences is zero.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 10
+    title: "Distance Metric Intuition"
+    question: |
+      A delivery drone flies in a straight line from point A to point B, but a delivery truck must follow streets laid out in a grid. Which distance formula should you use to estimate each vehicle's travel distance?
+    options:
+      - label: A
+        text: "Euclidean for both"
+      - label: B
+        text: "Manhattan for both"
+      - label: C
+        text: "Euclidean for the drone, Manhattan for the truck"
+        correct: true
+      - label: D
+        text: "Manhattan for the drone, Euclidean for the truck"
+    hints:
+      - "Think about how each vehicle actually moves through space. Does a drone follow streets?"
+    solution:
+      text: |
+        The drone flies in a straight line — the shortest path through open space — which is exactly what the Euclidean distance measures. The truck follows a grid of streets, only moving horizontally or vertically, which is what Manhattan distance measures (named after Manhattan's street grid).
+
+  # ═══════════════════════════════════════════════════
+  # PART 4: Functions That Model a Line
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Functions That Model a Line"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Predicting `y` from `x`"
+    description: |
+      A straight line in 2D can be written as:
+
+      ```
+      y = m * x + c
+      ```
+
+      - `m` — the *slope* (steepness)
+      - `c` — the *intercept* (where the line crosses the y-axis)
+
+      **Before coding:** if `m = 2`, `c = 3`, `x = 4`, what is `y`, by hand?
+    hints:
+      - "$y = 2 \\times 4 + 3 = 8 + 3 = 11$."
+    solution:
+      code: null
+      text: |
+        $y = 2 \times 4 + 3 = 8 + 3 = 11$.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Write `predict`"
+    description: |
+      Write `predict(m, c, x)` that returns `y = m * x + c`.
+
+      **Example:**
+
+      ```python
+      predict(2, 3, 4)    # Output: 11
+      predict(-1, 5, 2)   # Output: 3
+      ```
+    hints:
+      - "`return m * x + c`"
+    solution:
+      code: |
+        def predict(m, c, x):
+            """Returns y = m * x + c."""
+            return m * x + c
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Plot the Line"
+    description: |
+      Use the plotting helper below to see your line. It calls your own `predict` function under the hood.
+
+      Try plotting a couple of lines:
+
+      ```python
+      plot_line(2, 3)
+      plot_line(-1, 5)
+      ```
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_line(m, c, x_range=(-10, 10), extra_points=None, title=None):
+              n = 100
+              xs = [x_range[0] + i * (x_range[1] - x_range[0]) / n for i in range(n + 1)]
+              ys = [predict(m, c, x) for x in xs]
+
+              plt.figure(figsize=(6, 4))
+              plt.plot(xs, ys, 'b-', label=f"y = {m}x + {c}")
+              if extra_points:
+                  px = [p[0] for p in extra_points]
+                  py = [p[1] for p in extra_points]
+                  plt.scatter(px, py, color='red', zorder=5, label='points')
+              plt.axhline(0, color='gray', linewidth=0.5)
+              plt.axvline(0, color='gray', linewidth=0.5)
+              plt.xlabel('x')
+              plt.ylabel('y')
+              plt.title(title or f"y = {m}x + {c}")
+              plt.legend()
+              plt.grid(True)
+              plt.show()
+    hints: []
+    solution:
+      code: |
+        # Just call plot_line with your predict function:
+        plot_line(2, 3)
+        plot_line(-1, 5)
+      text: |
+        The first line slopes upward (slope 2) crossing the y-axis at 3. The second slopes downward (slope -1) crossing at 5.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Working Backwards: From Two Points to a Line"
+    description: |
+      So far you've gone from `(m, c, x)` to `y`. Now go the other direction: given **two points** that lie on a line, figure out the line's `m` and `c`.
+
+      **Before coding:**
+
+      1. Recall the definition of slope: how much `y` changes per one-unit change in `x`. If you know two points `(x1, y1)` and `(x2, y2)` on the line, write a formula for `m` in terms of these four numbers.
+      2. Once you know `m`, how can you find `c` using just one of the two points and the line equation `y = m*x + c`? (Hint: rearrange the equation to solve for `c`.)
+      3. By hand: for the points `(1, 2)` and `(3, 6)`, what are `m` and `c`?
+
+      **Your derivation:**
+
+      - m = ...
+      - c = ...
+      - For (1, 2) and (3, 6): m = ..., c = ...
+    hints:
+      - "Slope is \"rise over run\": $m = \\frac{y_2 - y_1}{x_2 - x_1}$. Once you have `m`, rearrange $y_1 = m \\cdot x_1 + c$ to get $c = y_1 - m \\cdot x_1$."
+      - "For (1, 2) and (3, 6): $m = (6 - 2) / (3 - 1) = 4 / 2 = 2$. Then $c = 2 - 2 \\times 1 = 0$. The line is $y = 2x$."
+    solution:
+      code: null
+      text: |
+        - `m = (y2 - y1) / (x2 - x1)` — rise over run.
+        - `c = y1 - m * x1` — rearrange `y = m*x + c` to solve for `c`.
+        - For `(1, 2)` and `(3, 6)`: `m = (6 - 2) / (3 - 1) = 4 / 2 = 2`, `c = 2 - 2*1 = 0`. The line is `y = 2x`.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-5
+    part: 4
+    number: 5
+    title: "Write `fit`"
+    description: |
+      Write `fit(x1, y1, x2, y2)` that returns a tuple `(m, c)` — the slope and intercept of the line through the two points.
+
+      **Example:**
+
+      ```python
+      fit(1, 2, 3, 6)    # Output: (2.0, 0.0)
+      fit(0, 5, 2, 9)    # Output: (2.0, 5.0)
+      ```
+
+      > **Think about it:** what happens if `x1 == x2`? The line would be vertical, and `m` would be undefined (division by zero). You don't need to fix this — just notice it, and let your function do whatever Python naturally does in that case.
+    hints:
+      - "Compute slope first: `m = (y2 - y1) / (x2 - x1)`. Then intercept: `c = y1 - m * x1`. Return `(m, c)`."
+    solution:
+      code: |
+        def fit(x1, y1, x2, y2):
+            """Returns (m, c): slope and intercept of the line through (x1, y1) and (x2, y2)."""
+            m = (y2 - y1) / (x2 - x1)
+            c = y1 - m * x1
+            return (m, c)
+      text: |
+        If `x1 == x2`, Python will raise a `ZeroDivisionError`, which is appropriate since a vertical line has undefined slope.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-6
+    part: 4
+    number: 6
+    title: "Round Trip: `fit` Then `predict`"
+    description: |
+      **Tasks:**
+
+      1. Use `fit` to recover `(m, c)` from the points `(1, 2)` and `(3, 6)`.
+      2. Use `predict` with that `(m, c)` to compute `y` at `x = 1` and `x = 3`. Do you get back `2` and `6`?
+      3. Try a third value, `x = 5`. According to your fitted line, what should `y` be?
+      4. Plot the line together with the two original points using `plot_line(m, c, extra_points=[(1, 2), (3, 6)])` to check visually.
+    hints:
+      - "Since the line is $y = 2x$, predicting at $x = 5$ gives $y = 10$. Fitting and then predicting at the original x-values should exactly reproduce the original y-values — this is the \"round trip\" property."
+    solution:
+      code: |
+        m, c = fit(1, 2, 3, 6)
+        print("m, c =", m, c)            # 2.0, 0.0
+        print("predict at x=1:", predict(m, c, 1))  # 2.0
+        print("predict at x=3:", predict(m, c, 3))  # 6.0
+        print("predict at x=5:", predict(m, c, 5))  # 10.0
+
+        plot_line(m, c, extra_points=[(1, 2), (3, 6)])
+      text: |
+        Yes, predicting at `x=1` and `x=3` returns the original `y` values (2 and 6). At `x=5`, the line predicts `y = 10`.
+
+  # ═══════════════════════════════════════════════════
+  # PART 5: Functions That Take Other Functions — The Derivative
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Functions That Take Other Functions — The Derivative"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Rate of Change, Without Calculus"
+    description: |
+      The **derivative** of a function at a point tells you how fast the function's output is changing there — its instantaneous slope.
+
+      You don't need calculus rules to *approximate* this. Recall Exercise 4.4: the slope between two points is `(y2 - y1) / (x2 - x1)`.
+
+      **Idea:** pick two points on the function's curve that are *very close together*, and compute the slope between them.
+
+      **Before coding:**
+
+      1. For `f(x) = x * x`, compute `f(3)` and `f(3.0001)` by hand.
+      2. Treat `(3, f(3))` and `(3.0001, f(3.0001))` as two points on a line, and use the slope formula from Exercise 4.4 to compute the slope between them. This is your *approximate derivative* of `f` at `x=3`.
+      3. The true derivative of `x**2` is `2*x`. At `x=3` that's `6`. How close is your approximation?
+
+      **Your derivation:**
+
+      - f(3) = ...
+      - f(3.0001) = ...
+      - approximate slope = ...
+      - compared to true derivative (6): ...
+    hints:
+      - "$f(3) = 9$. $f(3.0001) = 3.0001^2 = 9.00060001$. Slope $= (9.00060001 - 9) / 0.0001 = 0.00060001 / 0.0001 = 6.0001$. That's very close to the true value of 6."
+    solution:
+      code: null
+      text: |
+        - `f(3) = 3 * 3 = 9`
+        - `f(3.0001) = 3.0001 * 3.0001 = 9.00060001`
+        - approximate slope = `(9.00060001 - 9) / 0.0001 = 0.00060001 / 0.0001 = 6.0001`
+        - The true derivative is 6. Our approximation (6.0001) is off by only 0.0001 — extremely close.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Generalize: `approx_derivative`"
+    description: |
+      Formalize what you just did. This is called the **forward difference** method:
+
+      $$f'(x) \approx \frac{f(x + h) - f(x)}{h}$$
+
+      where `h` is a small number.
+
+      Write a function `approx_derivative(func, x, h)` that:
+
+      - takes a function `func` of one argument,
+      - a point `x`,
+      - a small step `h`,
+      - and returns the approximate derivative of `func` at `x`.
+
+      **Example:**
+
+      ```python
+      def square(x):
+          return x * x
+
+      approx_derivative(square, 3, 0.0001)   # Output: approx 6
+      ```
+    hints:
+      - "The entire function body is one line: `return (func(x + h) - func(x)) / h`. Notice how `func` is used just like a variable — in Python, functions are values you can pass around."
+    solution:
+      code: |
+        def approx_derivative(func, x, h):
+            """Returns the approximate derivative of func at x using forward differences."""
+            return (func(x + h) - func(x)) / h
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "Test on More Functions"
+    description: |
+      **Tasks:**
+
+      1. Try `approx_derivative` on `cube(x) = x*x*x` at `x=2`. The true derivative of `x**3` is `3*x**2` — at `x=2` that's `12`. How close are you?
+      2. Try it on `math.sin` at `x=0`. The true derivative of `sin(x)` at `0` is `cos(0) = 1`.
+      3. What happens to the accuracy of your approximation as `h` gets smaller — try `h = 0.1, 0.01, 0.0001, 0.0000001`? What about when `h` gets *too* small (like `1e-15`)? Can you explain what you observe?
+    hints:
+      - "As `h` shrinks, the approximation gets closer to the true derivative — but only up to a point. When `h` is extremely small (like `1e-15`), the numerator `f(x+h) - f(x)` involves subtracting two nearly identical floating-point numbers, causing **catastrophic cancellation**."
+      - "The \"sweet spot\" for `h` is typically around `1e-7` to `1e-5` for forward differences. Below that, rounding errors dominate. Above that, the approximation is too coarse. Try the experiment and watch the accuracy rise, peak, then fall."
+    solution:
+      code: |
+        def cube(x):
+            return x * x * x
+
+        print("cube'(2) approx:", approx_derivative(cube, 2, 0.0001), " (true: 12)")
+        print("sin'(0) approx: ", approx_derivative(math.sin, 0, 0.0001), " (true: 1)")
+
+        print("\nEffect of h on cube'(2):")
+        for h in [0.1, 0.01, 0.0001, 0.0000001, 1e-15]:
+            print(f"  h={h:<12} derivative={approx_derivative(cube, 2, h)}")
+      text: |
+        As `h` shrinks, accuracy improves — but at very small `h` (like `1e-15`), **catastrophic cancellation** occurs: `f(x+h)` and `f(x)` are so close that their difference loses most significant digits due to floating-point precision limits. The sweet spot is around `h = 1e-5` to `1e-7`.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-4
+    part: 5
+    number: 4
+    title: "The Tangent Line's Intercept"
+    description: |
+      A function's derivative at a point is the slope of the **tangent line** — the line that just barely touches the curve there.
+
+      Recall from Part 4: a line is `y = m*x + c`. If you know the slope `m` (your derivative) and one point on the line, `(x0, func(x0))`, you can find `c` using the exact same idea as in Exercise 4.4.
+
+      **Tasks:**
+
+      1. Write `tangent_line_intercept(func, x0, h)` that:
+         - computes the slope using `approx_derivative(func, x0, h)`,
+         - then computes the intercept `c` such that the tangent line passes through `(x0, func(x0))`.
+      2. Test it on `square` at `x0 = 3`.
+    hints:
+      - "You already know how to get `c` from a slope and a point: `c = y - m * x`. Here, `y = func(x0)` and `m = approx_derivative(func, x0, h)`."
+      - "`m = approx_derivative(func, x0, h)`, then `c = func(x0) - m * x0`. For `square` at 3: slope is ~6, `c = 9 - 6*3 = -9`. So the tangent line is roughly `y = 6x - 9`."
+    solution:
+      code: |
+        def tangent_line_intercept(func, x0, h):
+            """Returns the y-intercept c of the tangent line to func at x0."""
+            m = approx_derivative(func, x0, h)
+            c = func(x0) - m * x0
+            return c
+      text: |
+        For `square` at `x0 = 3`: slope is approximately 6, so `c = 9 - 6*3 = -9`. The tangent line is roughly `y = 6x - 9`.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-5
+    part: 5
+    number: 5
+    title: "Plot the Tangent Line"
+    description: |
+      Use the plotting helper below to see the function and its tangent line together. Pass in the slope and intercept you just computed.
+
+      Try it:
+
+      ```python
+      x0 = 3
+      h = 0.0001
+      m = approx_derivative(square, x0, h)
+      c = tangent_line_intercept(square, x0, h)
+
+      plot_function_with_tangent(square, x0, m, c, x_range=(-1, 6))
+      ```
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_function_with_tangent(func, x0, m, c, x_range=(-5, 5), title=None):
+              n = 200
+              xs = [x_range[0] + i * (x_range[1] - x_range[0]) / n for i in range(n + 1)]
+              ys = [func(x) for x in xs]
+              tangent_ys = [predict(m, c, x) for x in xs]
+
+              plt.figure(figsize=(6, 4))
+              plt.plot(xs, ys, 'b-', label='f(x)')
+              plt.plot(xs, tangent_ys, 'r--', label='tangent line')
+              plt.scatter([x0], [func(x0)], color='black', zorder=5)
+              plt.ylim(min(ys) - 1, max(ys) + 1)
+              plt.xlabel('x')
+              plt.ylabel('y')
+              plt.title(title or f"Tangent to f at x={x0}")
+              plt.legend()
+              plt.grid(True)
+              plt.show()
+    hints: []
+    solution:
+      code: |
+        x0 = 3
+        h = 0.0001
+        m = approx_derivative(square, x0, h)
+        c = tangent_line_intercept(square, x0, h)
+
+        plot_function_with_tangent(square, x0, m, c, x_range=(-1, 6))
+      text: |
+        The red dashed tangent line touches the blue parabola at exactly `x = 3` and has slope ~6.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 6
+    title: "What the Derivative Tells You"
+    question: |
+      You computed `approx_derivative(f, 3)` and got a value of `-2`. What does this tell you about the function `f` at `x = 3`?
+    options:
+      - label: A
+        text: "f(3) = -2"
+      - label: B
+        text: "The function is decreasing at x = 3 and its tangent line slopes downward"
+        correct: true
+      - label: C
+        text: "The function reaches its minimum at x = 3"
+      - label: D
+        text: "The function crosses zero somewhere near x = 3"
+    hints:
+      - "A derivative measures the slope — the rate of change. A negative slope means the function is going downhill."
+    solution:
+      text: |
+        The derivative is the slope of the tangent line at that point. A negative derivative (-2) means the tangent line slopes downward — the function is decreasing at x = 3. It does NOT tell you the value of f(3) (that's the function value, not the derivative). It doesn't mean the minimum is there either — the function could keep decreasing.
+
+  # ═══════════════════════════════════════════════════
+  # PART 6: Bonus Challenges
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Bonus Challenges"
+    intro: |
+      If you've made it here, you've built a small toolkit of expressions and functions from scratch. These challenges are open-ended — push further if you're curious.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-a
+    part: 6
+    number: 1
+    title: "Extract All Digits"
+    description: |
+      Using `last_digit` and `remove_last_digit` from Part 1 (plus a loop), write `all_digits(n)` that returns a list of `n`'s digits, in order.
+
+      ```python
+      all_digits(2784)  # Output: [2, 7, 8, 4]
+      ```
+    hints:
+      - "Repeatedly extract the last digit and chop it off. You'll collect digits in reverse order (4, 8, 7, 2), so you'll need to reverse the list at the end."
+      - "Use a `while n > 0` loop. In each iteration, append `last_digit(n)` to a list, then set `n = remove_last_digit(n)`. After the loop, reverse the list. Handle the edge case `n = 0` separately (return `[0]`)."
+    solution:
+      code: |
+        def all_digits(n):
+            if n == 0:
+                return [0]
+            digits = []
+            while n > 0:
+                digits.append(last_digit(n))
+                n = remove_last_digit(n)
+            digits.reverse()
+            return digits
+      text: |
+        The loop extracts digits from right to left (4, 8, 7, 2), so we reverse at the end to get left-to-right order. The `n == 0` edge case is handled separately because the loop would otherwise return an empty list.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-b
+    part: 6
+    number: 2
+    title: "Distance in N Dimensions"
+    description: |
+      `find_distance_2d` and `calculate_distance_3d` look almost identical except for how many coordinates they take. Generalize: write `distance_nd(point1, point2)` where `point1` and `point2` are *lists* of any length (same length as each other), and return the Euclidean distance between them.
+
+      ```python
+      distance_nd([0, 0], [3, 4])               # Output: 5.0
+      distance_nd([0, 0, 0], [1, 1, 1])         # Output: 1.7320508075688772
+      distance_nd([1, 2, 3, 4], [4, 6, 8, 4])  # 4D!
+      ```
+    hints:
+      - "Sum the squared differences across all dimensions, then take the square root. Use `zip(point1, point2)` to pair up corresponding coordinates."
+      - "`return math.sqrt(sum((a - b)**2 for a, b in zip(point1, point2)))`"
+    solution:
+      code: |
+        def distance_nd(point1, point2):
+            return math.sqrt(sum((a - b)**2 for a, b in zip(point1, point2)))
+      text: |
+        `zip` pairs up corresponding coordinates; we sum their squared differences and take the square root. This works for any number of dimensions.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-c
+    part: 6
+    number: 3
+    title: "A More Accurate Derivative"
+    description: |
+      The forward difference method looks *ahead* of `x` only. The **central difference** method looks on both sides:
+
+      $$f'(x) \approx \frac{f(x + h) - f(x - h)}{2h}$$
+
+      Write `central_derivative(func, x, h)` and compare its accuracy against `approx_derivative` for `cube` at `x=2` (true answer: `12`), using the same values of `h` you tried in Exercise 5.3. Which method gets closer, faster, as `h` shrinks?
+    hints:
+      - "`return (func(x + h) - func(x - h)) / (2 * h)`. The central difference is more accurate because the errors on the left and right sides partially cancel out, giving an error that shrinks as $h^2$ rather than $h$."
+    solution:
+      code: |
+        def central_derivative(func, x, h):
+            return (func(x + h) - func(x - h)) / (2 * h)
+      text: |
+        The central difference is more accurate because the forward and backward errors partially cancel. Its error shrinks as $h^2$ rather than $h$, so it converges to the true derivative much faster for moderate values of `h`.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-d
+    part: 6
+    number: 4
+    title: "The Second Derivative"
+    description: |
+      The second derivative tells you how the *slope itself* is changing. You already have a function that computes a derivative — what happens if you feed `approx_derivative` a function that is *itself* a derivative?
+
+      Write `second_derivative(func, x, h)` that approximates $f''(x)$ by applying `approx_derivative` twice. Test it on `cube(x) = x**3`, whose second derivative is `6*x` — at `x=2` that's `12`.
+    hints:
+      - "Define an inner function `first_deriv(t)` that returns `approx_derivative(func, t, h)`. Then call `approx_derivative(first_deriv, x, h)` to get the second derivative."
+      - "Alternatively, you can use the formula directly: $f''(x) \\approx \\frac{f(x+h) - 2f(x) + f(x-h)}{h^2}$. But composing `approx_derivative` with itself is the more elegant approach — it shows the power of functions as values."
+    solution:
+      code: |
+        def second_derivative(func, x, h):
+            def first_deriv(t):
+                return approx_derivative(func, t, h)
+            return approx_derivative(first_deriv, x, h)
+      text: |
+        We define an inner function that computes the first derivative at any point, then apply `approx_derivative` to *that* function. For `cube` at `x=2` with `h=0.001`, this gives approximately 12 (the true second derivative of $x^3$ is $6x = 12$).
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-e
+    part: 6
+    number: 5
+    title: "Your Own `map`"
+    description: |
+      You've been writing the same loop again and again: *go over a list, do something to each element, collect the results*. Capture the pattern once and for all.
+
+      Write `mymapper(func, lst)` that returns a new list containing `func(x)` for each `x` in `lst`. Notice what you're doing: **passing a function as an argument**, just like you did with `approx_derivative`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert mymapper(lambda x: x * 2, [1, 2, 3]) == [2, 4, 6]
+          assert mymapper(lambda x: x ** 2, [1, 2, 3, 4]) == [1, 4, 9, 16]
+          assert mymapper(len, ["a", "bb", "ccc"]) == [1, 2, 3]
+          print("mymapper: OK")
+    hints:
+      - "A list comprehension does this in one line: `return [func(x) for x in lst]`. Or use a loop to build up a result list."
+    solution:
+      code: |
+        def mymapper(func, lst):
+            return [func(x) for x in lst]
+      text: |
+        Or equivalently with an explicit loop:
+
+        ```python
+        def mymapper(func, lst):
+            result = []
+            for x in lst:
+                result.append(func(x))
+            return result
+        ```
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-f
+    part: 6
+    number: 6
+    title: "Your Own `reduce`"
+    description: |
+      The other loop you keep writing: *combine all the elements into one value* (a sum, a product, a maximum...).
+
+      Write `myreducer(func, lst)` where `func` takes two arguments. Start with the first element, then repeatedly combine the running result with the next element: `myreducer(add, [1, 2, 3, 4])` computes `add(add(add(1, 2), 3), 4)`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert myreducer(lambda a, b: a + b, [1, 2, 3, 4]) == 10
+          assert myreducer(lambda a, b: a * b, [1, 2, 3, 4]) == 24
+          assert myreducer(lambda a, b: a if a > b else b, [3, 9, 4]) == 9
+          print("myreducer: OK")
+    hints:
+      - "Start with `result = lst[0]`. Then loop over `lst[1:]`, updating `result = func(result, element)` at each step."
+    solution:
+      code: |
+        def myreducer(func, lst):
+            result = lst[0]
+            for element in lst[1:]:
+                result = func(result, element)
+            return result
+      text: |
+        Start with the first element, then fold in each subsequent element using `func`. For example, `myreducer(add, [1, 2, 3, 4])` computes `add(add(add(1, 2), 3), 4) = 10`.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-g
+    part: 6
+    number: 7
+    title: "Functions That Make Functions"
+    description: |
+      If a function can *take* a function as input, can it also *return* one as output?
+
+      Write `create_power_function(p)` that returns a **new function**: the returned function takes `x` and computes `x ** p`. So `create_power_function(2)` builds a squaring function and `create_power_function(3)` builds a cubing function — one factory, infinitely many functions.
+
+      (The returned function "remembers" `p` even after the factory has finished running — this is called a **closure**.)
+    provided_code:
+      - label: "test cell"
+        code: |
+          sq = create_power_function(2)
+          cube = create_power_function(3)
+          assert sq(10) == 100
+          assert cube(3) == 27
+          assert sq(5) + cube(2) == 33
+          print("create_power_function: OK")
+    hints:
+      - "Define an inner function inside `create_power_function` that uses `p`, then return that inner function. The inner function \"closes over\" `p`."
+      - |
+        ```python
+        def create_power_function(p):
+            def power(x):
+                return x ** p
+            return power
+        ```
+
+        Or as a one-liner: `return lambda x: x ** p`.
+    solution:
+      code: |
+        def create_power_function(p):
+            def power(x):
+                return x ** p
+            return power
+      text: |
+        The inner function `power` "closes over" `p` — it remembers the value of `p` even after `create_power_function` has finished running. This is a **closure**. Each call to the factory creates a new, independent function.
+
+  # ═══════════════════════════════════════════════════
+  # Reflection
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Reflection — What Did You Just Build?"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 7
+    number: 1
+    title: "Reflection"
+    description: |
+      Take a moment to answer these questions in your own words.
+
+      1. What's the difference between `%` and `//`? When would you reach for each one?
+      2. Why does wrapping a formula in a function (like `calculate_interest`) save you work compared to retyping the formula every time?
+      3. What did extending 2D distance to 3D teach you about how formulas generalize?
+      4. What's the difference between Euclidean distance and Manhattan distance? When might Manhattan distance be the more meaningful one?
+      5. What's the relationship between `predict` and `fit`? Which one goes from parameters to data, and which one goes from data to parameters?
+      6. In your own words, what does `approx_derivative` actually compute? Why doesn't making `h` as tiny as possible always give a better answer?
+    hints: []
+    solution:
+      code: null
+      text: null

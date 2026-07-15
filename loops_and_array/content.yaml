@@ -1,0 +1,1602 @@
+chapter:
+  id: loops_and_array
+  title: "Loops and Arrays"
+  intro: |
+    In this chapter you build a toolkit of functions that operate on lists of numbers. Eight thematic parts, each building on the last.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/loops_and_array/loops_and_array.ipynb"
+  mathjax: true
+  footer: |
+    These are the building blocks of data science and machine learning.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 1: Statistics
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Statistics"
+    intro: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Find Minimum and Maximum"
+    description: |
+      Write `find_min_max(numbers)` that returns `(minimum, maximum)`.
+
+      **Before you code:**
+
+      - How would you find the minimum if you could only look at one number at a time?
+
+      **Test cases:**
+
+      ```
+      find_min_max([5, 8, 2, 10, 3])  # (2, 10)
+      find_min_max([7, 7, 7, 7])       # (7, 7)
+      find_min_max([-3, 0, 3])         # (-3, 3)
+      ```
+    hints:
+      - "Start with `current_min = current_max = numbers[0]`. Then for each number in the list, update `current_min` if the number is smaller and `current_max` if it is larger."
+      - "Use `if num < current_min: current_min = num` and similarly for max inside a `for` loop over `numbers`."
+    solution:
+      code: |
+        def find_min_max(numbers):
+            current_min = numbers[0]
+            current_max = numbers[0]
+            for num in numbers:
+                if num < current_min:
+                    current_min = num
+                if num > current_max:
+                    current_max = num
+            return (current_min, current_max)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Min-Max Normalization"
+    description: |
+      You want to rescale any value to [0, 1] relative to the dataset, so the minimum maps to 0 and the maximum maps to 1.
+
+      **Think it through:** Given `[10, 20, 30]`, what operation maps 10 → 0 and 30 → 1? What does 20 become? Can you write a general formula using min and max?
+
+      Write `min_max_normalize(value, data)`. Reuse `find_min_max`.
+
+      ```
+      min_max_normalize(20, [10, 20, 30])  # 0.5
+      min_max_normalize(10, [10, 20, 30])  # 0.0
+      min_max_normalize(30, [10, 20, 30])  # 1.0
+      ```
+    hints:
+      - "The formula: $$\\text{normalized}(x) = \\frac{x - \\min}{\\max - \\min}$$ Call `find_min_max(data)` to get `mn` and `mx`, then return `(value - mn) / (mx - mn)`."
+      - "When `value == min`, the numerator is 0 so the result is 0. When `value == max`, numerator equals denominator so the result is 1."
+    solution:
+      code: |
+        def min_max_normalize(value, data):
+            mn, mx = find_min_max(data)
+            return (value - mn) / (mx - mn)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Compute Mean"
+    description: |
+      Write `compute_mean(numbers)` — average of the list. Return `0` for an empty list.
+
+      ```
+      compute_mean([2, 4, 6, 8])   # 5.0
+      compute_mean([10, 20, 30])   # 20.0
+      compute_mean([])             # 0
+      ```
+    hints:
+      - "Sum all elements and divide by the length. Check for an empty list first to avoid dividing by zero."
+    solution:
+      code: |
+        def compute_mean(numbers):
+            if len(numbers) == 0:
+                return 0
+            return sum(numbers) / len(numbers)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "Standard Deviation"
+    description: |
+      Standard deviation measures how spread out values are around the mean:
+
+      $$\sigma = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(x_i - \mu)^2}$$
+
+      Break the formula into pieces you can compute step by step. You already have `compute_mean`.
+
+      Write `compute_sd(numbers)`.
+
+      ```
+      compute_sd([2, 4, 4, 4, 5, 5, 7, 9])  # 2.0
+      compute_sd([10, 10, 10, 10])           # 0.0
+      compute_sd([0, 6])                     # 3.0
+      ```
+    hints:
+      - "Use `compute_mean` to get $\\mu$, then build a list of `(x - mu)**2` for each x, compute the mean of that list, and take `math.sqrt` (or `** 0.5`)."
+      - "`variance = compute_mean([(x - mu)**2 for x in numbers])`, then `return variance ** 0.5`."
+    solution:
+      code: |
+        def compute_sd(numbers):
+            mu = compute_mean(numbers)
+            variance = compute_mean([(x - mu) ** 2 for x in numbers])
+            return variance ** 0.5
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-5
+    part: 1
+    number: 5
+    title: "Detect Outliers with Z-Score"
+    description: |
+      The z-score tells you how many standard deviations a value is from the mean.
+
+      **Think about it:** In `[10, 12, 12, 13, 12, 11, 90]`, the value 90 looks suspicious. How far is it from the mean? And how does that distance compare to the "typical spread" (the SD)? Write a formula for "how many SDs from the mean."
+
+      Values with $|z| >$ threshold are **outliers**.
+
+      Write `find_outliers(nums, threshold)`. Reuse `compute_mean` and `compute_sd`.
+
+      ```
+      find_outliers([10, 12, 12, 13, 12, 11, 90], 2)  # [90]
+      find_outliers([5, 6, 7, 8, 9, 10, 100], 2)       # [100]
+      find_outliers([1, 2, 3, 4, 5], 2)                # []
+      ```
+    hints:
+      - "The z-score formula: $$z(x) = \\frac{x - \\mu}{\\sigma}$$ Compute `mu` and `sigma` once. Collect every `x` where `abs((x - mu) / sigma) > threshold`."
+      - "Watch out for the edge case where `sigma == 0` (all values are identical). In that case there are no outliers."
+    solution:
+      code: |
+        def find_outliers(nums, threshold):
+            mu = compute_mean(nums)
+            sigma = compute_sd(nums)
+            if sigma == 0:
+                return []
+            return [x for x in nums if abs((x - mu) / sigma) > threshold]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-6
+    part: 1
+    number: 6
+    title: "Interquartile Range (IQR)"
+    description: |
+      $Q_1$ is the median of the **lower half** of the sorted data; $Q_3$ is the median of the **upper half**.
+
+      You know $Q_1$ (median of the lower half) and $Q_3$ (median of the upper half). What single number captures the width of the "middle 50%" of the data?
+
+      $$IQR = Q_3 - Q_1$$
+
+      Think about how to find the median of just the lower or upper half of a sorted list.
+
+      Write `compute_iqr(data)`.
+
+      ```
+      compute_iqr([1, 2, 3, 4, 5, 6, 7, 8, 9])  # 4.0  (Q1=3, Q3=7)
+      compute_iqr([10, 20, 30, 40, 50, 60])      # 30.0 (Q1=20, Q3=50)
+      ```
+    hints:
+      - "You will need a helper `median(lst)` first. For a sorted list of odd length, the median is the middle element. For even length, average the two middle elements."
+      - "Sort the data, then split: `lower = sorted_data[:n//2]` and `upper = sorted_data[(n+1)//2:]` for odd, or `upper = sorted_data[n//2:]` for even. Then return `median(upper) - median(lower)`."
+    solution:
+      code: |
+        def median(lst):
+            n = len(lst)
+            if n % 2 == 1:
+                return lst[n // 2]
+            else:
+                return (lst[n // 2 - 1] + lst[n // 2]) / 2
+
+        def compute_iqr(data):
+            s = sorted(data)
+            n = len(s)
+            if n % 2 == 1:
+                lower = s[:n // 2 + 1]
+                upper = s[n // 2:]
+            else:
+                lower = s[:n // 2]
+                upper = s[n // 2:]
+            return median(upper) - median(lower)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-6-plot
+    part: 1
+    number: 7
+    title: "Plotting helper — run as-is"
+    description: |
+      Run this cell to visualise the statistics you have built so far.
+    provided_code:
+      - label: "statistics visualisation"
+        code: |
+          def plot_stats(data, title="Dataset"):
+              mu = compute_mean(data)
+              sigma = compute_sd(data)
+              mn, mx = find_min_max(data)
+              fig, ax = plt.subplots(figsize=(8, 3))
+              ax.scatter(data, [0] * len(data), s=60, zorder=3, label="data")
+              ax.axvline(mu, color="red", label=f"mean={mu:.2f}")
+              ax.axvspan(mu - sigma, mu + sigma, alpha=0.2,
+                         color="red", label=f"1 SD")
+              ax.axvline(mn, color="gray", linestyle="--", label=f"min={mn}")
+              ax.axvline(mx, color="gray", linestyle=":", label=f"max={mx}")
+              ax.set_yticks([])
+              ax.legend(fontsize=8)
+              ax.set_title(title)
+              plt.tight_layout()
+              plt.show()
+
+          plot_stats([10, 12, 12, 13, 12, 11, 90], "Outlier example")
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-7
+    part: 1
+    number: 8
+    title: "Standardization"
+    description: |
+      You want to transform a dataset so its mean becomes 0 and its standard deviation becomes 1. What operation shifts the mean to 0? What further operation scales the SD to 1? Combine both.
+
+      Write `standardize(data)`. Reuse `compute_mean` and `compute_sd`.
+
+      ```
+      standardize([10, 10, 10])    # [0.0, 0.0, 0.0]
+      # After standardizing [1,2,3,4,5]:
+      #   mean of result  == 0.0
+      #   SD of result    == 1.0
+      ```
+    hints:
+      - "Subtract the mean, then divide by the SD: $$z_i = \\frac{x_i - \\mu}{\\sigma}$$ Handle the case where `sigma == 0` (all values identical) by returning a list of `0.0`s."
+    solution:
+      code: |
+        def standardize(data):
+            mu = compute_mean(data)
+            sigma = compute_sd(data)
+            if sigma == 0:
+                return [0.0] * len(data)
+            return [(x - mu) / sigma for x in data]
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 9
+    title: "When to Normalize"
+    question: |
+      A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?
+    options:
+      - label: A
+        text: "The algorithm won't run — Python will throw an error"
+      - label: B
+        text: "Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant"
+        correct: true
+      - label: C
+        text: "Age will dominate because it has a smaller range"
+      - label: D
+        text: "It makes no difference — Euclidean distance handles different scales automatically"
+    hints:
+      - "If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?"
+    solution:
+      text: "Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Error Metrics
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Error Metrics"
+    intro: |
+      How wrong is a model? These functions measure the gap between actual and predicted values.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Root Mean Square Error (RMSE)"
+    description: |
+      1. Compute error = actual[i] − predicted[i] for each pair.
+      2. Square each error.
+      3. Average the squared errors.
+      4. Take the square root.
+
+      Write `compute_rmse(actual, predicted)`.
+
+      ```
+      compute_rmse([2, 3, 4], [3, 2, 5])  # 1.0
+      compute_rmse([1, 2, 3], [1, 2, 3])  # 0.0
+      ```
+
+      **Bonus:** What is `compute_rmse([2, 3, 4], [3, 1, 7])`?
+    hints:
+      - "Build a list of squared errors: `[(a - p)**2 for a, p in zip(actual, predicted)]`. Then average them with `compute_mean` and take the square root."
+    solution:
+      code: |
+        def compute_rmse(actual, predicted):
+            squared_errors = [(a - p) ** 2 for a, p in zip(actual, predicted)]
+            return compute_mean(squared_errors) ** 0.5
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Mean Absolute Error (MAE)"
+    description: |
+      Mean Absolute Error (MAE) measures how wrong predictions are, on average.
+
+      **Think:** For each pair (actual, predicted), what's the simplest measure of "how wrong"? Why use absolute value instead of plain difference? How do you combine all the individual errors into one summary number?
+
+      Write `compute_mae(actual, predicted)` for 1-D lists.
+
+      ```
+      compute_mae([3, 5, 2], [2, 5, 4])  # 1.0
+      compute_mae([1, 2, 3], [1, 2, 3])  # 0.0
+      ```
+
+      **Extension:** Modify your function to handle N-D points (each element can be a list of coordinates).
+      When elements are lists, compute the absolute difference per coordinate, then average over all coordinates across all points.
+
+      ```
+      # 2-D: two points, 2 coordinates each
+      compute_mae([[0,0],[2,0]], [[1,0],[2,1]])  # (1+0+0+1)/4 = 0.5
+      ```
+    hints:
+      - "The formula: $$\\text{MAE} = \\frac{1}{n} \\sum |actual_i - predicted_i|$$ Sum `abs(a - p)` for each pair, divide by count."
+      - "For N-D: check `isinstance(actual[0], list)`. If so, flatten all coordinate differences into one big list and average them."
+    solution:
+      code: |
+        def compute_mae(actual, predicted):
+            if len(actual) > 0 and isinstance(actual[0], list):
+                total = 0
+                count = 0
+                for a, p in zip(actual, predicted):
+                    for ai, pi in zip(a, p):
+                        total += abs(ai - pi)
+                        count += 1
+                return total / count
+            else:
+                return compute_mean([abs(a - p) for a, p in zip(actual, predicted)])
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Huber Loss"
+    description: |
+      Huber loss is a hybrid: squared error for small errors, absolute error for large ones. This makes it robust to outliers.
+
+      For each pair $(y, \hat{y})$:
+
+      - If $|y - \hat{y}| \le \delta$: `0.5 * (y - y_pred)^2`
+      - Else: `delta * |y - y_pred| - 0.5 * delta^2`
+
+      Return the **average** over all pairs.
+
+      **Worked example:** y_true=[5,2,7], y_pred=[4.8,2.5,10], delta=1
+
+      - (5, 4.8): |0.2| ≤ 1 → 0.5 × 0.04 = 0.02
+      - (2, 2.5): |0.5| ≤ 1 → 0.5 × 0.25 = 0.125
+      - (7, 10): |3.0| > 1 → 1×3 − 0.5 = 2.5
+      - Average = (0.02 + 0.125 + 2.5) / 3 ≈ 0.8817
+
+      Write `compute_huber_loss(y_true, y_pred, delta)`.
+
+      ```
+      abs(compute_huber_loss([5,2,7],[4.8,2.5,10],1) - 0.8817) < 1e-3  # True
+      compute_huber_loss([1,2,3],[1,2,3],1)                              # 0.0
+      ```
+    hints:
+      - "Loop over pairs, compute `err = abs(y - yp)`, then use an `if/else` to apply the correct formula. Accumulate the total loss and divide by the count at the end."
+    solution:
+      code: |
+        def compute_huber_loss(y_true, y_pred, delta):
+            total = 0
+            for y, yp in zip(y_true, y_pred):
+                err = abs(y - yp)
+                if err <= delta:
+                    total += 0.5 * (y - yp) ** 2
+                else:
+                    total += delta * err - 0.5 * delta ** 2
+            return total / len(y_true)
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 4
+    title: "RMSE vs MAE"
+    question: |
+      Your model's predictions for 5 data points have errors: [1, 1, 1, 1, 20]. Which error metric will be affected MORE by the single large error of 20?
+    options:
+      - label: A
+        text: "MAE (Mean Absolute Error)"
+      - label: B
+        text: "RMSE (Root Mean Square Error)"
+        correct: true
+      - label: C
+        text: "Both are affected equally"
+      - label: D
+        text: "Neither — both ignore outliers"
+    hints:
+      - "RMSE squares the errors before averaging. What does squaring do to a large number compared to a small number?"
+    solution:
+      text: "RMSE squares each error: 1²=1 appears four times, but 20²=400 is massive. The mean of squares is (4+400)/5 = 80.8, giving RMSE ≈ 8.99. MAE just averages the absolute values: (4+20)/5 = 4.8. The outlier inflates RMSE much more than MAE. This is why RMSE is said to \"penalize large errors more heavily\" — squaring amplifies big errors disproportionately."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Nearest Neighbor
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Nearest Neighbor"
+    intro: |
+      Finding the closest point is the core of the k-Nearest-Neighbors (k-NN) algorithm. We build up from 1-D to N-D, then add a pluggable distance function.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Closer Point in N Dimensions"
+    description: |
+      In the *If-Else* chapter you compared distances in 2-D. Now generalize to N dimensions: given three N-D points P, A, B (each a list), return `"A"`, `"B"`, or `"Equal"`.
+
+      You do not need `sqrt` — comparing squared distances is enough.
+
+      Write `closer_point(P, A, B)`.
+
+      ```
+      closer_point([1, 2], [0, 0], [5, 5])          # "A"
+      closer_point([3, 3, 3], [0, 0, 0], [6, 6, 6]) # "Equal"
+      closer_point([15, 15], [2, 2], [20, 20])       # "B"
+      ```
+    hints:
+      - "Compute `dist_a = sum((p - a)**2 for p, a in zip(P, A))` and similarly for B. Compare the two distances."
+    solution:
+      code: |
+        def closer_point(P, A, B):
+            dist_a = sum((p - a) ** 2 for p, a in zip(P, A))
+            dist_b = sum((p - b) ** 2 for p, b in zip(P, B))
+            if dist_a < dist_b:
+                return "A"
+            elif dist_b < dist_a:
+                return "B"
+            else:
+                return "Equal"
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Find Nearest Neighbour in 1-D"
+    description: |
+      Given a list of numbers and a target, return the number closest to the target. Distance = |number − target|.
+
+      Write `find_nearest_1d(numbers, target)`.
+
+      ```
+      find_nearest_1d([2, 5, 8, 12], 6)    # 5
+      find_nearest_1d([1, 4, 10, 20], 15)  # 10
+      ```
+    hints:
+      - "Track `best` and `best_dist`. Loop through numbers, compute `abs(num - target)`, and update if smaller."
+    solution:
+      code: |
+        def find_nearest_1d(numbers, target):
+            best = numbers[0]
+            best_dist = abs(numbers[0] - target)
+            for num in numbers:
+                d = abs(num - target)
+                if d < best_dist:
+                    best = num
+                    best_dist = d
+            return best
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Find Nearest Neighbour in 2-D"
+    description: |
+      Now points are `(x, y)` tuples. Use Euclidean distance. (Again, squared distance is enough for comparison.)
+
+      Write `find_nearest_2d(points, target)`.
+
+      ```
+      find_nearest_2d([(1,2),(3,4),(6,1)], (2,3))  # (1, 2)
+      find_nearest_2d([(0,0),(5,5),(2,1)], (3,3))  # (2, 1)
+      ```
+    hints:
+      - "Same pattern as 1-D but with `dist = (p[0] - target[0])**2 + (p[1] - target[1])**2`."
+    solution:
+      code: |
+        def find_nearest_2d(points, target):
+            best = points[0]
+            best_dist = (points[0][0] - target[0]) ** 2 + (points[0][1] - target[1]) ** 2
+            for p in points:
+                d = (p[0] - target[0]) ** 2 + (p[1] - target[1]) ** 2
+                if d < best_dist:
+                    best = p
+                    best_dist = d
+            return best
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3-plot
+    part: 3
+    number: 4
+    title: "Plotting helper — run as-is"
+    description: |
+      Run this cell to visualise nearest-neighbour search.
+    provided_code:
+      - label: "nearest-neighbour visualisation"
+        code: |
+          def plot_nearest(target, points, nearest,
+                           title="Nearest Neighbour"):
+              xs, ys = zip(*points)
+              fig, ax = plt.subplots(figsize=(5, 5))
+              ax.scatter(xs, ys, s=80, label="candidates")
+              ax.scatter(*target, s=120, color="red",
+                         marker="*", label="target", zorder=3)
+              ax.scatter(*nearest, s=120, color="green",
+                         marker="D", label="nearest", zorder=3)
+              ax.plot([target[0], nearest[0]],
+                      [target[1], nearest[1]],
+                      color="green", linestyle="--", linewidth=1)
+              ax.legend()
+              ax.set_title(title)
+              plt.tight_layout()
+              plt.show()
+
+          target = (2, 3)
+          pts = [(1,2),(3,4),(6,1)]
+          nn = find_nearest_2d(pts, target)
+          plot_nearest(target, pts, nn)
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 5
+    title: "Find Nearest Neighbour in N Dimensions"
+    description: |
+      Generalize: each point is a list of any length.
+
+      Write `find_nearest_nd(point, points)`.
+
+      ```
+      find_nearest_nd([1,2], [[3,4],[2,1],[0,0]])              # [2, 1]
+      find_nearest_nd([0,0,0], [[1,1,1],[2,2,2],[-1,-1,-1]])   # [1, 1, 1]
+      ```
+    hints:
+      - "Squared distance in N-D: `sum((a - b)**2 for a, b in zip(point, candidate))`. Track the candidate with the smallest distance."
+    solution:
+      code: |
+        def find_nearest_nd(point, points):
+            best = points[0]
+            best_dist = sum((a - b) ** 2 for a, b in zip(point, points[0]))
+            for p in points:
+                d = sum((a - b) ** 2 for a, b in zip(point, p))
+                if d < best_dist:
+                    best = p
+                    best_dist = d
+            return best
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-5
+    part: 3
+    number: 6
+    title: "Nearest Neighbour with Custom Distance Function"
+    description: |
+      Different problems use different distance metrics. Accept the metric as an argument.
+
+      First implement two distance functions, then implement the general search.
+
+      Write:
+
+      1. `euclidean_distance(p1, p2)`
+      2. `manhattan_distance(p1, p2)` — sum of |a − b| per coordinate
+      3. `find_nearest_neighbour(target, points, distance_func)`
+
+      ```
+      find_nearest_neighbour([1,2], [[3,4],[2,2],[0,0]],
+                             euclidean_distance)   # [2, 2]
+      find_nearest_neighbour([1,2,3], [[5,5,5],[0,0,0],[2,2,2]],
+                             manhattan_distance)   # [2, 2, 2]
+      ```
+    hints:
+      - "Euclidean: `sqrt(sum((a-b)**2 ...))`. Manhattan: `sum(abs(a-b) ...)`. The search function is identical to `find_nearest_nd` but calls `distance_func(target, pt)` instead of hard-coding squared Euclidean."
+    solution:
+      code: |
+        def euclidean_distance(p1, p2):
+            return sum((a - b) ** 2 for a, b in zip(p1, p2)) ** 0.5
+
+        def manhattan_distance(p1, p2):
+            return sum(abs(a - b) for a, b in zip(p1, p2))
+
+        def find_nearest_neighbour(target, points, distance_func):
+            best = points[0]
+            best_dist = distance_func(target, points[0])
+            for p in points:
+                d = distance_func(target, p)
+                if d < best_dist:
+                    best = p
+                    best_dist = d
+            return best
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Polynomials
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Polynomials"
+    intro: |
+      A polynomial like $2x^3 + 0x^2 + 3x + 10$ is stored as a list of coefficients in **descending** power order: `[2, 0, 3, 10]`. Index 0 = highest power; last index = constant term ($x^0$).
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Multiply Polynomial by a Scalar"
+    description: |
+      $(2x^3 + 3x + 10) \times 5 = 10x^3 + 15x + 50$
+
+      List form: `[2, 0, 3, 10] * 5 = [10, 0, 15, 50]`
+
+      Write `multiply_polynomial(poly, num)`.
+
+      ```
+      multiply_polynomial([2, 0, 3, 10], 5)  # [10, 0, 15, 50]
+      multiply_polynomial([1, -2, 4], 3)      # [3, -6, 12]
+      multiply_polynomial([1, 0], 0)          # [0, 0]
+      ```
+    hints:
+      - "Return a new list where each coefficient is multiplied by `num`: `[c * num for c in poly]`."
+    solution:
+      code: |
+        def multiply_polynomial(poly, num):
+            return [c * num for c in poly]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Add Two Polynomials"
+    description: |
+      $(2x^2 + 3x + 4) + (x^2 + 5x + 6) = 3x^2 + 8x + 10$
+
+      List form: `[2, 3, 4] + [1, 5, 6] = [3, 8, 10]`
+
+      **Tricky part:** If the polynomials have different lengths, align them from the right (the constant terms line up) and treat missing higher-power terms as 0.
+
+      `(5x + 2) + (3)` → `[5, 2] + [3]` → `[5, 5]`
+
+      Write `add_polynomials(p1, p2)`.
+
+      ```
+      add_polynomials([2, 0, 3, 10], [1, 4, 0, 6])  # [3, 4, 3, 16]
+      add_polynomials([5, 2], [3])                   # [5, 5]
+      add_polynomials([1], [1])                      # [2]
+      ```
+    hints:
+      - "Pad the shorter list on the left with zeros until both have the same length, then add element-wise."
+      - "`diff = len(p1) - len(p2)`. If `diff > 0`, pad p2: `p2 = [0]*diff + p2`. Otherwise pad p1. Then `[a+b for a, b in zip(p1, p2)]`."
+    solution:
+      code: |
+        def add_polynomials(p1, p2):
+            diff = len(p1) - len(p2)
+            if diff > 0:
+                p2 = [0] * diff + p2
+            elif diff < 0:
+                p1 = [0] * (-diff) + p1
+            return [a + b for a, b in zip(p1, p2)]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Multiply Two Polynomials"
+    description: |
+      $(2x + 3)(x + 4) = 2x^2 + 8x + 3x + 12 = 2x^2 + 11x + 12$
+
+      List form: `[2, 3] * [1, 4] = [2, 11, 12]`
+
+      **Strategy:** Each coefficient `c` at position `i` in p1 has power `(len(p1)-1-i)`. Multiplying `c * p2` by $x^k$ means appending `k` zeros to the end.
+
+      - Take each term from p1.
+      - Scale p2 by that coefficient: `multiply_polynomial(p2, c)`.
+      - Shift left by the power (append zeros): `shifted = scaled + [0]*k`.
+      - Sum all shifted results with `add_polynomials`.
+
+      Write `multiply_polynomials(p1, p2)`. Reuse `multiply_polynomial` and `add_polynomials`.
+
+      ```
+      multiply_polynomials([2, 3], [1, 4])         # [2, 11, 12]
+      multiply_polynomials([2, 0, 3, 10], [1, 2])  # [2, 4, 3, 16, 20]
+      multiply_polynomials([1], [5])               # [5]
+      ```
+    hints:
+      - "The power of coefficient at index `i` is `len(p1) - 1 - i`. That power tells you how many zeros to append after scaling."
+      - "Start with `result = [0]`. For each index `i`, compute `scaled = multiply_polynomial(p2, p1[i])`, then `shifted = scaled + [0] * (len(p1) - 1 - i)`, then `result = add_polynomials(result, shifted)`."
+    solution:
+      code: |
+        def multiply_polynomials(p1, p2):
+            result = [0]
+            for i in range(len(p1)):
+                c = p1[i]
+                power = len(p1) - 1 - i
+                scaled = multiply_polynomial(p2, c)
+                shifted = scaled + [0] * power
+                result = add_polynomials(result, shifted)
+            return result
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: Solving Linear Equations
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Solving Linear Equations"
+    intro: |
+      A linear equation with N variables: $a_1 x_1 + a_2 x_2 + \cdots + a_n x_n = b$ is stored as `[a1, a2, ..., an, b]` (coefficients then RHS). A system of equations is a list of such lists. You will build a recursive solver step by step.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Solve for the First Variable"
+    description: |
+      If you know all variables *except* the first, you can rearrange the equation to solve for it. Try it by hand with the worked example below, then generalize.
+
+      Write `solve_for_first_variable(equation, vars)` where `vars` contains values for $x_2, x_3, \ldots$
+
+      **Worked example:**
+
+      - equation = [3, 4, 6, 20], vars = [5, 6]
+      - $3x + 4(5) + 6(6) = 20$ → $3x = 20 - 20 - 36 = -36$ → $x = -12$
+
+      ```
+      solve_for_first_variable([3, 4, 6, 20], [5, 6])  # -12.0
+      solve_for_first_variable([2, 5, 7], [4])          # -6.5
+      ```
+    hints:
+      - "Rearranging: $$x_1 = \\frac{b - (a_2 v_1 + a_3 v_2 + \\cdots)}{a_1}$$ The RHS is `equation[-1]`. Subtract the products of the remaining coefficients and known values, then divide by `equation[0]`."
+      - "`rhs = equation[-1] - sum(equation[i+1] * vars[i] for i in range(len(vars)))`, then `return rhs / equation[0]`."
+    solution:
+      code: |
+        def solve_for_first_variable(equation, vars):
+            rhs = equation[-1]
+            for i in range(len(vars)):
+                rhs -= equation[i + 1] * vars[i]
+            return rhs / equation[0]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Eliminate a Variable (Two Equations)"
+    description: |
+      To eliminate the variable at position `var_index` from two equations:
+
+      1. Let `c1 = eq1[var_index]`, `c2 = eq2[var_index]`.
+      2. Compute `c2 * eq1 - c1 * eq2` element by element.
+      3. The result has a 0 at position `var_index`. Drop that position.
+      4. Return the shorter list.
+
+      **Worked example:** Eliminate x (index 0) from [2, 1, 5] and [1, -1, 1]:
+
+      - c1=2, c2=1: 1*[2,1,5] - 2*[1,-1,1] = [0, 3, 3]
+      - Drop index 0: [3, 3] — this represents $3y = 3$
+
+      Write `eliminate_variable_pair(eq1, eq2, var_index)`.
+
+      ```
+      eliminate_variable_pair([2, 1, 5], [1, -1, 1], 0)   # [3, 3]
+      eliminate_variable_pair([1, 2, 3], [2, 1, 4], 1)    # [-3, -5]
+      ```
+
+      *Verify the second by hand: c1=2, c2=1: 1*[1,2,3]-2*[2,1,4] = [-3,0,-5], drop idx 1 → [-3,-5]*
+    hints:
+      - "Build the combined list: `[c2*eq1[i] - c1*eq2[i] for i in range(len(eq1))]`. Then remove the element at `var_index` using slicing or `.pop()`."
+    solution:
+      code: |
+        def eliminate_variable_pair(eq1, eq2, var_index):
+            c1 = eq1[var_index]
+            c2 = eq2[var_index]
+            combined = [c2 * eq1[i] - c1 * eq2[i] for i in range(len(eq1))]
+            return combined[:var_index] + combined[var_index + 1:]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "Eliminate a Variable from a System"
+    description: |
+      Given a full system of equations, eliminate the variable at `var_index` using the first equation (the pivot) against each other equation.
+
+      1. Let `pivot = equations[0]`.
+      2. For each other equation, call `eliminate_variable_pair(pivot, other, var_index)`.
+      3. Return the list of reduced equations (pivot not included — it served its purpose).
+
+      Write `eliminate_variable(equations, var_index)`.
+
+      ```
+      # System: 2x + y = 5, x - y = 1
+      eliminate_variable([[2, 1, 5], [1, -1, 1]], 0)
+      # Eliminates x using pivot [2,1,5] vs [1,-1,1]
+      # c1=2, c2=1: 1*[2,1,5]-2*[1,-1,1] = [0,3,3] → [3,3]
+      # Returns: [[3, 3]]
+      ```
+    hints:
+      - "Loop from index 1 to the end of `equations`. For each, call `eliminate_variable_pair(equations[0], equations[i], var_index)` and collect the results."
+    solution:
+      code: |
+        def eliminate_variable(equations, var_index):
+            pivot = equations[0]
+            result = []
+            for i in range(1, len(equations)):
+                result.append(eliminate_variable_pair(pivot, equations[i], var_index))
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-4
+    part: 5
+    number: 4
+    title: "Solve Equations Recursively"
+    description: |
+      Now put it all together:
+
+      **Base case:** One equation, one unknown: `x = equation[-1] / equation[0]`.
+
+      **Recursive case:**
+
+      1. Eliminate variable 0 from the system → reduced system.
+      2. Recursively solve the reduced system → values for $x_2, x_3, \ldots$
+      3. Substitute those into the first equation to find $x_1$ (use `solve_for_first_variable`).
+      4. Return `[x1] + [x2, x3, ...]`.
+
+      Write `solve_equations(equations)`.
+
+      ```
+      # 2 variables: 2x + y = 5, x - y = 1
+      solve_equations([[2, 1, 5], [1, -1, 1]])   # [2.0, 1.0]
+
+      # 3 variables: x+y+z=6, 2y+5z=-4, 2x+5y-z=27
+      solve_equations([[1,1,1,6],[0,2,5,-4],[2,5,-1,27]])
+      # [5.0, 3.0, -2.0]
+      ```
+    hints:
+      - "The base case has one equation with two elements (one coefficient + one RHS). Return `[equation[-1] / equation[0]]`."
+      - "Recursive step: `reduced = eliminate_variable(equations, 0)`. `rest = solve_equations(reduced)`. `x1 = solve_for_first_variable(equations[0], rest)`. Return `[x1] + rest`."
+    solution:
+      code: |
+        def solve_equations(equations):
+            if len(equations) == 1:
+                return [equations[0][-1] / equations[0][0]]
+            reduced = eliminate_variable(equations, 0)
+            rest = solve_equations(reduced)
+            x1 = solve_for_first_variable(equations[0], rest)
+            return [x1] + rest
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: Probability and Sampling
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Probability and Sampling"
+    intro: |
+      Random processes underlie stochastic gradient descent, Monte Carlo methods, and many more ML algorithms. You will build from a simple coin toss up to a temperature-scaled weighted sampler.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Fair Coin Toss"
+    description: |
+      Write `fair_coin_toss()` that:
+
+      - Uses `random.random()` (returns float in [0, 1)).
+      - Prints `"HEAD"` and returns 0 if the value < 0.5.
+      - Prints `"TAIL"` and returns 1 otherwise.
+
+      Run it 10 times. Is it roughly 50/50?
+    hints:
+      - "`r = random.random()`. Then `if r < 0.5: print(\"HEAD\"); return 0`."
+    solution:
+      code: |
+        import random
+
+        def fair_coin_toss():
+            if random.random() < 0.5:
+                print("HEAD")
+                return 0
+            else:
+                print("TAIL")
+                return 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Biased Coin Toss (70% Head)"
+    description: |
+      Write `biased_coin_toss()` — Head 70% of the time, Tail 30%. Print `"Head"` / `"Tail"`, return 0 / 1.
+
+      After writing, run 1000 tosses and check that the fraction of heads is near 0.70.
+    hints:
+      - "Same as fair coin, but change the threshold from 0.5 to 0.7."
+    solution:
+      code: |
+        def biased_coin_toss():
+            if random.random() < 0.7:
+                print("Head")
+                return 0
+            else:
+                print("Tail")
+                return 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-3
+    part: 6
+    number: 3
+    title: "Biased Coin with Probability Argument"
+    description: |
+      Generalise: write `biased_coin_toss(p)` where `p` is the probability of Head.
+
+      ```
+      biased_coin_toss(0.3)  # Head ~30% of the time
+      biased_coin_toss(0.9)  # Head ~90% of the time
+      ```
+    hints:
+      - "Replace the hard-coded 0.7 with the parameter `p`: `if random.random() < p: return 0`."
+    solution:
+      code: |
+        def biased_coin_toss(p):
+            if random.random() < p:
+                return 0
+            else:
+                return 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-4
+    part: 6
+    number: 4
+    title: "Weighted Choice"
+    description: |
+      Given a list of probabilities that sum to 1, return one index chosen according to those weights.
+
+      **Idea:** Build cumulative boundaries.
+
+      - `[0.5, 0.3, 0.2]` → boundaries `[0.5, 0.8, 1.0]`
+      - Draw `r = random.random()`.
+      - Return the first index whose boundary exceeds `r`.
+
+      Write `weighted_choice(probabilities)`.
+
+      **Before you code:** If `r=0.6`, which index is chosen?
+
+      ```
+      # Statistical test: ~50%, ~30%, ~20% for each index
+      weighted_choice([0.5, 0.3, 0.2])  # returns 0, 1, or 2
+      ```
+    hints:
+      - "Build a running sum. For `r=0.6`: boundary[0]=0.5 (not past), boundary[1]=0.8 (past!) → return index 1."
+      - "`cumsum = 0`. Loop with `for i, p in enumerate(probabilities): cumsum += p; if r < cumsum: return i`. Return the last index as a fallback for floating-point rounding."
+    solution:
+      code: |
+        def weighted_choice(probabilities):
+            r = random.random()
+            cumsum = 0
+            for i, p in enumerate(probabilities):
+                cumsum += p
+                if r < cumsum:
+                    return i
+            return len(probabilities) - 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-5
+    part: 6
+    number: 5
+    title: "Normalize to Probabilities"
+    description: |
+      Divide each weight by the total sum so the list sums to 1.
+
+      Write `normalize_to_probabilities(numbers)`.
+
+      ```
+      normalize_to_probabilities([1, 2, 2])  # [0.2, 0.4, 0.4]
+      normalize_to_probabilities([3, 3, 4])  # [0.3, 0.3, 0.4]
+      ```
+    hints:
+      - "`total = sum(numbers)`, then `[x / total for x in numbers]`."
+    solution:
+      code: |
+        def normalize_to_probabilities(numbers):
+            total = sum(numbers)
+            return [x / total for x in numbers]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-6
+    part: 6
+    number: 6
+    title: "Softmax"
+    description: |
+      You built `normalize`, but it fails when values are negative — negative "probabilities" make no sense.
+
+      **Key idea:** What if you transformed each value to be *positive* first, while preserving order? Try `math.exp(x)` — it is always positive, and larger inputs give larger outputs. Now normalize these exponentials.
+
+      Write `softmax(values)`.
+
+      All outputs should be positive and sum to 1.
+
+      ```
+      softmax([1, 2, 3])   # approx [0.090, 0.245, 0.665]
+      softmax([2, 2, 2])   # [0.333, 0.333, 0.333]
+      sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)
+      ```
+    hints:
+      - "The formula you should arrive at: $$\\text{softmax}(x_i) = \\frac{e^{x_i}}{\\sum_j e^{x_j}}$$ Compute `exps = [math.exp(x) for x in values]`, then normalize: `total = sum(exps)`, return `[e / total for e in exps]`."
+    solution:
+      code: |
+        import math
+
+        def softmax(values):
+            exps = [math.exp(x) for x in values]
+            total = sum(exps)
+            return [e / total for e in exps]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-7
+    part: 6
+    number: 7
+    title: "Softmax (Numerically Stable)"
+    description: |
+      **Problem:** `math.exp(1000)` raises `OverflowError`.
+
+      **Your challenge:** Try `softmax([1000, 1001, 1002])`. It crashes! The exponentials are astronomically large. But you only care about the *ratios*, not the absolute sizes. What constant could you subtract from every value before exponentiating, to keep the numbers small without changing the ratios? Try it and verify the result matches `softmax([1, 2, 3])`.
+
+      Rewrite `softmax(values)` with this trick.
+
+      ```
+      softmax([1000, 1001, 1002])  # [0.090, 0.245, 0.665] — no overflow!
+      ```
+
+      Verify that `softmax([1,2,3])` and `softmax([1000,1001,1002])` give the same result.
+    hints:
+      - "Subtract the maximum: $$\\frac{e^{x_i - m}}{\\sum_j e^{x_j - m}} = \\frac{e^{x_i}}{\\sum_j e^{x_j}}$$ The $e^{-m}$ cancels in numerator and denominator. Add one line: `m = max(values)`, then `exps = [math.exp(x - m) for x in values]`."
+    solution:
+      code: |
+        def softmax(values):
+            m = max(values)
+            exps = [math.exp(x - m) for x in values]
+            total = sum(exps)
+            return [e / total for e in exps]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-8
+    part: 6
+    number: 8
+    title: "Softmax with Temperature"
+    description: |
+      **Experiment:** What happens to the softmax output if you divide all values by 2 before applying softmax? Try it. Then try dividing by 0.5. What pattern do you see?
+
+      Dividing by a number $T$ before softmax controls the **sharpness** of the distribution. This $T$ is called the **temperature**.
+
+      - Predict: what happens when $T = 1$?
+      - Predict: what happens when $T < 1$?
+      - Predict: what happens when $T > 1$?
+
+      Write `softmax_with_temperature(values, T)`.
+
+      ```
+      softmax_with_temperature([1, 2, 3], 1)    # [0.090, 0.245, 0.665]
+      softmax_with_temperature([1, 2, 3], 0.5)  # sharper
+      softmax_with_temperature([1, 2, 3], 2)    # flatter
+      ```
+    hints:
+      - "The formula: $$\\text{softmax}(x_i, T) = \\frac{e^{x_i/T}}{\\sum_j e^{x_j/T}}$$ $T = 1$: standard softmax. $T < 1$: sharper (largest value dominates). $T > 1$: flatter (more uniform). Divide each value by `T` first, then apply your stable softmax."
+    solution:
+      code: |
+        def softmax_with_temperature(values, T):
+            scaled = [x / T for x in values]
+            return softmax(scaled)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-8-plot
+    part: 6
+    number: 9
+    title: "Plotting helper — run as-is"
+    description: |
+      Run this cell to visualise softmax at different temperatures.
+    provided_code:
+      - label: "softmax temperature visualisation"
+        code: |
+          def plot_softmax_temps(values, temperatures):
+              fig, axes = plt.subplots(1, len(temperatures),
+                                       figsize=(4 * len(temperatures), 3))
+              if len(temperatures) == 1:
+                  axes = [axes]
+              for ax, T in zip(axes, temperatures):
+                  probs = softmax_with_temperature(values, T)
+                  ax.bar(range(len(probs)), probs)
+                  ax.set_ylim(0, 1)
+                  ax.set_title(f"T = {T}")
+                  ax.set_xticks(range(len(probs)))
+                  ax.set_xticklabels([str(v) for v in values])
+              plt.suptitle("Softmax at different temperatures")
+              plt.tight_layout()
+              plt.show()
+
+          plot_softmax_temps([1, 2, 3], [0.5, 1.0, 2.0])
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-6-9
+    part: 6
+    number: 10
+    title: "Weighted Choice with Temperature"
+    description: |
+      Combine what you have built: given weights and temperature $T$, sample an index with probability proportional to `weight^(1/T)`.
+
+      Steps:
+
+      1. `scaled = [w ** (1.0 / T) for w in weights]`
+      2. `probs = normalize_to_probabilities(scaled)`
+      3. Return `weighted_choice(probs)`
+
+      Write `weighted_choice_with_temperature(weights, T)`.
+
+      **Before you code:**
+
+      - What happens as $T \to 0$? (The largest weight dominates completely.)
+      - What happens as $T \to \infty$? (All weights become equal.)
+
+      Raise `ValueError` if $T \le 0$ or all weights are zero.
+
+      Run a statistical test: with weights `[1, 2, 8]`, index 2 should be chosen more often at $T=0.5$ than at $T=2$.
+    hints:
+      - "Raising to the power `1/T` amplifies differences when `T < 1` and compresses them when `T > 1`. With `T=0.5`, `8**(1/0.5) = 8**2 = 64` while `1**(1/0.5) = 1` — index 2 dominates."
+    solution:
+      code: |
+        def weighted_choice_with_temperature(weights, T):
+            if T <= 0:
+                raise ValueError("T must be positive")
+            if all(w == 0 for w in weights):
+                raise ValueError("All weights are zero")
+            scaled = [w ** (1.0 / T) for w in weights]
+            probs = normalize_to_probabilities(scaled)
+            return weighted_choice(probs)
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-6-1
+    part: 6
+    number: 11
+    title: "Softmax Temperature"
+    question: |
+      In softmax with temperature, what happens as the temperature T approaches 0?
+    options:
+      - label: A
+        text: "All outputs become equal (uniform distribution)"
+      - label: B
+        text: "The output with the highest input gets nearly all the probability — the distribution becomes \"sharper\""
+        correct: true
+      - label: C
+        text: "All outputs become 0"
+      - label: D
+        text: "The function becomes undefined"
+    hints:
+      - "Dividing by a very small T makes the input values very large. What does softmax do with very large differences between inputs?"
+    solution:
+      text: "As T → 0, dividing inputs by T amplifies their differences enormously. The largest input dominates the exponentials, getting nearly 100% of the probability mass. This makes the choice nearly deterministic — always picking the highest-scored option. Conversely, as T → ∞, all inputs approach 0 after division, making all exponentials ≈ 1 and the distribution uniform. Temperature controls the exploration-exploitation tradeoff."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 7: Recursion on Nested Structures
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Recursion on Nested Structures"
+    intro: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-1
+    part: 7
+    number: 1
+    title: "Flatten a Nested List"
+    description: |
+      A nested list contains other lists inside it, to any depth: `[1, [1, 2, [3, 4]]]`
+
+      Flattening produces a single flat list: `[1, 1, 2, 3, 4]`.
+
+      Write `flatten_list(nested_list)` using recursion.
+
+      **Before you code:**
+
+      - Use `isinstance(element, list)` to check if an element is a sub-list.
+      - Base action: if the element is a number, add it to the result directly.
+      - Recursive action: if the element is a list, call `flatten_list` on it and extend.
+
+      ```
+      flatten_list([1, [1, 2, [3, 4]]])    # [1, 1, 2, 3, 4]
+      flatten_list([1, [2, [3, [4, 5]]]])  # [1, 2, 3, 4, 5]
+      flatten_list([1, 2, 3])              # [1, 2, 3]
+      flatten_list([[[]]])                 # []
+      ```
+    hints:
+      - "Create `result = []`. For each element: if it is a list, `result.extend(flatten_list(element))`; otherwise, `result.append(element)`."
+    solution:
+      code: |
+        def flatten_list(nested_list):
+            result = []
+            for element in nested_list:
+                if isinstance(element, list):
+                    result.extend(flatten_list(element))
+                else:
+                    result.append(element)
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-2
+    part: 7
+    number: 2
+    title: "Solve Expression in Array Form"
+    description: |
+      Instead of strings like `"(20+40)*90"`, expressions are stored as nested arrays:
+
+      - `["+", 20, 40]` means 20 + 40 = 60
+      - `["*", ["+", 20, 40], 90]` means (20 + 40) × 90 = 5400
+
+      Format: `[operator, left_operand, right_operand]`. Each operand is either a number or another such array.
+
+      Write `solve_expression(expr)` using recursion.
+
+      **Before you code:**
+
+      - Base case: if `expr` is a number (not a list), return it.
+      - Recursive case:
+        1. Extract operator = expr[0], left = expr[1], right = expr[2].
+        2. Recursively solve left and right.
+        3. Apply the operator (+, -, *, /).
+
+      ```
+      solve_expression(42)                                   # 42
+      solve_expression(["+", 20, 40])                        # 60
+      solve_expression(["*", ["+", 20, 40], 90])             # 5400
+      solve_expression(["-", ["*", ["/", 100, 10], 5], 15])  # 35
+      ```
+    hints:
+      - "Check `isinstance(expr, list)`. If not, return `expr`. Otherwise use `if/elif` on the operator string to decide which arithmetic operation to apply to the recursively solved operands."
+      - "`left_val = solve_expression(expr[1])`, `right_val = solve_expression(expr[2])`. Then `if op == \"+\": return left_val + right_val`, etc."
+    solution:
+      code: |
+        def solve_expression(expr):
+            if not isinstance(expr, list):
+                return expr
+            op = expr[0]
+            left = solve_expression(expr[1])
+            right = solve_expression(expr[2])
+            if op == "+":
+                return left + right
+            elif op == "-":
+                return left - right
+            elif op == "*":
+                return left * right
+            elif op == "/":
+                return left / right
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-3
+    part: 7
+    number: 3
+    title: "A Calculator with Rules"
+    description: |
+      `solve_expression` assumed every operator takes exactly two operands. Real calculators are pickier *and* more flexible: `+` happily sums ten numbers, but `sqrt` of two numbers is nonsense.
+
+      Write `calculate(expr)` — an upgraded evaluator:
+
+      - New operators: `"sqrt"` (use `x ** 0.5`) and `"log"` (base 10 — `math.log10`).
+      - **Arity rules:** `+` and `*` accept **two or more** operands; `-` and `/` accept **exactly two**; `sqrt` and `log` accept **exactly one**. Wrong count → `raise ValueError` with a message naming the operator.
+      - Unknown operator → `ValueError` too.
+      - Operands may be numbers or nested expressions, as before.
+
+      **Hint:** evaluate all operands first (`args = [calculate(a) for a in expr[1:]]`), *then* check `len(args)` against the operator's rule before applying it.
+
+      ```
+      calculate(42)                                      # 42
+      calculate(["+", 1, 2, 3])                          # 6
+      calculate(["*", 2, 3, 4])                          # 24
+      calculate(["-", 10, 4])                            # 6
+      calculate(["/", 8, 2])                             # 4
+      calculate(["sqrt", 16])                            # 4
+      calculate(["log", 100])                            # 2
+      calculate(["+", ["sqrt", 16], ["log", 1000], 2])   # 9
+      ```
+
+      These should all raise `ValueError`:
+
+      ```
+      ["-", 1, 2, 3]   # - takes exactly 2
+      ["sqrt", 4, 9]   # sqrt takes exactly 1
+      ["/", 8]         # / takes exactly 2
+      ["@", 1, 2]      # unknown operator
+      ```
+    hints:
+      - "Use a dictionary to map operator names to their allowed arity ranges, e.g. `{\"+\": (2, None), \"-\": (2, 2), \"sqrt\": (1, 1), ...}`. Then check `len(args)` against the allowed range after evaluating operands."
+      - "For variadic `+`: use `sum(args)`. For variadic `*`: use a loop or `functools.reduce`. For `sqrt`: `args[0] ** 0.5`. For `log`: `math.log10(args[0])`."
+    solution:
+      code: |
+        import math
+
+        def calculate(expr):
+            if not isinstance(expr, list):
+                return expr
+            op = expr[0]
+            args = [calculate(a) for a in expr[1:]]
+            if op == "+":
+                if len(args) < 2:
+                    raise ValueError("+ requires 2 or more operands")
+                return sum(args)
+            elif op == "*":
+                if len(args) < 2:
+                    raise ValueError("* requires 2 or more operands")
+                result = 1
+                for a in args:
+                    result *= a
+                return result
+            elif op == "-":
+                if len(args) != 2:
+                    raise ValueError("- requires exactly 2 operands")
+                return args[0] - args[1]
+            elif op == "/":
+                if len(args) != 2:
+                    raise ValueError("/ requires exactly 2 operands")
+                return args[0] / args[1]
+            elif op == "sqrt":
+                if len(args) != 1:
+                    raise ValueError("sqrt requires exactly 1 operand")
+                return args[0] ** 0.5
+            elif op == "log":
+                if len(args) != 1:
+                    raise ValueError("log requires exactly 1 operand")
+                return math.log10(args[0])
+            else:
+                raise ValueError(f"Unknown operator: {op}")
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-7-bonus
+    part: 7
+    number: 4
+    title: "Compose Your Functions"
+    description: |
+      Try combining things you built:
+
+      ```
+      # Evaluate a nested expression
+      expr = ["*", ["+", 1, 2], ["+", 3, 4]]
+      print(solve_expression(expr))   # 21
+
+      # Flatten the result of some computation
+      nested = [[1, 2], [3, [4, 5]]]
+      print(flatten_list(nested))     # [1, 2, 3, 4, 5]
+      ```
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 8: Bonus — In-Place Array Moves
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 8
+    title: "Bonus — In-Place Array Moves"
+    intro: |
+      Some array jobs come with a hard constraint: **no second array allowed**. A billion-element list won't fit in memory twice, so you must rearrange it *in place*, using only a spare variable or two.
+
+  - type: exercise
+    kind: coding
+    id: ex-8-1
+    part: 8
+    number: 1
+    title: "Three-Way XOR"
+    description: |
+      First, meet a new operator. `^` is **XOR** (exclusive or): for each bit of the two numbers, the result bit is `1` exactly when the input bits *differ*.
+
+      ```
+      1 ^ 2  ->  3      (01 ^ 10 = 11)
+      5 ^ 5  ->  0      (a number XOR itself is always 0)
+      5 ^ 0  ->  5      (XOR with 0 changes nothing)
+      ```
+
+      Write `xors(a, b, c)` that takes three equal-length lists and returns a new list where element `i` is `a[i] ^ b[i] ^ c[i]`.
+    hints:
+      - "Use a list comprehension with `zip`: `[x ^ y ^ z for x, y, z in zip(a, b, c)]`."
+    solution:
+      code: |
+        def xors(a, b, c):
+            return [x ^ y ^ z for x, y, z in zip(a, b, c)]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-8-2
+    part: 8
+    number: 2
+    title: "Reverse, In Place"
+    description: |
+      Write `reverse_in_place(arr)` that reverses the list **without creating a new list** — no `arr[::-1]`, no `reversed()`, no second list. Walk two indices toward each other from the ends, swapping as you go. The function should modify `arr` and return nothing.
+    hints:
+      - "Use two pointers: `left = 0`, `right = len(arr) - 1`. While `left < right`: swap `arr[left]` and `arr[right]`, then move both inward."
+      - "Python swap: `arr[left], arr[right] = arr[right], arr[left]`."
+    solution:
+      code: |
+        def reverse_in_place(arr):
+            left = 0
+            right = len(arr) - 1
+            while left < right:
+                arr[left], arr[right] = arr[right], arr[left]
+                left += 1
+                right -= 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-8-3
+    part: 8
+    number: 3
+    title: "Circular Shift by One"
+    description: |
+      Write `shift_left(arr)` that moves every element one position to the left, with the first element wrapping around to the end — in place, with only one temporary variable: `[10, 20, 30]` becomes `[20, 30, 10]`.
+    hints:
+      - "Save `first = arr[0]`. Then shift each element left: `arr[i] = arr[i+1]` for `i` from 0 to `len(arr)-2`. Finally, `arr[-1] = first`."
+    solution:
+      code: |
+        def shift_left(arr):
+            if len(arr) <= 1:
+                return
+            first = arr[0]
+            for i in range(len(arr) - 1):
+                arr[i] = arr[i + 1]
+            arr[-1] = first
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-8-4
+    part: 8
+    number: 4
+    title: "Circular Shift by k: the Triple-Reversal Trick"
+    description: |
+      Shifting left by `k` could be done by calling `shift_left` k times — but that is O(n·k). There is a beautiful O(n) trick that uses *reversal* three times. Watch `[1, 2, 3, 4, 5]` with `k = 2`:
+
+      1. Reverse the first `k` elements: `[2, 1, 3, 4, 5]`
+      2. Reverse the remaining elements: `[2, 1, 5, 4, 3]`
+      3. Reverse the whole array: `[3, 4, 5, 1, 2]` — done!
+
+      Write `shift_left_k(arr, k)` using this trick. You will want a helper that reverses just the slice between indices `i` and `j` in place.
+    hints:
+      - "Write `reverse_slice(arr, lo, hi)` that reverses elements from index `lo` to `hi` (inclusive) using the two-pointer swap technique. Then call it three times: on `[0, k-1]`, on `[k, n-1]`, and on `[0, n-1]`."
+      - "Handle edge cases: if `k == 0` or `k == len(arr)`, nothing changes. Use `k = k % len(arr)` to handle k larger than the array length."
+    solution:
+      code: |
+        def reverse_slice(arr, lo, hi):
+            while lo < hi:
+                arr[lo], arr[hi] = arr[hi], arr[lo]
+                lo += 1
+                hi -= 1
+
+        def shift_left_k(arr, k):
+            n = len(arr)
+            if n == 0:
+                return
+            k = k % n
+            if k == 0:
+                return
+            reverse_slice(arr, 0, k - 1)
+            reverse_slice(arr, k, n - 1)
+            reverse_slice(arr, 0, n - 1)
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # Summary Table
+  # ═══════════════════════════════════════════════════════
+
+  - type: table
+    id: summary
+    headers: [Part, Functions]
+    rows:
+      - ["1 Statistics", "`find_min_max`, `min_max_normalize`, `compute_mean`, `compute_sd`, `find_outliers`, `compute_iqr`, `standardize`"]
+      - ["2 Error Metrics", "`compute_rmse`, `compute_mae`, `compute_huber_loss`"]
+      - ["3 Nearest Neighbor", "`closer_point`, `find_nearest_1d/2d/nd`, `find_nearest_neighbour`"]
+      - ["4 Polynomials", "`multiply_polynomial`, `add_polynomials`, `multiply_polynomials`"]
+      - ["5 Linear Equations", "`solve_for_first_variable`, `eliminate_variable_pair`, `eliminate_variable`, `solve_equations`"]
+      - ["6 Probability", "`fair_coin_toss`, `biased_coin_toss`, `weighted_choice`, `normalize_to_probabilities`, `softmax`, `softmax_with_temperature`, `weighted_choice_with_temperature`"]
+      - ["7 Nested Structures", "`flatten_list`, `solve_expression`, `calculate`"]
+      - ["8 In-Place Moves", "`xors`, `reverse_in_place`, `shift_left`, `shift_left_k`"]

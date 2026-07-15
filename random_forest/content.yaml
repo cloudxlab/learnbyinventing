@@ -1,0 +1,669 @@
+chapter:
+  id: random_forest
+  title: "Random Forests --- Inventing Ensemble Learning"
+  intro: |
+    In the **Decision Trees** chapter you invented a tree that predicts *categories* by minimizing impurity. Two questions remain open: What if the target is a **number**? And can we do better than a single tree that memorizes its training data? You will invent the answers: first a **regression tree**, then the idea that powers many production ML systems --- **combine many imperfect trees into one strong model**. That is a Random Forest.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/random_forest/random_forest.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented a random forest from scratch --- variance impurity, split search, regression trees, bootstrap sampling, feature randomness, and ensemble averaging. That's the real thing.
+
+blocks:
+  # ════════════════════════════════════════════════════════
+  # PART 1: Impurity for Numbers
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 1
+    title: "Impurity for Numbers"
+    intro: |
+      The classification tree asked: "how *mixed* are the labels in this group?" For numbers the question becomes: "how *spread out* are the values?"
+
+      Look at these two groups of house prices (in lakhs):
+
+      ```
+      group_a = [10, 10, 10, 10, 10]     # everyone agrees
+      group_b = [1, 50, 3, 80]           # wild disagreement
+      ```
+
+      If a leaf of your tree contains `group_a`, predicting their mean (10) is perfect. If it contains `group_b`, predicting the mean (33.5) is terrible for every single house.
+
+  # Exercise 1.1
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Invent a Spread Score"
+    description: |
+      Invent a single number that is `0` when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on.
+
+      The classic answer is **variance**: the average *squared* distance from the mean. (Why squared? So that being 10 below the mean can't cancel out being 10 above it --- and big misses get punished extra hard.)
+
+      **Write `variance(values)`.**
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert variance([10, 10, 10, 10, 10]) == 0
+          assert variance([1, 50, 3, 80]) == 1105.25
+          assert variance([1, 3]) == 1.0
+          assert variance([4]) == 0
+    hints:
+      - "Start by computing the mean: `m = sum(values) / len(values)`. Then compute the average of `(v - m)**2` for each value `v`."
+      - "`return sum((v - m)**2 for v in values) / len(values)`"
+    solution:
+      code: |
+        def variance(values):
+            m = sum(values) / len(values)
+            return sum((v - m) ** 2 for v in values) / len(values)
+      text: null
+
+  # Exercise 1.2
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "The Value of a Split"
+    description: |
+      Take this group: `values = [10, 9, 11, 8, 10, 1]`. It has one troublemaker.
+
+      Split it into `left = [10, 9, 11, 8, 10]` and `right = [1]`. Now `left` is nearly pure and `right` is *exactly* pure (a single value has zero variance).
+
+      But there's a trap: `[1]` having zero variance shouldn't count as much as a five-element group having zero variance --- otherwise the tree learns to slice off one element at a time.
+
+      **Your challenge:** Simply adding the two variances treats a 1-element group the same as a 5-element group --- that can't be right. How should you combine the two variances so that a larger group's variance counts more? Think about what "fraction of elements" each side holds and use that to weight the variances.
+
+      **Write `total_variance(left, right)`.**
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert total_variance([10, 10, 10], [0, 0, 0]) == 0.0
+          assert abs(total_variance([10, 9, 11, 8, 10], [1]) - 0.8667) < 1e-3
+          assert total_variance([5], [5]) == 0.0
+    hints:
+      - |
+        Weight each side's variance by the fraction of total elements it holds: $$\text{total} = \frac{n_{\text{left}}}{n}\,\text{var}(\text{left}) + \frac{n_{\text{right}}}{n}\,\text{var}(\text{right})$$ where $n = n_{\text{left}} + n_{\text{right}}$. Compute `n = len(left) + len(right)`.
+      - "Unlike the 0--1 impurity you built for classification, variance has no upper bound. A tree only ever *compares* one split against another, so raw variance is fine."
+    solution:
+      code: |
+        def total_variance(left, right):
+            n = len(left) + len(right)
+            return (len(left) / n) * variance(left) + (len(right) / n) * variance(right)
+      text: null
+
+  # Exercise 1.3
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Variance Reduction"
+    description: |
+      A split is good when the children are much purer (lower variance) than the parent. You have the parent's variance and the children's combined (weighted) variance. How would you capture "how much purer did the split make things" in one number?
+
+      **Write `variance_reduction(parent, left, right)`.**
+
+      Then check: for `[10, 9, 11, 8, 10, 1]`, splitting the troublemaker off should score much higher than splitting down the middle.
+    provided_code:
+      - label: "test cell"
+        code: |
+          values = [10, 9, 11, 8, 10, 1]
+          assert abs(variance(values) - 11.1389) < 1e-3
+
+          good = variance_reduction(values, [10, 9, 11, 8, 10], [1])
+          bad  = variance_reduction(values, [10, 9, 11], [8, 10, 1])
+          # good split should score higher than bad split
+          assert abs(good - 10.2722) < 1e-3
+          assert good > bad
+    hints:
+      - |
+        Subtract: $$\text{reduction} = \text{var}(\text{parent}) - \text{total\_variance}(\text{left}, \text{right})$$ A higher reduction means a better split. If reduction is 0 or negative, the split didn't help.
+      - "A higher reduction means the split separates the data more cleanly. If reduction is 0 or negative, the split is useless."
+    solution:
+      code: |
+        def variance_reduction(parent, left, right):
+            return variance(parent) - total_variance(left, right)
+      text: null
+
+  # MCQ 1-1
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 4
+    title: "Variance vs Impurity"
+    question: |
+      In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?
+    options:
+      - label: A
+        text: "Variance is faster to compute than impurity"
+      - label: B
+        text: "Regression targets are continuous numbers, not categories --- you can't count \"how mixed\" the labels are when labels are numbers like 23.5 or 41.2, but you CAN measure how spread out they are"
+        correct: true
+      - label: C
+        text: "Variance works for classification too, so impurity was unnecessary"
+      - label: D
+        text: "Python's standard library only has a variance function, not an impurity function"
+    hints:
+      - "Impurity counts how many different categories are present. What does \"categories\" even mean when your target is a continuous number?"
+    solution:
+      text: "Impurity measures label mixing by counting class proportions (e.g., 60% apple, 40% orange). But regression targets are continuous values like house prices --- there are no \"classes\" to count. Variance captures a similar idea for numbers: a group with values [100, 101, 102] is \"pure\" (low variance), while [10, 100, 500] is \"mixed\" (high variance). Low variance means the group's average is a good prediction; high variance means it isn't."
+
+  # ════════════════════════════════════════════════════════
+  # PART 2: Choosing the Best Split
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 2
+    title: "Choosing the Best Split"
+    intro: |
+      Here is a tiny housing dataset. Each row is `[size_sqft, bedrooms]`; the target is the price.
+
+      | Size | Bedrooms | Price |
+      |------|----------|-------|
+      | 500  | 1        | 50    |
+      | 600  | 1        | 55    |
+      | 900  | 3        | 65    |
+      | 1500 | 3        | 150   |
+      | 1600 | 3        | 160   |
+      | 1700 | 4        | 170   |
+
+  # Exercise 2.1
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Compare Two Splits by Hand"
+    description: |
+      Using your `variance_reduction`, compute the reduction for two candidate splits, and see which feature the tree should ask about first:
+
+      - **Size <= 1000**: prices split into `[50, 55, 65]` vs `[150, 160, 170]`
+      - **Bedrooms < 3**: prices split into `[50, 55]` vs `[65, 150, 160, 170]`
+    provided_code:
+      - label: "dataset"
+        code: |
+          X = [[500, 1], [600, 1], [900, 3], [1500, 3], [1600, 3], [1700, 4]]
+          y = [50, 55, 65, 150, 160, 170]
+      - label: "test cell"
+        code: |
+          assert abs(size_red - 2669.44) < 0.1
+          assert abs(bedroom_red - 1558.68) < 0.1
+          assert size_red > bedroom_red
+          # Size wins — ask about size first
+    hints:
+      - "Call `variance_reduction(y, [50, 55, 65], [150, 160, 170])` for the size split, and `variance_reduction(y, [50, 55], [65, 150, 160, 170])` for the bedrooms split."
+    solution:
+      code: |
+        size_red = variance_reduction(y, [50, 55, 65], [150, 160, 170])
+        bedroom_red = variance_reduction(y, [50, 55], [65, 150, 160, 170])
+      text: null
+
+  # Exercise 2.2
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Find the Best Split Automatically"
+    description: |
+      Trying splits by hand doesn't scale. Write `find_best_split(X, y, feature_indices=None)` that:
+
+      1. Considers every feature index (or only `feature_indices` if given --- you'll see why that parameter matters in Part 4).
+      2. For each feature, takes the **midpoints between consecutive sorted unique values** as candidate thresholds (e.g. sizes `500, 600, 900, ...` give thresholds `550, 750, 1200, ...`).
+      3. For each candidate `t`, splits the targets into rows with `x[feature] <= t` (left) and the rest (right), and computes the variance reduction.
+      4. Returns the best `(feature, threshold, reduction)` --- keep the *first* candidate when there's a tie.
+
+      If there is nothing to split (no candidates), return `(None, None, 0.0)`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          f, t, red = find_best_split(X, y)
+          assert f == 0
+          assert abs(t - 1200) < 1e-9
+          assert abs(red - 2669.44) < 0.1
+          assert find_best_split([[1, 1]], [10]) == (None, None, 0.0)
+    hints:
+      - "If `feature_indices` is `None`, default to `range(len(X[0]))`. For midpoints, sort the unique values and compute `(vals[i] + vals[i+1]) / 2`."
+      - "For each candidate threshold `t`: `left_y = [y[i] for i in range(len(X)) if X[i][feat] <= t]` and `right_y` for the rest. Compute `variance_reduction(y, left_y, right_y)` and track the best."
+      - "Skip any split where `left_y` or `right_y` is empty. Initialize `best_reduction = 0.0` so that only genuinely positive reductions are kept."
+    solution:
+      code: |
+        def find_best_split(X, y, feature_indices=None):
+            if feature_indices is None:
+                feature_indices = range(len(X[0]))
+            best_feat, best_thresh, best_red = None, None, 0.0
+            for feat in feature_indices:
+                vals = sorted(set(X[i][feat] for i in range(len(X))))
+                for j in range(len(vals) - 1):
+                    t = (vals[j] + vals[j + 1]) / 2
+                    left_y = [y[i] for i in range(len(X)) if X[i][feat] <= t]
+                    right_y = [y[i] for i in range(len(X)) if X[i][feat] > t]
+                    if not left_y or not right_y:
+                        continue
+                    red = variance_reduction(y, left_y, right_y)
+                    if red > best_red:
+                        best_red = red
+                        best_feat = feat
+                        best_thresh = t
+            return (best_feat, best_thresh, best_red)
+      text: null
+
+  # Exercise 2.3 (conceptual -- stopping conditions)
+  - type: exercise
+    kind: conceptual
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "When Should the Tree Stop Asking Questions?"
+    description: |
+      Left alone, the tree splits until every leaf holds a single house --- that's not learning, it's **memorization**: perfect on training data, brittle on anything new. Two brakes prevent it:
+
+      - **`max_depth`** --- the maximum number of questions from root to leaf. A shallow tree is forced to generalize.
+      - **`min_samples_split`** --- the smallest group still allowed to be split. Splitting a 2-house group into two 1-house "groups" scores a perfect variance reduction, and learns nothing.
+
+      There's nothing to compute here --- just convince yourself *why* each brake prevents memorization. You'll wire both into the tree next.
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # ════════════════════════════════════════════════════════
+  # PART 3: Build the Regression Tree
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 3
+    title: "Build the Regression Tree"
+    intro: null
+
+  # Exercise 3.0 (provided code -- Node class)
+  - type: exercise
+    kind: coding
+    id: ex-3-0
+    part: 3
+    number: 0
+    title: "The Node --- Provided"
+    description: |
+      A tree is made of nodes. A **decision node** holds a question (`feature`, `threshold`) and two children; a **leaf** holds only a `value` (the prediction: the mean of the targets that reached it). Run this as-is.
+    provided_code:
+      - label: "Node class and helpers"
+        code: |
+          class Node:
+              def __init__(self, feature=None, threshold=None,
+                           left=None, right=None, value=None):
+                  self.feature = feature
+                  self.threshold = threshold
+                  self.left = left
+                  self.right = right
+                  self.value = value
+
+              def is_leaf(self):
+                  return self.value is not None
+
+
+          def mean(values):
+              return sum(values) / len(values)
+
+
+          def root_mean_squared_error(y_true, y_pred):
+              return (sum((a - b) ** 2
+                          for a, b in zip(y_true, y_pred))
+                      / len(y_true)) ** 0.5
+      - label: "test cell"
+        code: |
+          leaf = Node(value=52.5)
+          assert leaf.is_leaf()
+          assert not Node(feature=0, threshold=1200,
+                          left=leaf, right=leaf).is_leaf()
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # Exercise 3.1
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "The Tree"
+    description: |
+      Now assemble everything into a `DecisionTree` class:
+
+      ```python
+      class DecisionTree:
+          def __init__(self, max_depth=5, min_samples_split=2,
+                       feature_indices=None):
+              ...
+          def fit(self, X, y):
+              ...
+          def predict(self, X):
+              ...
+      ```
+
+      **`fit`** grows the tree recursively, starting at depth 0. A group becomes a **leaf** (value = mean of its targets) when *any* brake fires:
+
+      - depth has reached `max_depth`, or
+      - the group has fewer than `min_samples_split` rows, or
+      - `find_best_split` finds no split with reduction > 0.
+
+      Otherwise: split the rows on the best `(feature, threshold)` and recurse into each side with `depth + 1`. Pass `feature_indices` through to `find_best_split`.
+
+      **`predict`** walks each row from the root --- go left if `row[feature] <= threshold` --- and returns the leaf's value.
+    provided_code:
+      - label: "test cell"
+        code: |
+          # A deep tree memorizes this tiny dataset perfectly...
+          deep = DecisionTree(max_depth=5, min_samples_split=2)
+          deep.fit(X, y)
+          assert root_mean_squared_error(y, deep.predict(X)) < 1e-9
+
+          # ...a depth-1 "stump" can only ask one question, so it must generalize:
+          stump = DecisionTree(max_depth=1, min_samples_split=2)
+          stump.fit(X, y)
+          assert root_mean_squared_error(y, stump.predict(X)) > 5
+
+          p = deep.predict([[550, 1], [2000, 5]])
+          assert 50 <= p[0] <= 65
+          assert 150 <= p[1] <= 170
+    hints:
+      - "Write a private method `_build(X, y, depth)` that returns a `Node`. In `fit`, call `self.root = self._build(X, y, 0)`."
+      - "Base case: if `depth >= self.max_depth` or `len(y) < self.min_samples_split`, return `Node(value=mean(y))`. Then call `find_best_split` --- if `feature is None` or `reduction <= 0`, also return a leaf."
+      - "For `predict`: walk each row starting at `self.root`. At each node, if `node.is_leaf()` return `node.value`; else go left (`row[node.feature] <= node.threshold`) or right."
+    solution:
+      code: |
+        class DecisionTree:
+            def __init__(self, max_depth=5, min_samples_split=2, feature_indices=None):
+                self.max_depth = max_depth
+                self.min_samples_split = min_samples_split
+                self.feature_indices = feature_indices
+                self.root = None
+
+            def fit(self, X, y):
+                self.root = self._build(X, y, 0)
+
+            def _build(self, X, y, depth):
+                if depth >= self.max_depth or len(y) < self.min_samples_split:
+                    return Node(value=mean(y))
+                feat, thresh, red = find_best_split(X, y, self.feature_indices)
+                if feat is None or red <= 0:
+                    return Node(value=mean(y))
+                left_X, left_y, right_X, right_y = [], [], [], []
+                for i in range(len(X)):
+                    if X[i][feat] <= thresh:
+                        left_X.append(X[i])
+                        left_y.append(y[i])
+                    else:
+                        right_X.append(X[i])
+                        right_y.append(y[i])
+                left_node = self._build(left_X, left_y, depth + 1)
+                right_node = self._build(right_X, right_y, depth + 1)
+                return Node(feature=feat, threshold=thresh,
+                            left=left_node, right=right_node)
+
+            def predict(self, X):
+                return [self._predict_row(row) for row in X]
+
+            def _predict_row(self, row):
+                node = self.root
+                while not node.is_leaf():
+                    if row[node.feature] <= node.threshold:
+                        node = node.left
+                    else:
+                        node = node.right
+                return node.value
+      text: null
+
+  # ════════════════════════════════════════════════════════
+  # PART 4: Many Trees Are Better Than One
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 4
+    title: "Many Trees Are Better Than One"
+    intro: |
+      Your deep tree scored a *perfect* 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized.
+
+      Here's the big idea: train **many** trees and **average** their predictions. Individual mistakes point in different directions and cancel out; the shared signal survives. (The same reason a crowd's average guess of a jar's jellybean count beats almost every individual guess.)
+
+      **But wait.** If every tree sees exactly the same data, every tree is *identical*:
+
+      ```
+      tree1 predicts 50,  tree2 predicts 50,  tree3 predicts 50 ... average: 50
+      ```
+
+      Averaging identical trees gives you... one tree. To benefit from a crowd, the trees must be **different**. Random Forests inject randomness in two places.
+
+  # Exercise 4.1
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Bootstrap Sampling (randomize the *rows*)"
+    description: |
+      Give each tree its own dataset by sampling `n` rows from the original `n` rows **with replacement** --- some rows appear twice, some not at all. This is called a **bootstrap sample**.
+
+      **Write `bootstrap_sample(X, y)`** that returns a new `(X_sample, y_sample)` of the same length, where each position holds a uniformly random row of the original data --- and each `y` stays paired with its `X` row. Use `random.randint`.
+    provided_code:
+      - label: "larger dataset for testing"
+        code: |
+          X16 = [[500, 1], [550, 1], [600, 1], [650, 2], [700, 2],
+                 [800, 2], [900, 2], [1200, 3], [1300, 3], [1400, 3],
+                 [1500, 3], [1600, 3], [1700, 4], [1800, 4], [1900, 4],
+                 [2000, 4]]
+          y16 = [48, 54, 57, 64, 66, 95, 81, 120, 127, 136,
+                 149, 157, 171, 205, 189, 197]
+      - label: "test cell"
+        code: |
+          random.seed(7)
+          Xs, ys = bootstrap_sample(X16, y16)
+          assert len(Xs) == len(X16) and len(ys) == len(y16)
+          assert all(row in X16 for row in Xs)
+          assert Xs != X16  # drawing the original order is astronomically unlikely
+    hints:
+      - "\"With replacement\" means each draw is independent: pick a random index `i = random.randint(0, len(X)-1)`, take `X[i]` and `y[i]`. Repeat `n` times."
+      - "Generate a list of random indices: `indices = [random.randint(0, n-1) for _ in range(n)]`. Then `X_sample = [X[i] for i in indices]` and same for `y`."
+    solution:
+      code: |
+        import random
+
+        def bootstrap_sample(X, y):
+            n = len(X)
+            indices = [random.randint(0, n - 1) for _ in range(n)]
+            X_sample = [X[i] for i in indices]
+            y_sample = [y[i] for i in indices]
+            return X_sample, y_sample
+      text: null
+
+  # Exercise 4.2
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Feature Randomness (randomize the *questions*)"
+    description: |
+      Bootstrap samples still look similar, so most trees would still put the strongest feature (here: size) at the root --- the crowd stays too agreeable. Second injection of randomness: let each tree see only a **random subset of the features**.
+
+      **Write `choose_features(n_features, max_features)`** that returns `max_features` *distinct* feature indices chosen at random from `0 .. n_features - 1`. (`random.sample` is your friend.)
+
+      This is why `find_best_split` takes that `feature_indices` parameter.
+    provided_code:
+      - label: "test cell"
+        code: |
+          feats = choose_features(4, 2)
+          assert len(feats) == 2
+          assert len(set(feats)) == 2
+          assert set(feats) <= {0, 1, 2, 3}
+    hints:
+      - "`return random.sample(range(n_features), max_features)`"
+    solution:
+      code: |
+        def choose_features(n_features, max_features):
+            return random.sample(range(n_features), max_features)
+      text: null
+
+  # MCQ 4-1
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 3
+    title: "Why Randomness Helps"
+    question: |
+      In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?
+    options:
+      - label: A
+        text: "Random trees run faster because they see less data"
+      - label: B
+        text: "Randomness makes each tree different, so their errors are independent --- averaging independent errors cancels them out, while averaging identical errors would not"
+        correct: true
+      - label: C
+        text: "It prevents Python from running out of memory"
+      - label: D
+        text: "Random selection always finds better splits than checking all features"
+    hints:
+      - "If all trees were identical, averaging them would give you the same answer as one tree. What needs to be different for averaging to help?"
+    solution:
+      text: "If every tree makes the same mistakes (because they're trained identically), averaging doesn't help --- you just get the same wrong answer. But random bootstrap samples and random feature subsets make each tree different, so they make different mistakes. When you average, the individual errors (which point in different directions) tend to cancel out, while the correct signal (which is consistent) is preserved. This is the statistical principle behind ensembles: averaging reduces variance when errors are uncorrelated."
+
+  # ════════════════════════════════════════════════════════
+  # PART 5: The Random Forest
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 5
+    title: "The Random Forest"
+    intro: null
+
+  # Exercise 5.1
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Assemble It"
+    description: |
+      Write `RandomForestRegressor`:
+
+      ```python
+      class RandomForestRegressor:
+          def __init__(self, n_estimators=10, max_depth=3,
+                       min_samples_split=2, max_features=None):
+              ...
+          def fit(self, X, y):
+              ...
+          def predict(self, X):
+              ...
+      ```
+
+      **`fit`**: for each of `n_estimators` trees --- take a bootstrap sample, choose a random feature subset (all features if `max_features` is `None`), train a `DecisionTree` on the sample with those `feature_indices`, and store it in `self.trees`.
+
+      **`predict`**: ask every tree, and return the **average** of their answers for each row.
+    provided_code:
+      - label: "test data"
+        code: |
+          X_test = [[575, 1], [750, 2], [1350, 3], [1650, 3], [1950, 4]]
+          y_test = [55, 70, 132, 165, 192]
+      - label: "test cell"
+        code: |
+          random.seed(42)
+          rf = RandomForestRegressor(n_estimators=20, max_depth=3,
+                                     min_samples_split=2, max_features=1)
+          rf.fit(X16, y16)
+          assert len(rf.trees) == 20
+
+          rf_train = root_mean_squared_error(y16, rf.predict(X16))
+          rf_test  = root_mean_squared_error(y_test, rf.predict(X_test))
+
+          single = DecisionTree(max_depth=10, min_samples_split=2)
+          single.fit(X16, y16)
+          single_train = root_mean_squared_error(y16, single.predict(X16))
+          single_test  = root_mean_squared_error(y_test, single.predict(X_test))
+
+          print(f"single tree -- train RMSE {single_train:6.2f}   "
+                f"test RMSE {single_test:6.2f}")
+          print(f"forest (20) -- train RMSE {rf_train:6.2f}   "
+                f"test RMSE {rf_test:6.2f}")
+          assert rf_train < 30 and rf_test < 30
+    hints:
+      - "In `fit`, loop `n_estimators` times. Each iteration: call `bootstrap_sample`, then `choose_features` (use `len(X[0])` for `n_features` and `self.max_features or len(X[0])`), then create and fit a `DecisionTree` with those `feature_indices`."
+      - "In `predict`: collect predictions from every tree into a list of lists. For row `i`, the final prediction is `mean([tree_preds[i] for tree_preds in all_preds])`. Or equivalently, zip across trees: `[mean(col) for col in zip(*all_preds)]`."
+    solution:
+      code: |
+        class RandomForestRegressor:
+            def __init__(self, n_estimators=10, max_depth=3,
+                         min_samples_split=2, max_features=None):
+                self.n_estimators = n_estimators
+                self.max_depth = max_depth
+                self.min_samples_split = min_samples_split
+                self.max_features = max_features
+                self.trees = []
+
+            def fit(self, X, y):
+                self.trees = []
+                n_features = len(X[0])
+                for _ in range(self.n_estimators):
+                    X_sample, y_sample = bootstrap_sample(X, y)
+                    if self.max_features is not None:
+                        feat_indices = choose_features(n_features, self.max_features)
+                    else:
+                        feat_indices = None
+                    tree = DecisionTree(
+                        max_depth=self.max_depth,
+                        min_samples_split=self.min_samples_split,
+                        feature_indices=feat_indices,
+                    )
+                    tree.fit(X_sample, y_sample)
+                    self.trees.append(tree)
+
+            def predict(self, X):
+                all_preds = [tree.predict(X) for tree in self.trees]
+                return [mean(col) for col in zip(*all_preds)]
+      text: null
+
+  # Exercise 5.2
+  - type: exercise
+    kind: challenge
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Think: When Does the Crowd Win?"
+    description: |
+      Look at your numbers. The single deep tree hit **0.00 train RMSE** (memorization) --- yet on this tiny, perfectly clean dataset its *test* error may still beat the forest's. So was all this for nothing?
+
+      No --- but the win shows up under *real* conditions. Reason through each:
+
+      1. Add measurement noise to the prices (e.g. `y + random.gauss(0, 15)` per row). Which model's test error degrades more, and why? (Try it!)
+      2. The single tree changes drastically if you delete one training row --- the forest barely moves. Why does averaging make predictions *stable*?
+      3. Why is `max_features` more valuable when you have 50 features than when you have 2?
+    hints:
+      - "For question 1: a single deep tree memorizes the noise too --- its training RMSE stays near 0 but test RMSE explodes. The forest averages out the noise because different trees memorize *different* noise."
+      - "For question 2: bootstrap means each tree sees a different subset. Removing one row changes only the trees that happened to include it --- the other trees are unaffected, so the average barely moves."
+      - "For question 3: with 50 features and `max_features=7`, each tree explores a different corner of feature space. This decorrelates the trees far more than with only 2 features, making the ensemble much stronger."
+    solution:
+      code: null
+      text: |
+        1. **Noise:** A single deep tree memorizes the noise (train RMSE stays near 0, but test RMSE explodes). The forest averages out the noise because different trees, trained on different bootstrap samples, memorize *different* noise --- when averaged, the random errors cancel while the true signal remains.
+        2. **Stability:** Bootstrap means each tree sees a different subset of rows. Removing one training row only affects the trees that happened to include it --- the other trees are unaffected, so the average prediction barely moves. A single tree can change its entire structure from one deleted row.
+        3. **`max_features` with many features:** With 50 features and, say, `max_features=7`, each tree explores a very different corner of feature space. This decorrelates the trees far more than when you only have 2 features to choose from, making the ensemble's error-cancellation effect much stronger.
+
+  # ════════════════════════════════════════════════════════
+  # Summary
+  # ════════════════════════════════════════════════════════
+  - type: part
+    number: 6
+    title: "Summary --- What Did You Just Build?"
+    intro: null
+
+  - type: table
+    id: summary
+    headers: ["Idea", "You built", "Why it matters"]
+    rows:
+      - ["Variance as impurity", "`variance`, `total_variance`, `variance_reduction`", "extends decision trees from categories to numbers"]
+      - ["Best split", "`find_best_split`", "the greedy heart of every tree learner"]
+      - ["Regression tree", "`Node`, `DecisionTree`", "`fit`/`predict` with `max_depth`, `min_samples_split` brakes"]
+      - ["Bootstrap + feature randomness", "`bootstrap_sample`, `choose_features`", "makes trees *disagree* so averaging helps"]
+      - ["Ensemble", "`RandomForestRegressor`", "many weak models -> one strong, stable model"]
+
+  - type: reveal
+    text: |
+      You have now invented, from scratch, the algorithm behind scikit-learn's `RandomForestRegressor`. The next big idea in tree ensembles --- training each new tree on the *errors* of the previous ones --- is called **gradient boosting** (XGBoost, LightGBM). You already own every ingredient it needs.

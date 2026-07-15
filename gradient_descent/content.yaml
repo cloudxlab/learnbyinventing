@@ -1,0 +1,1903 @@
+chapter:
+  id: gradient_descent
+  title: "Learning Linear Regression by Inventing Gradient Descent"
+  intro: |
+    You won't be taught — you will *discover*. Every step builds on the last. Trust the process.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/gradient_descent/linear_regression_gradient_descent.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented gradient descent and linear regression from scratch. That's not nothing — it's the foundation of deep learning.
+
+blocks:
+  # ================================================================
+  # PART 1: Finding the Bottom of a Valley
+  # ================================================================
+  - type: part
+    number: 1
+    title: "Finding the Bottom of a Valley"
+    intro: ""
+
+  # Exercise 1.1
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Look Before You Leap"
+    description: |
+      Consider this function:
+
+      $$f(x) = x^4 - 4x + 10$$
+
+      Your first job is simply to **see** it.
+
+      Use the plotting helper below to draw the function over the range $x \in [-3, 3]$.
+
+      **Tasks:**
+
+      1. Run the plotting helper cell to define `plot_function`.
+      2. Define $f(x) = x^4 - 4x + 10$ as a Python function.
+      3. Call `plot_function(f, x_range=(-3, 3), title="x^4 - 4x + 10")`.
+      4. Visually estimate: **where does the minimum appear to be?** Write your guess as a comment.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_function(f, x_range=(-3, 3), num_points=500, title="f(x)", mark_x=None):
+              """
+              Plots a function f over x_range.
+              Optionally marks a specific x value with a red dot.
+              """
+              xs = np.linspace(x_range[0], x_range[1], num_points)
+              ys = [f(x) for x in xs]
+              plt.figure(figsize=(8, 4))
+              plt.plot(xs, ys, 'b-', linewidth=2)
+              if mark_x is not None:
+                  plt.plot(mark_x, f(mark_x), 'ro', markersize=10,
+                           label=f'x={mark_x:.4f}, f(x)={f(mark_x):.4f}')
+                  plt.legend()
+              plt.title(title)
+              plt.xlabel('x')
+              plt.ylabel('f(x)')
+              plt.grid(True)
+              plt.show()
+    hints:
+      - "The function `f(x) = x**4 - 4*x + 10` is a simple one-liner. Look at the plot for the lowest point of the curve — it should be somewhere around $x = 1$."
+      - "The true derivative is $f'(x) = 4x^3 - 4$. Setting it to zero: $4x^3 = 4 \\Rightarrow x = 1$. So the minimum is at $x = 1$, $f(1) = 7$."
+    solution:
+      code: |
+        def f(x):
+            return x**4 - 4*x + 10
+
+        plot_function(f, x_range=(-3, 3), title="x^4 - 4x + 10")
+
+        # My guess: x ≈ 1.0  (the curve has its lowest point near x = 1)
+      text: null
+
+  # Exercise 1.2
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Hit and Trial"
+    description: |
+      Now let's find the minimum by hand — no calculus, just trying values.
+
+      The plotting helper accepts a `mark_x` argument. Use it to mark your guesses on the plot.
+
+      **Tasks:**
+
+      1. Start with your visual estimate from Exercise 1.1. Call `plot_function(f, mark_x=YOUR_GUESS)`.
+      2. Look at the plot. Is the marked point at the bottom? If not, which direction should you move?
+      3. Try a new value. Re-plot.
+      4. Repeat until you are confident you have found the minimum to **2 decimal places**.
+      5. Record **every guess you made and the function value at that guess** in a table (use a Python list of tuples).
+
+      ```python
+      # Template for recording your guesses:
+      guesses = [
+          # (x_value, f(x_value))
+          # e.g. (1.0, f(1.0)),
+      ]
+      ```
+
+      **Reflection questions (answer in a markdown cell below):**
+
+      - How many guesses did it take?
+      - What strategy did you use to decide the next guess?
+      - Can you describe your strategy in plain English, like a recipe?
+    hints:
+      - "A natural strategy is binary search: pick a point, check whether the function is lower to its left or right, then narrow the range."
+      - "Another strategy: if the function value decreases when you step right, keep going right; if it increases, you overshot — go back with a smaller step. This is a manual version of gradient descent!"
+    solution:
+      code: |
+        def f(x):
+            return x**4 - 4*x + 10
+
+        guesses = []
+        for x_guess in [1.5, 1.2, 1.0, 0.9, 1.0]:
+            guesses.append((x_guess, f(x_guess)))
+            plot_function(f, mark_x=x_guess, title=f"Guess: x={x_guess}")
+
+        print(f"{'Guess #':<10} {'x':<15} {'f(x)':<15}")
+        print("-" * 40)
+        for i, (x, fx) in enumerate(guesses):
+            print(f"{i+1:<10} {x:<15.6f} {fx:<15.6f}")
+
+        # The minimum is at x = 1.0, f(1) = 7.0
+        # Strategy: start with visual estimate, move toward lower values,
+        # narrow the range by halving the step size when the function
+        # starts increasing.
+      text: null
+
+  # ================================================================
+  # PART 2: Making the Machine Do the Searching
+  # ================================================================
+  - type: part
+    number: 2
+    title: "Making the Machine Do the Searching"
+    intro: ""
+
+  # Exercise 2.1
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "The Slope Tells You Which Way to Walk"
+    description: |
+      You had a strategy when doing hit-and-trial. Let's make it precise.
+
+      Think about this: when you are standing on the curve at some point $x$, the **slope** of the curve tells you:
+
+      - If slope is **positive** → the function is going *up* to the right → you should move *left* (decrease $x$)
+      - If slope is **negative** → the function is going *up* to the left → you should move *right* (increase $x$)
+      - If slope is **zero** → you are at the bottom!
+
+      You know how to compute the slope of a line through two points $(a, f(a))$ and $(b, f(b))$: it's $\frac{f(b) - f(a)}{b - a}$. To approximate the slope of the *curve* at point $x$, use two points very close to $x$: one just to the left at $(x - h)$ and one just to the right at $(x + h)$, for a very small $h$.
+
+      **Write the formula** for the slope using these two points, then implement it as `numerical_derivative(f, x, h=1e-5)`.
+
+      **Tasks:**
+
+      1. Write a function `numerical_derivative(f, x, h=1e-5)` that computes the slope at point `x`.
+      2. Test it on $f(x) = x^4 - 4x + 10$ at a few points: $x = 0, 1, 1.5, 2$.
+      3. Print both the slope value and whether it's positive, negative, or near-zero.
+      4. Manually verify one of your answers: the true derivative is $f'(x) = 4x^3 - 4$. Does your numerical result match?
+    hints:
+      - "The centered-difference formula: $$\\text{slope at } x \\approx \\frac{f(x + h) - f(x - h)}{2h}$$ This is called the **numerical derivative**."
+      - "The function is a direct translation of the formula: `return (f(x + h) - f(x - h)) / (2 * h)`."
+      - "At $x = 0$: true derivative is $4(0)^3 - 4 = -4$. At $x = 1$: $4(1)^3 - 4 = 0$ (the minimum!). Your numerical values should be very close to these."
+    solution:
+      code: |
+        def numerical_derivative(f, x, h=1e-5):
+            """Returns the approximate derivative of f at point x."""
+            return (f(x + h) - f(x - h)) / (2 * h)
+
+        def f(x):
+            return x**4 - 4*x + 10
+
+        test_points = [0, 1, 1.5, 2]
+        for x in test_points:
+            slope = numerical_derivative(f, x)
+            direction = "positive" if slope > 1e-6 else ("negative" if slope < -1e-6 else "~zero")
+            true_deriv = 4*x**3 - 4
+            print(f"x={x:5.1f}  slope={slope:10.4f}  ({direction})  true={true_deriv:10.4f}")
+      text: null
+
+  # Exercise 2.2
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "One Step at a Time"
+    description: |
+      Now let's build the update rule. You're at position $x$ and the slope is $s$.
+
+      - If the slope is **positive** (uphill to the right), you should move *left* (decrease $x$).
+      - If the slope is **negative** (uphill to the left), you should move *right* (increase $x$).
+      - A steeper slope means you should take a bigger step.
+
+      **Write a formula** for your new position $x_{\text{new}}$ using $x$, $s$, and a step-size parameter $\alpha$ (the **learning rate**).
+
+      **Tasks:**
+
+      1. Start at $x_0 = 2.0$.
+      2. Compute the slope at $x_0$.
+      3. Compute $x_1 = x_0 - \alpha \cdot \text{slope}$ with $\alpha = 0.01$.
+      4. Print $x_0$, slope, and $x_1$.
+      5. Is $f(x_1) < f(x_0)$? It should be! Why?
+      6. Now do this **manually** for 5 steps. Print each step. Is $x$ getting closer to the minimum you found in Exercise 1.2?
+    hints:
+      - "The update rule: $$x_{\\text{new}} = x - \\alpha \\cdot s$$ Subtracting $\\alpha \\cdot s$ moves you opposite to the slope direction. At $x = 2$, slope is about 28 (positive), so $x_{\\text{new}} = 2 - 0.01 \\times 28 = 1.72$ — moving left, downhill."
+      - "Use a loop to repeat the update five times. Each iteration: compute slope, print current state, update `x = x - alpha * slope`."
+    solution:
+      code: |
+        alpha = 0.01
+        x = 2.0
+
+        print(f"{'Step':<8} {'x':<15} {'f(x)':<15} {'slope':<15}")
+        print("-" * 55)
+
+        for step in range(5):
+            slope = numerical_derivative(f, x)
+            print(f"{step:<8} {x:<15.6f} {f(x):<15.6f} {slope:<15.6f}")
+            x = x - alpha * slope
+
+        # Yes, f(x) decreases each step, and x moves toward 1.0 (the minimum).
+        # The update rule x_new = x - alpha * slope moves us downhill because
+        # subtracting a positive slope decreases x (moving left, toward the minimum),
+        # and subtracting a negative slope increases x (moving right, toward the minimum).
+      text: null
+
+  # Exercise 2.3
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Build `find_minima_1d`"
+    description: |
+      Now automate the process. Write a function that keeps taking steps until the slope is close enough to zero.
+
+      **Stopping condition:** Stop when $|\text{slope}| < \epsilon$ (a small tolerance, e.g. $10^{-6}$), or when you've taken `max_steps` steps.
+
+      ```python
+      def find_minima_1d(f, x_start, alpha=0.01, epsilon=1e-6, max_steps=10000):
+          """
+          Finds the x that minimizes f by repeatedly stepping against the slope.
+
+          Parameters:
+              f         : function to minimize
+              x_start   : starting point
+              alpha     : learning rate
+              epsilon   : stop when |slope| < epsilon
+              max_steps : maximum number of steps
+
+          Returns:
+              x_min     : the x value at the minimum
+              f_min     : the function value at the minimum
+              history   : list of (step, x, f(x)) tuples
+          """
+          pass  # YOUR IMPLEMENTATION
+      ```
+
+      **Tasks:**
+
+      1. Implement `find_minima_1d`.
+      2. Test it on $f(x) = x^4 - 4x + 10$ starting from $x = 2.0$.
+      3. Print the final answer and how many steps it took.
+      4. Does it match your manual answer from Exercise 1.2?
+    hints:
+      - "The loop body is the same as Exercise 2.2: compute slope, update `x`, append to history. Just wrap it in a `while` or `for` loop with the stopping condition."
+      - "Use `abs(slope) < epsilon` to check convergence. Don't forget to return `history` as a list of `(step, x, f(x))` tuples — you'll need it for plotting."
+    solution:
+      code: |
+        def find_minima_1d(f, x_start, alpha=0.01, epsilon=1e-6, max_steps=10000):
+            x = x_start
+            history = []
+            for step in range(max_steps):
+                fx = f(x)
+                history.append((step, x, fx))
+                slope = numerical_derivative(f, x)
+                if abs(slope) < epsilon:
+                    break
+                x = x - alpha * slope
+            return x, f(x), history
+
+        # Test
+        x_min, f_min, history = find_minima_1d(f, x_start=2.0)
+        print(f"Minimum found at x = {x_min:.6f}")
+        print(f"f(x_min) = {f_min:.6f}")
+        print(f"Steps taken: {len(history)}")
+        # Result: x ≈ 1.0, f(x) ≈ 7.0 — matches Exercise 1.2.
+      text: null
+
+  # Exercise 2.4
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "Watch It Learn"
+    description: |
+      Use the plotting helper below to visualize the descent path. Run it after you have `history` from Exercise 2.3.
+
+      **Tasks:**
+
+      1. Define and run `plot_descent` with your history.
+      2. What do you observe in the right plot? Is it always decreasing?
+      3. Try starting from $x = -2.0$ instead. Does it converge to the same minimum? Why or why not?
+      4. Try `alpha = 0.1`. What happens? Try `alpha = 1.0`. What happens? **Record your observations.**
+    provided_code:
+      - label: "descent path plotter"
+        code: |
+          def plot_descent(f, history, x_range=(-3, 3), title="Gradient Descent"):
+              """
+              Plots the function and shows how x evolved during descent.
+              history: list of (step, x, f(x)) tuples
+              """
+              xs = np.linspace(x_range[0], x_range[1], 500)
+              ys = [f(x) for x in xs]
+              steps, xvals, fvals = zip(*history)
+
+              plt.figure(figsize=(12, 4))
+
+              # Left: function with descent path
+              plt.subplot(1, 2, 1)
+              plt.plot(xs, ys, 'b-', linewidth=2, label='f(x)')
+              plt.plot(xvals, fvals, 'ro-', markersize=3, alpha=0.5, label='descent path')
+              plt.plot(xvals[-1], fvals[-1], 'g*', markersize=15,
+                       label=f'minimum: x={xvals[-1]:.4f}')
+              plt.title(title)
+              plt.xlabel('x'); plt.ylabel('f(x)'); plt.legend(); plt.grid(True)
+
+              # Right: f(x) over steps
+              plt.subplot(1, 2, 2)
+              plt.plot(steps, fvals, 'b-')
+              plt.title('f(x) value over steps')
+              plt.xlabel('step'); plt.ylabel('f(x)'); plt.grid(True)
+
+              plt.tight_layout()
+              plt.show()
+    hints:
+      - "For this particular function, starting from $x = -2.0$ should still converge to the same minimum since there is only one. But with `alpha = 1.0`, the steps may be so large that the algorithm overshoots and diverges."
+      - "A too-large learning rate causes the algorithm to \"bounce\" back and forth over the minimum, possibly with increasing amplitude (divergence). This is one of the most important practical considerations in gradient descent."
+    solution:
+      code: |
+        # Experiment 1: Default settings
+        x_min, f_min, history = find_minima_1d(f, x_start=2.0)
+        plot_descent(f, history, title="Start x=2.0, alpha=0.01")
+
+        # Experiment 2: Different starting point
+        x_min2, f_min2, history2 = find_minima_1d(f, x_start=-2.0)
+        plot_descent(f, history2, title="Start x=-2.0, alpha=0.01")
+
+        # Experiment 3: Large learning rate
+        x_min3, f_min3, history3 = find_minima_1d(f, x_start=2.0, alpha=0.1)
+        plot_descent(f, history3, title="Start x=2.0, alpha=0.1")
+
+        # Experiment 4: Very large learning rate
+        # x_min4, f_min4, history4 = find_minima_1d(f, x_start=2.0, alpha=1.0)
+        # WARNING: alpha=1.0 causes divergence — f(x) explodes!
+      text: |
+        **Observations:**
+
+        - Starting from x = -2.0: converges to the same minimum (x = 1). This function has only one minimum, so the starting point doesn't matter.
+        - With alpha = 0.1: converges faster (fewer steps) since steps are larger, but may overshoot slightly near the minimum.
+        - With alpha = 1.0: the algorithm diverges — each step overshoots so far that f(x) increases, and the values spiral out of control.
+
+  # ================================================================
+  # PART 3: Stress-Testing Your Algorithm
+  # ================================================================
+  - type: part
+    number: 3
+    title: "Stress-Testing Your Algorithm"
+    intro: ""
+
+  # Exercise 3.1
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "New Functions, Same Algorithm"
+    description: |
+      Your `find_minima_1d` is general — it should work on any function. Let's test it.
+
+      **For each function below:**
+
+      1. Define it in Python.
+      2. Plot it to visually estimate the minimum.
+      3. Run `find_minima_1d` and record the result.
+      4. Plot the descent path.
+      5. Note any problems or surprises.
+
+      **Functions to test:**
+
+      | # | Function | x_range to plot | Suggested x_start |
+      |---|----------|-----------------|-------------------|
+      | A | $f(x) = x^6 - 4x^2 + 10$ | $(-2, 2)$ | $1.5$ |
+      | B | $f(x) = (x - 3)^2 + 5$ | $(0, 6)$ | $0.0$ |
+      | C | $f(x) = x^2 + 3|x|$ | $(-4, 4)$ | $2.0$ |
+      | D | $f(x) = e^x - 5x$ | $(0, 4)$ | $3.0$ |
+      | E | $f(x) = x^4 - 3x^3 + 2$ | $(-1, 3)$ | $2.5$ |
+
+      > **Caution on Function A:** Plot it first. Does it have one minimum or more? What does that mean for your algorithm?
+    hints:
+      - "For Function C, the absolute value $|x|$ creates a sharp corner at $x = 0$. The numerical derivative may still work, but the function isn't differentiable at zero. For Function D, use `import math; math.exp(x)` or `np.exp(x)`."
+      - "Function A has two local minima (symmetric about the origin) and a local maximum at $x = 0$. Your algorithm will find whichever local minimum is closest to your starting point."
+    solution:
+      code: |
+        import math
+
+        # Function A: x^6 - 4x^2 + 10
+        def fA(x):
+            return x**6 - 4*x**2 + 10
+
+        plot_function(fA, x_range=(-2, 2), title="fA: x^6 - 4x^2 + 10")
+        x_min, f_min, hist = find_minima_1d(fA, x_start=1.5, alpha=0.01)
+        print(f"fA: min at x={x_min:.6f}, f={f_min:.6f}")
+        plot_descent(fA, hist, x_range=(-2, 2), title="fA descent")
+
+        # Function B: (x - 3)^2 + 5
+        def fB(x):
+            return (x - 3)**2 + 5
+
+        plot_function(fB, x_range=(0, 6), title="fB: (x-3)^2 + 5")
+        x_min, f_min, hist = find_minima_1d(fB, x_start=0.0, alpha=0.01)
+        print(f"fB: min at x={x_min:.6f}, f={f_min:.6f}")
+
+        # Function C: x^2 + 3|x|
+        def fC(x):
+            return x**2 + 3*abs(x)
+
+        plot_function(fC, x_range=(-4, 4), title="fC: x^2 + 3|x|")
+        x_min, f_min, hist = find_minima_1d(fC, x_start=2.0, alpha=0.01)
+        print(f"fC: min at x={x_min:.6f}, f={f_min:.6f}")
+
+        # Function D: e^x - 5x
+        def fD(x):
+            return math.exp(x) - 5*x
+
+        plot_function(fD, x_range=(0, 4), title="fD: e^x - 5x")
+        x_min, f_min, hist = find_minima_1d(fD, x_start=3.0, alpha=0.01)
+        print(f"fD: min at x={x_min:.6f}, f={f_min:.6f}")  # x ≈ ln(5) ≈ 1.6094
+
+        # Function E: x^4 - 3x^3 + 2
+        def fE(x):
+            return x**4 - 3*x**3 + 2
+
+        plot_function(fE, x_range=(-1, 3), title="fE: x^4 - 3x^3 + 2")
+        x_min, f_min, hist = find_minima_1d(fE, x_start=2.5, alpha=0.01)
+        print(f"fE: min at x={x_min:.6f}, f={f_min:.6f}")  # x ≈ 2.25
+      text: null
+
+  # Exercise 3.2
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Function A Is Sneaky"
+    description: |
+      Plot Function A carefully. You should notice it has **two local minima** — one on the left and one on the right.
+
+      **Tasks:**
+
+      1. Run `find_minima_1d` on Function A starting from $x = 1.5$. Where does it end up?
+      2. Run it starting from $x = -1.5$. Where does it end up?
+      3. Run it starting from $x = 0.0$. Where does it end up?
+      4. Which of the two minima is the **global** minimum (lowest overall)? Which is just a **local** minimum?
+      5. Can your algorithm always find the global minimum? What would you need to do to be more confident?
+    hints:
+      - "Starting from $x = 0$, the slope is zero (by symmetry), so the algorithm may not move at all — or may move very slowly due to numerical noise. This is a **saddle point** (or local maximum)."
+      - "Both minima are symmetric and equal (same function value), so both are global minima. To be confident about finding the global minimum in general, you could run the algorithm from many different random starting points and keep the best result."
+    solution:
+      code: |
+        def fA(x):
+            return x**6 - 4*x**2 + 10
+
+        for x_start in [1.5, -1.5, 0.0]:
+            x_min, f_min, history = find_minima_1d(fA, x_start=x_start, alpha=0.01)
+            print(f"Start: x={x_start:5.1f}  →  Minimum at x={x_min:.6f}, f(x)={f_min:.6f}")
+      text: |
+        **Analysis:**
+
+        - Starting from x = 1.5: converges to the right local minimum at x ≈ 1.122, f ≈ 8.419.
+        - Starting from x = -1.5: converges to the left local minimum at x ≈ -1.122, f ≈ 8.419.
+        - Starting from x = 0.0: the slope is zero (by symmetry), so the algorithm stays at x = 0 (a local maximum).
+        - Both minima are **global** minima (equal function values by symmetry).
+        - The algorithm cannot always find the global minimum — it finds whichever local minimum is nearest the starting point. To be more confident, run from many random starting points and keep the best result.
+
+  # MCQ 3.1
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 3
+    title: "Learning Rate Tradeoff"
+    question: |
+      You're running gradient descent and the loss keeps oscillating wildly instead of decreasing. What is the most likely cause?
+    options:
+      - label: A
+        text: "The function has no minimum"
+      - label: B
+        text: "The learning rate is too large — each step overshoots the minimum and lands on the other side"
+        correct: true
+      - label: C
+        text: "The learning rate is too small"
+      - label: D
+        text: "You need more training data"
+    hints:
+      - "What happens when you take a very large step on a steep slope? Do you land near the bottom, or do you fly past it?"
+    solution:
+      text: |
+        A learning rate that's too large causes the algorithm to overshoot the minimum on each step, landing on the opposite slope, then overshooting again — producing wild oscillations. Too-small learning rate would cause very slow but steady convergence, not oscillation. The fix is to reduce the learning rate so each step is conservative enough to approach the minimum without overshooting.
+
+  # ================================================================
+  # PART 4: Two Variables — A Landscape Instead of a Curve
+  # ================================================================
+  - type: part
+    number: 4
+    title: "Two Variables — A Landscape Instead of a Curve"
+    intro: ""
+
+  # Exercise 4.1
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "See the Landscape"
+    description: |
+      Now consider a function of **two variables**:
+
+      $$g(x, y) = x^2 + y^2$$
+
+      This is a bowl shape in 3D. The minimum is clearly at $(x, y) = (0, 0)$.
+
+      Use the 2D plotting helper below to visualize it.
+
+      **Tasks:**
+
+      1. Define and run the `plot_function_2d` helper.
+      2. Define $g(x, y) = x^2 + y^2$ and plot it.
+      3. What color represents the minimum? What color represents high values?
+      4. Now plot these functions and describe the shape of each landscape:
+         - $h_1(x, y) = (x - 1)^2 + (y + 2)^2$
+         - $h_2(x, y) = x^2 + 4y^2$
+         - $h_3(x, y) = x^2 + y^2 + xy$
+      5. Visually identify the minimum of each.
+    provided_code:
+      - label: "2D contour plot"
+        code: |
+          def plot_function_2d(f2, x_range=(-3, 3), y_range=(-3, 3),
+                               num_points=100, title="f(x,y)", mark_xy=None):
+              xs = np.linspace(x_range[0], x_range[1], num_points)
+              ys = np.linspace(y_range[0], y_range[1], num_points)
+              X, Y = np.meshgrid(xs, ys)
+              Z = np.array([[f2(x, y) for x in xs] for y in ys])
+
+              plt.figure(figsize=(6, 5))
+              contour = plt.contourf(X, Y, Z, levels=30, cmap='viridis')
+              plt.colorbar(contour)
+              if mark_xy is not None:
+                  plt.plot(mark_xy[0], mark_xy[1], 'r*', markersize=15,
+                           label=f'({mark_xy[0]:.3f}, {mark_xy[1]:.3f})')
+                  plt.legend()
+              plt.title(title)
+              plt.xlabel('x'); plt.ylabel('y')
+              plt.show()
+    hints:
+      - "In a `viridis` colormap, dark purple/blue represents low values and bright yellow represents high values. The minimum is at the darkest spot."
+      - "$h_1$ is a bowl centered at $(1, -2)$. $h_2$ is an elongated bowl (elliptical contours) centered at $(0, 0)$ — it's steeper in the $y$ direction. $h_3$ has tilted elliptical contours but still a minimum at $(0, 0)$."
+    solution:
+      code: |
+        def g(x, y):
+            return x**2 + y**2
+
+        plot_function_2d(g, title="g(x,y) = x^2 + y^2")
+
+        def h1(x, y):
+            return (x - 1)**2 + (y + 2)**2
+
+        plot_function_2d(h1, title="h1(x,y) = (x-1)^2 + (y+2)^2")
+
+        def h2(x, y):
+            return x**2 + 4*y**2
+
+        plot_function_2d(h2, title="h2(x,y) = x^2 + 4y^2")
+
+        def h3(x, y):
+            return x**2 + y**2 + x*y
+
+        plot_function_2d(h3, title="h3(x,y) = x^2 + y^2 + xy")
+      text: |
+        Dark purple/blue = low values (minimum). Bright yellow = high values.
+
+        - **g**: circular bowl centered at (0, 0).
+        - **h1**: circular bowl shifted to center (1, -2).
+        - **h2**: elongated (elliptical) bowl at (0, 0) — steeper in y.
+        - **h3**: tilted elliptical bowl at (0, 0).
+
+  # Exercise 4.2
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Partial Derivatives"
+    description: |
+      With two variables, the slope has **two components** — one for each variable.
+
+      The **partial derivative** with respect to $x$ tells you the slope if you move only in the $x$ direction (holding $y$ fixed).
+
+      You can compute them numerically, just like in 1D. For the $x$-direction: hold $y$ fixed, and use your centered-difference formula from Exercise 2.1, but applied only to the $x$ argument. Similarly for $y$.
+
+      **Adapt your 1D formula** to write `partial_x` and `partial_y`.
+
+      Together, $\left(\frac{\partial f}{\partial x}, \frac{\partial f}{\partial y}\right)$ is called the **gradient** — it points in the direction of steepest *increase*.
+
+      **Tasks:**
+
+      1. Write a function `partial_x(f2, x, y, h=1e-5)` that returns $\partial f / \partial x$.
+      2. Write a function `partial_y(f2, x, y, h=1e-5)` that returns $\partial f / \partial y$.
+      3. Write a function `gradient_2d(f2, x, y, h=1e-5)` that returns the tuple `(df_dx, df_dy)`.
+      4. Test on $g(x, y) = x^2 + y^2$ at several points:
+         - $(1, 1)$ → expected gradient: $(2, 2)$
+         - $(3, 0)$ → expected gradient: $(6, 0)$
+         - $(0, 0)$ → expected gradient: $(0, 0)$
+      5. For $h_2(x, y) = x^2 + 4y^2$, compute the gradient at $(1, 1)$ and $(0, 2)$. Do the answers make intuitive sense? (Which direction does the gradient point — toward or away from the minimum?)
+    hints:
+      - "The partial derivative formulas are: $$\\frac{\\partial f}{\\partial x} \\approx \\frac{f(x+h, y) - f(x-h, y)}{2h}$$ $$\\frac{\\partial f}{\\partial y} \\approx \\frac{f(x, y+h) - f(x, y-h)}{2h}$$ Same centered-difference idea, just holding one variable constant."
+      - "The gradient always points *away* from the minimum (uphill). That's why gradient descent subtracts it: moving *opposite* the gradient takes you downhill."
+    solution:
+      code: |
+        def partial_x(f2, x, y, h=1e-5):
+            return (f2(x + h, y) - f2(x - h, y)) / (2 * h)
+
+        def partial_y(f2, x, y, h=1e-5):
+            return (f2(x, y + h) - f2(x, y - h)) / (2 * h)
+
+        def gradient_2d(f2, x, y, h=1e-5):
+            return (partial_x(f2, x, y, h), partial_y(f2, x, y, h))
+
+        # Test on g(x,y) = x^2 + y^2
+        def g(x, y):
+            return x**2 + y**2
+
+        test_points = [(1, 1), (3, 0), (0, 0)]
+        for (x, y) in test_points:
+            grad = gradient_2d(g, x, y)
+            print(f"Gradient at ({x}, {y}) = ({grad[0]:.4f}, {grad[1]:.4f})")
+
+        # Test on h2(x,y) = x^2 + 4y^2
+        def h2(x, y):
+            return x**2 + 4*y**2
+
+        print(f"h2 gradient at (1,1) = {gradient_2d(h2, 1, 1)}")   # (2, 8)
+        print(f"h2 gradient at (0,2) = {gradient_2d(h2, 0, 2)}")   # (0, 16)
+        # The gradient points AWAY from the minimum (uphill).
+      text: null
+
+  # Exercise 4.3
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Build `find_minima_2d`"
+    description: |
+      Now extend the 1D algorithm to 2D. In 1D, you updated $x$ using the slope. Now you have **two** slopes (one per variable). Update each variable independently, using its own partial derivative, the same way you updated $x$ in 1D.
+
+      **Stopping condition:** Stop when $\sqrt{(\partial f/\partial x)^2 + (\partial f/\partial y)^2} < \epsilon$. This is the **magnitude** of the gradient (how steep the hill is overall).
+
+      **Tasks:**
+
+      1. Implement `find_minima_2d(f2, x_start, y_start, alpha=0.1, epsilon=1e-6, max_steps=10000)`.
+         - It should return `(x_min, y_min, f_min, history)` where `history` is a list of `(step, x, y, f(x,y))` tuples.
+      2. Test it on $g(x, y) = x^2 + y^2$ starting from $(2, 3)$. It should find $(0, 0)$.
+      3. Test it on $h_1(x, y) = (x-1)^2 + (y+2)^2$ starting from $(3, 3)$. Expected minimum: $(1, -2)$.
+      4. Test it on $h_2(x, y) = x^2 + 4y^2$ starting from $(2, 2)$. Expected minimum: $(0, 0)$.
+
+      Use `plot_function_2d` with `mark_xy=(x_min, y_min)` to verify your answers visually.
+    hints:
+      - "The 2D update rule: $$x_{\\text{new}} = x - \\alpha \\cdot \\frac{\\partial f}{\\partial x}$$ $$y_{\\text{new}} = y - \\alpha \\cdot \\frac{\\partial f}{\\partial y}$$ Same as 1D, applied to each variable independently."
+      - "For the stopping condition, compute the gradient magnitude: `mag = (dx**2 + dy**2)**0.5`. Stop when `mag < epsilon`."
+    solution:
+      code: |
+        def find_minima_2d(f2, x_start, y_start, alpha=0.1, epsilon=1e-6, max_steps=10000):
+            x, y = x_start, y_start
+            history = []
+            for step in range(max_steps):
+                fval = f2(x, y)
+                history.append((step, x, y, fval))
+                dx, dy = gradient_2d(f2, x, y)
+                mag = (dx**2 + dy**2) ** 0.5
+                if mag < epsilon:
+                    break
+                x = x - alpha * dx
+                y = y - alpha * dy
+            return x, y, f2(x, y), history
+
+        # Test on g(x,y) = x^2 + y^2
+        x_min, y_min, f_min, hist = find_minima_2d(g, 2.0, 3.0)
+        print(f"g: min at ({x_min:.4f}, {y_min:.4f}), f={f_min:.6f}")
+
+        # Test on h1(x,y) = (x-1)^2 + (y+2)^2
+        def h1(x, y):
+            return (x - 1)**2 + (y + 2)**2
+
+        x_min, y_min, f_min, hist = find_minima_2d(h1, 3.0, 3.0)
+        print(f"h1: min at ({x_min:.4f}, {y_min:.4f}), f={f_min:.6f}")
+
+        # Test on h2(x,y) = x^2 + 4y^2
+        x_min, y_min, f_min, hist = find_minima_2d(h2, 2.0, 2.0)
+        print(f"h2: min at ({x_min:.4f}, {y_min:.4f}), f={f_min:.6f}")
+      text: null
+
+  # Exercise 4.4
+  - type: exercise
+    kind: coding
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Visualize the Path (2D)"
+    description: |
+      Use the helper below to draw the descent path on the contour map.
+
+      **Tasks:**
+
+      1. Define and run `plot_descent_2d` for at least two of your test functions.
+      2. Does the path head straight to the minimum, or does it zigzag? Why?
+      3. For $h_2(x, y) = x^2 + 4y^2$: try `alpha=0.3` and `alpha=0.5`. Describe what you see. **This is a famous problem in gradient descent called oscillation.**
+    provided_code:
+      - label: "2D descent path"
+        code: |
+          def plot_descent_2d(f2, history, x_range=(-4, 4), y_range=(-4, 4),
+                              title="2D Gradient Descent"):
+              """
+              history: list of (step, x, y, f(x,y)) tuples
+              """
+              xs = np.linspace(x_range[0], x_range[1], 100)
+              ys = np.linspace(y_range[0], y_range[1], 100)
+              X, Y = np.meshgrid(xs, ys)
+              Z = np.array([[f2(x, y) for x in xs] for y in ys])
+              steps, xvals, yvals, fvals = zip(*history)
+
+              plt.figure(figsize=(12, 5))
+
+              plt.subplot(1, 2, 1)
+              plt.contourf(X, Y, Z, levels=30, cmap='viridis')
+              plt.colorbar()
+              plt.plot(xvals, yvals, 'w-o', markersize=3, alpha=0.6, label='path')
+              plt.plot(xvals[0], yvals[0], 'rs', markersize=10, label='start')
+              plt.plot(xvals[-1], yvals[-1], 'g*', markersize=15, label='end')
+              plt.legend(); plt.title(title); plt.xlabel('x'); plt.ylabel('y')
+
+              plt.subplot(1, 2, 2)
+              plt.plot(steps, fvals, 'b-')
+              plt.title('f(x,y) over steps')
+              plt.xlabel('step'); plt.ylabel('f(x,y)'); plt.grid(True)
+
+              plt.tight_layout()
+              plt.show()
+    hints:
+      - "For $h_2$, the contour lines are ellipses (steeper in $y$). The gradient doesn't point toward the minimum — it points perpendicular to the contour lines. This causes a zigzag path, especially with a large learning rate."
+      - "With `alpha=0.5` on $h_2$, the $y$ update overshoots because the gradient in $y$ is $8y$ (large). Each step bounces $y$ to the other side, and the path oscillates. This is why choosing the learning rate is critical."
+    solution:
+      code: |
+        # Visualize descent on g
+        x_min, y_min, f_min, hist = find_minima_2d(g, 2.0, 3.0, alpha=0.1)
+        plot_descent_2d(g, hist, title="g: descent from (2,3)")
+
+        # Visualize descent on h2 with different learning rates
+        for alpha in [0.1, 0.3]:
+            x_min, y_min, f_min, hist = find_minima_2d(h2, 2.0, 2.0, alpha=alpha)
+            plot_descent_2d(h2, hist, title=f"h2: alpha={alpha}")
+            print(f"alpha={alpha}: min at ({x_min:.4f}, {y_min:.4f}), steps={len(hist)}")
+
+        # alpha=0.5 on h2 causes oscillation/divergence in y direction
+        # because the y-gradient (8y) is steep — a large step overshoots.
+      text: |
+        **Observations:**
+
+        - For g (circular contours), the path heads straight toward (0,0).
+        - For h2 (elliptical contours), the path zigzags — the gradient doesn't point toward the minimum, it points perpendicular to the contour lines.
+        - With alpha=0.3 on h2, the y-component oscillates because the gradient in y is 8y (steep). With alpha=0.5, it diverges entirely. This is the **oscillation problem**.
+
+  # ================================================================
+  # PART 5: Going Generic
+  # ================================================================
+  - type: part
+    number: 5
+    title: "Going Generic"
+    intro: ""
+
+  # Exercise 5.1
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "N Variables"
+    description: |
+      Your 1D and 2D algorithms are very similar. Can you unify them?
+
+      Think about it this way:
+
+      - In 1D, your position is a single number $x$. The gradient is a single number.
+      - In 2D, your position is a pair $(x, y)$. The gradient is a pair $(\partial f/\partial x, \partial f/\partial y)$.
+      - In N dimensions, your position is a **list** of N numbers. The gradient is also a **list** of N numbers.
+
+      The update rule is always the same pattern you used in 1D and 2D — now applied element-wise to a list.
+
+      **The signature you are building:**
+
+      ```python
+      def find_minima(f, variables, alpha=0.01, epsilon=1e-6, max_steps=100000):
+          """
+          Finds the values of 'variables' that minimize f.
+
+          Parameters:
+              f         : a function that takes a LIST of values and returns a scalar
+                          e.g., if variables = [x, y], then f([x, y]) should work
+              variables : initial guess, a list of numbers [v1, v2, ..., vN]
+              alpha     : learning rate
+              epsilon   : stop when gradient magnitude < epsilon
+              max_steps : maximum number of steps
+
+          Returns:
+              min_vars  : list of variable values at the minimum
+              f_min     : function value at the minimum
+              history   : list of (step, variables_copy, f_value) tuples
+          """
+          pass
+      ```
+
+      **Key challenge:** Computing the gradient for a list of N variables.
+
+      For variable $i$, compute the partial derivative the same way as before: perturb just that one variable by $\pm h$ and compute the centered difference.
+
+      **Tasks:**
+
+      1. First, write a helper `compute_gradient(f, variables, h=1e-5)` that returns the gradient as a list.
+      2. Then write `find_minima(f, variables, ...)`.
+      3. Test by re-running your earlier examples, but now with the new interface:
+         - 1D: `find_minima(lambda v: v[0]**4 - 4*v[0] + 10, [2.0])`
+         - 2D: `find_minima(lambda v: v[0]**2 + v[1]**2, [2.0, 3.0])`
+    hints:
+      - "The N-dimensional generalization: $$\\text{variables}_{\\text{new}} = \\text{variables} - \\alpha \\cdot \\text{gradient}$$ where each gradient component is: $$\\frac{\\partial f}{\\partial v_i} \\approx \\frac{f(v_1, \\ldots, v_i + h, \\ldots) - f(v_1, \\ldots, v_i - h, \\ldots)}{2h}$$ Loop over index `i`, make a copy, bump `variables[i]` by `h`, evaluate, bump by `-h`, evaluate, compute the difference."
+      - "Be careful to make a *copy* of the list before perturbing: `v_plus = variables.copy(); v_plus[i] += h`. Otherwise you'll modify the original. For the stopping condition, compute `sum(g**2 for g in grad)**0.5 < epsilon`."
+    solution:
+      code: |
+        def compute_gradient(f, variables, h=1e-5):
+            """Computes numerical gradient of f at 'variables'."""
+            grad = []
+            for i in range(len(variables)):
+                v_plus = variables.copy()
+                v_minus = variables.copy()
+                v_plus[i] += h
+                v_minus[i] -= h
+                grad.append((f(v_plus) - f(v_minus)) / (2 * h))
+            return grad
+
+        def find_minima(f, variables, alpha=0.01, epsilon=1e-6, max_steps=100000):
+            variables = list(variables)  # make a mutable copy
+            history = []
+            for step in range(max_steps):
+                fval = f(variables)
+                history.append((step, variables.copy(), fval))
+                grad = compute_gradient(f, variables)
+                mag = sum(g**2 for g in grad) ** 0.5
+                if mag < epsilon:
+                    break
+                for i in range(len(variables)):
+                    variables[i] -= alpha * grad[i]
+            return variables, f(variables), history
+
+        # Test 1D
+        min_vars, f_min, history = find_minima(lambda v: v[0]**4 - 4*v[0] + 10, [2.0])
+        print(f"1D minimum: x = {min_vars[0]:.6f}, f = {f_min:.6f}")
+
+        # Test 2D
+        min_vars, f_min, history = find_minima(lambda v: v[0]**2 + v[1]**2, [2.0, 3.0])
+        print(f"2D minimum: x = {min_vars[0]:.6f}, y = {min_vars[1]:.6f}, f = {f_min:.6f}")
+      text: null
+
+  # Exercise 5.2
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Three Variables"
+    description: |
+      Test your generic `find_minima` on 3D functions:
+
+      $$p(x, y, z) = (x - 1)^2 + (y - 2)^2 + (z + 3)^2$$
+
+      The minimum is obviously at $(1, 2, -3)$.
+
+      $$q(x, y, z) = x^2 + 2y^2 + 3z^2 - 4x + 6z$$
+
+      For $q$: what is the minimum analytically? (Hint: complete the square for each variable.)
+
+      **Tasks:**
+
+      1. Define $p$ and $q$ as functions that take a list `[x, y, z]`.
+      2. Run `find_minima` on both, starting from `[0, 0, 0]`.
+      3. Verify your answer for $p$ is $(1, 2, -3)$.
+      4. For $q$: first compute the answer analytically, then verify your algorithm found it.
+    hints:
+      - "For $q$: complete the square. $x^2 - 4x = (x - 2)^2 - 4$. $3z^2 + 6z = 3(z + 1)^2 - 3$. The $y$ term is already $2y^2$ with minimum at $y = 0$. So the minimum is at $(2, 0, -1)$."
+    solution:
+      code: |
+        def p(v):
+            x, y, z = v
+            return (x - 1)**2 + (y - 2)**2 + (z + 3)**2
+
+        def q(v):
+            x, y, z = v
+            return x**2 + 2*y**2 + 3*z**2 - 4*x + 6*z
+
+        # Test p — expected minimum at (1, 2, -3)
+        min_vars, f_min, history = find_minima(p, [0.0, 0.0, 0.0])
+        print(f"p minimum: ({min_vars[0]:.4f}, {min_vars[1]:.4f}, {min_vars[2]:.4f}), f = {f_min:.6f}")
+
+        # Test q — analytical minimum:
+        # x^2 - 4x = (x-2)^2 - 4       → min at x = 2
+        # 2y^2                          → min at y = 0
+        # 3z^2 + 6z = 3(z+1)^2 - 3     → min at z = -1
+        # Expected: (2, 0, -1), f = -4 - 3 = -7
+        min_vars, f_min, history = find_minima(q, [0.0, 0.0, 0.0])
+        print(f"q minimum: ({min_vars[0]:.4f}, {min_vars[1]:.4f}, {min_vars[2]:.4f}), f = {f_min:.6f}")
+      text: null
+
+  # ================================================================
+  # PART 6: The Real Problem — Fitting a Line to Data
+  # ================================================================
+  - type: part
+    number: 6
+    title: "The Real Problem — Fitting a Line to Data"
+    intro: ""
+
+  # Exercise 6.1
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "What Does It Mean to Fit a Line?"
+    description: |
+      Suppose you have a dataset: some $x$ values and corresponding $y$ values. You want to find the **straight line** $\hat{y} = mx + c$ that best fits the data.
+
+      But what does "best fit" mean?
+
+      For each data point $(x_i, y_i)$, your line predicts $\hat{y}_i = m x_i + c$. The **error** for that point is $y_i - \hat{y}_i$.
+
+      But some errors are positive and some negative — they'd cancel if you just added them. **Think:** How do you fix the cancellation problem? And how do you combine $N$ errors into a single number that measures overall fit?
+
+      The result is called **Mean Squared Error (MSE)**. A smaller MSE means the line fits better.
+
+      **Tasks:**
+
+      1. Run the data cell and the plotting helper.
+      2. Plot the data points using `plot_data_and_line(X_data, y_data)`.
+      3. Try drawing lines with different $(m, c)$ on the same plot. Which looks like the best fit visually?
+    provided_code:
+      - label: "dataset"
+        code: |
+          np.random.seed(42)
+          X_data = np.linspace(0, 10, 30)
+          y_data = 2.5 * X_data + 4.0 + np.random.randn(30) * 3  # true: m=2.5, c=4.0 + noise
+
+          print(f"Number of data points: {len(X_data)}")
+          print(f"X range: [{X_data.min():.1f}, {X_data.max():.1f}]")
+          print(f"y range: [{y_data.min():.1f}, {y_data.max():.1f}]")
+      - label: "data + line overlay plotter"
+        code: |
+          def plot_data_and_line(X, y, m=None, c=None, title="Data"):
+              plt.figure(figsize=(8, 5))
+              plt.scatter(X, y, color='blue', label='data', zorder=5)
+              if m is not None and c is not None:
+                  x_line = np.linspace(X.min(), X.max(), 200)
+                  y_line = m * x_line + c
+                  plt.plot(x_line, y_line, 'r-', linewidth=2,
+                           label=f'y = {m:.2f}x + {c:.2f}')
+              plt.legend()
+              plt.title(title)
+              plt.xlabel('X'); plt.ylabel('y')
+              plt.grid(True)
+              plt.show()
+    hints:
+      - "Square each error to make it positive, then average: $$\\text{MSE}(m, c) = \\frac{1}{N} \\sum_{i=1}^{N} (y_i - (m x_i + c))^2$$"
+      - "Try values like `m=1.0, c=5.0`, then `m=2.5, c=4.0` (the true values), then `m=5.0, c=0.0`. Compare visually."
+    solution:
+      code: |
+        # Plot the raw data
+        plot_data_and_line(X_data, y_data, title="Raw Data")
+
+        # Try different lines
+        plot_data_and_line(X_data, y_data, m=1.0, c=5.0, title="m=1.0, c=5.0")
+        plot_data_and_line(X_data, y_data, m=2.5, c=4.0, title="m=2.5, c=4.0 (true)")
+        plot_data_and_line(X_data, y_data, m=5.0, c=0.0, title="m=5.0, c=0.0")
+
+        # The line m=2.5, c=4.0 looks like the best fit — it passes through
+        # the center of the data cloud. The other lines are clearly off.
+      text: null
+
+  # Exercise 6.2
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Write the MSE Function"
+    description: |
+      Now write a function that quantifies how well a line fits the data.
+
+      ```python
+      def mse(X, y, m, c):
+          """
+          Computes Mean Squared Error for predicting y from X using line y = mx + c.
+
+          Parameters:
+              X : array of input values (shape: N,)
+              y : array of true output values (shape: N,)
+              m : slope of the line
+              c : intercept of the line
+
+          Returns:
+              mse_value : a single number
+          """
+          pass
+      ```
+
+      **Tasks:**
+
+      1. Implement `mse`. Do NOT use any library function — write the formula yourself using a loop or numpy operations.
+      2. Test it:
+         - A perfect line should have MSE = 0. Create a tiny dataset where you know the exact answer: `X=[1,2,3]`, `y=[3,5,7]` is perfectly fit by $m=2, c=1$. Verify `mse(X, y, 2, 1) == 0`.
+         - For our main dataset, compute MSE for:
+           - `m=2.5, c=4.0` (the true line used to generate data)
+           - `m=1.0, c=5.0`
+           - `m=5.0, c=0.0`
+      3. Which $(m, c)$ gives the lowest MSE? Does this match your visual judgment from Exercise 6.1?
+    hints:
+      - "The formula is: compute `predicted = m * X[i] + c` for each point, then `error = y[i] - predicted`, square it, sum them all, and divide by `N`."
+      - "With numpy, this is a one-liner: `return np.mean((y - (m * X + c))**2)`."
+    solution:
+      code: |
+        def mse(X, y, m, c):
+            """Computes Mean Squared Error for the line y = mx + c."""
+            total = 0.0
+            n = len(X)
+            for i in range(n):
+                predicted = m * X[i] + c
+                error = y[i] - predicted
+                total += error ** 2
+            return total / n
+
+        # Sanity check: perfect fit should give MSE = 0
+        X_tiny = np.array([1.0, 2.0, 3.0])
+        y_tiny = np.array([3.0, 5.0, 7.0])
+        print(f"MSE for perfect line (should be 0): {mse(X_tiny, y_tiny, 2.0, 1.0):.6f}")
+
+        # Compare on main dataset
+        lines_to_test = [
+            (2.5, 4.0, "true line"),
+            (1.0, 5.0, "guess 1"),
+            (5.0, 0.0, "guess 2"),
+        ]
+        for m_val, c_val, label in lines_to_test:
+            error = mse(X_data, y_data, m_val, c_val)
+            print(f"{label:15s}: m={m_val}, c={c_val}  →  MSE={error:.4f}")
+
+        # The true line (m=2.5, c=4.0) gives the lowest MSE.
+      text: null
+
+  # Exercise 6.3
+  - type: exercise
+    kind: coding
+    id: ex-6-3
+    part: 6
+    number: 3
+    title: "The MSE Landscape"
+    description: |
+      MSE is a function of $m$ and $c$. Let's visualize it as a 2D landscape.
+
+      **Tasks:**
+
+      1. Use `plot_function_2d` (from Part 4) to plot MSE over a grid of $(m, c)$ values.
+         - Let $m$ range from 0 to 5, and $c$ from -5 to 15.
+         - You'll need to wrap `mse` so it takes a form compatible with `plot_function_2d`.
+      2. What shape does the MSE landscape have? Is it convex? Does it have a clear minimum?
+      3. Mark the point $(m, c) = (2.5, 4.0)$ on the plot. Is it at or near the minimum?
+
+      **Hint for wrapping:**
+
+      ```python
+      def mse_landscape(m, c):
+          return mse(X_data, y_data, m, c)
+
+      plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
+                       title="MSE Landscape (m, c)")
+      ```
+    hints:
+      - "The MSE landscape for linear regression is always a **convex bowl** (a paraboloid). This means there is exactly one minimum, and gradient descent will always find it regardless of starting point."
+    solution:
+      code: |
+        def mse_landscape(m, c):
+            return mse(X_data, y_data, m, c)
+
+        plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
+                         title="MSE Landscape (m, c)",
+                         mark_xy=(2.5, 4.0))
+      text: |
+        The MSE landscape is a **convex bowl** (elliptical paraboloid). It has a single clear minimum, and the point (2.5, 4.0) sits at or very near that minimum. Because the landscape is convex, gradient descent is guaranteed to find the global minimum regardless of starting point.
+
+  # MCQ 6.1
+  - type: exercise
+    kind: mcq
+    id: mcq-6-1
+    part: 6
+    number: 4
+    title: "Local Minima"
+    question: |
+      Gradient descent found a minimum of your loss function. Can you be certain it found the *global* minimum (the absolute lowest point)?
+    options:
+      - label: A
+        text: "Yes — gradient descent always finds the global minimum"
+      - label: B
+        text: "Only if the loss function is convex (bowl-shaped) — non-convex functions can trap gradient descent in a local minimum"
+        correct: true
+      - label: C
+        text: "No — gradient descent never finds the true minimum, only an approximation"
+      - label: D
+        text: "Yes, as long as you run enough iterations"
+    hints:
+      - "Think about a function with multiple valleys. If you start in a small valley, can gradient descent see a deeper valley far away?"
+    solution:
+      text: |
+        Gradient descent follows the local slope downhill. If the loss function has multiple valleys (non-convex), the algorithm can get trapped in a shallow local minimum with no way to 'see' a deeper minimum elsewhere. For convex functions (single bowl shape), like MSE for linear regression, any minimum is the global minimum — gradient descent is guaranteed to find it. This is why convexity of the loss function matters in ML.
+
+  # ================================================================
+  # PART 7: Putting It All Together — Linear Regression via Gradient Descent
+  # ================================================================
+  - type: part
+    number: 7
+    title: "Putting It All Together — Linear Regression via Gradient Descent"
+    intro: ""
+
+  # Exercise 7.1
+  - type: exercise
+    kind: coding
+    id: ex-7-1
+    part: 7
+    number: 1
+    title: "Minimize MSE with `find_minima`"
+    description: |
+      You now have:
+
+      - `find_minima(f, variables)` — a general minimizer
+      - `mse(X, y, m, c)` — the function to minimize
+
+      Put them together.
+
+      **The key step:** To use `find_minima`, you need to express MSE as a function of a **list** `[m, c]`:
+
+      ```python
+      def mse_for_optimizer(params):
+          m, c = params
+          return mse(X_data, y_data, m, c)
+      ```
+
+      **Tasks:**
+
+      1. Define `mse_for_optimizer` as above.
+      2. Call `find_minima(mse_for_optimizer, [0.0, 0.0])` with an appropriate learning rate.
+         - **Warning:** You may need to tune `alpha`. Try `0.001` first, then adjust.
+      3. Print the final `m` and `c` found by the algorithm.
+      4. Compare to the true values `m=2.5, c=4.0`. How close did you get?
+      5. Plot the resulting line over the data using `plot_data_and_line`.
+    hints:
+      - "If the algorithm diverges (MSE explodes), your learning rate is too large. Start with `alpha=0.001` or even `alpha=0.0001`. The MSE surface for this data is elongated, so you may need a small step size."
+      - "If the algorithm converges very slowly (thousands of steps but still not at the minimum), try increasing the learning rate slightly. You can also increase `max_steps`. The final answer should be close to `m ~= 2.5, c ~= 4.0`."
+    solution:
+      code: |
+        def mse_for_optimizer(params):
+            m, c = params
+            return mse(X_data, y_data, m, c)
+
+        # Run the optimizer
+        min_params, f_min, history = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)
+
+        m_found, c_found = min_params
+        print(f"Found:  m = {m_found:.4f},  c = {c_found:.4f}")
+        print(f"True:   m = 2.5000,  c = 4.0000")
+        print(f"MSE at found values: {mse(X_data, y_data, m_found, c_found):.4f}")
+
+        # Plot the result
+        plot_data_and_line(X_data, y_data, m=m_found, c=c_found,
+                           title=f"Best fit: m={m_found:.2f}, c={c_found:.2f}")
+      text: null
+
+  # Exercise 7.2
+  - type: exercise
+    kind: coding
+    id: ex-7-2
+    part: 7
+    number: 2
+    title: "Watch the Line Learn"
+    description: |
+      Let's visualize how the line evolves during gradient descent.
+
+      **Tasks:**
+
+      1. Run `find_minima` with `alpha=0.001` starting from `[0.0, 0.0]`.
+      2. Call `plot_learning_progress` with your history.
+      3. Describe what you see: how does the line change from step 0 to the final step?
+      4. Also plot the MSE over steps using the 2D descent helper.
+
+      > **Note:** For this to work, your `find_minima` history must store `[m, c]` as a list (not just the step index). Make sure your implementation stores a copy of the variables at each step.
+    provided_code:
+      - label: "learning progress plotter"
+        code: |
+          def plot_learning_progress(X, y, history, steps_to_show=[0, 5, 20, 100, 500, -1]):
+              """
+              Shows the fitted line at different stages of training.
+              history: list of (step, [m, c], mse_value) tuples from find_minima
+              """
+              n = len(steps_to_show)
+              fig, axes = plt.subplots(1, n, figsize=(4*n, 4))
+              history_len = len(history)
+              x_line = np.linspace(X.min(), X.max(), 100)
+
+              for ax, step_idx in zip(axes, steps_to_show):
+                  if step_idx == -1:
+                      step_idx = history_len - 1
+                  step_idx = min(step_idx, history_len - 1)
+
+                  step_num, params, mse_val = history[step_idx]
+                  m, c = params
+                  y_line = m * x_line + c
+
+                  ax.scatter(X, y, color='blue', s=15, alpha=0.6)
+                  ax.plot(x_line, y_line, 'r-', linewidth=2)
+                  ax.set_title(f'Step {step_num}\nm={m:.2f}, c={c:.2f}\nMSE={mse_val:.1f}')
+                  ax.set_xlabel('X'); ax.set_ylabel('y')
+                  ax.grid(True)
+
+              plt.tight_layout()
+              plt.show()
+    hints:
+      - "You should see the line start flat (near $y = 0$), then gradually rotate and shift until it matches the data. The MSE curve should decrease rapidly at first, then level off as it approaches the minimum."
+    solution:
+      code: |
+        # Run gradient descent
+        min_params, f_min, history = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)
+
+        # Visualize the learning process
+        plot_learning_progress(X_data, y_data, history, steps_to_show=[0, 5, 20, 100, 500, -1])
+      text: |
+        The line starts flat at y = 0 (step 0), then gradually rotates and shifts upward. By step 100 it roughly follows the data trend. By the final step, it closely matches the best-fit line. The MSE curve drops rapidly at first (large initial improvements) then levels off as it approaches the minimum.
+
+  # Exercise 7.3
+  - type: exercise
+    kind: coding
+    id: ex-7-3
+    part: 7
+    number: 3
+    title: "New Dataset, Same Code"
+    description: |
+      Here are three new datasets. For each:
+
+      1. Plot the raw data.
+      2. Use your `find_minima` + `mse` to find the best-fit line.
+      3. Plot the fitted line over the data.
+      4. Report the final $m$, $c$, and MSE.
+
+      No new code is needed — you're reusing everything you built.
+    provided_code:
+      - label: "datasets"
+        code: |
+          np.random.seed(7)
+
+          # Dataset 1: negative slope
+          X1 = np.linspace(0, 10, 40)
+          y1 = -1.5 * X1 + 20 + np.random.randn(40) * 2
+
+          # Dataset 2: steep positive slope
+          X2 = np.linspace(-5, 5, 50)
+          y2 = 5.0 * X2 - 10 + np.random.randn(50) * 4
+
+          # Dataset 3: nearly flat
+          X3 = np.linspace(0, 20, 60)
+          y3 = 0.3 * X3 + 2.0 + np.random.randn(60) * 5
+
+          print("Datasets ready: X1/y1, X2/y2, X3/y3")
+    hints:
+      - "Reuse the same pattern: define `mse_for_optimizer` with the new dataset, run `find_minima`, and plot. You may need to adjust the learning rate for datasets with different scales."
+    solution:
+      code: |
+        # Dataset 1: negative slope (true: m=-1.5, c=20)
+        def mse_d1(params):
+            m, c = params
+            return mse(X1, y1, m, c)
+
+        min_p, f_min, hist = find_minima(mse_d1, [0.0, 0.0], alpha=0.001)
+        print(f"Dataset 1: m={min_p[0]:.4f}, c={min_p[1]:.4f}, MSE={f_min:.4f}")
+        plot_data_and_line(X1, y1, m=min_p[0], c=min_p[1], title="Dataset 1 fit")
+
+        # Dataset 2: steep positive slope (true: m=5.0, c=-10)
+        def mse_d2(params):
+            m, c = params
+            return mse(X2, y2, m, c)
+
+        min_p, f_min, hist = find_minima(mse_d2, [0.0, 0.0], alpha=0.001)
+        print(f"Dataset 2: m={min_p[0]:.4f}, c={min_p[1]:.4f}, MSE={f_min:.4f}")
+        plot_data_and_line(X2, y2, m=min_p[0], c=min_p[1], title="Dataset 2 fit")
+
+        # Dataset 3: nearly flat (true: m=0.3, c=2.0)
+        def mse_d3(params):
+            m, c = params
+            return mse(X3, y3, m, c)
+
+        min_p, f_min, hist = find_minima(mse_d3, [0.0, 0.0], alpha=0.0001)
+        print(f"Dataset 3: m={min_p[0]:.4f}, c={min_p[1]:.4f}, MSE={f_min:.4f}")
+        plot_data_and_line(X3, y3, m=min_p[0], c=min_p[1], title="Dataset 3 fit")
+      text: null
+
+  # Exercise 7.4
+  - type: exercise
+    kind: coding
+    id: ex-7-4
+    part: 7
+    number: 4
+    title: "Sanity Check with NumPy"
+    description: |
+      NumPy has a function `np.polyfit(X, y, 1)` that finds the best-fit line using an exact mathematical formula (not gradient descent).
+
+      **Tasks:**
+
+      1. Run `np.polyfit(X_data, y_data, 1)` — it returns `[m, c]`.
+      2. Compare the result to what your gradient descent found.
+      3. Run the same comparison for all three datasets in Exercise 7.3.
+      4. Are the answers the same? Should they be exactly the same, or just approximately the same? Why?
+
+      **Bonus:** If your answers disagree significantly (more than 0.01), investigate why. Check:
+
+      - Did gradient descent converge? (Check the final gradient magnitude.)
+      - Is your learning rate too large or too small?
+      - Did you run enough steps?
+    hints:
+      - "`np.polyfit` uses the **normal equations** — an exact closed-form solution. It gives the true optimal answer. Gradient descent approximates it iteratively, so the answers should be very close but may differ in the last few decimal places."
+    solution:
+      code: |
+        # Compare gradient descent with np.polyfit (exact solution)
+        m_np, c_np = np.polyfit(X_data, y_data, 1)
+        print(f"NumPy:          m = {m_np:.4f},  c = {c_np:.4f}")
+        print(f"Gradient Desc:  m = {m_found:.4f},  c = {c_found:.4f}")
+
+        # Dataset 1
+        m1, c1 = np.polyfit(X1, y1, 1)
+        print(f"\nDataset 1 — NumPy: m={m1:.4f}, c={c1:.4f}")
+
+        # Dataset 2
+        m2, c2 = np.polyfit(X2, y2, 1)
+        print(f"Dataset 2 — NumPy: m={m2:.4f}, c={c2:.4f}")
+
+        # Dataset 3
+        m3, c3 = np.polyfit(X3, y3, 1)
+        print(f"Dataset 3 — NumPy: m={m3:.4f}, c={c3:.4f}")
+      text: |
+        The answers should be very close but not identical. `np.polyfit` uses the **normal equations** (an exact closed-form solution), while gradient descent approximates iteratively. They converge to the same answer given enough steps and a small enough learning rate.
+
+  # ================================================================
+  # PART 8: More Than One Feature
+  # ================================================================
+  - type: part
+    number: 8
+    title: "More Than One Feature"
+    intro: |
+      Your line `y = m*x + c` predicts from a *single* number. But a house price depends on size **and** bedrooms **and** age. A student's score depends on hours studied **and** hours slept. Real prediction almost always uses several inputs — called **features**.
+
+      The fix is tiny: give each feature its own slope.
+
+      $$y = m_0 x_0 + m_1 x_1 + \dots + m_{k-1} x_{k-1} + c$$
+
+      Everything you built — MSE, gradients, the update loop — survives unchanged. You'll rebuild the pipeline for many features in five short steps, then meet the trick that makes this genuinely powerful: inventing new features.
+
+  # Exercise 8.1
+  - type: exercise
+    kind: coding
+    id: ex-8-1
+    part: 8
+    number: 1
+    title: "`predict` with Many Features"
+    description: |
+      Write `predict(x, m, c)` where `x` is a list of feature values and `m` is a list of slopes (same length): return $m_0 x_0 + m_1 x_1 + \dots + c$.
+
+      Hint: start `total = c`, then loop over `zip(x, m)`.
+
+      **Test cases:**
+
+      ```python
+      assert predict([1, 2], [2, 3], 1) == 9      # 2*1 + 3*2 + 1
+      assert predict([0, 0], [2, 3], 1) == 1      # only the intercept survives
+      assert predict([10], [0.5], 2) == 7         # works for a single feature too
+      ```
+    hints:
+      - "This is a dot product plus a bias. Start with `total = c`, then `for xi, mi in zip(x, m): total += xi * mi`. Return `total`."
+    solution:
+      code: |
+        def predict(x, m, c):
+            total = c
+            for xi, mi in zip(x, m):
+                total += xi * mi
+            return total
+
+        assert predict([1, 2], [2, 3], 1) == 9
+        assert predict([0, 0], [2, 3], 1) == 1
+        assert predict([10], [0.5], 2) == 7
+        print("predict: OK")
+      text: null
+
+  # Exercise 8.2
+  - type: exercise
+    kind: coding
+    id: ex-8-2
+    part: 8
+    number: 2
+    title: "MSE for Many Features"
+    description: |
+      Here is a dataset that follows the plane $y = 2 x_0 + 3 x_1 + 1$ *exactly* (check one row by hand!):
+
+      ```python
+      X = [[1, 2], [2, 1], [3, 4], [4, 3]]
+      y = [9, 8, 19, 18]
+      ```
+
+      Write `total_err_sqr(X, y, m, c)` — the mean squared error of `predict` across all rows. This is the same MSE from Part 6; only the call to `predict` changed.
+
+      **Test cases:**
+
+      ```python
+      assert total_err_sqr(X, y, [2, 3], 1) == 0.0      # perfect weights, zero error
+      assert abs(total_err_sqr(X, y, [0, 0], 0) - 207.5) < 1e-9
+      ```
+    hints:
+      - "Loop over each row `xi, yi` in `zip(X, y)`, compute `predict(xi, m, c)`, accumulate `(yi - predicted)**2`, then divide the total by `len(X)`."
+    solution:
+      code: |
+        def total_err_sqr(X, y, m, c):
+            total = 0.0
+            n = len(X)
+            for xi, yi in zip(X, y):
+                predicted = predict(xi, m, c)
+                total += (yi - predicted) ** 2
+            return total / n
+
+        assert total_err_sqr(X, y, [2, 3], 1) == 0.0
+        assert abs(total_err_sqr(X, y, [0, 0], 0) - 207.5) < 1e-9
+        print("total_err_sqr: OK")
+      text: null
+
+  # Exercise 8.3
+  - type: exercise
+    kind: coding
+    id: ex-8-3
+    part: 8
+    number: 3
+    title: "A Gradient per Weight"
+    description: |
+      In Exercise 4.2 you discovered partial derivatives: nudge *one* variable, hold the rest still, measure the change. Same move here, just more knobs.
+
+      Write `gradients(X, y, m, c, h=1e-6)` returning `(grad_m, grad_c)` where `grad_m` is a list — one slope estimate per weight:
+
+      $$\text{grad}_{m_i} = \frac{\text{MSE}(m \text{ with } m_i + h) - \text{MSE}(m)}{h}$$
+
+      **Hints:**
+
+      - Copy the list before nudging: `m2 = m.copy(); m2[i] += h`.
+      - `grad_c` is the same one-sided difference, nudging `c`.
+
+      **Test cases:**
+
+      ```python
+      gm, gc = gradients(X, y, [2, 3], 1)
+      # At the optimum, all gradients should be near zero
+
+      gm, gc = gradients(X, y, [0, 0], 0)
+      # All slopes should point downhill (negative)
+      ```
+    hints:
+      - "For each weight index `i`: `m2 = m.copy(); m2[i] += h; grad_m[i] = (total_err_sqr(X, y, m2, c) - total_err_sqr(X, y, m, c)) / h`. Same pattern for `c`."
+    solution:
+      code: |
+        def gradients(X, y, m, c, h=1e-6):
+            base = total_err_sqr(X, y, m, c)
+            grad_m = []
+            for i in range(len(m)):
+                m2 = m.copy()
+                m2[i] += h
+                grad_m.append((total_err_sqr(X, y, m2, c) - base) / h)
+            grad_c = (total_err_sqr(X, y, m, c + h) - base) / h
+            return grad_m, grad_c
+
+        gm, gc = gradients(X, y, [2, 3], 1)
+        assert all(abs(g) < 1e-3 for g in gm) and abs(gc) < 1e-3
+
+        gm, gc = gradients(X, y, [0, 0], 0)
+        assert gm[0] < 0 and gm[1] < 0 and gc < 0
+        print("gradients at zero weights:", [round(g, 1) for g in gm], round(gc, 1))
+      text: null
+
+  # Exercise 8.4
+  - type: exercise
+    kind: coding
+    id: ex-8-4
+    part: 8
+    number: 4
+    title: "`fit`"
+    description: |
+      Assemble the full trainer. Write `fit(X, y, learning_rate=0.01, epochs=5000)`:
+
+      1. Start with `m = [0.0] * len(X[0])` and `c = 0.0`.
+      2. Each epoch: compute the gradients, then step **every** weight against its own gradient: `m[i] -= learning_rate * grad_m[i]`, same for `c`.
+      3. Return `(m, c)`.
+
+      If your implementation is right, it will recover the plane $y = 2x_0 + 3x_1 + 1$ almost perfectly. You have just written multivariate linear regression — the same algorithm, feature-for-feature, that trains inside every neural network layer.
+
+      **Test cases:**
+
+      ```python
+      m, c = fit(X, y)
+      print("found m =", [round(v, 3) for v in m], " c =", round(c, 3))
+      assert abs(m[0] - 2) < 0.05
+      assert abs(m[1] - 3) < 0.05
+      assert abs(c - 1) < 0.15
+      assert total_err_sqr(X, y, m, c) < 0.01
+      ```
+    hints:
+      - "The loop body: call `gradients(X, y, m, c)`, then `for i in range(len(m)): m[i] -= learning_rate * grad_m[i]`, and `c -= learning_rate * grad_c`."
+      - "Make sure to use `m = [0.0] * len(X[0])` as initialization — this creates a fresh list of zeros with the right number of weights."
+    solution:
+      code: |
+        def fit(X, y, learning_rate=0.01, epochs=5000):
+            m = [0.0] * len(X[0])
+            c = 0.0
+            for epoch in range(epochs):
+                grad_m, grad_c = gradients(X, y, m, c)
+                for i in range(len(m)):
+                    m[i] -= learning_rate * grad_m[i]
+                c -= learning_rate * grad_c
+            return m, c
+
+        m, c = fit(X, y)
+        print("found m =", [round(v, 3) for v in m], " c =", round(c, 3))
+        assert abs(m[0] - 2) < 0.05
+        assert abs(m[1] - 3) < 0.05
+        assert abs(c - 1) < 0.15
+        assert total_err_sqr(X, y, m, c) < 0.01
+        print("fit: OK")
+      text: null
+
+  # Exercise 8.5
+  - type: exercise
+    kind: coding
+    id: ex-8-5
+    part: 8
+    number: 5
+    title: "Inventing Features"
+    description: |
+      In Challenge A (coming up) you'll see a straight line fail on curved data. Here is the escape hatch: if the data follows $y = x^2$, then *as a function of $x^2$* it's a straight line! We don't need a new algorithm — we need a new **column**.
+
+      Write `add_feature(X, feature_fn)` that returns a **new** list of rows, each row extended with `feature_fn(row)` appended. Don't modify `X`.
+
+      Then watch the tests: a line on `y = x^2` data is stuck with MSE > 1, but after `add_feature(Xc, lambda row: row[0] ** 2)` the *same* `fit` gets it almost exactly. This is called **feature engineering**, and before deep learning it was most of the job of a machine-learning engineer.
+
+      **Test cases:**
+
+      ```python
+      assert add_feature([[1, 2], [3, 4]], lambda row: row[0] * row[1]) == \
+             [[1, 2, 2], [3, 4, 12]]
+
+      Xc = [[1], [2], [3], [4], [5]]
+      yc = [1, 4, 9, 16, 25]                      # y = x^2
+
+      m1, c1 = fit(Xc, yc, learning_rate=0.005, epochs=8000)
+      line_mse = total_err_sqr(Xc, yc, m1, c1)
+
+      Xc2 = add_feature(Xc, lambda row: row[0] ** 2)
+      m2, c2 = fit(Xc2, yc, learning_rate=0.001, epochs=20000)
+      curve_mse = total_err_sqr(Xc2, yc, m2, c2)
+
+      # line_mse should be > 1, curve_mse should be < 0.1
+      ```
+    hints:
+      - "Use a list comprehension: `return [row + [feature_fn(row)] for row in X]`. This creates new lists without modifying `X`."
+      - "After adding the $x^2$ feature, each row becomes `[x, x^2]`. The `fit` function will learn weights `[m0, m1]` and intercept `c` such that $y \\approx m_0 x + m_1 x^2 + c$. If the true relationship is $y = x^2$, you'd expect $m_0 \\approx 0$, $m_1 \\approx 1$, $c \\approx 0$."
+    solution:
+      code: |
+        def add_feature(X, feature_fn):
+            return [row + [feature_fn(row)] for row in X]
+
+        assert add_feature([[1, 2], [3, 4]], lambda row: row[0] * row[1]) == [[1, 2, 2], [3, 4, 12]]
+
+        Xc = [[1], [2], [3], [4], [5]]
+        yc = [1, 4, 9, 16, 25]
+
+        m1, c1 = fit(Xc, yc, learning_rate=0.005, epochs=8000)
+        line_mse = total_err_sqr(Xc, yc, m1, c1)
+
+        Xc2 = add_feature(Xc, lambda row: row[0] ** 2)
+        m2, c2 = fit(Xc2, yc, learning_rate=0.001, epochs=20000)
+        curve_mse = total_err_sqr(Xc2, yc, m2, c2)
+
+        print(f"straight line MSE: {line_mse:.3f}   with x^2 feature: {curve_mse:.6f}")
+        assert line_mse > 1
+        assert curve_mse < 0.1
+        print("add_feature: OK")
+      text: null
+
+  # Exercise 8.6
+  - type: exercise
+    kind: coding
+    id: ex-8-6
+    part: 8
+    number: 6
+    title: "Skip the Nudging: the Chain Rule"
+    description: |
+      Your `gradients` calls `total_err_sqr` once per weight per epoch — thousands of full passes over the data just to *estimate* slopes. Calculus hands us the exact answer for free.
+
+      *Challenge: before reading the derivation below, try to work out $\frac{\partial \text{MSE}}{\partial m_i}$ yourself. You know MSE is built from squared errors, and each error depends on the weights through `predict`. Can you use the chain rule to get an expression?*
+
+      MSE is built from pieces: $\text{MSE} = \frac{1}{n}\sum e^2$ where $e = \text{predict}(x) - y$, and $\frac{\partial\, \text{predict}}{\partial m_i} = x_i$. The **chain rule** multiplies the pieces' derivatives together:
+
+      $$\frac{\partial\, \text{MSE}}{\partial m_i} = \frac{1}{n}\sum 2e \cdot x_i \qquad \frac{\partial\, \text{MSE}}{\partial c} = \frac{1}{n}\sum 2e$$
+
+      Write `analytic_gradients(X, y, m, c)` implementing those two formulas, and verify it against your finite-difference `gradients` at an arbitrary point. No nudging, no `h`, exact — this is what **backpropagation** does inside every deep-learning framework: chain rule, applied layer by layer.
+
+      **Test case:**
+
+      ```python
+      gm_a, gc_a = analytic_gradients(X, y, [0.5, -1.0], 2.0)
+      gm_n, gc_n = gradients(X, y, [0.5, -1.0], 2.0)
+      # Both should match to within 1e-2
+      ```
+    hints:
+      - "For each row, compute the error `e = predict(xi, m, c) - yi`. Then `grad_m[j] += 2 * e * xi[j]` for each weight `j`, and `grad_c += 2 * e`. Finally divide everything by `n`."
+      - "Initialize `grad_m = [0.0] * len(m)` and `grad_c = 0.0`. Loop over `zip(X, y)`, accumulate, then divide by `len(X)`. This is exact and uses only one pass over the data."
+    solution:
+      code: |
+        def analytic_gradients(X, y, m, c):
+            n = len(X)
+            grad_m = [0.0] * len(m)
+            grad_c = 0.0
+            for xi, yi in zip(X, y):
+                e = predict(xi, m, c) - yi
+                for j in range(len(m)):
+                    grad_m[j] += 2 * e * xi[j]
+                grad_c += 2 * e
+            grad_m = [g / n for g in grad_m]
+            grad_c /= n
+            return grad_m, grad_c
+
+        gm_a, gc_a = analytic_gradients(X, y, [0.5, -1.0], 2.0)
+        gm_n, gc_n = gradients(X, y, [0.5, -1.0], 2.0)
+        print("analytic:", [round(g, 3) for g in gm_a], round(gc_a, 3))
+        print("numeric: ", [round(g, 3) for g in gm_n], round(gc_n, 3))
+        assert all(abs(a - b) < 1e-2 for a, b in zip(gm_a, gm_n))
+        assert abs(gc_a - gc_n) < 1e-2
+        print("chain rule verified — calculus agrees with nudging")
+      text: null
+
+  # MCQ 8.1
+  - type: exercise
+    kind: mcq
+    id: mcq-8-1
+    part: 8
+    number: 7
+    title: "Curse of Dimensionality"
+    question: |
+      In Part 8, you extended gradient descent from 2 weights to many. As the number of features grows from 2 to 100, what happens to the gradient computation?
+    options:
+      - label: A
+        text: "It stays the same — one gradient call handles any number of features"
+      - label: B
+        text: "You need one partial derivative per weight, so 100 features means computing 100 partial derivatives per step"
+        correct: true
+      - label: C
+        text: "The number of partial derivatives grows as 100^2 = 10,000"
+      - label: D
+        text: "Gradient descent stops working beyond 10 features"
+    hints:
+      - "You computed partial_derivative for each weight independently. How many weights do you have with 100 features?"
+    solution:
+      text: |
+        With 100 features, you have ~101 weights (one per feature plus the intercept). Each gradient step requires computing one partial derivative per weight — 101 derivative evaluations per step. This scales linearly with the number of features, not quadratically. That linear scaling is exactly why gradient descent remains practical for high-dimensional problems (even thousands of features), unlike approaches that require inverting matrices (which scale as O(n^3)).
+
+  # ================================================================
+  # PART 9: Bonus Challenges
+  # ================================================================
+  - type: part
+    number: 9
+    title: "Bonus Challenges"
+    intro: |
+      If you've made it this far, you've independently discovered **gradient descent** and used it to implement **linear regression**. These are the foundations of almost every machine learning algorithm. Here are some open-ended challenges to push further.
+
+  # Challenge A
+  - type: exercise
+    kind: challenge
+    id: ex-9-a
+    part: 9
+    number: 1
+    title: "What If the Data Isn't Linear?"
+    description: |
+      Generate this dataset:
+
+      ```python
+      X_quad = np.linspace(-3, 3, 50)
+      y_quad = 1.5 * X_quad**2 - 2 * X_quad + 1 + np.random.randn(50) * 1.5
+      ```
+
+      The data was generated with a **quadratic** function $y = 1.5x^2 - 2x + 1$.
+
+      1. Try fitting a straight line to it. What MSE do you get?
+      2. Now fit a quadratic: $\hat{y} = ax^2 + bx + c$. You now have **3 parameters** to optimize: $[a, b, c]$.
+      3. Extend your `mse` function to handle any polynomial and minimize it with `find_minima`.
+      4. Compare the fitted $a, b, c$ to the true values $1.5, -2, 1$.
+    hints:
+      - "Define `mse_quadratic(params)` where `params = [a, b, c]`. The prediction becomes `a * x**2 + b * x + c`. Then call `find_minima(mse_quadratic, [0, 0, 0])`."
+      - "Alternatively, use your multi-feature pipeline from Part 8: treat $x$ and $x^2$ as two separate features with `add_feature`. The `fit` function already handles multiple features!"
+    solution:
+      code: |
+        X_quad = np.linspace(-3, 3, 50)
+        y_quad = 1.5 * X_quad**2 - 2 * X_quad + 1 + np.random.randn(50) * 1.5
+
+        # Step 1: Fit a straight line — poor fit
+        def mse_line(params):
+            m, c = params
+            return mse(X_quad, y_quad, m, c)
+
+        min_p, f_min, _ = find_minima(mse_line, [0.0, 0.0], alpha=0.001)
+        print(f"Straight line: m={min_p[0]:.4f}, c={min_p[1]:.4f}, MSE={f_min:.4f}")
+        plot_data_and_line(X_quad, y_quad, m=min_p[0], c=min_p[1], title="Linear fit")
+
+        # Step 2: Fit a quadratic y = a*x^2 + b*x + c
+        def mse_quadratic(params):
+            a, b, c = params
+            total = 0.0
+            n = len(X_quad)
+            for i in range(n):
+                pred = a * X_quad[i]**2 + b * X_quad[i] + c
+                total += (y_quad[i] - pred) ** 2
+            return total / n
+
+        min_p, f_min, _ = find_minima(mse_quadratic, [0.0, 0.0, 0.0], alpha=0.001)
+        print(f"Quadratic: a={min_p[0]:.4f}, b={min_p[1]:.4f}, c={min_p[2]:.4f}")
+        print(f"True:      a=1.5,    b=-2.0,    c=1.0")
+        print(f"MSE: {f_min:.4f}")
+      text: null
+
+  # Challenge B
+  - type: exercise
+    kind: challenge
+    id: ex-9-b
+    part: 9
+    number: 2
+    title: "Learning Rate Scheduler"
+    description: |
+      You've seen that a large $\alpha$ causes oscillation and a small $\alpha$ is slow.
+
+      One trick: **decay the learning rate** over time. Start with a large $\alpha$ and make it smaller each step:
+
+      $$\alpha_t = \frac{\alpha_0}{1 + t \cdot \text{decay\_rate}}$$
+
+      Modify your `find_minima` to support an optional `decay_rate` parameter. Compare:
+
+      - Fixed `alpha=0.1` on the MSE problem
+      - Decaying alpha starting at `0.1` with `decay_rate=0.01`
+
+      Which converges faster? Plot both loss curves on the same graph.
+    hints:
+      - "In the update step, replace the fixed `alpha` with `alpha / (1 + step * decay_rate)`. At step 0, alpha is unchanged. By step 100 with `decay_rate=0.01`, alpha is halved."
+    solution:
+      code: |
+        def find_minima_decay(f, variables, alpha=0.01, decay_rate=0.0,
+                              epsilon=1e-6, max_steps=100000):
+            variables = list(variables)
+            history = []
+            for step in range(max_steps):
+                fval = f(variables)
+                history.append((step, variables.copy(), fval))
+                grad = compute_gradient(f, variables)
+                mag = sum(g**2 for g in grad) ** 0.5
+                if mag < epsilon:
+                    break
+                lr = alpha / (1 + step * decay_rate)
+                for i in range(len(variables)):
+                    variables[i] -= lr * grad[i]
+            return variables, f(variables), history
+
+        # Compare fixed vs decaying learning rate on the MSE problem
+        _, _, hist_fixed = find_minima_decay(mse_for_optimizer, [0.0, 0.0],
+                                             alpha=0.001, decay_rate=0.0)
+        _, _, hist_decay = find_minima_decay(mse_for_optimizer, [0.0, 0.0],
+                                             alpha=0.01, decay_rate=0.001)
+
+        # Plot both loss curves
+        steps_f, _, losses_f = zip(*hist_fixed)
+        steps_d, _, losses_d = zip(*hist_decay)
+        plt.plot(steps_f, losses_f, label="fixed alpha=0.001")
+        plt.plot(steps_d, losses_d, label="decaying alpha=0.01, decay=0.001")
+        plt.xlabel("step"); plt.ylabel("MSE"); plt.legend(); plt.grid(True)
+        plt.title("Fixed vs Decaying Learning Rate"); plt.show()
+      text: null
+
+  # Challenge C
+  - type: exercise
+    kind: challenge
+    id: ex-9-c
+    part: 9
+    number: 3
+    title: "Stochastic Gradient Descent"
+    description: |
+      In real ML, datasets have millions of points. Computing MSE over all of them every step is expensive.
+
+      **Stochastic Gradient Descent (SGD):** Instead of using all data to compute the gradient, use a **random single point** (or a small batch of points) each step.
+
+      1. Modify `find_minima` (or write `find_minima_sgd`) to:
+         - Each step, pick one random data point $(x_i, y_i)$
+         - Compute the gradient of the error for that single point
+         - Update $m$ and $c$
+      2. Run it on `X_data, y_data`.
+      3. Plot the loss curve. Is it smooth or noisy? Why?
+      4. How does the final answer compare to full gradient descent?
+    hints:
+      - "Use `i = np.random.randint(len(X))` to pick a random index each step. The \"MSE\" for a single point is just `(y[i] - (m * X[i] + c))**2`. The loss curve will be noisy because each step uses a different random point."
+      - "SGD converges to the same answer on average but with random fluctuations. The noisy loss curve is normal — in practice, people average the loss over many points for monitoring. The noise actually helps escape local minima in non-convex problems."
+    solution:
+      code: |
+        def find_minima_sgd(X, y, alpha=0.001, max_steps=50000):
+            m = 0.0
+            c = 0.0
+            history = []
+            n = len(X)
+            for step in range(max_steps):
+                full_mse = mse(X, y, m, c)
+                history.append((step, [m, c], full_mse))
+                # Pick one random data point
+                i = np.random.randint(n)
+                xi, yi = X[i], y[i]
+                pred = m * xi + c
+                error = pred - yi
+                # Gradient for a single point (chain rule)
+                grad_m = 2 * error * xi
+                grad_c = 2 * error
+                m -= alpha * grad_m
+                c -= alpha * grad_c
+            return m, c, history
+
+        m_sgd, c_sgd, hist_sgd = find_minima_sgd(X_data, y_data, alpha=0.001)
+        print(f"SGD result: m={m_sgd:.4f}, c={c_sgd:.4f}")
+
+        # Plot the noisy loss curve
+        steps, _, losses = zip(*hist_sgd)
+        plt.plot(steps, losses, alpha=0.3)
+        plt.title("SGD loss curve (noisy)")
+        plt.xlabel("step"); plt.ylabel("MSE"); plt.grid(True); plt.show()
+      text: |
+        The loss curve is **noisy** because each step uses a different random point. On average SGD converges to the same answer, but the path is jagged. The noise can actually help escape shallow local minima in non-convex problems.
+
+  # ================================================================
+  # Reflection
+  # ================================================================
+  - type: part
+    number: 10
+    title: "Reflection — What Did You Just Build?"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 10
+    number: 1
+    title: "Reflection"
+    description: |
+      Take a moment to answer these questions in your own words.
+
+      1. **What is gradient descent?** Explain it in 3 sentences as if you're describing it to someone who has never heard of it.
+      2. **What is the learning rate?** What happens if it's too large? Too small?
+      3. **What is MSE?** Why do we minimize it instead of just minimizing the average error?
+      4. **What is linear regression?** What problem does it solve?
+      5. **What is the connection** between minimizing MSE and fitting a line?
+      6. **What's the biggest limitation** of the approach you built? What would you want to improve?
+    hints: []
+    solution:
+      code: null
+      text: null

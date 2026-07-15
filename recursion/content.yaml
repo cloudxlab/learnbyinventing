@@ -1,0 +1,851 @@
+chapter:
+  id: recursion
+  title: "Learning Recursion by Inventing It"
+  intro: |
+    You won't be taught --- you will *discover*. Every step builds on the last. Trust the process.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/recursion/recursion.ipynb"
+  mathjax: true
+  syntax_overview:
+    title: "Python Quick Reference"
+    intro: |
+      **Recursion** means a function that calls itself. Every recursive function needs a **base case** (when to stop) and a **recursive case** (how to shrink the problem).
+    code: |
+      # A function that calls itself
+      def countdown(n):
+          if n <= 0:           # base case --- stop here
+              print("Go!")
+              return
+          print(n)
+          countdown(n - 1)     # recursive case --- smaller problem
+
+      countdown(3)             # prints 3, 2, 1, Go!
+
+      # Returning a value recursively
+      def sum_to(n):
+          if n == 0:
+              return 0
+          return n + sum_to(n - 1)
+
+      sum_to(4)                # 4 + 3 + 2 + 1 + 0 = 10
+
+      # Default parameter values
+      def power(x, n=2):
+          return x ** n
+
+      power(3)                 # 9  (n defaults to 2)
+      power(3, 3)              # 27
+    bullets:
+      - "The base case **must** be reached eventually, or the function recurses forever."
+      - "Each call gets its own copy of local variables."
+      - "Think: \"If I already had the answer for a smaller input, how would I build the full answer?\""
+  footer: |
+    You've just learned recursion's core move: trust that a smaller call to the same function already works, and build the answer to the bigger problem on top of it. Every algorithm you meet from here on --- searching, sorting, tree traversal --- leans on exactly this idea.
+
+blocks:
+  # ──────────────────────────────────────────────────────
+  # PART 1: Factorial — Your First Recursive Function
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 1
+    title: "Factorial --- Your First Recursive Function"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Express It in Terms of Itself"
+    description: |
+      The factorial of `n` is `n * (n-1) * (n-2) * ... * 1`. By definition, `factorial(0) = 1`.
+
+      **Before coding:**
+
+      1. Write `factorial(4)` as `4 * factorial(3)`. What is `factorial(3)` in terms of `factorial(2)`? Keep going until you reach a number whose factorial you already know without any multiplication.
+      2. What is the smallest input for which you can answer "what is `factorial(n)`?" *without* calling `factorial` again? This is called the **base case**.
+      3. For every other `n`, how do you express `factorial(n)` using `factorial(n-1)`? This is called the **recursive case**.
+
+      **Your derivation:**
+
+      - base case: factorial(...) = ...
+      - recursive case: factorial(n) = ...
+    hints:
+      - "Unroll `factorial(4)` step by step: `4 * factorial(3)` -> `4 * 3 * factorial(2)` -> `4 * 3 * 2 * factorial(1)` -> `4 * 3 * 2 * 1 * factorial(0)`. You know `factorial(0) = 1`, so you can stop there."
+      - "Base case: `factorial(0) = 1`. Recursive case: `factorial(n) = n * factorial(n - 1)`."
+    solution:
+      code: null
+      text: |
+        - base case: factorial(0) = 1
+        - recursive case: factorial(n) = n * factorial(n - 1)
+
+        Unrolled: factorial(4) = 4 * factorial(3) = 4 * 3 * factorial(2) = 4 * 3 * 2 * factorial(1) = 4 * 3 * 2 * 1 * factorial(0) = 4 * 3 * 2 * 1 * 1 = 24.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Write `factorial_recursive`"
+    description: |
+      Write a function `factorial_recursive(n)` that:
+
+      - returns `1` if `n` is `0` (the base case),
+      - otherwise returns `n * factorial_recursive(n - 1)` (the recursive case).
+
+      **Example:**
+
+      ```python
+      factorial_recursive(5)  # Output: 120
+      factorial_recursive(3)  # Output: 6
+      factorial_recursive(0)  # Output: 1
+      factorial_recursive(1)  # Output: 1
+      ```
+    hints:
+      - "Your function only needs an `if`/`else`: one branch for the base case (`n == 0`), one for the recursive case."
+      - |
+        ```python
+        def factorial_recursive(n):
+            if n == 0:
+                return 1
+            else:
+                return n * factorial_recursive(n - 1)
+        ```
+    solution:
+      code: |
+        def factorial_recursive(n):
+            if n == 0:
+                return 1
+            return n * factorial_recursive(n - 1)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "What If There's No Base Case?"
+    description: |
+      **Before running anything:** what do you think happens if you call `factorial_recursive(-1)`? Walk through it: does `n` ever hit `0`?
+
+      **Now try it** in the cell below --- wrapped in a `try`/`except` so it doesn't crash your whole notebook. What error do you get?
+    provided_code:
+      - label: "safe test"
+        code: |
+          try:
+              print(factorial_recursive(-1))
+          except RecursionError as e:
+              print("Got a RecursionError:", e)
+    hints:
+      - "`factorial_recursive(-1)` calls `factorial_recursive(-2)`, which calls `factorial_recursive(-3)`, and so on. The argument never reaches `0`, so Python eventually raises a `RecursionError` because it has a built-in limit on how deep recursion can go."
+    solution:
+      code: null
+      text: |
+        Calling `factorial_recursive(-1)` calls `factorial_recursive(-2)`, which calls `factorial_recursive(-3)`, and so on. The argument never reaches `0` (the base case), so Python keeps recursing until it hits its built-in recursion limit and raises a `RecursionError: maximum recursion depth exceeded`.
+
+        This demonstrates why the base case must be *reachable* from all valid inputs. For negative numbers, `n` keeps decreasing and never reaches `0`.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 4
+    title: "Base Case Purpose"
+    question: |
+      In Exercise 1.3 you saw what happens without a base case. What is the role of the base case in a recursive function?
+    options:
+      - label: A
+        text: "It makes the function run faster"
+      - label: B
+        text: "It tells Python to use a loop instead of recursion"
+      - label: C
+        text: "It provides the stopping condition --- the simplest case that can be answered directly without another recursive call"
+        correct: true
+      - label: D
+        text: "It handles invalid inputs like negative numbers"
+    hints:
+      - "Think of factorial: factorial(0) = 1. Why doesn't factorial(0) need to call factorial again?"
+    solution:
+      text: "The base case is the answer to the simplest version of the problem --- the case so simple it doesn't need recursion. For factorial, factorial(0)=1 is known directly. Without it, the function keeps calling itself forever (or until Python's recursion limit), because there's nothing to stop the chain. The base case is NOT about speed or loops --- it's the foundation the recursion 'lands on'."
+
+  # ──────────────────────────────────────────────────────
+  # PART 2: Multiplication — Replacing an Operator with Recursion
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 2
+    title: "Multiplication --- Replacing an Operator with Recursion"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Multiplication Is Repeated Addition"
+    description: |
+      `4 * 3` means "add 4 to itself 3 times": `4 + 4 + 4 = 12`.
+
+      **Before coding (assume both `a` and `b` are non-negative for now):**
+
+      1. What is the base case --- the value of `b` for which `a * b` is obviously `0` without doing any addition?
+      2. For any other `b`, how can you write `a * b` in terms of `a * (b - 1)`?
+
+      **Your derivation:**
+
+      - base case: multiply(a, 0) = ...
+      - recursive case: multiply(a, b) = ...
+    hints:
+      - "Anything multiplied by zero is zero. So `multiply(a, 0) = 0`."
+      - "`a * b = a + a * (b - 1)`. In other words: `multiply(a, b) = a + multiply(a, b - 1)`."
+    solution:
+      code: null
+      text: |
+        - base case: multiply(a, 0) = 0
+        - recursive case: multiply(a, b) = a + multiply(a, b - 1)
+
+        Anything multiplied by zero is zero. For any other `b`, multiplying `a` by `b` is the same as adding `a` one more time to `a * (b - 1)`.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Write It for Non-Negative `b`"
+    description: |
+      Write `multiply_recursive(a, b)` that works for `b >= 0`, without using the `*` operator.
+
+      **Example:**
+
+      ```python
+      multiply_recursive(4, 3)   # Output: 12
+      multiply_recursive(5, 0)   # Output: 0
+      ```
+    hints:
+      - "The structure is the same as `factorial_recursive`: one base case, one recursive step. The difference is you *add* instead of *multiply*, and the base case returns `0` instead of `1`."
+      - |
+        ```python
+        def multiply_recursive(a, b):
+            if b == 0:
+                return 0
+            return a + multiply_recursive(a, b - 1)
+        ```
+    solution:
+      code: |
+        def multiply_recursive(a, b):
+            if b == 0:
+                return 0
+            return a + multiply_recursive(a, b - 1)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Handling a Negative `b`"
+    description: |
+      Now suppose `b` can be negative --- like `multiply_recursive(7, -2)`, which should be `-14`.
+
+      **Before coding:**
+
+      1. If `b` is negative, how is `a * b` related to `a * (-b)` (where `-b` is now positive)?
+      2. Rather than writing new logic, can you handle the negative case by converting `b` to positive, calling your existing recursive logic, and then fixing the sign of the result?
+
+      **Your derivation:**
+
+      if b < 0: multiply_recursive(a, b) = ...
+    hints:
+      - "`a * b = -(a * (-b))` when `b` is negative. So negate the result of calling the positive-`b` version."
+    solution:
+      code: null
+      text: |
+        If `b` is negative, then `a * b = -(a * (-b))`. So negate `b` to make it positive, call the existing recursive logic, and negate the result.
+
+        In code: `if b < 0: return -multiply_recursive(a, -b)`
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "Extend `multiply_recursive`"
+    description: |
+      Update `multiply_recursive(a, b)` to handle negative `b` too.
+
+      **Example:**
+
+      ```python
+      multiply_recursive(4, 3)     # Output: 12
+      multiply_recursive(5, 0)     # Output: 0
+      multiply_recursive(7, -2)    # Output: -14
+      multiply_recursive(-3, -3)   # Output: 9
+      ```
+    hints:
+      - "Add one check at the top of your function: if `b < 0`, return `-multiply_recursive(a, -b)`. The rest of the function stays the same."
+      - |
+        ```python
+        def multiply_recursive(a, b):
+            if b < 0:
+                return -multiply_recursive(a, -b)
+            if b == 0:
+                return 0
+            return a + multiply_recursive(a, b - 1)
+        ```
+    solution:
+      code: |
+        def multiply_recursive(a, b):
+            if b < 0:
+                return -multiply_recursive(a, -b)
+            if b == 0:
+                return 0
+            return a + multiply_recursive(a, b - 1)
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # PART 3: Power — Multiplying by Itself, Recursively
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 3
+    title: "Power --- Multiplying by Itself, Recursively"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Express Power in Terms of Itself"
+    description: |
+      `x ** n` (for a positive integer `n`) means multiplying `x` by itself `n` times. For example, `2 ** 3 = 2 * 2 * 2 = 8`.
+
+      **Before coding:**
+
+      1. What's the base case --- the smallest `n` (a positive integer) for which `x ** n` is just `x`, with no multiplication needed?
+      2. For any other (larger) `n`, how do you write `x ** n` using `x ** (n - 1)`?
+
+      **Your derivation:**
+
+      - base case: power(x, 1) = ...
+      - recursive case: power(x, n) = ...
+    hints:
+      - "`x ** 1 = x`. For larger `n`: `x ** n = x * (x ** (n - 1))`."
+    solution:
+      code: null
+      text: |
+        - base case: power(x, 1) = x
+        - recursive case: power(x, n) = x * power(x, n - 1)
+
+        When `n` is 1, `x ** 1` is just `x`. For any larger `n`, you multiply `x` by `x ** (n - 1)`.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Write `power`"
+    description: |
+      Write `power(x, n)` that returns `x ** n` using recursion, where `n` is a positive integer (`n >= 1`).
+
+      **Example:**
+
+      ```python
+      power(2, 3)   # Output: 8
+      power(5, 2)   # Output: 25
+      ```
+    hints:
+      - "Same pattern: base case returns `x`, recursive case returns `x * power(x, n - 1)`."
+    solution:
+      code: |
+        def power(x, n):
+            if n == 1:
+                return x
+            return x * power(x, n - 1)
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # PART 4: Power for Any Integer Exponent
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 4
+    title: "Power for Any Integer Exponent"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Two New Cases"
+    description: |
+      `power` from Part 3 only handles `n >= 1`. Now extend it to handle `n == 0` and negative `n` too.
+
+      **Before coding:**
+
+      1. What should `x ** 0` be, for any non-zero `x`? (No recursion needed --- this becomes a new base case.)
+      2. If `n` is negative, `x ** n` equals `1` divided by what?
+
+      **Your derivation:**
+
+      - new base case: compute_power(x, 0) = ...
+      - negative case: compute_power(x, n) for n < 0 = 1 / compute_power(x, ...)
+    hints:
+      - "`x ** 0 = 1` for any non-zero `x`. For negative `n`: `x ** n = 1 / (x ** (-n))`."
+    solution:
+      code: null
+      text: |
+        - new base case: compute_power(x, 0) = 1
+        - negative case: compute_power(x, n) for n < 0 = 1 / compute_power(x, -n)
+
+        Any non-zero number raised to the power 0 is 1. For negative exponents, `x ** n = 1 / (x ** (-n))`, which converts the problem to the positive case you already solved.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Write `compute_power`"
+    description: |
+      Write `compute_power(x, n)` that returns `x ** n` using recursion, for **any** integer `n` --- positive, negative, or zero.
+
+      **Example:**
+
+      ```python
+      compute_power(2, 3)   # Output: 8
+      compute_power(2, -3)  # Output: 0.125
+      compute_power(5, 0)   # Output: 1
+      compute_power(-2, 3)  # Output: -8
+      ```
+    hints:
+      - "Handle three branches: `n == 0` returns `1`; `n < 0` returns `1 / compute_power(x, -n)`; `n > 0` returns `x * compute_power(x, n - 1)`."
+    solution:
+      code: |
+        def compute_power(x, n):
+            if n == 0:
+                return 1
+            if n < 0:
+                return 1 / compute_power(x, -n)
+            return x * compute_power(x, n - 1)
+      text: null
+
+  - type: exercise
+    kind: challenge
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "A Second Route to Negative Exponents"
+    description: |
+      Your `compute_power` probably handles a negative `n` by computing the positive power first, then taking `1 /` the result. There's a route that never needs that flip: make the recursion itself *climb toward zero*.
+
+      For negative `n`, notice that $x^n = x^{n+1} / x$ --- the exponent moves **up** by one each call, so `-3 -> -2 -> -1 -> 0` reaches the same base case that positive `n` reaches by counting down.
+
+      Write `power_climb(x, n)` with one base case (`n == 0`) and **two** recursive cases: for positive `n` recurse on `n - 1` (as before), for negative `n` recurse on `n + 1` using the identity above.
+
+      *The lesson: a recursion just needs each call to step closer to the base case --- from below works as well as from above.*
+
+      **Tests:**
+
+      ```python
+      power_climb(4, -1)   # 0.25
+      power_climb(2, -3)   # 0.125
+      power_climb(2, 3)    # 8
+      power_climb(5, 0)    # 1
+      ```
+    hints:
+      - "For negative `n`: `power_climb(x, n) = power_climb(x, n + 1) / x`. Each call moves `n` one step closer to `0`."
+      - |
+        ```python
+        def power_climb(x, n):
+            if n == 0:
+                return 1
+            if n > 0:
+                return x * power_climb(x, n - 1)
+            # n < 0
+            return power_climb(x, n + 1) / x
+        ```
+    solution:
+      code: |
+        def power_climb(x, n):
+            if n == 0:
+                return 1
+            if n > 0:
+                return x * power_climb(x, n - 1)
+            # n < 0: climb toward 0 by adding 1 to the exponent
+            return power_climb(x, n + 1) / x
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # PART 5: Division by Repeated Subtraction
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 5
+    title: "Division by Repeated Subtraction"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Trace It by Hand"
+    description: |
+      `17 / 5`: how many times does `5` fit into `17`, and what's left over?
+
+      **Before coding:**
+
+      1. Subtract `5` from `17` repeatedly, counting how many subtractions you do, until what's left is *less than* `5`. How many subtractions did it take, and what's the leftover amount?
+      2. Those two numbers are the **quotient** and the **remainder**. State the base case: when the dividend is already less than the divisor, what's the quotient, and what's the remainder?
+      3. Otherwise --- one subtraction in --- how does the answer for `(dividend, divisor)` relate to the answer for `(dividend - divisor, divisor)`?
+
+      **Your derivation:**
+
+      - base case (dividend < divisor): quotient = ..., remainder = ...
+      - recursive case: recursive_divide(dividend, divisor) in terms of recursive_divide(dividend - divisor, divisor) = ...
+    hints:
+      - "`17 - 5 = 12`, `12 - 5 = 7`, `7 - 5 = 2`. Three subtractions, leftover is 2. So quotient = 3, remainder = 2."
+      - "Base case: if `dividend < divisor`, return `(0, dividend)`. Recursive case: get `(q, r)` from `recursive_divide(dividend - divisor, divisor)`, then return `(q + 1, r)`."
+    solution:
+      code: null
+      text: |
+        - base case (dividend < divisor): quotient = 0, remainder = dividend
+        - recursive case: get `(q, r)` from `recursive_divide(dividend - divisor, divisor)`, then return `(q + 1, r)`
+
+        Trace: `17 - 5 = 12`, `12 - 5 = 7`, `7 - 5 = 2`. Three subtractions, leftover is 2. So quotient = 3, remainder = 2.
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Write `recursive_divide`"
+    description: |
+      Write `recursive_divide(dividend, divisor)` that returns a tuple `(quotient, remainder)`, using recursion. You must **not** use `//` or `%`. Assume `dividend >= 0` and `divisor > 0`.
+
+      **Example:**
+
+      ```python
+      recursive_divide(17, 5)   # Output: (3, 2)
+      recursive_divide(20, 4)   # Output: (5, 0)
+      recursive_divide(7, 3)    # Output: (2, 1)
+      recursive_divide(0, 1)    # Output: (0, 0)
+      ```
+    hints:
+      - "If `dividend < divisor`, return `(0, dividend)`. Otherwise, recursively divide `(dividend - divisor, divisor)` and add 1 to the quotient."
+    solution:
+      code: |
+        def recursive_divide(dividend, divisor):
+            if dividend < divisor:
+                return (0, dividend)
+            q, r = recursive_divide(dividend - divisor, divisor)
+            return (q + 1, r)
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # PART 6: HCF via Euclid's Method — Reusing Part 5
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 6
+    title: "HCF via Euclid's Method --- Reusing Part 5"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Euclid's Rule"
+    description: |
+      The HCF (Highest Common Factor, a.k.a. GCD) of two numbers can be found with a remarkably short recursive rule:
+
+      - If `b == 0`, the HCF is `a`.
+      - Otherwise, the HCF of `a` and `b` is the same as the HCF of `b` and `a % b`.
+
+      **Before coding:** you already have a way to compute a remainder --- `recursive_divide(a, b)` from Part 5 returns `(quotient, remainder)`. Instead of writing `a % b` again, how would you get that same remainder by calling `recursive_divide`?
+
+      **Your plan:**
+
+      remainder of a divided by b, using Part 5's function = ...
+    hints:
+      - "`recursive_divide(a, b)` returns a tuple `(quotient, remainder)`. The remainder is the second element: `recursive_divide(a, b)[1]`."
+    solution:
+      code: null
+      text: |
+        The remainder of `a` divided by `b` is `recursive_divide(a, b)[1]` --- the second element of the tuple returned by your Part 5 function.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Write `compute_hcf`"
+    description: |
+      Write `compute_hcf(a, b)` using Euclid's method, **reusing `recursive_divide`** from Part 5 to get the remainder instead of using `%`.
+
+      **Example:**
+
+      ```python
+      compute_hcf(12, 18)     # Output: 6
+      compute_hcf(100, 25)    # Output: 25
+      compute_hcf(17, 13)     # Output: 1
+      compute_hcf(0, 5)       # Output: 5
+      ```
+    hints:
+      - "Base case: if `b == 0`, return `a`. Otherwise, get the remainder via `recursive_divide(a, b)[1]` and recurse: `compute_hcf(b, remainder)`."
+      - |
+        ```python
+        def compute_hcf(a, b):
+            if b == 0:
+                return a
+            _, remainder = recursive_divide(a, b)
+            return compute_hcf(b, remainder)
+        ```
+    solution:
+      code: |
+        def compute_hcf(a, b):
+            if b == 0:
+                return a
+            _, remainder = recursive_divide(a, b)
+            return compute_hcf(b, remainder)
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # PART 7: Tower of Hanoi — Two Recursive Calls
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 7
+    title: "Tower of Hanoi --- Two Recursive Calls"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-7-1
+    part: 7
+    number: 1
+    title: "Trace the Pattern by Hand"
+    description: |
+      You have 3 pegs: **A** (source), **B** (auxiliary), **C** (target), and a stack of discs on **A**, smallest on top. Move the whole stack to **C**, one disc at a time, never placing a larger disc on a smaller one.
+
+      **The general rule for `n` discs**, moving from `source` to `target` using `auxiliary` as spare space:
+
+      1. Move the top `n - 1` discs from `source` to `auxiliary` (using `target` as spare).
+      2. Move disc `n` from `source` to `target`.
+      3. Move the `n - 1` discs from `auxiliary` to `target` (using `source` as spare).
+
+      **Before coding:**
+
+      1. What's the base case --- the smallest `n` you can solve directly, with no sub-problem?
+      2. For `n = 2`: write out the 3 moves yourself, in order, using the rule above (you have 1 disc to move in steps 1 and 3, and disc 2 in step 2).
+      3. Notice that steps 1 and 3 are themselves smaller Tower of Hanoi problems --- just with the roles of the three pegs swapped around. This is what makes it recursive *twice* per call.
+
+      **Your derivation:**
+
+      - base case: n = ..., move disc 1 from source to target.
+      - for n=2: move ... from ... to ..., move ... from ... to ..., move ... from ... to ...
+    hints:
+      - "Base case: `n = 1` --- just move disc 1 from source to target. For `n = 2`: move disc 1 from A to B, move disc 2 from A to C, move disc 1 from B to C."
+    solution:
+      code: null
+      text: |
+        - base case: n = 1 --- move disc 1 directly from source to target.
+        - for n = 2: move disc 1 from A to B, move disc 2 from A to C, move disc 1 from B to C.
+
+        Steps 1 and 3 are themselves Tower of Hanoi sub-problems with `n - 1` discs, but with the peg roles rotated. That is what makes this doubly recursive.
+
+  - type: exercise
+    kind: coding
+    id: ex-7-2
+    part: 7
+    number: 2
+    title: "Write `solve_hanoi`"
+    description: |
+      Write `solve_hanoi(n, source='A', auxiliary='B', target='C')` that:
+
+      - prints each move exactly in the format `Moving <disc> from <source> to <target>.`
+      - uses the three-step rule above (two recursive calls plus one move printed in between),
+      - returns the **total number of moves** performed.
+
+      **Example:**
+
+      ```python
+      solve_hanoi(1)
+      # Moving 1 from A to C.
+      # Returns: 1
+      ```
+    hints:
+      - "Base case: if `n == 1`, print the move and return `1`. Otherwise, make two recursive calls (steps 1 and 3) and one print (step 2), summing up the move counts."
+      - |
+        ```python
+        def solve_hanoi(n, source='A', auxiliary='B', target='C'):
+            if n == 1:
+                print(f"Moving 1 from {source} to {target}.")
+                return 1
+            moves  = solve_hanoi(n - 1, source, target, auxiliary)
+            print(f"Moving {n} from {source} to {target}.")
+            moves += 1
+            moves += solve_hanoi(n - 1, auxiliary, source, target)
+            return moves
+        ```
+    solution:
+      code: |
+        def solve_hanoi(n, source='A', auxiliary='B', target='C'):
+            if n == 1:
+                print(f"Moving 1 from {source} to {target}.")
+                return 1
+            moves = solve_hanoi(n - 1, source, target, auxiliary)
+            print(f"Moving {n} from {source} to {target}.")
+            moves += 1
+            moves += solve_hanoi(n - 1, auxiliary, source, target)
+            return moves
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-7-3
+    part: 7
+    number: 3
+    title: "Test on More Discs"
+    description: |
+      **Tasks:**
+
+      1. Run `solve_hanoi(2)`. You should see exactly 3 moves, matching what you traced by hand in Exercise 7.1.
+      2. Run `solve_hanoi(3)`. You should see exactly 7 moves.
+      3. Run `solve_hanoi(4)` and just look at the returned total (don't worry about reading all the printed moves). What's the pattern in the totals for `n = 1, 2, 3, 4`? Can you guess the formula for the total number of moves as a function of `n`?
+         - *Hint: look back at Part 3 or 4 --- your `power`/`compute_power` function might help you verify your guess.*
+    hints:
+      - "The totals are 1, 3, 7, 15. Each one is one less than a power of 2. The formula is $2^n - 1$."
+    solution:
+      code: null
+      text: |
+        The totals are: n=1 -> 1, n=2 -> 3, n=3 -> 7, n=4 -> 15. Each is one less than a power of 2. The formula is **$2^n - 1$**.
+
+        You can verify with your `compute_power` function: `compute_power(2, n) - 1` matches the return value of `solve_hanoi(n)` for every `n`.
+
+  - type: exercise
+    kind: mcq
+    id: mcq-7-1
+    part: 7
+    number: 4
+    title: "Recursive Call Count"
+    question: |
+      The Tower of Hanoi for n discs requires $2^n - 1$ moves. For n = 4 (four discs), how many moves are needed?
+    options:
+      - label: A
+        text: "8"
+      - label: B
+        text: "15"
+        correct: true
+      - label: C
+        text: "16"
+      - label: D
+        text: "31"
+    hints:
+      - "Plug n = 4 into the formula: $2^4 - 1$."
+    solution:
+      text: "$2^4 = 16$, and $16 - 1 = 15$. This grows exponentially: 3 discs need 7 moves, 4 discs need 15, 5 discs need 31. The legendary 64-disc version needs $2^{64} - 1$ = about 18.4 quintillion moves --- at one move per second, that's about 585 billion years."
+
+  # ──────────────────────────────────────────────────────
+  # PART 8: Bonus Challenges
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 8
+    title: "Bonus Challenges"
+
+  - type: exercise
+    kind: challenge
+    id: ex-8-a
+    part: 8
+    number: 1
+    title: "Fibonacci, and Why It's Slow"
+    description: |
+      The Fibonacci sequence is defined recursively: `fib(0) = 0`, `fib(1) = 1`, and `fib(n) = fib(n-1) + fib(n-2)` for `n >= 2`.
+
+      **Tasks:**
+
+      1. Write `fib(n)` using plain recursion (two recursive calls, just like Tower of Hanoi).
+      2. Test it on `fib(10)` (expected: `55`).
+      3. Time how long `fib(30)` takes. Then try `fib(35)`. What's happening? (Hint: how many times does `fib` end up computing `fib(2)`, for instance?)
+      4. Fix the slowness using **memoization**: keep a dictionary that caches `fib(n)` the first time you compute it, and check the cache before recursing. How much faster is `fib(35)` now?
+    hints:
+      - "Plain Fibonacci: `fib(0) = 0`, `fib(1) = 1`, `fib(n) = fib(n-1) + fib(n-2)`. The problem is that the number of calls grows exponentially --- like the tree branches at every level."
+      - "For memoization, create a dictionary `cache = {}` outside the function (or use a default argument). At the start of `fib(n)`, check `if n in cache: return cache[n]`. Before returning, store the result: `cache[n] = result`."
+      - |
+        ```python
+        cache = {}
+        def fib_memo(n):
+            if n in cache:
+                return cache[n]
+            if n <= 1:
+                return n
+            result = fib_memo(n - 1) + fib_memo(n - 2)
+            cache[n] = result
+            return result
+        ```
+    solution:
+      code: |
+        # Plain recursive Fibonacci:
+        def fib(n):
+            if n <= 1:
+                return n
+            return fib(n - 1) + fib(n - 2)
+
+        # Memoized Fibonacci:
+        cache = {}
+        def fib_memo(n):
+            if n in cache:
+                return cache[n]
+            if n <= 1:
+                return n
+            result = fib_memo(n - 1) + fib_memo(n - 2)
+            cache[n] = result
+            return result
+      text: |
+        The plain recursive version is extremely slow for large `n` because it recomputes the same sub-problems exponentially many times (e.g., `fib(2)` is computed millions of times when calling `fib(35)`).
+
+        With memoization, each value of `fib(n)` is computed only once and then looked up in O(1) time for all future calls. This turns exponential time into linear time.
+
+  - type: exercise
+    kind: challenge
+    id: ex-8-b
+    part: 8
+    number: 2
+    title: "Verify the Hanoi Move Formula"
+    description: |
+      In Exercise 7.3, you may have guessed that `solve_hanoi(n)` always returns $2^n - 1$ total moves.
+
+      Write a small check that uses your `compute_power` function from Part 4 to verify this formula against the actual return value of `solve_hanoi`, for `n` from `1` to `10` (call `solve_hanoi` in a way that doesn't print anything, or just ignore the printed output).
+    hints:
+      - "Loop from 1 to 10, compute `solve_hanoi(n)` and `compute_power(2, n) - 1`, and assert or print whether they match."
+    solution:
+      code: |
+        for n in range(1, 11):
+            actual = solve_hanoi(n)
+            expected = compute_power(2, n) - 1
+            assert actual == expected, f"Mismatch at n={n}"
+            print(f"n={n}: solve_hanoi={actual}, 2^n-1={expected} -- OK")
+      text: null
+
+  # ──────────────────────────────────────────────────────
+  # Reflection
+  # ──────────────────────────────────────────────────────
+
+  - type: part
+    number: 9
+    title: "Reflection --- What Did You Just Build?"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 9
+    number: 1
+    title: "Reflection"
+    description: |
+      Take a moment to answer these questions in your own words.
+
+      1. Every recursive function you wrote has a **base case** and a **recursive case**. What goes wrong if a function is missing a base case, or if the recursive case never gets closer to the base case?
+      2. In Part 2, how did handling a negative `b` show you a pattern: solve the "hard" case by converting it to a case you already know how to solve?
+      3. In Part 6, what did you reuse from Part 5, and why was that better than rewriting the remainder logic with `%`?
+      4. Tower of Hanoi and Fibonacci both make **two** recursive calls per step, instead of one. What's different about how their total work grows as `n` increases?
+      5. What is memoization, and what problem does it solve?
+    hints: []
+    solution:
+      code: null
+      text: null

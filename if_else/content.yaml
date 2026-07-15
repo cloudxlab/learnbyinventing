@@ -1,0 +1,1044 @@
+chapter:
+  id: if_else
+  title: "Learning If-Else by Inventing Branching Logic"
+  intro: |
+    You won't be taught — you will *discover*. Every step builds on the last. Trust the process.
+
+    **Python Quick Reference**
+
+    This chapter uses **if/elif/else** to make decisions and **comparisons** to test conditions.
+
+    ```python
+    # Comparison operators: ==  !=  <  >  <=  >=
+    x = 7
+    x > 5           # True
+    x == 7          # True
+    x != 3          # True
+
+    # if / elif / else
+    if x > 10:
+        print("big")
+    elif x > 5:
+        print("medium")    # this runs
+    else:
+        print("small")
+
+    # Combining conditions: and, or, not
+    if x > 0 and x < 100:
+        print("in range")
+
+    # Returning different values from a function
+    def classify(n):
+        if n > 0:
+            return "positive"
+        elif n < 0:
+            return "negative"
+        else:
+            return "zero"
+    ```
+
+    - `if`, `elif`, `else` must end with a colon; the body is indented.
+    - `==` tests equality; `=` assigns a value.
+    - `and`/`or`/`not` combine boolean conditions.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/if_else/if_else.ipynb"
+  mathjax: false
+  footer: |
+    You've just learned that `if`/`elif`/`else` isn't only for simple yes/no decisions — it's also how you build up geometric reasoning piece by piece. The trick you used twice here, breaking a 2D (or 3D) question into independent 1D questions along each axis, is one of the most reusable ideas in programming.
+
+blocks:
+  # ──────────────────────────────────────────
+  # Provided setup code
+  # ──────────────────────────────────────────
+  - type: exercise
+    kind: coding
+    id: ex-setup
+    part: 0
+    number: 0
+    title: "Setup"
+    description: |
+      Import the libraries used throughout this chapter.
+    provided_code:
+      - label: "setup"
+        code: |
+          import random
+          import matplotlib.pyplot as plt
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # ══════════════════════════════════════════
+  # PART 1: Branching with Randomness
+  # ══════════════════════════════════════════
+  - type: part
+    number: 1
+    title: "Branching with Randomness"
+    intro: ""
+
+  # Exercise 1.1
+  - type: exercise
+    kind: conceptual
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "A Random Die Roll"
+    description: |
+      `random.random()` returns a random decimal number between `0` (inclusive) and `1` (exclusive) — something like `0.3741...`.
+
+      **Before coding:**
+
+      1. If you multiply a number in `[0, 1)` by `6`, what range does the result fall in?
+      2. If you then take the integer part (`int(...)`), what range of *whole numbers* do you get?
+      3. How would you shift that range so it becomes `1` to `6` instead of `0` to `5` — like a die?
+
+      **Your derivation:**
+
+      - `random.random() * 6` is in the range: ...
+      - `int(random.random() * 6)` is in the range: ...
+      - To shift to 1--6: ...
+    provided_code: []
+    hints:
+      - "Multiplying `[0, 1)` by 6 gives `[0, 6)`. Taking `int()` of that gives one of `0, 1, 2, 3, 4, 5`."
+      - "Adding 1 shifts the range from `0--5` to `1--6`. So the expression is `int(random.random() * 6) + 1`."
+    solution:
+      code: null
+      text: |
+        - `random.random() * 6` is in the range `[0, 6)`
+        - `int(random.random() * 6)` gives one of `0, 1, 2, 3, 4, 5`
+        - To shift to 1--6: add 1 → `int(random.random() * 6) + 1`
+
+  # Exercise 1.2
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Write `roll_die`"
+    description: |
+      Write a function `roll_die()` that returns a random integer between `1` and `6` (inclusive), using only `random.random()` — no `if` needed yet, just the expression you derived above.
+
+      Run it a bunch of times to make sure you only ever see `1` through `6`.
+    provided_code:
+      - label: "starter code"
+        code: |
+          def roll_die():
+              """
+              Returns a random integer between 1 and 6 (inclusive).
+              """
+              pass  # replace this
+
+
+          for _ in range(20):
+              print(roll_die(), end=" ")
+    hints:
+      - "The body is a single `return` statement using the expression from Exercise 1.1."
+      - "`return int(random.random() * 6) + 1`"
+    solution:
+      code: |
+        def roll_die():
+            return int(random.random() * 6) + 1
+      text: null
+
+  # Exercise 1.3
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Your First Branch: Coin Toss"
+    description: |
+      Now for an actual decision. `random.random() < 0.5` is `True` about half the time, `False` the other half.
+
+      **Write** a function `coin_toss()` that returns the string `"Heads"` or `"Tails"`, using an `if`/`else` on `random.random() < 0.5`.
+
+      **Tasks:**
+
+      1. Implement `coin_toss()`.
+      2. Call it 20 times and print the results.
+      3. Call it 10,000 times and count how many times you got `"Heads"`. Is it close to 5,000?
+    provided_code:
+      - label: "starter code"
+        code: |
+          def coin_toss():
+              """
+              Returns "Heads" or "Tails", each with roughly 50% probability.
+              """
+              pass  # replace this
+
+
+          print([coin_toss() for _ in range(20)])
+
+          heads_count = 0
+          for _ in range(10000):
+              if coin_toss() == "Heads":
+                  heads_count = heads_count  # fill in: count heads
+          print(f"Heads: {heads_count} / 10000")
+    hints:
+      - "Inside the function: `if random.random() < 0.5:` return one string, `else:` return the other."
+      - "Don't forget the counting line — `heads_count = heads_count` should become `heads_count = heads_count + 1` (or `heads_count += 1`)."
+    solution:
+      code: |
+        def coin_toss():
+            if random.random() < 0.5:
+                return "Heads"
+            else:
+                return "Tails"
+
+
+        print([coin_toss() for _ in range(20)])
+
+        heads_count = 0
+        for _ in range(10000):
+            if coin_toss() == "Heads":
+                heads_count = heads_count + 1
+        print(f"Heads: {heads_count} / 10000")
+      text: null
+
+  # Exercise 1.4
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "A Three-Way Branch"
+    description: |
+      `if`/`else` only gives you two outcomes. `if`/`elif`/`else` gives you more.
+
+      Write a function `classify_roll(n)` that takes a die result `n` (1 through 6) and returns:
+
+      - `"Low"` if `n` is 1 or 2
+      - `"Mid"` if `n` is 3 or 4
+      - `"High"` if `n` is 5 or 6
+
+      **Tasks:**
+
+      1. Implement it using `if`/`elif`/`else`.
+      2. Roll the die 20 times with `roll_die()` and classify each result. Print both the roll and its class.
+    provided_code:
+      - label: "starter code"
+        code: |
+          def classify_roll(n):
+              """
+              Returns "Low" (1-2), "Mid" (3-4), or "High" (5-6).
+              """
+              pass  # replace this
+
+
+          for _ in range(20):
+              n = roll_die()
+              print(f"{n} -> {classify_roll(n)}")
+    hints:
+      - "You can use `n <= 2` for Low, `n <= 4` for Mid (because you already ruled out 1--2), and `else` for High."
+      - "Alternatively, test `n in [1, 2]`, `n in [3, 4]`, `n in [5, 6]` — but chaining `<=` comparisons is more concise and generalises better."
+    solution:
+      code: |
+        def classify_roll(n):
+            if n <= 2:
+                return "Low"
+            elif n <= 4:
+                return "Mid"
+            else:
+                return "High"
+      text: null
+
+  # ══════════════════════════════════════════
+  # PART 2: Comparing Two Distances — Closer to A or B?
+  # ══════════════════════════════════════════
+  - type: part
+    number: 2
+    title: "Comparing Two Distances — Closer to A or B?"
+    intro: ""
+
+  # Exercise 2.1
+  - type: exercise
+    kind: conceptual
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Set Up the Comparison"
+    description: |
+      You're given three points on a 2D plane: `P`, `A`, and `B`. You want to know whether `P` is closer to `A` or to `B`.
+
+      You *could* compute the real distances (with a square root), but for **comparing** two distances, you don't need to — the one with the smaller *squared* distance is also the one with the smaller actual distance. (Square root is increasing, so it never flips the order.)
+
+      **Before coding:**
+
+      For `P=(1, 2)`, `A=(0, 0)`, `B=(5, 5)`:
+
+      1. Compute the squared distance from `P` to `A`: `(px - ax)**2 + (py - ay)**2`.
+      2. Compute the squared distance from `P` to `B`.
+      3. Which is smaller? So which point is `P` closer to?
+
+      **Your derivation:**
+
+      - squared distance P to A: ...
+      - squared distance P to B: ...
+      - closer point: ...
+    provided_code: []
+    hints:
+      - "P to A: `(1-0)**2 + (2-0)**2 = 1 + 4 = 5`. P to B: `(1-5)**2 + (2-5)**2 = 16 + 9 = 25`. Since 5 < 25, P is closer to A."
+    solution:
+      code: null
+      text: |
+        - Squared distance P to A: `(1-0)**2 + (2-0)**2 = 1 + 4 = 5`
+        - Squared distance P to B: `(1-5)**2 + (2-5)**2 = 16 + 9 = 25`
+        - Since 5 < 25, P is closer to A.
+
+  # Exercise 2.2
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Write `closer_point`"
+    description: |
+      Write a function `closer_point(p, a, b)` where `p`, `a`, `b` are each `(x, y)` tuples. It should return:
+
+      - `'A'` if `p` is closer to `a`
+      - `'B'` if `p` is closer to `b`
+      - `'Equal'` if the distances are the same
+
+      This needs a **three-way** branch — `if`/`elif`/`else`.
+
+      **Example:**
+
+      ```python
+      closer_point((1, 2), (0, 0), (5, 5))     # Output: 'A'
+      closer_point((4, 4), (0, 0), (8, 8))     # Output: 'Equal'
+      closer_point((7, 3), (2, 3), (10, 3))    # Output: 'B'
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          def closer_point(p, a, b):
+              """
+              p, a, b are (x, y) tuples.
+              Returns 'A' if p is closer to a, 'B' if closer to b, 'Equal' if tied.
+              """
+              pass  # replace this
+
+
+          print(closer_point((1, 2), (0, 0), (5, 5)))     # A
+          print(closer_point((4, 4), (0, 0), (8, 8)))     # Equal
+          print(closer_point((7, 3), (2, 3), (10, 3)))    # B
+    hints:
+      - "Compute `dist_a = (p[0]-a[0])**2 + (p[1]-a[1])**2` and `dist_b` similarly. Then compare them with `if`/`elif`/`else`."
+      - "You can also unpack tuples: `px, py = p`, `ax, ay = a`, `bx, by = b` to make the expressions more readable."
+    solution:
+      code: |
+        def closer_point(p, a, b):
+            dist_a = (p[0] - a[0])**2 + (p[1] - a[1])**2
+            dist_b = (p[0] - b[0])**2 + (p[1] - b[1])**2
+            if dist_a < dist_b:
+                return 'A'
+            elif dist_a > dist_b:
+                return 'B'
+            else:
+                return 'Equal'
+      text: null
+
+  # Exercise 2.3
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Try More Cases"
+    description: |
+      **Tasks:**
+
+      1. Pick three new points where you can predict the answer just by sketching them on paper. Verify your function agrees.
+      2. Pick a point exactly halfway between `A` and `B`. What does `closer_point` say?
+    provided_code:
+      - label: "starter code"
+        code: |
+          print(closer_point((0, 0), (-10, 0), (10, 0)))   # halfway -> ?
+          print(closer_point((3, 0), (0, 0), (10, 10)))
+    hints:
+      - "The midpoint of `(-10, 0)` and `(10, 0)` is `(0, 0)`. Both squared distances are `100`, so the answer should be `'Equal'`."
+    solution:
+      code: |
+        # (0,0) is exactly halfway between (-10,0) and (10,0)
+        # Both squared distances are 100, so the answer is 'Equal'
+        print(closer_point((0, 0), (-10, 0), (10, 0)))   # Equal
+
+        # (3,0): dist to (0,0) = 9, dist to (10,10) = 49+100 = 149
+        print(closer_point((3, 0), (0, 0), (10, 10)))     # A
+      text: null
+
+  # ══════════════════════════════════════════
+  # PART 3: Is a Point Between Two Others? (1D)
+  # ══════════════════════════════════════════
+  - type: part
+    number: 3
+    title: "Is a Point Between Two Others? (1D)"
+    intro: ""
+
+  # Exercise 3.1
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "The Order Problem"
+    description: |
+      On a number line, you have two points `a` and `b`, and a third point `p`. You want to know if `p` lies between `a` and `b` (including the endpoints).
+
+      **The tricky part:** you're not told whether `a < b` or `a > b`.
+
+      **Before coding:**
+
+      1. If `a = 5` and `b = 2`, what are the actual lower and upper bounds of the segment?
+      2. Python's built-in `min()` and `max()` can take two arguments. How would you use them to get the lower and upper bounds *regardless* of which of `a`, `b` is bigger?
+
+      **Your derivation:**
+
+      - lower bound = ...
+      - upper bound = ...
+    provided_code: []
+    hints:
+      - "Lower bound = `min(a, b)`, upper bound = `max(a, b)`. These work regardless of the order of `a` and `b`."
+    solution:
+      code: null
+      text: |
+        - Lower bound = `min(a, b)` → `min(5, 2) = 2`
+        - Upper bound = `max(a, b)` → `max(5, 2) = 5`
+
+        Then `p` is between `a` and `b` when `min(a, b) <= p <= max(a, b)`.
+
+  # Exercise 3.2
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Write `is_point_on_line_1d`"
+    description: |
+      Write `is_point_on_line_1d(a, b, p)` that returns `True` if `p` lies between `a` and `b` (inclusive), regardless of which of `a`, `b` is larger.
+
+      **Example:**
+
+      ```python
+      is_point_on_line_1d(2, 5, 3)      # Output: True
+      is_point_on_line_1d(5, 2, 3)      # Output: True   (order doesn't matter)
+      is_point_on_line_1d(2, 5, 6)      # Output: False
+      is_point_on_line_1d(4, 4, 4)      # Output: True   (a single point)
+      is_point_on_line_1d(4, 4, 5)      # Output: False
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          def is_point_on_line_1d(a, b, p):
+              """
+              Returns True if p lies between a and b (inclusive), regardless of order.
+              """
+              pass  # replace this
+
+
+          print(is_point_on_line_1d(2, 5, 3))      # True
+          print(is_point_on_line_1d(5, 2, 3))      # True
+          print(is_point_on_line_1d(2, 5, 6))      # False
+          print(is_point_on_line_1d(4, 4, 4))      # True
+          print(is_point_on_line_1d(4, 4, 5))      # False
+    hints:
+      - "Use `min(a, b)` and `max(a, b)` from Exercise 3.1 to find the bounds, then check if `p` is between them."
+      - "`return min(a, b) <= p <= max(a, b)` — Python supports chained comparisons."
+    solution:
+      code: |
+        def is_point_on_line_1d(a, b, p):
+            return min(a, b) <= p <= max(a, b)
+      text: null
+
+  # Exercise 3.3
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Test with Negative Numbers"
+    description: |
+      A good function shouldn't need special-casing for negative numbers if the logic is right.
+
+      **Tasks:** test `is_point_on_line_1d` on these and check the results match the comments.
+
+      ```python
+      is_point_on_line_1d(-5, -2, -3)   # Output: True
+      is_point_on_line_1d(-5, -2, -6)   # Output: False
+      is_point_on_line_1d(-2, -5, -4)   # Output: True
+      is_point_on_line_1d(-1, 3, 0)     # Output: True
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          print(is_point_on_line_1d(-5, -2, -3))   # True
+          print(is_point_on_line_1d(-5, -2, -6))   # False
+          print(is_point_on_line_1d(-2, -5, -4))   # True
+          print(is_point_on_line_1d(-1, 3, 0))     # True
+    hints:
+      - "If all four test cases pass, your function handles negative numbers correctly without any extra logic. The `min()`/`max()` approach works the same way for negatives."
+    solution:
+      code: |
+        # All pass without any special-casing for negatives:
+        print(is_point_on_line_1d(-5, -2, -3))   # True  (-5 <= -3 <= -2)
+        print(is_point_on_line_1d(-5, -2, -6))   # False (-6 < -5)
+        print(is_point_on_line_1d(-2, -5, -4))   # True  (min=-5, max=-2, -5 <= -4 <= -2)
+        print(is_point_on_line_1d(-1, 3, 0))     # True  (-1 <= 0 <= 3)
+      text: null
+
+  # ══════════════════════════════════════════
+  # PART 4: Do Two Segments Touch or Overlap? (1D)
+  # ══════════════════════════════════════════
+  - type: part
+    number: 4
+    title: "Do Two Segments Touch or Overlap? (1D)"
+    intro: ""
+
+  # Exercise 4.1
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Think About Separation, Not Overlap"
+    description: |
+      You now have **two** segments on the number line: segment 1 from `start1` to `end1`, and segment 2 from `start2` to `end2` (and again, you can't assume `start < end` for either one).
+
+      It's easier to reason about when they're **completely separate** first, then negate it.
+
+      **Before coding:**
+
+      1. After sorting each segment so you know its true `lo` and `hi`, when is segment 1 *entirely to the left* of segment 2? Write the condition.
+      2. When is segment 1 *entirely to the right* of segment 2?
+      3. The segments touch or overlap exactly when **neither** of those is true. Using `not` and `or` (or by flipping the logic directly), write the combined condition for "touching or overlapping".
+
+      **Your derivation:**
+
+      - segment 1 entirely left of segment 2 when: ...
+      - segment 1 entirely right of segment 2 when: ...
+      - touching or overlapping when: ...
+    provided_code: []
+    hints:
+      - "If `hi1 < lo2`, segment 1 is entirely to the left. If `lo1 > hi2`, segment 1 is entirely to the right."
+      - "Separated = `hi1 < lo2 or lo1 > hi2`. Touching or overlapping = `not (hi1 < lo2 or lo1 > hi2)`, which simplifies to `hi1 >= lo2 and lo1 <= hi2`."
+    solution:
+      code: null
+      text: |
+        - Segment 1 entirely left of segment 2 when: `hi1 < lo2`
+        - Segment 1 entirely right of segment 2 when: `lo1 > hi2`
+        - Separated = `hi1 < lo2 or lo1 > hi2`
+        - Touching or overlapping = `not (hi1 < lo2 or lo1 > hi2)`, which simplifies to `hi1 >= lo2 and lo1 <= hi2`
+
+  # Exercise 4.2
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Write `are_lines_touching_or_overlapping`"
+    description: |
+      Write `are_lines_touching_or_overlapping(start1, end1, start2, end2)` that returns `True` if the two segments touch or overlap, `False` if they're completely separate. Remember to handle the case where `start > end` for either segment, just like in Part 3.
+
+      **Example:**
+
+      ```python
+      are_lines_touching_or_overlapping(1, 4, 3, 6)        # Output: True   (overlap 3 to 4)
+      are_lines_touching_or_overlapping(1, 3, 3, 5)        # Output: True   (touch at 3)
+      are_lines_touching_or_overlapping(1, 2, 3, 4)        # Output: False  (separate)
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          def are_lines_touching_or_overlapping(start1, end1, start2, end2):
+              """
+              Returns True if the 1D segments [start1, end1] and [start2, end2]
+              touch or overlap, False if they are completely separate.
+              Works regardless of whether start < end for either segment.
+              """
+              pass  # replace this
+
+
+          print(are_lines_touching_or_overlapping(1, 4, 3, 6))        # True
+          print(are_lines_touching_or_overlapping(1, 3, 3, 5))        # True
+          print(are_lines_touching_or_overlapping(1, 2, 3, 4))        # False
+    hints:
+      - "First normalise each segment: `lo1, hi1 = min(start1, end1), max(start1, end1)`. Then apply the condition from Exercise 4.1."
+      - "After normalising: `return hi1 >= lo2 and lo1 <= hi2`. Or equivalently: `return not (hi1 < lo2 or lo1 > hi2)`."
+    solution:
+      code: |
+        def are_lines_touching_or_overlapping(start1, end1, start2, end2):
+            lo1, hi1 = min(start1, end1), max(start1, end1)
+            lo2, hi2 = min(start2, end2), max(start2, end2)
+            return hi1 >= lo2 and lo1 <= hi2
+      text: null
+
+  # Exercise 4.3
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Test with Negative and Reversed Inputs"
+    description: |
+      **Tasks:** verify these all match the comments — pay special attention to the last one, where both segments are given "backwards".
+
+      ```python
+      are_lines_touching_or_overlapping(-3, 1, 0, 4)       # Output: True   (overlap 0 to 1)
+      are_lines_touching_or_overlapping(-5, -2, -2, 3)     # Output: True   (touch at -2)
+      are_lines_touching_or_overlapping(-10, -6, -5, -1)   # Output: False  (no touch or overlap)
+      are_lines_touching_or_overlapping(-2, -7, -4, -3)    # Output: True   (overlap, even with reversed inputs)
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          print(are_lines_touching_or_overlapping(-3, 1, 0, 4))       # True
+          print(are_lines_touching_or_overlapping(-5, -2, -2, 3))     # True
+          print(are_lines_touching_or_overlapping(-10, -6, -5, -1))   # False
+          print(are_lines_touching_or_overlapping(-2, -7, -4, -3))    # True
+    hints:
+      - "If any test fails, check that you're normalising both segments with `min()`/`max()` before comparing. The last case has `start > end` for *both* segments."
+    solution:
+      code: |
+        # All pass because min()/max() normalise the segments:
+        print(are_lines_touching_or_overlapping(-3, 1, 0, 4))       # True  (overlap 0 to 1)
+        print(are_lines_touching_or_overlapping(-5, -2, -2, 3))     # True  (touch at -2)
+        print(are_lines_touching_or_overlapping(-10, -6, -5, -1))   # False (gap between -6 and -5)
+        print(are_lines_touching_or_overlapping(-2, -7, -4, -3))    # True  ([-7,-2] and [-4,-3] overlap)
+      text: null
+
+  # MCQ 4.1
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 4
+    title: "Separation vs Overlap Logic"
+    question: |
+      You wrote `are_lines_touching_or_overlapping` by checking whether the segments are NOT separated. Why is it easier to check for separation instead of directly checking for overlap?
+    options:
+      - label: A
+        text: "Separation is faster to compute"
+      - label: B
+        text: "Overlap has many sub-cases (partial overlap, containment, touching at endpoint) but separation has only two simple conditions"
+        correct: true
+      - label: C
+        text: "Python can only check inequality, not equality"
+      - label: D
+        text: "Separation works in 2D but overlap doesn't"
+    hints:
+      - "Think about all the different ways two segments can overlap versus the ways they can be apart."
+    solution:
+      text: |
+        Two segments can overlap partially, one can contain the other entirely, or they can just touch at an endpoint — that's many cases to enumerate. But "separated" has only two clean conditions: one ends before the other starts (left-separated) or vice versa (right-separated). Checking NOT-separated captures all overlap cases at once.
+
+  # ══════════════════════════════════════════
+  # PART 5: Is a Point Inside a Rectangle? (2D)
+  # ══════════════════════════════════════════
+  - type: part
+    number: 5
+    title: "Is a Point Inside a Rectangle? (2D)"
+    intro: ""
+
+  # Exercise 5.1
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Reduce 2D to Two 1D Problems"
+    description: |
+      A rectangle with sides parallel to the axes is defined by its bottom-left corner `(x1, y1)` and top-right corner `(x2, y2)` (with `x1 < x2` and `y1 < y2`). A point `(px, py)` is inside it if its `x` is between `x1` and `x2`, **and** its `y` is between `y1` and `y2`.
+
+      Look closely — "is `px` between `x1` and `x2`" is *exactly* the function you wrote in Part 3!
+
+      **Before coding:** write out, in words, how `is_point_inside_rectangle` could be built using **two calls** to `is_point_on_line_1d` instead of writing brand-new comparison logic.
+
+      **Your plan:**
+
+      `is_point_inside_rectangle(x1, y1, x2, y2, px, py) = is_point_on_line_1d(...) and is_point_on_line_1d(...)`
+    provided_code: []
+    hints:
+      - "Check the x-axis: `is_point_on_line_1d(x1, x2, px)`. Check the y-axis: `is_point_on_line_1d(y1, y2, py)`. The point is inside if **both** are `True`."
+    solution:
+      code: null
+      text: |
+        Check each axis independently using the 1D function:
+
+        ```python
+        is_point_inside_rectangle(x1, y1, x2, y2, px, py) =
+            is_point_on_line_1d(x1, x2, px) and is_point_on_line_1d(y1, y2, py)
+        ```
+
+        The point is inside the rectangle only if its x-coordinate is within the x-range **and** its y-coordinate is within the y-range.
+
+  # Exercise 5.2
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Write `is_point_inside_rectangle`"
+    description: |
+      Write `is_point_inside_rectangle(x1, y1, x2, y2, px, py)` by **reusing** `is_point_on_line_1d` — don't rewrite the comparison logic from scratch.
+
+      **Example:**
+
+      ```python
+      is_point_inside_rectangle(0, 0, 10, 5, 3, 2)   # Output: True
+      is_point_inside_rectangle(0, 0, 10, 5, 10, 5)  # Output: True  (on the corner)
+      is_point_inside_rectangle(0, 0, 10, 5, 11, 5)  # Output: False
+      is_point_inside_rectangle(-5, -5, 5, 5, 0, 0)  # Output: True
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          def is_point_inside_rectangle(x1, y1, x2, y2, px, py):
+              """
+              Returns True if (px, py) is inside or on the boundary of the rectangle
+              with bottom-left (x1, y1) and top-right (x2, y2).
+              Reuses is_point_on_line_1d for each axis.
+              """
+              pass  # replace this
+
+
+          print(is_point_inside_rectangle(0, 0, 10, 5, 3, 2))    # True
+          print(is_point_inside_rectangle(0, 0, 10, 5, 10, 5))   # True
+          print(is_point_inside_rectangle(0, 0, 10, 5, 11, 5))   # False
+          print(is_point_inside_rectangle(-5, -5, 5, 5, 0, 0))   # True
+    hints:
+      - "The entire function body is one line: `return is_point_on_line_1d(x1, x2, px) and is_point_on_line_1d(y1, y2, py)`."
+    solution:
+      code: |
+        def is_point_inside_rectangle(x1, y1, x2, y2, px, py):
+            return is_point_on_line_1d(x1, x2, px) and is_point_on_line_1d(y1, y2, py)
+      text: null
+
+  # Exercise 5.3
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "Visualise It"
+    description: |
+      Use the plotting helper below to see a rectangle and a point together, colour-coded by whether the point is inside.
+
+      **Tasks:** Try a few of your own points and rectangles to build intuition.
+
+      ```python
+      plot_rectangle_and_point(0, 0, 10, 5, 3, 2)
+      plot_rectangle_and_point(0, 0, 10, 5, 11, 5)
+      ```
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_rectangle_and_point(x1, y1, x2, y2, px, py, title=None):
+              inside = is_point_inside_rectangle(x1, y1, x2, y2, px, py)
+              fig, ax = plt.subplots(figsize=(5, 5))
+              ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
+                                          fill=False, edgecolor='blue', linewidth=2))
+              ax.scatter([px], [py], color='green' if inside else 'red', s=100, zorder=5)
+              margin = max(x2 - x1, y2 - y1) * 0.3 + 1
+              ax.set_xlim(min(x1, px) - margin, max(x2, px) + margin)
+              ax.set_ylim(min(y1, py) - margin, max(y2, py) + margin)
+              ax.set_aspect('equal')
+              ax.set_title(title or f"Inside: {inside}")
+              ax.grid(True)
+              plt.show()
+    hints: []
+    solution:
+      code: |
+        # Point inside the rectangle (green dot)
+        plot_rectangle_and_point(0, 0, 10, 5, 3, 2)
+
+        # Point outside the rectangle (red dot)
+        plot_rectangle_and_point(0, 0, 10, 5, 11, 5)
+
+        # Try your own:
+        plot_rectangle_and_point(-5, -5, 5, 5, 0, 0)    # inside (centre)
+        plot_rectangle_and_point(-5, -5, 5, 5, 5, 5)    # on the corner
+      text: null
+
+  # ══════════════════════════════════════════
+  # PART 6: Do Two Rectangles Intersect? (2D)
+  # ══════════════════════════════════════════
+  - type: part
+    number: 6
+    title: "Do Two Rectangles Intersect? (2D)"
+    intro: ""
+
+  # Exercise 6.1
+  - type: exercise
+    kind: conceptual
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Project onto Each Axis"
+    description: |
+      A rectangle is just two independent ranges glued together: an `x`-range and a `y`-range. Two rectangles intersect **exactly when** their `x`-ranges touch/overlap **and** their `y`-ranges touch/overlap.
+
+      This is the same trick as Part 5 — except now you reuse the Part 4 function (segment overlap) instead of the Part 3 function (point between).
+
+      A rectangle here is represented as `((x1, y1), (x2, y2))` — bottom-left and top-right corners.
+
+      **Before coding:** write out, in words, how `are_rectangles_intersecting(rect1, rect2)` could be built using **two calls** to `are_lines_touching_or_overlapping` — one for the x-coordinates of both rectangles, one for the y-coordinates.
+
+      **Your plan:**
+
+      `are_rectangles_intersecting(rect1, rect2) = are_lines_touching_or_overlapping(...) and are_lines_touching_or_overlapping(...)`
+    provided_code: []
+    hints:
+      - "X-ranges overlap: `are_lines_touching_or_overlapping(rect1[0][0], rect1[1][0], rect2[0][0], rect2[1][0])`. Do the same for Y using index `[1]` of each corner."
+    solution:
+      code: null
+      text: |
+        Check each axis independently using the 1D segment-overlap function:
+
+        ```python
+        are_rectangles_intersecting(rect1, rect2) =
+            are_lines_touching_or_overlapping(rect1 x-range, rect2 x-range)
+            and
+            are_lines_touching_or_overlapping(rect1 y-range, rect2 y-range)
+        ```
+
+        The rectangles intersect only if their x-ranges overlap **and** their y-ranges overlap.
+
+  # Exercise 6.2
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Write `are_rectangles_intersecting`"
+    description: |
+      Write `are_rectangles_intersecting(rect1, rect2)` by **reusing** `are_lines_touching_or_overlapping` on the x-coordinates and on the y-coordinates.
+
+      **Example:**
+
+      ```python
+      are_rectangles_intersecting(((0, 0), (3, 3)), ((2, 2), (5, 5)))   # Output: True
+      are_rectangles_intersecting(((0, 0), (1, 1)), ((2, 2), (3, 3)))   # Output: False
+      are_rectangles_intersecting(((0, 0), (2, 2)), ((2, 2), (4, 4)))   # Output: True  (touching at a corner)
+      are_rectangles_intersecting(((0, 0), (5, 5)), ((1, 1), (2, 2)))   # Output: True  (one inside another)
+      ```
+    provided_code:
+      - label: "starter code"
+        code: |
+          def are_rectangles_intersecting(rect1, rect2):
+              """
+              rect1, rect2 are each ((x1, y1), (x2, y2)) - bottom-left, top-right corners.
+              Returns True if the two rectangles touch or overlap.
+              Reuses are_lines_touching_or_overlapping for each axis.
+              """
+              pass  # replace this
+
+
+          print(are_rectangles_intersecting(((0, 0), (3, 3)), ((2, 2), (5, 5))))   # True
+          print(are_rectangles_intersecting(((0, 0), (1, 1)), ((2, 2), (3, 3))))   # False
+          print(are_rectangles_intersecting(((0, 0), (2, 2)), ((2, 2), (4, 4))))   # True
+          print(are_rectangles_intersecting(((0, 0), (5, 5)), ((1, 1), (2, 2))))   # True
+    hints:
+      - "Unpack: `(x1a, y1a), (x2a, y2a) = rect1` and similarly for `rect2`. Then check x-overlap and y-overlap independently."
+      - "`return are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b) and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b)`"
+    solution:
+      code: |
+        def are_rectangles_intersecting(rect1, rect2):
+            (x1a, y1a), (x2a, y2a) = rect1
+            (x1b, y1b), (x2b, y2b) = rect2
+            return (are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b)
+                    and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b))
+      text: null
+
+  # Exercise 6.3
+  - type: exercise
+    kind: coding
+    id: ex-6-3
+    part: 6
+    number: 3
+    title: "Visualise It"
+    description: |
+      Use the plotting helper below to see both rectangles, colour-coded by whether they intersect.
+
+      **Tasks:** Try a few of your own rectangle pairs to build intuition.
+
+      ```python
+      plot_rectangles(((0, 0), (3, 3)), ((2, 2), (5, 5)))
+      plot_rectangles(((0, 0), (1, 1)), ((2, 2), (3, 3)))
+      ```
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          def plot_rectangles(rect1, rect2, title=None):
+              intersecting = are_rectangles_intersecting(rect1, rect2)
+              color = 'green' if intersecting else 'red'
+              fig, ax = plt.subplots(figsize=(5, 5))
+              for rect, style in [(rect1, '-'), (rect2, '--')]:
+                  (x1, y1), (x2, y2) = rect
+                  ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
+                                              fill=False, edgecolor=color, linewidth=2, linestyle=style))
+              all_x = [rect1[0][0], rect1[1][0], rect2[0][0], rect2[1][0]]
+              all_y = [rect1[0][1], rect1[1][1], rect2[0][1], rect2[1][1]]
+              margin = max(max(all_x) - min(all_x), max(all_y) - min(all_y)) * 0.3 + 1
+              ax.set_xlim(min(all_x) - margin, max(all_x) + margin)
+              ax.set_ylim(min(all_y) - margin, max(all_y) + margin)
+              ax.set_aspect('equal')
+              ax.set_title(title or f"Intersecting: {intersecting}")
+              ax.grid(True)
+              plt.show()
+    hints: []
+    solution:
+      code: |
+        # Overlapping rectangles (green)
+        plot_rectangles(((0, 0), (3, 3)), ((2, 2), (5, 5)))
+
+        # Separate rectangles (red)
+        plot_rectangles(((0, 0), (1, 1)), ((2, 2), (3, 3)))
+
+        # Touching at a corner (green)
+        plot_rectangles(((0, 0), (2, 2)), ((2, 2), (4, 4)))
+
+        # One inside the other (green)
+        plot_rectangles(((0, 0), (5, 5)), ((1, 1), (2, 2)))
+      text: null
+
+  # MCQ 6.1
+  - type: exercise
+    kind: mcq
+    id: mcq-6-1
+    part: 6
+    number: 4
+    title: "Dimension Decomposition"
+    question: |
+      To check if two rectangles intersect in 2D, you checked whether their projections overlap on BOTH axes. What happens if you only check one axis?
+    options:
+      - label: A
+        text: "You get the correct answer for squares, but not rectangles"
+      - label: B
+        text: "You might say they intersect when they actually don't — projections can overlap on one axis while the rectangles are side by side on the other"
+        correct: true
+      - label: C
+        text: "You miss some valid intersections"
+      - label: D
+        text: "It works fine for 2D — one axis is enough"
+    hints:
+      - "Draw two rectangles that are side by side horizontally but at the same height. What do their y-projections look like?"
+    solution:
+      text: |
+        Projections on a single axis can overlap even when rectangles don't touch. For example, two rectangles at the same height but far apart horizontally will have overlapping y-projections. You need BOTH axes to confirm intersection — that's the power of dimension decomposition: a 2D problem becomes two independent 1D problems that must both pass.
+
+  # ══════════════════════════════════════════
+  # PART 7: Bonus Challenges
+  # ══════════════════════════════════════════
+  - type: part
+    number: 7
+    title: "Bonus Challenges"
+    intro: ""
+
+  # Challenge A
+  - type: exercise
+    kind: challenge
+    id: ex-7-a
+    part: 7
+    number: 1
+    title: "Devise Your Own Impurity Formula"
+    description: |
+      In machine learning (you'll meet this properly in the Decision Trees chapter), we often need a number that says how "mixed" a set is between two classes.
+
+      Write `my_impurity(c1, c2)` where `c1` and `c2` are *counts* (not fractions) of two classes. Your formula must satisfy:
+
+      1. If `c1 = 0` or `c2 = 0` (all one class), impurity should be `0`.
+      2. Impurity should increase as the counts become more evenly balanced.
+      3. Impurity should be **maximum** when `c1 == c2`.
+
+      There's no single right answer — invent a formula, test it against the three conditions, and adjust if it doesn't satisfy them. (One possible formula: `(2 * min(c1, c2)) / (c1 + c2)`.)
+    provided_code:
+      - label: "starter code"
+        code: |
+          def my_impurity(c1, c2):
+              pass
+
+
+          for c1, c2 in [(0, 5), (5, 5), (7, 3), (9, 1)]:
+              print(f"my_impurity({c1}, {c2}) = {my_impurity(c1, c2)}")
+    hints:
+      - "Think about what makes a bag of items \"mixed.\" If you know the fraction of each class (`p = c1/(c1+c2)`), a product like `p * (1-p)` is 0 at the extremes and peaks in the middle."
+      - "Don't forget the edge case: if `c1 + c2 == 0`, you'd divide by zero. Return `0` for that case."
+      - "One clean formula: `return (2 * min(c1, c2)) / (c1 + c2) if (c1 + c2) > 0 else 0`. Check: `(0,5)`→`0`, `(5,5)`→`1`, `(7,3)`→`0.6`, `(9,1)`→`0.2`."
+    solution:
+      code: |
+        def my_impurity(c1, c2):
+            if c1 + c2 == 0:
+                return 0
+            return (2 * min(c1, c2)) / (c1 + c2)
+
+        # (0, 5)  -> 0.0   (pure: all one class)
+        # (5, 5)  -> 1.0   (maximum impurity: perfectly balanced)
+        # (7, 3)  -> 0.6   (somewhat mixed)
+        # (9, 1)  -> 0.2   (mostly one class)
+      text: null
+
+  # Challenge B
+  - type: exercise
+    kind: challenge
+    id: ex-7-b
+    part: 7
+    number: 2
+    title: "3D Boxes"
+    description: |
+      You generalised "point between two numbers" into "point inside a rectangle" by checking the x-axis and y-axis independently. Push it one step further.
+
+      A 3D box is `((x1, y1, z1), (x2, y2, z2))` — its two opposite corners. Write `are_boxes_intersecting(box1, box2)` by reusing `are_lines_touching_or_overlapping` **three** times — once per axis.
+    provided_code:
+      - label: "starter code"
+        code: |
+          def are_boxes_intersecting(box1, box2):
+              pass
+    hints:
+      - "Same pattern as rectangles, but with three axes. Unpack: `(x1a, y1a, z1a), (x2a, y2a, z2a) = box1`. Check x-overlap, y-overlap, and z-overlap."
+      - "`return are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b) and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b) and are_lines_touching_or_overlapping(z1a, z2a, z1b, z2b)`"
+    solution:
+      code: |
+        def are_boxes_intersecting(box1, box2):
+            (x1a, y1a, z1a), (x2a, y2a, z2a) = box1
+            (x1b, y1b, z1b), (x2b, y2b, z2b) = box2
+            return (are_lines_touching_or_overlapping(x1a, x2a, x1b, x2b)
+                    and are_lines_touching_or_overlapping(y1a, y2a, y1b, y2b)
+                    and are_lines_touching_or_overlapping(z1a, z2a, z1b, z2b))
+
+        # Test:
+        print(are_boxes_intersecting(
+            ((0, 0, 0), (3, 3, 3)),
+            ((2, 2, 2), (5, 5, 5))))   # True (overlap in all 3 axes)
+
+        print(are_boxes_intersecting(
+            ((0, 0, 0), (1, 1, 1)),
+            ((2, 2, 2), (3, 3, 3))))   # False (gap in all 3 axes)
+      text: null
+
+  # ══════════════════════════════════════════
+  # Reflection
+  # ══════════════════════════════════════════
+  - type: part
+    number: 8
+    title: "Reflection — What Did You Just Build?"
+    intro: ""
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 8
+    number: 1
+    title: "Reflection"
+    description: |
+      Take a moment to answer these questions in your own words.
+
+      1. What's the difference between `if`/`else` and `if`/`elif`/`else`? When do you need the second form?
+      2. Why is comparing *squared* distances enough, without ever computing a square root?
+      3. In Part 3, why did you need `min()`/`max()` instead of just assuming `a < b`?
+      4. What was the key trick that let you turn the 1D "is point between" function into the 2D "is point inside a rectangle" function?
+      5. What was the key trick that let you turn the 1D "segments overlap" function into the 2D "rectangles intersect" function?
+      6. In your own words: what general strategy do Parts 5 and 6 both use to turn a 2D (or 3D) problem into something easier?
+    provided_code: []
+    hints: []
+    solution:
+      code: null
+      text: null

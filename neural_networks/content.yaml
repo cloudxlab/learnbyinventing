@@ -1,0 +1,674 @@
+chapter:
+  id: neural_networks
+  title: "Inventing Neural Networks"
+  intro: |
+    In the Gradient Descent chapter you taught a computer to fit a line: pick weights, measure the error, nudge every weight downhill, repeat. That one loop is more powerful than it looks — the only thing standing between you and a *neural network* is the shape of the function you feed it.
+
+    In this chapter you will:
+
+    1. Turn a line into a yes/no classifier — and discover what the field calls it.
+    2. Trip over the most classic training bug and fix it.
+    3. Chain small functions together and watch weights reshape curves.
+    4. Take on a problem no straight line can solve — a realistic **income-tax rule** — and beat it three ways, ending with the activation function that powers modern deep learning.
+
+    You need `numpy`, `matplotlib`, and your gradient-descent instincts from Chapter 15. Nothing else.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/neural_networks/neural_networks.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented neural networks from scratch — step function, sigmoid, saturation, computation graphs, gradient descent on parameter lists, gated models, and ReLU. That's the real thing. Every deep-learning framework works on exactly these principles.
+
+blocks:
+  # ── PART 1 ──────────────────────────────────────────────
+  - type: part
+    number: 1
+    title: "From Numbers to Yes/No"
+    intro: |
+      Here are five people's heights, labeled `1` for adult and `0` for teenager:
+
+      ```python
+      heights = np.array([171, 173, 163, 162, 160])
+      labels  = np.array([1, 1, 0, 0, 0])
+      ```
+
+      A line `m*x + c` outputs *any* number — 0.37, 12.5, -3. But the answer we want is yes/no. We need something that squashes a number into a decision.
+
+  # Exercise 1.1
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "The step function"
+    description: |
+      The bluntest squasher possible: `step_function(z)` returns `1` if `z >= 0`, else `0`. Write it.
+
+      (In 1958 this exact function, wrapped around a weighted sum, was called the **perceptron** — the first artificial neuron.)
+
+      **Your task:** Implement `step_function(z)`.
+    provided_code:
+      - label: "data setup"
+        code: |
+          import numpy as np
+          import matplotlib.pyplot as plt
+
+          heights = np.array([171, 173, 163, 162, 160])
+          labels  = np.array([1, 1, 0, 0, 0])
+      - label: "test cell"
+        code: |
+          assert step_function(3) == 1
+          assert step_function(0) == 1
+          assert step_function(-0.5) == 0
+    hints:
+      - "A simple `if/else` will do: `return 1 if z >= 0 else 0`."
+      - "You can also write it as `return int(z >= 0)`."
+    solution:
+      code: |
+        def step_function(z):
+            return 1 if z >= 0 else 0
+      text: null
+
+  # Exercise 1.2
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "The smooth step"
+    description: |
+      Here's the problem with `step_function`: imagine gradient descent trying to tune `m` and `c` inside `step_function(m*x + c)`. Nudge `m` a little — the output usually doesn't change *at all* (it's still exactly 0 or exactly 1). The gradient is zero almost everywhere. Gradient descent is blind; there is no downhill to follow.
+
+      We need a step with a *slope* — a function that goes from 0 to 1 but smoothly, so every nudge changes the output a little. What properties must this "smooth step" have?
+
+      - Output is always between 0 and 1
+      - Output is 0.5 when the input is 0 (the tipping point)
+      - Output approaches 1 for large positive inputs, 0 for large negative inputs
+      - The function is smooth everywhere — it has a slope at every point
+
+      **Your challenge:** Try the expression `1 / (1 + math.exp(-z))`. Does it meet all four properties? Test it at `z = 0`, `z = 100`, `z = -100`, and `z = 2`. If it works, use it to write `sigmoid(z)`.
+
+      After implementing, run the provided plotting code to compare the step and sigmoid side by side.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert sigmoid(0) == 0.5
+          assert sigmoid(100) > 0.999
+          assert sigmoid(-100) < 0.001
+          assert abs(sigmoid(2) - 0.8808) < 1e-3
+      - label: "plotting"
+        code: |
+          zs = np.linspace(-8, 8, 100)
+          plt.plot(zs, [step_function(z) for z in zs], label="step")
+          plt.plot(zs, sigmoid(zs), label="sigmoid")
+          plt.legend(); plt.grid(alpha=0.3)
+          plt.title("A step you can slide down")
+          plt.show()
+    hints:
+      - |
+        The function is called the **sigmoid**: $$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+
+        Verify: when $z = 0$, $e^{0} = 1$, so the result is $1/2 = 0.5$. For large positive $z$, $e^{-z} \to 0$ so sigmoid $\to 1$.
+      - "The formula translates directly: `return 1 / (1 + np.exp(-z))`. Because you use `np.exp`, it automatically works on arrays too."
+      - "When `z = 0`: $e^{0} = 1$, so sigmoid returns $1 / (1 + 1) = 0.5$. For large positive `z`, $e^{-z} \\to 0$ so sigmoid $\\to 1$. For large negative `z`, $e^{-z} \\to \\infty$ so sigmoid $\\to 0$."
+    solution:
+      code: |
+        def sigmoid(z):
+            return 1 / (1 + np.exp(-z))
+      text: null
+
+  # Exercise 1.3
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "An error we can descend"
+    description: |
+      Our model is now `sigmoid(m*x + c)` — a line squashed into (0, 1). Read its output as "how confident am I that this is an adult."
+
+      Write `sigmoid_error(m, c, x, y)` — the mean squared error between `sigmoid(m*x + c)` and the true labels. This is your familiar MSE with a sigmoid inside; numpy broadcasting handles the whole array at once.
+    provided_code:
+      - label: "test cell"
+        code: |
+          # perfect confidence -> error ~ 0: huge m centered between the groups
+          assert sigmoid_error(10, -10 * 166.5, heights, labels) < 1e-6
+          # always-unsure model (m=0, c=0 -> everyone 0.5) -> error 0.25
+          assert abs(sigmoid_error(0, 0, heights, labels) - 0.25) < 1e-9
+    hints:
+      - "Compute predictions: `pred = sigmoid(m * x + c)`. Then MSE: `np.mean((pred - y) ** 2)`."
+      - "When `m=0, c=0`, every prediction is `sigmoid(0) = 0.5`. The labels are 1, 1, 0, 0, 0. So each squared error is either $(0.5-1)^2 = 0.25$ or $(0.5-0)^2 = 0.25$, giving mean 0.25."
+    solution:
+      code: |
+        def sigmoid_error(m, c, x, y):
+            pred = sigmoid(m * x + c)
+            return np.mean((pred - y) ** 2)
+      text: null
+
+  # Exercise 1.4
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "Train it... and watch it refuse to learn"
+    description: |
+      Below is the finite-difference gradient helper you've built twice before, provided as-is.
+
+      Write `train(m, c, x, y, learning_rate, epochs)` — the standard loop: compute both gradients of `sigmoid_error`, step both weights against them, return the final `(m, c)`.
+
+      Then run it on the raw heights, starting from `m=0.12, c=0.3`. The tests expect something strange: **the error starts at 0.6 and ends at 0.6.** One hundred epochs, no progress.
+
+      Before moving on, diagnose it. Print `sigmoid(0.12 * 171 + 0.3)`. That's `sigmoid(20.8)` — which is `0.99999999...`. Every prediction is glued to 1.0 on sigmoid's flat plateau, where the slope is essentially zero. Zero slope means zero gradient means zero learning. This is called **saturation**, and it is the single most classic failure mode in neural networks.
+    provided_code:
+      - label: "finite-difference gradients for (m, c)"
+        code: |
+          def gradients_mc(err_fn, m, c, x, y, h=1e-8):
+              base = err_fn(m, c, x, y)
+              grad_m = (err_fn(m + h, c, x, y) - base) / h
+              grad_c = (err_fn(m, c + h, x, y) - base) / h
+              return grad_m, grad_c
+      - label: "test cell"
+        code: |
+          err_before = sigmoid_error(0.12, 0.3, heights, labels)
+          m1, c1 = train(0.12, 0.3, heights, labels, learning_rate=0.1, epochs=100)
+          err_after = sigmoid_error(m1, c1, heights, labels)
+          print(f"error: {err_before:.4f} -> {err_after:.4f}")
+          assert err_after > 0.5                        # stuck!
+    hints:
+      - "The training loop: each epoch, call `gradients_mc(sigmoid_error, m, c, x, y)`, then `m -= learning_rate * grad_m` and `c -= learning_rate * grad_c`. Return `(m, c)`."
+      - "The reason it doesn't learn: `0.12 * 171 + 0.3 = 20.82`. `sigmoid(20.82)` is indistinguishable from 1.0. Even for the teenagers (labels 0), the prediction is essentially 1.0. But the gradient of sigmoid at 20.82 is vanishingly small — there's nothing for gradient descent to grab onto."
+    solution:
+      code: |
+        def train(m, c, x, y, learning_rate, epochs):
+            for _ in range(epochs):
+                grad_m, grad_c = gradients_mc(sigmoid_error, m, c, x, y)
+                m -= learning_rate * grad_m
+                c -= learning_rate * grad_c
+            return m, c
+      text: null
+
+  # Exercise 1.5
+  - type: exercise
+    kind: coding
+    id: ex-1-5
+    part: 1
+    number: 5
+    title: "The fix: feed the neuron small numbers"
+    description: |
+      The plateau problem came from `m*x` being huge, because heights are ~170. Keep the inputs near zero and sigmoid operates on its steep middle section, where gradients live.
+
+      Subtract 165 from the heights (so they become `[6, 8, -2, -3, -5]`), train again from the same start with `learning_rate=0.5, epochs=2000`, and this time build the actual classifier: `classify(x_centered)` returns 1 when `sigmoid(m*x + c) >= 0.5`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          centered = heights - 165
+
+          m2, c2 = train(0.12, 0.3, centered, labels, learning_rate=0.5, epochs=2000)
+          err = sigmoid_error(m2, c2, centered, labels)
+          assert err < 0.05
+
+          preds = np.array([classify(x) for x in centered])
+          assert (preds == labels).all()
+    hints:
+      - "After centering, the values are small: `[6, 8, -2, -3, -5]`. Now `m * x + c` stays in sigmoid's responsive range, so the gradients are non-zero and training proceeds."
+      - "The classifier: `return 1 if sigmoid(m2 * x_centered + c2) >= 0.5 else 0`. The decision boundary is at `m2 * x + c2 = 0`, i.e., `x = -c2 / m2`."
+    solution:
+      code: |
+        centered = heights - 165
+
+        m2, c2 = train(0.12, 0.3, centered, labels, learning_rate=0.5, epochs=2000)
+
+        def classify(x_centered):
+            return 1 if sigmoid(m2 * x_centered + c2) >= 0.5 else 0
+      text: null
+
+  # Reveal after 1.5
+  - type: reveal
+    text: "**What you just invented** is **logistic regression** — and it is exactly one **neuron**: weighted sum, plus bias, through a squashing *activation function*. The centering trick you used is why every deep-learning tutorial starts by normalizing inputs."
+
+  # MCQ 1.1
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 6
+    title: "Sigmoid saturation"
+    question: "In Exercise 1.4, the sigmoid neuron \"refused to learn\" when given large input values. What caused this?"
+    options:
+      - label: A
+        text: "Large values cause Python to crash with overflow errors"
+      - label: B
+        text: "The sigmoid function flattens to nearly 0 or 1 for large inputs — the gradient becomes almost zero, so gradient descent makes almost no progress"
+        correct: true
+      - label: C
+        text: "Large values make the learning rate too high"
+      - label: D
+        text: "The sigmoid can only handle inputs between 0 and 1"
+    hints:
+      - "Plot the sigmoid for values like -100 and +100. How steep is the curve there? What does a flat curve mean for the gradient?"
+    solution:
+      code: null
+      text: "The sigmoid squashes all inputs to the range (0, 1). For large positive or negative inputs, the output is nearly 1 or nearly 0, and the curve is almost flat. A flat curve means the derivative (gradient) is nearly zero. Gradient descent multiplies the learning rate by the gradient — so near-zero gradient means near-zero weight updates. This is \"saturation\". The fix is to keep inputs small (centered near 0) where the sigmoid's curve is steepest and the gradient is largest."
+
+  # ── PART 2 ──────────────────────────────────────────────
+  - type: part
+    number: 2
+    title: "Wiring Small Functions Together"
+    intro: |
+      Your Part 1 function draws one boundary. But many real problems need more than one boundary — what if the answer depends on combining several simple decisions?
+
+      Let's find out what happens when you feed one small function's output into another.
+
+  # Exercise 2.1
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Follow the wires"
+    description: |
+      Implement this four-step graph as `compute_graph(x, w10, w11, w20, w21, w30, w31)`:
+
+      ```python
+      y1 = step_function(w11 * x + w10)
+      y2 = sigmoid(y1 * w21 + w20)
+      y3 = x * y2
+      y  = w31 * y3 + w30
+      ```
+
+      Work the first test by hand before coding: with all weights 1 and `x = 2`, `y1 = step(3) = 1`, `y2 = sigmoid(2) ≈ 0.8808`, `y3 ≈ 1.7616`, `y ≈ 2.7616`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert abs(compute_graph(2, 1, 1, 1, 1, 1, 1) - 2.7616) < 1e-3
+          assert abs(compute_graph(-5, 1, 1, 1, 1, 1, 1) - (-2.6555)) < 1e-3
+    hints:
+      - "Just translate the four lines of the graph directly into Python. Each line uses the output of the previous one."
+      - "For `x = -5`: `y1 = step(-5 + 1) = step(-4) = 0`, `y2 = sigmoid(0 + 1) = sigmoid(1) ≈ 0.7311`, `y3 = -5 * 0.7311 = -3.6555`, `y = 1 * (-3.6555) + 1 = -2.6555`."
+    solution:
+      code: |
+        def compute_graph(x, w10, w11, w20, w21, w30, w31):
+            y1 = step_function(w11 * x + w10)
+            y2 = sigmoid(y1 * w21 + w20)
+            y3 = x * y2
+            y  = w31 * y3 + w30
+            return y
+      text: null
+
+  # Exercise 2.2
+  - type: exercise
+    kind: challenge
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Weights reshape the curve"
+    description: |
+      Run the provided cell: it plots `y` versus `x` for the graph above with one set of weights. Then:
+
+      1. Change the weights to a second set of your choosing and plot both curves together.
+      2. Notice the *kink* where the step function switches — the weights `w10, w11` decide **where** it happens, the later weights decide **what** happens on each side.
+      3. Invent your **own** graph of a similar size — chain 3-5 operations mixing `step_function`, `sigmoid`, `*`, `+` — and plot it for two weight settings.
+
+      What you just built — a recipe of chained steps with tunable weights — is called a **computation graph**. A neural network is nothing more than a large one. The *graph* fixes what shapes are possible; the *weights* choose one shape; gradient descent finds the weights.
+    provided_code:
+      - label: "plotting starter"
+        code: |
+          xs = np.linspace(-10, 10, 400)
+          ys = [compute_graph(x, 1, 1, 1, 1, 1, 1) for x in xs]
+          plt.plot(xs, ys, label="w = all ones")
+
+          # your second weight set here:
+          # ys2 = [compute_graph(x, ...) for x in xs]
+          # plt.plot(xs, ys2, label="w = your choice")
+
+          plt.legend(); plt.grid(alpha=0.3)
+          plt.title("Same graph, different weights, different curve")
+          plt.show()
+    hints:
+      - "Try extreme weight sets: e.g., `w10=-3, w11=1` shifts the kink to `x=3`. Setting `w30=0, w31=2` doubles the output scale. Experiment freely."
+      - "For your own graph, try something like: `y1 = sigmoid(w1*x + w0)`, `y2 = x * y1`, `y = w3*y2 + w2`. Three operations, four weights, and you get a different family of curves."
+    solution:
+      code: |
+        # Plot with a second weight set to see how weights reshape the curve:
+        xs = np.linspace(-10, 10, 400)
+        ys1 = [compute_graph(x, 1, 1, 1, 1, 1, 1) for x in xs]
+        ys2 = [compute_graph(x, -3, 1, 0, 2, -1, 0.5) for x in xs]
+
+        plt.plot(xs, ys1, label="w = all ones")
+        plt.plot(xs, ys2, label="w = [-3, 1, 0, 2, -1, 0.5]")
+        plt.legend(); plt.grid(alpha=0.3)
+        plt.title("Same graph, different weights, different curve")
+        plt.show()
+
+        # Custom graph example:
+        def my_graph(x, w0, w1, w2, w3):
+            y1 = sigmoid(w1 * x + w0)
+            y2 = x * y1
+            y  = w3 * y2 + w2
+            return y
+      text: null
+
+  # MCQ 2.1
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 3
+    title: "Why multiple neurons?"
+    question: "A single sigmoid neuron can fit a smooth S-shaped curve. Why do we need multiple neurons?"
+    options:
+      - label: A
+        text: "Multiple neurons run faster on modern hardware"
+      - label: B
+        text: "A single S-curve can only capture one transition (e.g., \"low to high\"), but real problems often have multiple transitions or complex shapes that require combining several curves"
+        correct: true
+      - label: C
+        text: "Python limits each neuron to 10 weights"
+      - label: D
+        text: "Multiple neurons are needed only for classification, not regression"
+    hints:
+      - "Think about the tax problem in Part 3: income tax has a different rate in different brackets. Can one S-curve capture multiple bracket boundaries?"
+    solution:
+      code: null
+      text: "A single sigmoid produces exactly one transition — from one value to another. But many real-world functions have multiple transitions: tax brackets change rates at different incomes, temperature varies up and down during the day, etc. By combining multiple sigmoid neurons (each capturing one transition at different positions), a network can approximate complex multi-transition functions. The upcoming tax problem in Part 3 demonstrates this directly."
+
+  # ── PART 3 ──────────────────────────────────────────────
+  - type: part
+    number: 3
+    title: "The Tax Problem — When No Line Will Do"
+    intro: |
+      A country taxes income like this: **nothing on the first 5000; 30% on everything above.** So `tax = 0.3 * (income - 5000)` if income > 5000, else 0. Plotted, it's a hockey stick — flat, then a straight climb, with a sharp kink at 5000.
+
+      The cell below generates 200 people and — remembering Part 1's saturation lesson! — scales incomes and taxes down to the 0-1 range before we model anything. Run it.
+
+      ```python
+      rng = np.random.default_rng(42)
+      income = rng.uniform(0, 10000, 200)
+      tax = np.where(income > 5000, 0.30 * (income - 5000), 0.0)
+
+      x = income / 10000     # scaled income, 0..1
+      y = tax / 1500         # scaled tax, 0..1 (max tax is 1500)
+
+      plt.scatter(x, y, s=12, alpha=0.6)
+      plt.xlabel("income (scaled)"); plt.ylabel("tax (scaled)")
+      plt.title("The hockey stick no line can fit")
+      plt.grid(alpha=0.3); plt.show()
+      ```
+
+  # Exercise 3.1
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Prove the line fails"
+    description: |
+      Fit the best straight line to `(x, y)` — you may use `np.polyfit(x, y, 1)` (you derived what it computes, least squares, in Chapter 14). Compute its RMSE and look at what it predicts for low incomes.
+
+      The tests capture two indictments: the RMSE stays above 0.1 no matter what, and for incomes below 3000 the line predicts **negative tax** — the government paying you. The problem isn't the fitting; the *shape* of the model is wrong.
+
+      Plot the line against the data to see the mismatch.
+    provided_code:
+      - label: "test cell"
+        code: |
+          m_line, c_line = np.polyfit(x, y, 1)   # replace with np.polyfit(x, y, 1)
+
+          line_pred = m_line * x + c_line
+          line_rmse = np.sqrt(np.mean((line_pred - y) ** 2))
+
+          low = x < 0.3
+          assert line_rmse > 0.1
+          assert np.mean(line_pred[low]) < 0    # negative tax!
+    hints:
+      - "`np.polyfit(x, y, 1)` returns `[m, c]` for the best-fit line `m*x + c`. Just unpack: `m_line, c_line = np.polyfit(x, y, 1)`."
+      - "The best line has slope ~1 and intercept ~-0.33, giving RMSE around 0.14. For scaled incomes below 0.3, the line predicts about -0.04 — negative tax, which is nonsensical."
+    solution:
+      code: |
+        m_line, c_line = np.polyfit(x, y, 1)
+      text: null
+
+  # Exercise 3.2
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Idea 1: first decide, then predict"
+    description: |
+      A human would solve this in two steps: *is this person taxable at all?* If no, the answer is 0. If yes, it's a simple line. Let's build exactly that.
+
+      Step one is a yes/no question — a job for the neuron from Part 1.
+
+      Create `is_taxable = (tax > 0).astype(int)` and train a sigmoid classifier `sigmoid(m*x + c)` on `(x, is_taxable)` — your `train` from Exercise 1.4 works unchanged (inputs are already scaled; use `learning_rate=2.0, epochs=3000`, starting from `m=1, c=0`). Report the accuracy of thresholding at 0.5, and print where the decision boundary sits: `-c/m` (in scaled income; multiply by 10000 to see it in currency — it should land near 5000).
+    provided_code:
+      - label: "test cell"
+        code: |
+          is_taxable = (tax > 0).astype(int)
+
+          mk, ck = train(1, 0, x, is_taxable, learning_rate=2.0, epochs=3000)
+
+          pred_taxable = (sigmoid(mk * x + ck) >= 0.5).astype(int)
+          accuracy = np.mean(pred_taxable == is_taxable)
+          assert accuracy >= 0.97
+    hints:
+      - "Your existing `train` function doesn't need any changes — it minimizes `sigmoid_error`, which works for any binary labels. The inputs are already in [0, 1], so no saturation issues."
+      - "The decision boundary is where `sigmoid(m*x + c) = 0.5`, which happens when `m*x + c = 0`, i.e., `x = -c/m`. In real income: `-c/m * 10000` should be close to 5000."
+    solution:
+      code: |
+        is_taxable = (tax > 0).astype(int)
+
+        mk, ck = train(1, 0, x, is_taxable, learning_rate=2.0, epochs=3000)
+      text: null
+
+  # Exercise 3.3
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "The pipeline: classify, then regress"
+    description: |
+      Step two: for the taxable people *only*, the relationship is a perfect straight line. Fit a line on just the rows where `is_taxable == 1` — on the scaled data it should come out at exactly `m=2, c=-1` (check: at `x=1`, i.e. income 10000, scaled tax is `2*1 - 1 = 1`, i.e. 1500).
+
+      Then chain the two models into `predict_tax(xi)`:
+
+      - if the classifier says taxable -> return the line's prediction,
+      - else -> return `0.0`.
+
+      Compare its RMSE with the line's from 3.1.
+
+      **What you invented:** a *gated* model — one network deciding which expert handles the input. Scaled up, this idea is called a **mixture of experts**, and it's inside several frontier LLMs. It's also the honest answer to "how do I put an `if` inside a machine-learning model."
+    provided_code:
+      - label: "test cell"
+        code: |
+          mt, ct = np.polyfit(x[is_taxable == 1], y[is_taxable == 1], 1)
+
+          assert abs(mt - 2) < 1e-6 and abs(ct + 1) < 1e-6
+
+          pipe_pred = np.array([predict_tax(xi) for xi in x])
+          pipe_rmse = np.sqrt(np.mean((pipe_pred - y) ** 2))
+          assert pipe_rmse < line_rmse / 5
+    hints:
+      - "Filter the data: `x_tax = x[is_taxable == 1]` and `y_tax = y[is_taxable == 1]`. Then `mt, ct = np.polyfit(x_tax, y_tax, 1)`."
+      - "For `predict_tax(xi)`: check `sigmoid(mk * xi + ck) >= 0.5`. If yes, return `mt * xi + ct`. If no, return `0.0`."
+    solution:
+      code: |
+        mt, ct = np.polyfit(x[is_taxable == 1], y[is_taxable == 1], 1)
+
+        def predict_tax(xi):
+            if sigmoid(mk * xi + ck) >= 0.5:
+                return mt * xi + ct
+            else:
+                return 0.0
+      text: null
+
+  # Exercise 3.4
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "Idea 2: one network, end to end"
+    description: |
+      The pipeline needed *us* to know the problem splits into classify-then-regress. Could a single network figure the shape out by itself? Try the smallest one imaginable — two neurons in a chain:
+
+      $$\hat{y} = w_1 \cdot \sigma(m x + c) + w_0$$
+
+      Neuron 1 squashes, neuron 2 scales and shifts. Four weights.
+
+      First write `fit_net(err_fn, params, x, y, lr, epochs, h=1e-6)` — your gradient-descent loop generalized to a *list* of parameters: each epoch, finite-difference each parameter (copy the list, nudge one entry), then step all of them. (You wrote the two-parameter and many-weight versions in Chapter 15 — this is the same music.)
+
+      Then define `net_error(params, x, y)` for the two-neuron model and fit it from `[1.0, 0.0, 1.0, 0.0]` with `lr=0.5, epochs=5000`.
+
+      The tests expect an honest middle result: clearly better than the line (RMSE ≈ 0.05 vs 0.14), clearly worse than the pipeline. Look at the plot to see why — sigmoid rises and then **flattens**, but real tax keeps climbing. A smooth step times a constant can imitate a kink, not a ramp.
+    provided_code:
+      - label: "test cell"
+        code: |
+          params = fit_net(net_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+          sig_rmse = np.sqrt(net_error(params, x, y))
+          assert sig_rmse < line_rmse
+          assert sig_rmse > pipe_rmse
+    hints:
+      - "For `fit_net`: each epoch, compute the base error. Then for each parameter index `i`, make a copy of `params`, add `h` to position `i`, compute the new error, and the gradient is `(new_error - base) / h`. Then update all params: `params[i] -= lr * grads[i]`."
+      - "For `net_error`: unpack `m, c, w1, w0 = params`. Prediction: `pred = w1 * sigmoid(m * x + c) + w0`. Return `np.mean((pred - y) ** 2)`."
+      - "To copy the list for finite differences: `nudged = list(params)`, then `nudged[i] += h`. Be sure to make a fresh copy for each parameter."
+    solution:
+      code: |
+        def fit_net(err_fn, params, x, y, lr, epochs, h=1e-6):
+            params = list(params)
+            for _ in range(epochs):
+                base = err_fn(params, x, y)
+                grads = []
+                for i in range(len(params)):
+                    nudged = list(params)
+                    nudged[i] += h
+                    grads.append((err_fn(nudged, x, y) - base) / h)
+                for i in range(len(params)):
+                    params[i] -= lr * grads[i]
+            return params
+
+        def net_error(params, x, y):
+            m, c, w1, w0 = params
+            pred = w1 * sigmoid(m * x + c) + w0
+            return np.mean((pred - y) ** 2)
+      text: null
+
+  # Exercise 3.5
+  - type: exercise
+    kind: coding
+    id: ex-3-5
+    part: 3
+    number: 5
+    title: "The right activation: ReLU"
+    description: |
+      Look at the tax rule one more time: *zero below a threshold, a straight ramp above it.* There is an activation function that **is** that shape:
+
+      **Your challenge:** Before looking at any formula, write a function that outputs 0 for negative inputs and the input itself for positive inputs. That's the shape you need. Write `relu(z)` (use `np.maximum` so it works on arrays).
+
+      Then reuse your `fit_net` on the model $\hat{y} = w_1 \cdot \text{relu}(m x + c) + w_0$ — same starting point, same settings, only the activation changed.
+
+      The tests expect near-perfection: the network can now represent the true rule *exactly* (one solution: `m=2, c=-1, w1=1, w0=0` — but gradient descent may find an equivalent scaling, e.g. `m*w1 = 2`).
+
+      **The reveal:** ReLU — the *rectified linear unit* — is the default activation of modern deep learning, powering nearly every large model. Sigmoid saturates at both ends (you met that plateau in Exercise 1.4); ReLU never saturates on the positive side, and stacks of ReLU neurons build arbitrary piecewise-linear shapes — kinks upon kinks, like the one you just fit with a single neuron.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert relu(3.5) == 3.5
+          assert relu(-2) == 0
+          assert (relu(np.array([-1, 0, 2])) == np.array([0, 0, 2])).all()
+
+          params_r = fit_net(relu_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+          relu_rmse = np.sqrt(relu_error(params_r, x, y))
+          assert relu_rmse < sig_rmse
+          assert relu_rmse < 0.02
+    hints:
+      - |
+        The function you should have written is called **ReLU** (Rectified Linear Unit): $$\text{relu}(z) = \max(z, 0)$$ In numpy: `np.maximum(z, 0)`.
+      - "For `relu_error`: same as `net_error` but replace `sigmoid` with `relu`. Unpack `m, c, w1, w0 = params`, predict `w1 * relu(m * x + c) + w0`, return the MSE."
+      - "The true tax in scaled form is `relu(2*x - 1)`. So the network needs to learn `m ≈ 2, c ≈ -1, w1 ≈ 1, w0 ≈ 0` (or any equivalent rescaling). With ReLU, this is representable exactly."
+    solution:
+      code: |
+        def relu(z):
+            return np.maximum(z, 0)
+
+        def relu_error(params, x, y):
+            m, c, w1, w0 = params
+            pred = w1 * relu(m * x + c) + w0
+            return np.mean((pred - y) ** 2)
+      text: null
+
+  # Exercise 3.6
+  - type: exercise
+    kind: challenge
+    id: ex-3-6
+    part: 3
+    number: 6
+    title: "Explorations (open-ended)"
+    description: |
+      No tests here — experiment and observe:
+
+      1. Replace `sigmoid` with `np.tanh` in the two-neuron net. Better or worse on the tax data? (tanh is a sigmoid stretched to output -1...1.)
+      2. Add a second ReLU neuron: $\hat{y} = w_1\,\text{relu}(m_1 x + c_1) + w_2\,\text{relu}(m_2 x + c_2) + w_0$ (seven parameters — `fit_net` doesn't care). Invent a tax rule with *two* brackets and see if it can fit that too.
+      3. Feed `x` in again at the output: $\hat{y} = w_1\,\text{relu}(mx+c) + w_2 x + w_0$. (Networks with such shortcuts are called *residual* — the trick that made very deep networks trainable.)
+    hints:
+      - "For task 1, simply write a `tanh_error` that uses `np.tanh` instead of `sigmoid`. Since tanh ranges from -1 to 1 (not 0 to 1), the weights will adjust to compensate."
+      - "For the two-bracket tax, try: 0% below 3000, 20% on 3000-7000, 40% above 7000. Each ReLU neuron handles one kink point. The seven parameters are `[m1, c1, w1, m2, c2, w2, w0]`."
+    solution:
+      code: |
+        # 1. tanh net
+        def tanh_error(params, x, y):
+            m, c, w1, w0 = params
+            pred = w1 * np.tanh(m * x + c) + w0
+            return np.mean((pred - y) ** 2)
+
+        params_t = fit_net(tanh_error, [1.0, 0.0, 1.0, 0.0], x, y, lr=0.5, epochs=5000)
+        print("tanh RMSE:", np.sqrt(tanh_error(params_t, x, y)))
+
+        # 2. Two-ReLU net for two brackets
+        def two_relu_error(params, x, y):
+            m1, c1, w1, m2, c2, w2, w0 = params
+            pred = w1 * relu(m1 * x + c1) + w2 * relu(m2 * x + c2) + w0
+            return np.mean((pred - y) ** 2)
+
+        # 3. Residual connection
+        def residual_error(params, x, y):
+            m, c, w1, w2, w0 = params
+            pred = w1 * relu(m * x + c) + w2 * x + w0
+            return np.mean((pred - y) ** 2)
+      text: null
+
+  # MCQ 3.1
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 7
+    title: "ReLU advantage"
+    question: "ReLU (max(0, z)) is simpler than sigmoid. What is its main practical advantage for training neural networks?"
+    options:
+      - label: A
+        text: "ReLU outputs larger numbers, making predictions more accurate"
+      - label: B
+        text: "ReLU's gradient is either 0 or 1 — it never becomes a tiny fraction like sigmoid's, so gradient descent doesn't slow down for large inputs"
+        correct: true
+      - label: C
+        text: "ReLU uses less memory than sigmoid"
+      - label: D
+        text: "ReLU can only be used in the output layer"
+    hints:
+      - "You saw that sigmoid's gradient nearly vanishes for large inputs. What is the slope of ReLU for positive inputs, no matter how large?"
+    solution:
+      code: null
+      text: "For any positive input, ReLU's derivative is exactly 1 — the gradient never shrinks. Compare this to sigmoid, where the gradient can be as small as 0.0000001 for large inputs (saturation). This constant gradient means gradient descent updates remain meaningful regardless of input magnitude. ReLU was a key breakthrough that enabled training of deep neural networks — it avoids the \"vanishing gradient\" problem that plagued sigmoid-based deep networks. The tradeoff: for negative inputs, ReLU's gradient is 0 (the \"dying ReLU\" problem), but this is less severe in practice."
+
+  # ── Summary table ───────────────────────────────────────
+  - type: table
+    id: summary
+    headers: ["You built", "The field calls it"]
+    rows:
+      - ["`step_function(m*x + c)`", "the perceptron (1958)"]
+      - ["`sigmoid(m*x + c)` + gradient descent", "logistic regression = one neuron"]
+      - ["stuck training on raw heights", "saturation / vanishing gradients — fixed by input scaling"]
+      - ["chained small functions with weights", "a computation graph"]
+      - ["classify-then-regress gate", "a mixture of experts"]
+      - ["`fit_net` over a parameter list", "training a neural network"]
+      - ["`relu`", "the default activation of deep learning"]

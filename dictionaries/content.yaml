@@ -1,0 +1,849 @@
+chapter:
+  id: dictionaries
+  title: "Dictionaries"
+  intro: |
+    A **dictionary** maps *keys* to *values* — like an index at the back of a book. You look up a key in O(1) time, regardless of how many entries exist.
+
+    In this chapter you will use dictionaries to:
+
+    1. Count word frequencies in text
+    2. Group words that are anagrams of each other
+    3. Track and query expenses by category
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/dictionaries/dictionaries.ipynb"
+  mathjax: false
+  footer: |
+    You've used dictionaries to count, group, track, invert, and hash — and along the way invented the mechanism that makes dictionaries fast.
+
+blocks:
+  # ─── Syntax Overview ───────────────────────────────────────
+  - type: reveal
+    text: |
+      ## Python Quick Reference
+
+      A **dict** stores key–value pairs. Keys must be immutable (strings, numbers, tuples).
+
+      ```python
+      # Creating a dict
+      ages = {"Alice": 30, "Bob": 25}
+
+      # Reading a value
+      ages["Alice"]            # 30
+
+      # Adding / updating
+      ages["Carol"] = 28
+
+      # Check if a key exists
+      "Bob" in ages            # True
+
+      # Looping over a dict
+      for name in ages:
+          print(name, ages[name])
+
+      # .get() returns a default instead of crashing
+      ages.get("Dave", 0)      # 0 (Dave not in dict)
+
+      # Common patterns
+      ages.keys()              # dict_keys(["Alice", "Bob", "Carol"])
+      ages.values()            # dict_values([30, 25, 28])
+      ages.items()             # dict_items([("Alice",30), ("Bob",25), ...])
+
+      # String methods you will use
+      text = "Hello World"
+      text.lower()             # "hello world"
+      text.split()             # ["Hello", "World"]
+      ```
+
+      - `d[key]` raises `KeyError` if the key is missing; `d.get(key, default)` is safe.
+      - Dicts are unordered in older Python; from 3.7+ they keep insertion order.
+      - `.split()` with no argument splits on whitespace.
+
+  # ═══════════════════════════════════════════════════════════
+  # PART 0: Dictionary Basics
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 0
+    title: "Dictionary Basics"
+    intro: |
+      Before coding the exercises, make sure you are comfortable with the four core operations.
+
+  # Exercise 0.1
+  - type: exercise
+    kind: coding
+    id: ex-0-1
+    part: 0
+    number: 1
+    title: "Create and Access"
+    description: |
+      A dictionary literal looks like `{key: value, key: value, ...}`.
+
+      ```python
+      d = {"apple": 3, "banana": 1, "cherry": 5}
+      d["apple"]    # 3
+      d["banana"]   # 1
+      ```
+
+      **Task:** Create a dictionary `scores` with three student names and their exam scores. Then print the score for one student.
+    hints:
+      - "Use a literal like `scores = {\"Alice\": 85, \"Bob\": 92, \"Charlie\": 78}`, then access with `scores[\"Alice\"]`."
+    solution:
+      code: |
+        scores = {"Alice": 85, "Bob": 92, "Charlie": 78}
+        print(scores["Alice"])  # 85
+      text: null
+
+  # Exercise 0.2
+  - type: exercise
+    kind: coding
+    id: ex-0-2
+    part: 0
+    number: 2
+    title: "Add and Update Entries"
+    description: |
+      You can add a new key or update an existing one with `d[key] = value`.
+
+      **Task:** Starting from an empty dict, add three entries one at a time. Then update one of them (increase the value by 10).
+
+      Verify that `len(d) == 3` after adding, and that the updated value is correct.
+    hints:
+      - "Start with `d = {}`, then `d[\"x\"] = 10` to add, and `d[\"x\"] = d[\"x\"] + 10` (or `d[\"x\"] += 10`) to update."
+    solution:
+      code: |
+        d = {}
+        d["math"] = 90
+        d["science"] = 85
+        d["english"] = 78
+        d["math"] = d["math"] + 10  # or d["math"] += 10
+
+        print(d)
+        assert len(d) == 3
+      text: null
+
+  # Exercise 0.3
+  - type: exercise
+    kind: coding
+    id: ex-0-3
+    part: 0
+    number: 3
+    title: "Check Membership and Default Values"
+    description: |
+      - `key in d` — `True` if key exists
+      - `d.get(key, default)` — returns `default` instead of raising `KeyError` if key is missing
+
+      **Task:** Write a function `safe_lookup(d, key)` that returns the value if the key exists, or the string `"not found"` if it does not.
+
+      ```python
+      safe_lookup({"a": 1}, "a")   # 1
+      safe_lookup({"a": 1}, "b")   # "not found"
+      ```
+    hints:
+      - "You can use `d.get(key, \"not found\")` as a one-liner, or use an `if key in d` check."
+      - "`def safe_lookup(d, key): return d.get(key, \"not found\")`"
+    solution:
+      code: |
+        def safe_lookup(d, key):
+            return d.get(key, "not found")
+      text: null
+
+  # Exercise 0.4
+  - type: exercise
+    kind: coding
+    id: ex-0-4
+    part: 0
+    number: 4
+    title: "Count Items in a List"
+    description: |
+      Write `count_items(items)` that takes a list and returns a dictionary where each key is an item and the value is how many times it appears.
+
+      **Before you code:**
+
+      - Loop over the list.
+      - For each item, if it is not yet in the dict, add it with count 1.
+      - If it already exists, increment its count.
+
+      ```python
+      count_items(["a", "b", "a", "c", "b", "a"])  # {"a": 3, "b": 2, "c": 1}
+      count_items([1, 2, 1, 1, 3])                 # {1: 3, 2: 1, 3: 1}
+      count_items([])                              # {}
+      ```
+    hints:
+      - "Use `if item in counts:` to decide whether to increment or initialise. Alternatively, `counts[item] = counts.get(item, 0) + 1` handles both cases in one line."
+      - "Structure: `counts = {}`, then `for item in items: counts[item] = counts.get(item, 0) + 1`, then `return counts`."
+    solution:
+      code: |
+        def count_items(items):
+            counts = {}
+            for item in items:
+                counts[item] = counts.get(item, 0) + 1
+            return counts
+      text: null
+
+  # ═══════════════════════════════════════════════════════════
+  # PART 1: Word Count
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Word Count"
+    intro: |
+      Now apply `count_items` to text: split a string into words, then count each word.
+
+  # Exercise 1.1
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Word Count"
+    description: |
+      Write `word_count(text)` that:
+
+      1. Splits `text` into words using `text.split()`.
+      2. Counts how many times each word appears.
+      3. Returns the dictionary.
+
+      ```python
+      word_count("hello world hello")
+      # {"hello": 2, "world": 1}
+
+      word_count("apple orange apple banana orange")
+      # {"apple": 2, "orange": 2, "banana": 1}
+
+      word_count("")
+      # {}
+      ```
+
+      **Hint:** This is `count_items` applied to `text.split()`. Can you implement it by reusing `count_items`?
+    hints:
+      - "`text.split()` turns `\"hello world hello\"` into `[\"hello\", \"world\", \"hello\"]`. Pass that list to `count_items`."
+      - "One-liner: `def word_count(text): return count_items(text.split())`"
+    solution:
+      code: |
+        def word_count(text):
+            return count_items(text.split())
+      text: null
+
+  # Exercise 1.2
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Most Frequent Word"
+    description: |
+      Write `most_frequent_word(text)` that returns the word with the highest count. If there is a tie, return any one of the tied words.
+
+      ```python
+      most_frequent_word("the cat sat on the mat the")  # "the"
+      most_frequent_word("a b a b c a")                  # "a"
+      ```
+
+      **Before you code:**
+
+      - Use `word_count` to get the frequency dictionary.
+      - Loop over the dictionary to find the key with the maximum value. (Or think: can you use `max` with a custom `key` argument?)
+    hints:
+      - "Get the counts dict, then loop: track `best_word` and `best_count`, updating whenever you find a higher count."
+      - "Shorter approach: `max(counts, key=counts.get)` returns the key whose value is largest."
+    solution:
+      code: |
+        def most_frequent_word(text):
+            counts = word_count(text)
+            return max(counts, key=counts.get)
+      text: null
+
+  # Exercise 1.3
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Top N Words"
+    description: |
+      Write `top_n_words(text, n)` that returns a list of the `n` most frequent `(word, count)` tuples, sorted from highest to lowest count.
+
+      ```python
+      top_n_words("the cat sat on the mat the cat", 2)
+      # [("the", 3), ("cat", 2)]
+      ```
+
+      **Hint:** Sort the `word_count(text).items()` by value in descending order, then take the first `n`.
+
+      Try it on a longer passage:
+
+      ```python
+      passage = "to be or not to be that is the question to be is to do"
+      top_n_words(passage, 5)
+      ```
+    hints:
+      - "Use `sorted(counts.items(), key=lambda pair: pair[1], reverse=True)` to sort by count descending. Then slice with `[:n]`."
+      - "Each item in `counts.items()` is a `(word, count)` tuple. `pair[1]` is the count. After sorting, return `sorted_list[:n]`."
+    solution:
+      code: |
+        def top_n_words(text, n):
+            counts = word_count(text)
+            sorted_pairs = sorted(counts.items(), key=lambda pair: pair[1], reverse=True)
+            return sorted_pairs[:n]
+      text: null
+
+  # MCQ 1.1
+  - type: exercise
+    kind: mcq
+    id: mcq-1-1
+    part: 1
+    number: 4
+    title: "Dict vs List for Counting"
+    question: |
+      You used a dictionary to count words. Could you have used a list of `[word, count]` pairs instead? What would be the main drawback?
+    options:
+      - label: A
+        text: "Lists can't store pairs — only single values"
+      - label: B
+        text: "It would work identically with no drawback"
+      - label: C
+        text: "Finding whether a word already exists would require scanning the entire list each time — much slower for large texts"
+        correct: true
+      - label: D
+        text: "Lists can't be sorted"
+    hints:
+      - "To increment a word's count, you first need to check if it's already in the collection. How does that lookup work in a dict vs a list?"
+    solution:
+      text: |
+        A list of pairs would work, but finding a word requires scanning from the beginning each time — O(n) per lookup. A dict does the same lookup in O(1) on average using hashing. For a document with thousands of unique words, the dict approach is dramatically faster. Lists CAN store pairs and CAN be sorted, so A and D are wrong.
+
+  # ═══════════════════════════════════════════════════════════
+  # PART 2: Anagrams
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Anagrams"
+    intro: |
+      Two words are **anagrams** of each other if they contain exactly the same letters (in possibly different order).
+
+      Examples:
+
+      - "listen" and "silent" are anagrams.
+      - "evil", "vile", "live", "veil" are all anagrams of each other.
+
+      **Think about it:** How could you represent a word so that all its anagrams map to the same key?
+
+  # Exercise 2.1
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Anagram Key"
+    description: |
+      Write `anagram_key(word)` that returns the sorted string of a word's letters. This key will be the same for all anagrams.
+
+      ```python
+      anagram_key("listen")  # "eilnst"
+      anagram_key("silent")  # "eilnst"
+      anagram_key("evil")    # "eilv"
+      anagram_key("vile")    # "eilv"
+      ```
+
+      **Hint:** `sorted("abc")` gives `["a","b","c"]`. Use `"".join(...)` to get a string.
+    hints:
+      - "`sorted(word)` returns a list of characters in alphabetical order. Join them back: `\"\".join(sorted(word))`."
+    solution:
+      code: |
+        def anagram_key(word):
+            return "".join(sorted(word))
+      text: null
+
+  # Exercise 2.2
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Find Anagram Groups"
+    description: |
+      Write `find_anagrams(text)` that:
+
+      1. Splits `text` into words.
+      2. For each word, computes its `anagram_key`.
+      3. Groups words with the same key into a list.
+      4. Returns a dictionary: `{key: [word1, word2, ...]}`
+
+      ```python
+      find_anagrams("listen silent enlist inlets hello world")
+      # {
+      #   "eilnst": ["listen", "silent", "enlist", "inlets"],
+      #   "ehllo":  ["hello"],
+      #   "dlorw":  ["world"]
+      # }
+
+      find_anagrams("evil vile live veil")
+      # {"eilv": ["evil", "vile", "live", "veil"]}
+      ```
+
+      You have `anagram_key` from Exercise 2.1. How would you group all words that share the same key?
+    hints:
+      - "Same pattern as `count_items`, but instead of incrementing a number, you append to a list. Check with `if key in groups:` to decide between `groups[key].append(word)` and `groups[key] = [word]`."
+      - "You can also use `groups.setdefault(key, []).append(word)` to handle both cases in one line."
+    solution:
+      code: |
+        def find_anagrams(text):
+            groups = {}
+            for word in text.split():
+                key = anagram_key(word)
+                if key in groups:
+                    groups[key].append(word)
+                else:
+                    groups[key] = [word]
+            return groups
+      text: null
+
+  # Exercise 2.3
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Only True Anagram Groups"
+    description: |
+      `find_anagrams` returns every word, including words with no anagram partner. Write `find_true_anagram_groups(text)` that returns only the groups that contain **more than one** word.
+
+      ```python
+      find_true_anagram_groups("listen silent hello world live evil")
+      # {"eilnst": ["listen", "silent"], "eilv": ["live", "evil"]}
+      # ("hello" and "world" are excluded — no partners)
+      ```
+    hints:
+      - "Call `find_anagrams(text)` first, then filter the result: keep only entries where `len(words) > 1`."
+      - "Use a dict comprehension: `{k: v for k, v in groups.items() if len(v) > 1}`."
+    solution:
+      code: |
+        def find_true_anagram_groups(text):
+            groups = find_anagrams(text)
+            return {k: v for k, v in groups.items() if len(v) > 1}
+      text: null
+
+  # ═══════════════════════════════════════════════════════════
+  # PART 3: Expense Tracker
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Expense Tracker"
+    intro: |
+      A dictionary is a natural fit for tracking totals per category:
+
+      ```python
+      {"food": 500, "rent": 1000, "travel": 150}
+      ```
+
+      Keys are expense categories; values are running totals.
+
+  # Exercise 3.1
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Update Expenses"
+    description: |
+      Write `update_expenses(expense_list, expenses_dict)` that:
+
+      - Takes a list of `(category, amount)` tuples and an existing dict.
+      - For each tuple, adds `amount` to the running total for `category`.
+      - Modifies `expenses_dict` in place (no return value needed).
+
+      ```python
+      expenses = {}
+      update_expenses([("food", 200), ("rent", 1000)], expenses)
+      update_expenses([("food", 300), ("travel", 150)], expenses)
+      # expenses == {"food": 500, "rent": 1000, "travel": 150}
+      ```
+
+      **Before you code:**
+
+      - How do you handle a category that appears for the first time?
+      - How do you handle one that already exists?
+    hints:
+      - "Same pattern as `count_items`: use `expenses_dict[cat] = expenses_dict.get(cat, 0) + amount` to handle both new and existing categories."
+      - "Loop over the expense list: `for cat, amount in expense_list:`, then update the dict on each iteration."
+    solution:
+      code: |
+        def update_expenses(expense_list, expenses_dict):
+            for cat, amount in expense_list:
+                expenses_dict[cat] = expenses_dict.get(cat, 0) + amount
+      text: null
+
+  # Exercise 3.2
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Print Expenses"
+    description: |
+      Write `print_expenses(expenses_dict)` that prints each category and its total, one per line, in the format `"category : amount"`.
+
+      ```python
+      print_expenses({"food": 500, "rent": 1000, "travel": 150})
+      # food : 500
+      # rent : 1000
+      # travel : 150
+      ```
+    hints:
+      - "Loop over items: `for cat, amount in expenses_dict.items():` then `print(f\"{cat} : {amount}\")`."
+    solution:
+      code: |
+        def print_expenses(expenses_dict):
+            for cat, amount in expenses_dict.items():
+                print(f"{cat} : {amount}")
+      text: null
+
+  # Exercise 3.3
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Highest Expense Category"
+    description: |
+      Write `top_expense(expenses_dict)` that returns the category with the highest total spend as a tuple `(category, amount)`.
+
+      ```python
+      top_expense({"food": 500, "rent": 1000, "travel": 150})
+      # ("rent", 1000)
+      ```
+    hints:
+      - "Loop over `expenses_dict.items()` and track the pair with the largest amount. Or use `max(expenses_dict.items(), key=lambda pair: pair[1])`."
+      - "`max` returns the whole tuple, so `max(expenses_dict.items(), key=lambda p: p[1])` gives `(\"rent\", 1000)` directly."
+    solution:
+      code: |
+        def top_expense(expenses_dict):
+            return max(expenses_dict.items(), key=lambda pair: pair[1])
+      text: null
+
+  # Exercise 3.4
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "Expenses Above Budget"
+    description: |
+      Write `over_budget(expenses_dict, limits)` that returns a dictionary containing only the categories where spending **exceeds** the budget limit.
+
+      - `limits` is a dict of `{category: budget}`.
+      - Return `{category: (spent, limit)}` for each over-budget category.
+
+      ```python
+      expenses = {"food": 500, "rent": 1000, "travel": 300}
+      limits   = {"food": 400, "rent": 1200, "travel": 200}
+      over_budget(expenses, limits)
+      # {"food": (500, 400), "travel": (300, 200)}
+      # ("rent" is under budget: 1000 <= 1200)
+      ```
+    hints:
+      - "Loop over `expenses_dict.items()`. For each category, check if the category exists in `limits` and whether `spent > limits[cat]`."
+      - "Build the result dict: `result = {}`, then `if cat in limits and spent > limits[cat]: result[cat] = (spent, limits[cat])`."
+    solution:
+      code: |
+        def over_budget(expenses_dict, limits):
+            result = {}
+            for cat, spent in expenses_dict.items():
+                if cat in limits and spent > limits[cat]:
+                    result[cat] = (spent, limits[cat])
+            return result
+      text: null
+
+  # MCQ 3.1
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 5
+    title: "Assignment vs Accumulation"
+    question: |
+      In the expense tracker, you used category names as dictionary keys. What would happen if you accidentally used `expenses[category] = amount` instead of `expenses[category] += amount` for a category that already exists?
+    options:
+      - label: A
+        text: "Python would throw a KeyError"
+      - label: B
+        text: "The new amount would be added to the old one automatically"
+      - label: C
+        text: "The old total would be silently replaced — you'd lose all previous expenses in that category"
+        correct: true
+      - label: D
+        text: "Python would create a list of both amounts"
+    hints:
+      - "What does `=` do to an existing dictionary key versus `+=`?"
+    solution:
+      text: |
+        Assignment (`=`) replaces the value entirely, while `+=` adds to it. Using `d[key] = value` when the key already exists silently overwrites the previous value — a common bug. Python won't warn you. This is why the pattern `d[key] = d.get(key, 0) + amount` or `d[key] += amount` (after initializing) is important.
+
+  # ═══════════════════════════════════════════════════════════
+  # BONUS B: Invert a Dictionary & Group By
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Invert a Dictionary & Group By"
+    intro: |
+      Sometimes you need to look up a *key by its value* instead of the other way around. **Inverting** a dictionary swaps keys and values.
+
+  # Exercise B.1
+  - type: exercise
+    kind: coding
+    id: ex-b-1
+    part: 4
+    number: 1
+    title: "Invert Dict"
+    description: |
+      Write `invert_dict(d)` that returns a new dictionary with keys and values swapped. Assume all values in `d` are unique (otherwise some keys would be lost).
+
+      ```python
+      invert_dict({"a": 1, "b": 2, "c": 3})  # {1: "a", 2: "b", 3: "c"}
+      invert_dict({})                          # {}
+      ```
+    hints:
+      - "Loop over `d.items()` and build a new dict where each old value becomes a key and each old key becomes a value."
+      - "Dict comprehension: `{v: k for k, v in d.items()}`."
+    solution:
+      code: |
+        def invert_dict(d):
+            return {v: k for k, v in d.items()}
+      text: null
+
+  # Exercise B.2
+  - type: exercise
+    kind: coding
+    id: ex-b-2
+    part: 4
+    number: 2
+    title: "Group By"
+    description: |
+      Write `group_by(items, key_func)` that groups items from a list by the result of applying `key_func` to each item.
+
+      This is a generalisation of both `find_anagrams` and the expense grouping pattern.
+
+      ```python
+      group_by(["cat", "car", "bar", "bat"], lambda w: w[0])
+      # {"c": ["cat", "car"], "b": ["bar", "bat"]}
+
+      group_by([1, 2, 3, 4, 5, 6], lambda x: x % 2)
+      # {1: [1, 3, 5], 0: [2, 4, 6]}
+      ```
+    hints:
+      - "Same pattern as `find_anagrams`: compute a key for each item, then append the item to the list stored under that key."
+      - "`groups = {}`, then `for item in items: k = key_func(item); groups.setdefault(k, []).append(item)`."
+    solution:
+      code: |
+        def group_by(items, key_func):
+            groups = {}
+            for item in items:
+                k = key_func(item)
+                if k in groups:
+                    groups[k].append(item)
+                else:
+                    groups[k] = [item]
+            return groups
+      text: null
+
+  # Exercise B.3
+  - type: exercise
+    kind: coding
+    id: ex-b-3
+    part: 4
+    number: 3
+    title: "Rewrite find_anagrams Using group_by"
+    description: |
+      `find_anagrams` is just `group_by` with `anagram_key` as the key function.
+
+      ```python
+      def find_anagrams_v2(text):
+          return group_by(text.split(), anagram_key)
+      ```
+
+      Verify it gives the same results as your original `find_anagrams`.
+    hints:
+      - "This is a one-liner. The key insight is that `group_by` generalises the grouping pattern you already wrote by hand in `find_anagrams`."
+    solution:
+      code: |
+        def find_anagrams_v2(text):
+            return group_by(text.split(), anagram_key)
+      text: null
+
+  # ═══════════════════════════════════════════════════════════
+  # BONUS C: Inventing Hashing (Why Dicts Are Fast)
+  # ═══════════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Inventing Hashing (Why Dicts Are Fast)"
+    intro: |
+      You've used dictionaries all chapter without asking the awkward question: `d["banana"]` is instant even if `d` holds a *million* keys. A list would have to check entries one by one. How does a dict jump straight to the right spot?
+
+      The answer is an idea you're about to invent: turn the key into a **number**, and use that number as a position.
+
+  # Exercise C.1
+  - type: exercise
+    kind: coding
+    id: ex-c-1
+    part: 5
+    number: 1
+    title: "Letters Are Already Numbers"
+    description: |
+      Python exposes each character's numeric code: `ord("a")` is `97`, and `chr(97)` goes back to `"a"`.
+
+      Write `letter_position(ch)` returning the position of a lowercase letter in the alphabet — `"a"` → 0, `"b"` → 1, ... `"z"` → 25 — using `ord` (no lookup tables!).
+    hints:
+      - "`ord(\"a\")` is 97. So `letter_position(ch) = ord(ch) - ord(\"a\")`."
+    solution:
+      code: |
+        def letter_position(ch):
+            return ord(ch) - ord("a")
+      text: null
+
+  # Exercise C.2
+  - type: exercise
+    kind: coding
+    id: ex-c-2
+    part: 5
+    number: 2
+    title: "A Number for Any String"
+    description: |
+      One letter is easy. For a whole string, the simplest recipe: **add up the character codes**. That gives a big number; to turn it into a *position*, take the remainder when dividing by the number of slots available.
+
+      Write `string_hash(s, n_buckets)` = (sum of `ord` of every character) `% n_buckets`. The result is always a valid index between `0` and `n_buckets - 1` — exactly what you need to pick a slot in a list of buckets.
+
+      ```python
+      string_hash("a", 10)       # 7  (97 % 10)
+      string_hash("banana", 10)  # deterministic: same input always gives same output
+      string_hash("listen", 10)  # 5  (655 % 10)
+      ```
+    hints:
+      - "Use `sum(ord(ch) for ch in s)` to add up all character codes, then take `% n_buckets`."
+    solution:
+      code: |
+        def string_hash(s, n_buckets):
+            return sum(ord(ch) for ch in s) % n_buckets
+      text: null
+
+  # Exercise C.3
+  - type: exercise
+    kind: coding
+    id: ex-c-3
+    part: 5
+    number: 3
+    title: "The Collision"
+    description: |
+      Run this before reading on:
+
+      ```python
+      string_hash("listen", 1000), string_hash("silent", 1000)
+      ```
+
+      Both give `655`. Of course — they're **anagrams** (Part 2 of this chapter!), so they contain the same letters, and addition doesn't care about order. Two different keys landing in the same bucket is called a **collision**, and a hash that collides for every anagram is a bad hash.
+
+      The fix: make position matter. Weight each character by where it sits:
+
+      `hash(s) = sum of ord(s[i]) * (i + 1), mod n`
+
+      Write `string_hash_v2(s, n_buckets)` using the weighted sum (hint: `enumerate(s)`), and confirm the anagram pair now separates.
+
+      ```python
+      string_hash_v2("listen", 1000)  # 292  (2292 % 1000)
+      string_hash_v2("silent", 1000)  # 299  (2299 % 1000)
+      ```
+    hints:
+      - "Use `enumerate(s)` to get both the index and the character: `sum(ord(ch) * (i + 1) for i, ch in enumerate(s))`, then `% n_buckets`."
+      - "Multiplying by `(i + 1)` means the first character is weighted by 1, the second by 2, etc. This breaks the symmetry that caused anagrams to collide."
+    solution:
+      code: |
+        def string_hash_v2(s, n_buckets):
+            return sum(ord(ch) * (i + 1) for i, ch in enumerate(s)) % n_buckets
+      text: null
+
+  # Exercise C.4
+  - type: exercise
+    kind: conceptual
+    id: ex-c-4
+    part: 5
+    number: 4
+    title: "The Same Trick at Data-Center Scale"
+    description: |
+      You just invented how a dict works inside:
+
+      1. Hash the key to a bucket index — one arithmetic step, no searching.
+      2. Go directly to that bucket.
+      3. Collisions are unavoidable (infinitely many strings, finitely many buckets), so each bucket keeps a *short* list to check — a few items, not a million.
+
+      That's why `d[key]` costs the same whether the dict holds ten keys or ten million: this is what **O(1) lookup** means.
+
+      Now zoom out. A big website can't fit a billion users on one database server; it splits them across many. Which server holds user `12345`? Same invention: hash the key. With numeric IDs the hash is just the remainder.
+
+      Write `which_shard(user_id, n_servers)` returning `user_id % n_servers`, then check the test's fairness experiment: hashing 10,000 users across 7 servers should load every server almost equally.
+
+      ```python
+      which_shard(12345, 10)  # 5
+      which_shard(12345, 7)   # 4
+      ```
+
+      **Think about it (no code):** if you *add* an 8th server, `% 7` becomes `% 8` — which users are now on the wrong server? (Almost all of them! Real systems soften this with *consistent hashing* — worth a web search. Python dicts face the same event when they grow: they resize and re-hash every key.)
+    hints:
+      - "This one is a one-liner: `return user_id % n_servers`. The interesting part is the reflection question about what happens when `n_servers` changes."
+    solution:
+      code: |
+        def which_shard(user_id, n_servers):
+            return user_id % n_servers
+      text: null
+
+  # MCQ C.1
+  - type: exercise
+    kind: mcq
+    id: mcq-c-1
+    part: 5
+    number: 5
+    title: "What Happens on a Collision?"
+    question: |
+      You built a hash function that converts a string to a number, then uses modulo to pick a bucket. What happens when two different keys hash to the same bucket (a collision)?
+    options:
+      - label: A
+        text: "The second key silently replaces the first — data is lost"
+      - label: B
+        text: "Python raises an error and refuses to insert"
+      - label: C
+        text: "The bucket stores both key-value pairs, and lookup checks each one — O(1) on average if collisions are rare"
+        correct: true
+      - label: D
+        text: "The hash function automatically picks a different bucket"
+    hints:
+      - "You saw collisions in Exercise C.3. Did the system break, or did it handle them?"
+    solution:
+      text: |
+        Collisions are expected and handled: the bucket stores multiple entries (often as a linked list or similar structure). On lookup, Python hashes the key to find the bucket, then scans the entries in that bucket to find the exact match. As long as collisions are rare (a good hash function distributes keys evenly), each bucket has only 1–2 entries, keeping lookup effectively O(1).
+
+  # ═══════════════════════════════════════════════════════════
+  # Summary Table
+  # ═══════════════════════════════════════════════════════════
+
+  - type: table
+    id: summary
+    headers: [Function, What it does]
+    rows:
+      - ["`count_items(items)`", "Count occurrences of each item in a list"]
+      - ["`word_count(text)`", "Count word frequencies in a string"]
+      - ["`most_frequent_word(text)`", "Find the most common word"]
+      - ["`top_n_words(text, n)`", "Top n words by frequency"]
+      - ["`anagram_key(word)`", "Canonical key: sorted letters as a string"]
+      - ["`find_anagrams(text)`", "Group words by anagram key"]
+      - ["`find_true_anagram_groups(text)`", "Only groups with 2+ words"]
+      - ["`update_expenses(list, dict)`", "Accumulate totals per category"]
+      - ["`print_expenses(dict)`", "Display category totals"]
+      - ["`top_expense(dict)`", "Category with highest spend"]
+      - ["`over_budget(dict, limits)`", "Categories that exceed their limit"]
+      - ["`invert_dict(d)`", "Swap keys and values"]
+      - ["`group_by(items, key_func)`", "General grouping — subsumes all of the above"]
+
+  - type: reveal
+    text: |
+      The **`group_by` pattern** is one of the most frequently recurring patterns in data processing: collect items into buckets based on a computed property.

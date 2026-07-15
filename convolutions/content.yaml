@@ -1,0 +1,1906 @@
+chapter:
+  id: convolutions
+  title: "Learning Convolutions by Inventing Computer Vision"
+  intro: |
+    You won't be taught — you will *discover*. Every step builds on the last. You will build everything from scratch: pixel by pixel, loop by loop.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/convolutions/convolutions.ipynb"
+  mathjax: true
+  footer: |
+    You just built a computer vision system from scratch — pixel by pixel, loop by loop. Everything in a CNN's early layers is a version of what you built here.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 1: What Is an Image?
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "What Is an Image?"
+    intro: |
+      ```python
+      import numpy as np
+      import matplotlib.pyplot as plt
+      from PIL import Image
+      import requests
+      from io import BytesIO
+      ```
+
+      ```python
+      def load_color_image():
+          """Downloads a small color image.
+          Falls back to a synthetic image if download fails."""
+          try:
+              url = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Bikesgray.jpg/320px-Bikesgray.jpg"
+              response = requests.get(url, timeout=5)
+              img = Image.open(BytesIO(response.content)).convert('RGB')
+              return img
+          except Exception:
+              arr = np.zeros((100, 100, 3), dtype=np.uint8)
+              for r in range(100):
+                  for c in range(100):
+                      arr[r, c] = [r * 2, c * 2, 128]
+              return Image.fromarray(arr)
+
+      def load_gray_image():
+          """Downloads a small grayscale image.
+          Falls back to a synthetic image if download fails."""
+          try:
+              url = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Bikesgray.jpg/320px-Bikesgray.jpg"
+              response = requests.get(url, timeout=5)
+              img = Image.open(BytesIO(response.content)).convert('L')
+              return img
+          except Exception:
+              arr = np.zeros((100, 100), dtype=np.uint8)
+              for r in range(100):
+                  for c in range(100):
+                      arr[r, c] = (r + c) % 256
+              return Image.fromarray(arr)
+
+      color_img = load_color_image()
+      gray_img  = load_gray_image()
+      ```
+
+      ```python
+      def show_images(images, titles=None, cmap_list=None, figsize=None):
+          """
+          Displays a list of images side by side.
+
+          Parameters:
+              images    : list of numpy arrays or PIL Images
+              titles    : list of title strings
+              cmap_list : list of colormaps (e.g. ['gray', None, 'hot'])
+                          use None for color images, 'gray' for grayscale
+              figsize   : optional (width, height) tuple
+          """
+          n = len(images)
+          if figsize is None:
+              figsize = (5 * n, 4)
+          if titles is None:
+              titles = [f'Image {i+1}' for i in range(n)]
+          if cmap_list is None:
+              cmap_list = [None] * n
+
+          fig, axes = plt.subplots(1, n, figsize=figsize)
+          if n == 1:
+              axes = [axes]
+          for ax, img, title, cmap in zip(axes, images, titles, cmap_list):
+              if isinstance(img, Image.Image):
+                  img = np.array(img)
+              ax.imshow(img, cmap=cmap)
+              ax.set_title(title)
+              ax.axis('off')
+          plt.tight_layout()
+          plt.show()
+      ```
+
+  # ── Exercise 1.1 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Load and Look"
+    description: |
+      Before we can process images, we need to understand what they *are* to a computer.
+
+      Run the helper above to load two test images — one colored, one grayscale.
+
+      **Tasks:**
+
+      1. Use `show_images` to display both the color and grayscale images.
+         - For the grayscale image, pass `cmap_list=['gray']`.
+      2. What do you notice visually? How do they differ?
+    provided_code: []
+    hints:
+      - "Call `show_images([color_img], titles=['Color Image'])` for the color image. For grayscale, add `cmap_list=['gray']` so matplotlib doesn't apply a default colormap."
+    solution:
+      code: |
+        # Display the color image
+        show_images([color_img], titles=['Color Image'])
+
+        # Display the grayscale image
+        show_images([gray_img], titles=['Grayscale Image'], cmap_list=['gray'])
+
+        # Display both side by side
+        show_images([color_img, gray_img],
+                    titles=['Color Image', 'Grayscale Image'],
+                    cmap_list=[None, 'gray'])
+      text: |
+        The color image shows three channels (RGB) producing full color, while the grayscale image has only one channel representing brightness. They show the same scene, but the grayscale version loses all color information.
+
+  # ── Exercise 1.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Peek Inside: Images as Numbers"
+    description: |
+      An image is just a grid of numbers. Let's prove it.
+
+      A PIL Image can be converted to a NumPy array using `np.array(img)`.
+
+      **Tasks:**
+
+      1. Convert both images to NumPy arrays. Store them as `color_arr` and `gray_arr`.
+      2. Print `color_arr.shape` and `gray_arr.shape`. What are the dimensions?
+      3. Print `color_arr.dtype` and `gray_arr.dtype`. What is the data type of each pixel?
+      4. What is the range of values? Print `color_arr.min()` and `color_arr.max()`.
+      5. Print just the first 5x5 block of the grayscale array. What do the numbers represent?
+      6. Print `color_arr[0, 0]`. What does this value represent? What about `color_arr[0, 0, 0]`?
+
+      **Write down your answers:**
+
+      - A color image has shape `(H, W, ?)`. The third dimension is... because...
+      - A grayscale image has shape `(H, W)`. There is no third dimension because...
+      - The numbers in the array range from ___ to ___. This makes sense because...
+      - `color_arr[0, 0]` gives `[R, G, B]` — this means the pixel at row 0, column 0 has Red=___, Green=___, Blue=___.
+    provided_code: []
+    hints:
+      - "The color image has 3 channels (Red, Green, Blue), so its shape is `(height, width, 3)`. The grayscale image has only one brightness value per pixel, so its shape is `(height, width)`."
+      - "Pixel values are `uint8` — unsigned 8-bit integers from 0 to 255. 0 = black, 255 = white (for grayscale) or maximum intensity (for a color channel)."
+    solution:
+      code: |
+        color_arr = np.array(color_img)
+        gray_arr  = np.array(gray_img)
+
+        print("--- Color Array ---")
+        print("Shape:", color_arr.shape)   # (H, W, 3)
+        print("Dtype:", color_arr.dtype)   # uint8
+        print("Min:",   color_arr.min(), "  Max:", color_arr.max())
+        print("Pixel at [0,0]:", color_arr[0, 0])         # [R, G, B] of top-left pixel
+        print("Red value at [0,0]:", color_arr[0, 0, 0])  # Red channel only
+
+        print("\n--- Grayscale Array ---")
+        print("Shape:", gray_arr.shape)    # (H, W)
+        print("Dtype:", gray_arr.dtype)    # uint8
+
+        print("\nFirst 5x5 block of grayscale:")
+        print(gray_arr[:5, :5])
+      text: |
+        A color image has shape `(H, W, 3)`. The third dimension is 3 because each pixel stores three values: Red, Green, and Blue. A grayscale image has shape `(H, W)` with no third dimension because each pixel is a single brightness value. Values range from 0 to 255 (uint8). `color_arr[0, 0]` gives the RGB triplet of the top-left pixel; `color_arr[0, 0, 0]` gives just its red intensity.
+
+  # ── Exercise 1.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Navigate the Grid"
+    description: |
+      Now that you know the structure, explore the image as a grid.
+
+      **Tasks:**
+
+      1. How many rows does the color image have? How many columns?
+      2. What is the pixel at the very center of the color image? (Compute the center row and column from the shape.)
+      3. What is the pixel at the bottom-right corner?
+      4. Print all pixel values in the first row of the grayscale image. How many values are there?
+      5. Without using any NumPy operations — using only Python loops — compute the **average brightness** of the grayscale image. (Average brightness = average of all pixel values.)
+
+      > **Important rule for this notebook:** When asked to avoid NumPy, that means: no `np.mean()`, no `np.sum()`, no array slicing magic. Use Python `for` loops, `range()`, and plain arithmetic. You *can* still access array elements by index like `arr[r, c]`.
+    provided_code: []
+    hints:
+      - "The center row is `height // 2` and center column is `width // 2`. The bottom-right pixel is at `[height - 1, width - 1]`."
+      - "For average brightness, loop over all rows and columns, accumulate the sum and count, then divide: `for r in range(height): for c in range(width): total += gray_arr[r, c]; count += 1`."
+    solution:
+      code: |
+        height = color_arr.shape[0]
+        width  = color_arr.shape[1]
+        print(f"Image size: {height} rows x {width} columns")
+
+        # Center pixel
+        center_row = height // 2
+        center_col = width // 2
+        print("Center pixel:", color_arr[center_row, center_col])
+
+        # Bottom-right corner pixel
+        print("Bottom-right pixel:", color_arr[height - 1, width - 1])
+
+        # First row of grayscale
+        print("First row of grayscale:", gray_arr[0, :])
+        print("Number of values:", len(gray_arr[0, :]))
+
+        # Average brightness using ONLY Python loops
+        total = 0
+        count = 0
+        h, w = gray_arr.shape
+        for r in range(h):
+            for c in range(w):
+                total += int(gray_arr[r, c])
+                count += 1
+
+        avg_brightness = total / count
+        print(f"Average brightness (manual loop): {avg_brightness:.2f}")
+        print(f"Verify with numpy:                {gray_arr.mean():.2f}")
+      text: null
+
+  # ── Exercise 1.4 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "Visualize a Tiny Slice"
+    description: |
+      Let's look at a small patch of the image zoomed in, so we can literally see the pixels.
+
+      **Tasks:**
+
+      1. Extract the top-left 20x20 patch of the grayscale image.
+      2. Display it using `show_images` with `cmap_list=['gray']`.
+      3. Do you notice anything? Each square in the display *is* one number from the array.
+      4. Extract the same 20x20 patch from the color image and display it.
+      5. Now extract a 20x20 patch from the *middle* of each image and display them side by side.
+    provided_code: []
+    hints:
+      - "Use slicing: `gray_arr[:20, :20]` for the top-left patch. For the middle, compute `mid_r = height // 2` and `mid_c = width // 2`, then use `gray_arr[mid_r-10:mid_r+10, mid_c-10:mid_c+10]`."
+    solution:
+      code: |
+        # Top-left 20x20 patch of grayscale
+        gray_patch = gray_arr[:20, :20]
+        show_images([gray_patch], titles=['Grayscale top-left 20x20'], cmap_list=['gray'])
+
+        # Top-left 20x20 patch of color
+        color_patch = color_arr[:20, :20]
+        show_images([color_patch], titles=['Color top-left 20x20'])
+
+        # Middle 20x20 patch
+        mid_r = gray_arr.shape[0] // 2
+        mid_c = gray_arr.shape[1] // 2
+        gray_mid  = gray_arr[mid_r-10:mid_r+10, mid_c-10:mid_c+10]
+        color_mid = color_arr[mid_r-10:mid_r+10, mid_c-10:mid_c+10]
+        show_images([gray_mid, color_mid],
+                    titles=['Gray middle 20x20', 'Color middle 20x20'],
+                    cmap_list=['gray', None])
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Extracting a Color Channel
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Extracting a Color Channel"
+    intro: null
+
+  # ── Exercise 2.1 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "What Are R, G, B?"
+    description: |
+      A color pixel is stored as three numbers: **(R, G, B)** — Red, Green, Blue. Each value is between 0 and 255.
+
+      - `(255, 0, 0)` → pure red
+      - `(0, 255, 0)` → pure green
+      - `(0, 0, 255)` → pure blue
+      - `(0, 0, 0)` → black
+      - `(255, 255, 255)` → white
+      - `(128, 128, 128)` → gray
+
+      **Tasks:**
+
+      1. Look at `color_arr[0, 0]`. What are the R, G, B values of the top-left pixel?
+      2. Create a tiny 4x4 test array manually (use `np.array`) where each pixel is a known color:
+         - Row 0: all red pixels `[255, 0, 0]`
+         - Row 1: all green pixels `[0, 255, 0]`
+         - Row 2: all blue pixels `[0, 0, 255]`
+         - Row 3: all white pixels `[255, 255, 255]`
+
+         Display it. Does it look right?
+      3. Access `test[0, 0, 0]` — this is the Red channel of the first pixel. Access `test[1, 0, 1]` — what channel is this? What value do you expect?
+    provided_code: []
+    hints:
+      - "Start with `test = np.zeros((4, 4, 3), dtype=np.uint8)`. Then set `test[0, :] = [255, 0, 0]` for the red row, etc."
+      - "`test[1, 0, 1]` indexes row 1, column 0, channel 1 — that is the Green channel of the first pixel in the green row. The value should be 255."
+    solution:
+      code: |
+        # 1. Top-left pixel
+        print("Top-left pixel R,G,B:", color_arr[0, 0])
+
+        # 2. Build the 4x4 test array
+        test = np.zeros((4, 4, 3), dtype=np.uint8)
+        test[0, :] = [255, 0, 0]      # Row 0: red
+        test[1, :] = [0, 255, 0]      # Row 1: green
+        test[2, :] = [0, 0, 255]      # Row 2: blue
+        test[3, :] = [255, 255, 255]  # Row 3: white
+        show_images([test], titles=['Test 4x4 color array'])
+
+        # 3. Channel access
+        print("test[0,0,0] (Red of first pixel):   ", test[0, 0, 0])   # 255
+        print("test[1,0,1] (Green of second row):  ", test[1, 0, 1])   # 255
+      text: |
+        `test[1, 0, 1]` is the Green channel (index 1) of the pixel at row 1, column 0. Since row 1 is all green `[0, 255, 0]`, the value is 255.
+
+  # ── Exercise 2.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Extract the Red Channel Using Loops"
+    description: |
+      Your job is to extract only the **Red channel** from the color image. The result should be a 2D array (H x W) of numbers — just the red values.
+
+      **Rules for this exercise:**
+
+      - No NumPy slicing tricks like `color_arr[:, :, 0]`
+      - No `np.split`, no `np.take`, no fancy indexing
+      - Use plain Python `for` loops and index access `arr[r, c, 0]`
+
+      **Tasks:**
+
+      1. Create an empty 2D array of the right size using `np.zeros((height, width), dtype=np.uint8)`.
+      2. Loop over every pixel and copy the Red value into your new array.
+      3. Display the result using `show_images` with `cmap_list=['gray']`.
+      4. What do bright areas in the red channel mean? What do dark areas mean?
+      5. **Extra:** Do the same for the Green and Blue channels. Display all three side by side using colormaps `['Reds', 'Greens', 'Blues']`.
+    provided_code: []
+    hints:
+      - "Inside the nested loop: `red_channel[r, c] = color_arr[r, c, 0]`. Channel 0 is Red, channel 1 is Green, channel 2 is Blue."
+      - "Bright areas in the red channel mean those pixels have a high red component. Dark areas have little red. This is independent of green and blue."
+    solution:
+      code: |
+        height = color_arr.shape[0]
+        width  = color_arr.shape[1]
+
+        # Extract Red channel
+        red_channel = np.zeros((height, width), dtype=np.uint8)
+        for r in range(height):
+            for c in range(width):
+                red_channel[r, c] = color_arr[r, c, 0]
+
+        show_images([red_channel], titles=['Red Channel (as grayscale)'], cmap_list=['gray'])
+
+        # Extract Green and Blue channels the same way
+        green_channel = np.zeros((height, width), dtype=np.uint8)
+        blue_channel  = np.zeros((height, width), dtype=np.uint8)
+        for r in range(height):
+            for c in range(width):
+                green_channel[r, c] = color_arr[r, c, 1]
+                blue_channel[r, c]  = color_arr[r, c, 2]
+
+        # Display all three channels side by side
+        show_images(
+            [red_channel, green_channel, blue_channel],
+            titles=['Red', 'Green', 'Blue'],
+            cmap_list=['Reds', 'Greens', 'Blues']
+        )
+      text: |
+        Bright areas in the red channel mean those pixels have a high red component. Dark areas have little red. Each channel is independent of the others.
+
+  # ── Exercise 2.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Visualize a Single Channel in Its True Color"
+    description: |
+      When we display the Red channel as grayscale, bright = high red value, dark = low red value. But what if we want to display it as an actual *red* image?
+
+      **Think:** to show the red channel in red, you need a color image where:
+
+      - The red channel = the values from `red_channel`
+      - The green channel = all zeros
+      - The blue channel = all zeros
+
+      **Tasks:**
+
+      1. Without using NumPy fancy tricks, build a 3D array `red_image` of shape `(H, W, 3)` where only the red component is non-zero.
+      2. Display it. Does it look red-tinted?
+      3. Do the same for green and blue. Display all three.
+      4. Now add all three colored arrays together using a loop (not NumPy addition). Display the result. Does it look like the original color image? Why or why not?
+
+      > **Hint for step 4:** Be careful about overflow! Adding uint8 values can exceed 255. Think about how to handle this.
+    provided_code: []
+    hints:
+      - "Build `red_image = np.zeros((height, width, 3), dtype=np.uint8)`, then in the loop set only `red_image[r, c, 0] = red_channel[r, c]`."
+      - "When adding the three images, use `int()` to avoid uint8 overflow and clamp with `min(255, value)`. The recombined image should look identical to the original because R + G + B channels reconstruct the full color."
+    solution:
+      code: |
+        # Build red_image: (H, W, 3) with only red channel filled
+        red_image = np.zeros((height, width, 3), dtype=np.uint8)
+        for r in range(height):
+            for c in range(width):
+                red_image[r, c, 0] = red_channel[r, c]
+
+        show_images([red_image], titles=['Red channel as color'])
+
+        # Build green_image and blue_image similarly
+        green_image = np.zeros((height, width, 3), dtype=np.uint8)
+        blue_image  = np.zeros((height, width, 3), dtype=np.uint8)
+        for r in range(height):
+            for c in range(width):
+                green_image[r, c, 1] = green_channel[r, c]
+                blue_image[r, c, 2]  = blue_channel[r, c]
+
+        show_images([red_image, green_image, blue_image],
+                    titles=['Red', 'Green', 'Blue'])
+
+        # Add them together using a loop (handle overflow)
+        combined = np.zeros((height, width, 3), dtype=np.uint8)
+        for r in range(height):
+            for c in range(width):
+                for ch in range(3):
+                    val = int(red_image[r, c, ch]) + int(green_image[r, c, ch]) + int(blue_image[r, c, ch])
+                    combined[r, c, ch] = min(255, val)
+
+        show_images([color_arr, combined],
+                    titles=['Original', 'Recombined R+G+B'])
+      text: |
+        The recombined image looks identical to the original because each pixel's RGB values are reconstructed exactly (R + 0 + 0 = R, etc.). Using `int()` and `min(255, ...)` prevents uint8 overflow.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Converting Color to Grayscale
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Converting Color to Grayscale"
+    intro: null
+
+  # ── Exercise 3.1 ──
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "What *Is* Grayscale?"
+    description: |
+      A grayscale image has only one number per pixel — its **brightness**. A color image has three (R, G, B).
+
+      The question is: given R, G, B — how do you compute a single brightness value?
+
+      There is no single "right" answer. But there are good ones and bad ones. Your job is to **invent** several formulas and see what happens.
+
+      **Tasks:**
+
+      1. **Before writing any code:** think of 3 ways you could combine R, G, B into one number. Write them as math formulas.
+
+      **Your 3 ideas (before looking at any answers):**
+
+      1. Idea 1: ...
+      2. Idea 2: ...
+      3. Idea 3: ...
+    provided_code: []
+    hints:
+      - "The simplest approach is to average: $$\\text{gray} = \\frac{R + G + B}{3}$$ Did you come up with this one? Other common ideas: take the max, or take a weighted combination. Think about whether all three channels contribute equally to perceived brightness."
+    solution:
+      code: null
+      text: |
+        Three common ideas for combining R, G, B into a single brightness value:
+
+        1. **Average:** gray = (R + G + B) / 3. Treats all three channels equally.
+        2. **Lightness:** gray = (max(R, G, B) + min(R, G, B)) / 2. Uses only the extremes.
+        3. **Luminosity (weighted):** gray = 0.299R + 0.587G + 0.114B. Matches human perception by weighting green most heavily and blue least.
+
+        The simple average assumes R, G, and B contribute equally to perceived brightness, which is not true for human vision. Our eyes are most sensitive to green and least to blue.
+
+  # ── Exercise 3.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Implement Your Formulas"
+    description: |
+      For each formula you invented (and the ones below), write a function `rgb_to_gray_METHOD(color_array)` that:
+
+      - Takes a `(H, W, 3)` numpy array
+      - Returns a `(H, W)` numpy array of type `uint8`
+      - Uses **only Python loops and arithmetic** — no `np.mean()`, no slicing across channels
+
+      **Formulas to implement:**
+
+      | Method | Formula |
+      |--------|---------|
+      | Average | $\frac{R + G + B}{3}$ |
+      | Lightness | $\frac{\max(R,G,B) + \min(R,G,B)}{2}$ |
+      | Luminosity (ITU-R BT.601) | $0.299 R + 0.587 G + 0.114 B$ |
+      | Your own idea | (whatever you came up with above) |
+
+      > **Tip on `uint8`:** When you compute a float result, convert it back to `uint8` by wrapping in `int(...)` and clamping: `max(0, min(255, value))`.
+    provided_code:
+      - label: "starter for Average method"
+        code: |
+          def rgb_to_gray_average(arr):
+              """
+              Converts color image to grayscale using simple average: (R+G+B)/3.
+              arr: numpy array of shape (H, W, 3), dtype uint8
+              Returns: numpy array of shape (H, W), dtype uint8
+              """
+              h, w = arr.shape[0], arr.shape[1]
+              result = np.zeros((h, w), dtype=np.uint8)
+              for r in range(h):
+                  for c in range(w):
+                      R, G, B = arr[r, c, 0], arr[r, c, 1], arr[r, c, 2]
+                      gray = int((R + G + B) / 3)
+                      result[r, c] = max(0, min(255, gray))
+              return result
+    hints:
+      - "For the Lightness method, use Python's built-in `max()` and `min()`: `gray = int((max(R, G, B) + min(R, G, B)) / 2)`."
+      - "For the Luminosity method: `gray = int(0.299 * R + 0.587 * G + 0.114 * B)`. Notice Green gets the highest weight because human eyes are most sensitive to green light."
+    solution:
+      code: |
+        def rgb_to_gray_average(arr):
+            h, w = arr.shape[0], arr.shape[1]
+            result = np.zeros((h, w), dtype=np.uint8)
+            for r in range(h):
+                for c in range(w):
+                    R, G, B = int(arr[r, c, 0]), int(arr[r, c, 1]), int(arr[r, c, 2])
+                    gray = int((R + G + B) / 3)
+                    result[r, c] = max(0, min(255, gray))
+            return result
+
+        def rgb_to_gray_lightness(arr):
+            h, w = arr.shape[0], arr.shape[1]
+            result = np.zeros((h, w), dtype=np.uint8)
+            for r in range(h):
+                for c in range(w):
+                    R, G, B = int(arr[r, c, 0]), int(arr[r, c, 1]), int(arr[r, c, 2])
+                    gray = int((max(R, G, B) + min(R, G, B)) / 2)
+                    result[r, c] = max(0, min(255, gray))
+            return result
+
+        def rgb_to_gray_luminosity(arr):
+            h, w = arr.shape[0], arr.shape[1]
+            result = np.zeros((h, w), dtype=np.uint8)
+            for r in range(h):
+                for c in range(w):
+                    R, G, B = int(arr[r, c, 0]), int(arr[r, c, 1]), int(arr[r, c, 2])
+                    gray = int(0.299 * R + 0.587 * G + 0.114 * B)
+                    result[r, c] = max(0, min(255, gray))
+            return result
+
+        def rgb_to_gray_mymethod(arr):
+            """Desaturation: use the median of R, G, B."""
+            h, w = arr.shape[0], arr.shape[1]
+            result = np.zeros((h, w), dtype=np.uint8)
+            for r in range(h):
+                for c in range(w):
+                    vals = [int(arr[r, c, 0]), int(arr[r, c, 1]), int(arr[r, c, 2])]
+                    vals.sort()
+                    result[r, c] = vals[1]  # median
+            return result
+      text: null
+
+  # ── Exercise 3.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Compare the Methods"
+    description: |
+      **Tasks:**
+
+      1. Apply all four methods to `color_arr`.
+      2. Display all results side by side using `show_images` with `cmap_list=['gray', 'gray', 'gray', 'gray']`.
+      3. Also display the original color image for reference.
+      4. Do you see any visible differences between the methods?
+      5. **Compute the pixel-wise difference** between `gray_average` and `gray_luminosity`: For each pixel, compute `abs(average[r,c] - luminosity[r,c])`. Display this difference image. Where are the biggest differences?
+      6. **Think about why** the luminosity formula (0.299, 0.587, 0.114) uses unequal weights. Notice: Green gets the most weight, Blue the least. Why might that be?
+
+      > **Hint for question 6:** Think about how human eyes perceive brightness in different colors.
+
+      **Your reflection (fill in):**
+
+      - Which method produced the most visually pleasing grayscale image? Why?
+      - Why does the luminosity formula give more weight to green?
+      - Where were the biggest differences between methods?
+    provided_code: []
+    hints:
+      - "The difference image highlights where Average and Luminosity disagree most. Expect the biggest differences in areas with strong color — e.g., saturated reds or blues — because the average treats all channels equally while luminosity weights green heavily."
+      - "Human eyes have more green-sensitive cone cells than red or blue. The luminosity formula mirrors human perception: green light appears brightest to us, blue appears dimmest, so a pure blue pixel should map to a darker gray than a pure green pixel at the same intensity."
+    solution:
+      code: |
+        # Apply all methods
+        gray_average   = rgb_to_gray_average(color_arr)
+        gray_lightness = rgb_to_gray_lightness(color_arr)
+        gray_luminosity = rgb_to_gray_luminosity(color_arr)
+        gray_mymethod  = rgb_to_gray_mymethod(color_arr)
+
+        # Display all side by side
+        show_images(
+            [color_arr, gray_average, gray_lightness, gray_luminosity, gray_mymethod],
+            titles=['Original', 'Average', 'Lightness', 'Luminosity', 'Median'],
+            cmap_list=[None, 'gray', 'gray', 'gray', 'gray']
+        )
+
+        # Compute pixel-wise difference between average and luminosity
+        h, w = gray_average.shape
+        diff = np.zeros((h, w), dtype=np.uint8)
+        for r in range(h):
+            for c in range(w):
+                diff[r, c] = abs(int(gray_average[r, c]) - int(gray_luminosity[r, c]))
+
+        show_images([diff], titles=['Difference: Average vs Luminosity'], cmap_list=['hot'])
+      text: |
+        The luminosity method produces the most perceptually accurate grayscale because it mirrors how human eyes perceive brightness. Green gets the most weight (0.587) because our eyes have more green-sensitive cone cells. Blue gets the least (0.114) because blue light appears dimmer to us. The biggest differences appear in areas with strong color saturation, especially reds and blues.
+
+  # ── MCQ 3.1 ──
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 4
+    title: "Quick Check — Why Grayscale Loses Information"
+    question: |
+      After converting a color image to grayscale, can you recover the original colors?
+    options:
+      - label: A
+        text: "Yes — the grayscale values contain enough information to reconstruct RGB"
+      - label: B
+        text: "No — grayscale combines three channels (R, G, B) into one number, permanently losing which colors contributed to that brightness"
+        correct: true
+      - label: C
+        text: "Yes, but only if you used the averaging method"
+      - label: D
+        text: "No, but only because Python deletes the original data"
+    hints:
+      - "A pixel with (R=200, G=100, B=0) and a pixel with (R=100, G=100, B=100) could produce the same grayscale value. Can you tell them apart from just that one number?"
+    solution:
+      text: |
+        Grayscale maps three numbers (R, G, B) to one number (brightness). Many different color combinations produce the same brightness — a pure red pixel and a pure green pixel could have identical grayscale values. Since multiple inputs map to the same output, you can't invert the process. This is a many-to-one function, and information is permanently lost. This matters in practice: algorithms working on grayscale can detect shapes and edges but can't distinguish objects by color.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Shrinking an Image — Downsampling
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Shrinking an Image — Downsampling"
+    intro: |
+      ```python
+      img_100 = np.array(gray_img.resize((100, 100), Image.LANCZOS))
+      print("Shape of 100x100 image:", img_100.shape)
+      show_images([img_100], titles=['100x100 Grayscale'], cmap_list=['gray'])
+      ```
+
+  # ── Exercise 4.1 ──
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Think Before You Code"
+    description: |
+      You have a 100x100 image. You want to produce a 50x50 image.
+
+      The output has **4x fewer pixels** than the input. Each output pixel must somehow be derived from the input pixels.
+
+      **Before writing any code**, answer these questions:
+
+      1. Each output pixel at position `(r, c)` in the 50x50 image corresponds to *which* input pixel(s) in the 100x100 image?
+      2. If output pixel `(0, 0)` covers input pixels `(0,0)`, `(0,1)`, `(1,0)`, `(1,1)` — what single value should you assign to it? Think of at least 3 different choices.
+      3. Is there information loss when going from 100x100 to 50x50? Can you ever perfectly reconstruct the original?
+
+      **Your answers before coding:**
+
+      1. Output pixel `(r, c)` corresponds to input pixel(s): ...
+      2. Three possible values to assign: ...
+      3. Is there information loss? ...
+    provided_code: []
+    hints:
+      - "Output pixel `(r, c)` maps to a 2x2 block starting at input `(2*r, 2*c)`. You could take any one of the four values, their average, their max, etc. Information is always lost because four values are reduced to one."
+    solution:
+      code: null
+      text: |
+        **1.** Output pixel `(r, c)` corresponds to the 2x2 block of input pixels starting at `(2*r, 2*c)`: namely `(2r, 2c)`, `(2r, 2c+1)`, `(2r+1, 2c)`, `(2r+1, 2c+1)`.
+
+        **2.** Three possible values to assign: (a) just take one of them, e.g. the top-left value (nearest neighbor / subsampling); (b) average all four values (average pooling); (c) take the maximum of the four (max pooling).
+
+        **3.** Yes, there is information loss. Four pixel values are reduced to one, so you cannot perfectly reconstruct the original. Different 2x2 blocks can produce the same output value.
+
+  # ── Exercise 4.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Implement Three Downsampling Methods"
+    description: |
+      **Rules:** Use only Python loops. No `cv2.resize`, no PIL `.resize`, no `np.mean` over blocks.
+
+      **Method A — Nearest Neighbor (Subsampling)**
+      For each output pixel `(r, c)`, simply copy the value from input pixel `(2*r, 2*c)`.
+
+      **Method B — Average Pooling**
+      For each output pixel `(r, c)`, take the **average** of the 2x2 block:
+      `input[2r, 2c]`, `input[2r, 2c+1]`, `input[2r+1, 2c]`, `input[2r+1, 2c+1]`
+
+      **Method C — Max Pooling**
+      For each output pixel `(r, c)`, take the **maximum** of the same 2x2 block.
+
+      **Method D — Your own!**
+      Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weighted average (give corners less weight).
+    provided_code: []
+    hints:
+      - "For average pooling: `result[r, c] = int((img[2*r, 2*c] + img[2*r, 2*c+1] + img[2*r+1, 2*c] + img[2*r+1, 2*c+1]) / 4)`."
+      - "For max pooling, use Python's `max()` on the four values in the 2x2 block. The output has shape `(height // 2, width // 2)`."
+    solution:
+      code: |
+        def downsample_nearest(img):
+            """Downsamples (H, W) to (H//2, W//2) by taking every other pixel."""
+            h, w = img.shape
+            out_h, out_w = h // 2, w // 2
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    result[r, c] = img[2 * r, 2 * c]
+            return result
+
+        def downsample_average(img):
+            """Downsamples by averaging each 2x2 block."""
+            h, w = img.shape
+            out_h, out_w = h // 2, w // 2
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    val = (int(img[2*r, 2*c]) + int(img[2*r, 2*c+1])
+                         + int(img[2*r+1, 2*c]) + int(img[2*r+1, 2*c+1])) / 4
+                    result[r, c] = int(val)
+            return result
+
+        def downsample_max(img):
+            """Downsamples by taking the maximum of each 2x2 block."""
+            h, w = img.shape
+            out_h, out_w = h // 2, w // 2
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    result[r, c] = max(int(img[2*r, 2*c]),   int(img[2*r, 2*c+1]),
+                                       int(img[2*r+1, 2*c]), int(img[2*r+1, 2*c+1]))
+            return result
+
+        def downsample_min(img):
+            """Downsamples by taking the minimum of each 2x2 block."""
+            h, w = img.shape
+            out_h, out_w = h // 2, w // 2
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    result[r, c] = min(int(img[2*r, 2*c]),   int(img[2*r, 2*c+1]),
+                                       int(img[2*r+1, 2*c]), int(img[2*r+1, 2*c+1]))
+            return result
+
+        # Test
+        small = downsample_nearest(img_100)
+        print("Output shape:", small.shape)  # (50, 50)
+      text: null
+
+  # ── Exercise 4.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Compare and Analyze"
+    description: |
+      **Tasks:**
+
+      1. Apply all four methods to `img_100`. Display the results side by side (along with the original).
+      2. Which method preserves the most visual detail? Which looks smoothest? Which looks sharpest?
+      3. **Compute a difference map:** For each pair of methods, compute `abs(method_A[r,c] - method_B[r,c])` for every pixel. Where do methods disagree most?
+      4. **Think deeper:** In neural networks, max pooling is used instead of average pooling. Based on what you see, why might max pooling be preferred for detecting features (like edges)?
+
+      **Your observations:**
+
+      - Nearest neighbor looks...
+      - Average pooling looks...
+      - Max pooling looks...
+      - I think max pooling is preferred in neural networks because...
+    provided_code: []
+    hints:
+      - "Max pooling preserves the strongest activations (brightest values). In a feature map, the strongest activation often represents a detected feature. Average pooling dilutes strong activations by mixing them with weaker neighbors."
+    solution:
+      code: |
+        small_nearest = downsample_nearest(img_100)
+        small_average = downsample_average(img_100)
+        small_max     = downsample_max(img_100)
+        small_min     = downsample_min(img_100)
+
+        show_images(
+            [img_100, small_nearest, small_average, small_max, small_min],
+            titles=['Original 100x100', 'Nearest', 'Average', 'Max', 'Min'],
+            cmap_list=['gray'] * 5
+        )
+
+        # Difference map: nearest vs average
+        h, w = small_nearest.shape
+        diff_down = np.zeros((h, w), dtype=np.uint8)
+        for r in range(h):
+            for c in range(w):
+                diff_down[r, c] = abs(int(small_nearest[r, c]) - int(small_average[r, c]))
+
+        show_images([diff_down], titles=['Difference: Nearest vs Average'], cmap_list=['hot'])
+      text: |
+        Nearest neighbor is the sharpest but can miss detail from skipped pixels. Average pooling is smoothest because it blends all four values. Max pooling preserves the brightest activations in each block, making it preferred in neural networks because strong feature responses (e.g., an edge) are kept even if neighboring pixels are weaker.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: Growing an Image — Upsampling to 100x100
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Growing an Image — Upsampling to 100x100"
+    intro: null
+
+  # ── Exercise 5.1 ──
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "The Reverse Problem"
+    description: |
+      Now you have a 50x50 image (use `small_nearest` from Part 4). You want to produce a 100x100 image.
+
+      This is the **reverse** of downsampling, but it's harder: you need to *invent* information that wasn't there.
+
+      **Before coding, think:**
+
+      1. Each output pixel `(r, c)` in the 100x100 image comes from which input pixel(s) in the 50x50 image?
+      2. What happens when `(r, c)` falls exactly between two input pixels — e.g., output pixel `(1, 0)` lands between input `(0,0)` and `(1,0)`?
+      3. Write down two different strategies.
+
+      **Your strategies before coding:**
+
+      1. Strategy A: ...
+      2. Strategy B: ...
+    provided_code: []
+    hints:
+      - "Strategy A: Nearest neighbor — just copy the closest input pixel. Strategy B: Interpolation — blend between neighbors using a weighted average based on distance."
+    solution:
+      code: null
+      text: |
+        **Strategy A — Nearest neighbor replication:** Each output pixel `(r, c)` copies from the closest input pixel `(r//2, c//2)`. Every input pixel is "stretched" into a 2x2 block. Simple but blocky.
+
+        **Strategy B — Interpolation:** Output pixel `(r, c)` maps to input position `(r/2, c/2)`, which may be fractional. Blend between the surrounding input pixels using their distances as weights. Smoother but slightly blurry.
+
+  # ── Exercise 5.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Implement Three Upsampling Methods"
+    description: |
+      **Rules:** Use only Python loops. No `cv2.resize`, no PIL `.resize`.
+
+      **Method A — Nearest Neighbor Replication**
+      Each output pixel `(r, c)` copies from input pixel `(r//2, c//2)`. Every input pixel gets "stretched" into a 2x2 block.
+
+      **Method B — Bilinear Interpolation (1D first, then 2D)**
+      This one is harder. Let's build it up:
+
+      - First, implement **linear interpolation** between two values:
+        `lerp(a, b, t) = a + t * (b - a)` where `t` is between 0 and 1.
+      - For upsampling 2x: output pixel `(r, c)` maps to input position `(r/2, c/2)`.
+      - If `r/2 = 1.5`, you interpolate between row 1 and row 2 with weight 0.5.
+      - Do this for both row and column directions.
+
+      **Method C — Your own!**
+      Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of.
+    provided_code: []
+    hints:
+      - "For bilinear interpolation at output pixel `(r, c)`: compute `in_r = r / scale`, `in_c = c / scale`. Find the four surrounding input pixels and use `lerp` twice — first horizontally across the top and bottom rows, then vertically between the two interpolated values."
+      - "For `lerp`: `return a + t * (b - a)`. For the bilinear formula: `top = lerp(img[r0, c0], img[r0, c1], dc)`, `bottom = lerp(img[r1, c0], img[r1, c1], dc)`, `value = lerp(top, bottom, dr)`. Clamp `r1` and `c1` to the image boundary."
+    solution:
+      code: |
+        def upsample_nearest(img, scale=2):
+            """Upsamples (H, W) to (H*scale, W*scale) by pixel replication."""
+            h, w = img.shape
+            out_h, out_w = h * scale, w * scale
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    result[r, c] = img[r // scale, c // scale]
+            return result
+
+        def lerp(a, b, t):
+            """Linear interpolation: t=0 gives a, t=1 gives b."""
+            return a + t * (b - a)
+
+        def upsample_bilinear(img, scale=2):
+            """Upsamples using bilinear interpolation."""
+            h, w = img.shape
+            out_h, out_w = h * scale, w * scale
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    in_r = r / scale
+                    in_c = c / scale
+                    r0 = int(in_r)
+                    c0 = int(in_c)
+                    r1 = min(r0 + 1, h - 1)
+                    c1 = min(c0 + 1, w - 1)
+                    dr = in_r - r0
+                    dc = in_c - c0
+                    top    = lerp(float(img[r0, c0]), float(img[r0, c1]), dc)
+                    bottom = lerp(float(img[r1, c0]), float(img[r1, c1]), dc)
+                    value  = lerp(top, bottom, dr)
+                    result[r, c] = max(0, min(255, int(value)))
+            return result
+
+        def upsample_repeat_rows_cols(img, scale=2):
+            """Upsamples by repeating each row and column."""
+            h, w = img.shape
+            out_h, out_w = h * scale, w * scale
+            result = np.zeros((out_h, out_w), dtype=np.uint8)
+            for r in range(out_h):
+                for c in range(out_w):
+                    result[r, c] = img[r // scale, c // scale]
+            return result
+
+        big_nearest = upsample_nearest(img_50)
+        print("Output shape:", big_nearest.shape)  # (100, 100)
+      text: null
+
+  # ── Exercise 5.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "Compare and Analyze"
+    description: |
+      **Tasks:**
+
+      1. Apply all three methods. Display results next to the original 100x100 image.
+      2. Nearest neighbor will look "blocky" — why? What visual artifact does it create?
+      3. Bilinear should look smoother — why? What is the trade-off?
+      4. Compute the pixel-wise error between the upsampled image and the original `img_100`:
+         `error[r, c] = abs(int(upsampled[r,c]) - int(img_100[r,c]))`
+         Which method is closest to the original? Does this surprise you?
+      5. Compute the **mean absolute error** (you built this in the Loops & Arrays chapter) between each upsampled image and the original `img_100`.
+    provided_code:
+      - label: "MAE helper (implement using loops)"
+        code: |
+          def mean_absolute_error(img_a, img_b):
+              """
+              Computes pixel-wise mean absolute error between two same-size images.
+              Use only Python loops — no np.mean, no array subtraction.
+              """
+              h, w = img_a.shape
+              total = 0
+              for r in range(h):
+                  for c in range(w):
+                      total += abs(int(img_a[r, c]) - int(img_b[r, c]))
+              return total / (h * w)
+    hints:
+      - "Nearest neighbor is blocky because each input pixel occupies a 2x2 block with no transition. Bilinear is smoother because it blends between neighbors, but the trade-off is that it can appear blurry."
+    solution:
+      code: |
+        big_nearest  = upsample_nearest(img_50)
+        big_bilinear = upsample_bilinear(img_50)
+
+        show_images(
+            [img_100, big_nearest, big_bilinear],
+            titles=['Original 100x100', 'Nearest (100x100)', 'Bilinear (100x100)'],
+            cmap_list=['gray'] * 3
+        )
+
+        # Mean absolute error (using loops)
+        def mean_absolute_error(img_a, img_b):
+            h, w = img_a.shape
+            total = 0
+            for r in range(h):
+                for c in range(w):
+                    total += abs(int(img_a[r, c]) - int(img_b[r, c]))
+            return total / (h * w)
+
+        mae_nearest  = mean_absolute_error(big_nearest, img_100)
+        mae_bilinear = mean_absolute_error(big_bilinear, img_100)
+        print(f"MAE (Nearest):  {mae_nearest:.4f}")
+        print(f"MAE (Bilinear): {mae_bilinear:.4f}")
+      text: |
+        Nearest neighbor is blocky because each input pixel occupies a 2x2 block with no transition. Bilinear is smoother because it blends between neighbors, but the trade-off is slight blurriness. Bilinear typically achieves a lower MAE because averaging reduces extreme errors.
+
+  # ── MCQ 5.1 ──
+
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 4
+    title: "Quick Check — Nearest Neighbor vs Bilinear Upsampling"
+    question: |
+      When upsampling a 50x50 image to 100x100, nearest-neighbor repeats each pixel while bilinear interpolation blends neighboring pixels. Which produces a smoother result, and why?
+    options:
+      - label: A
+        text: "Nearest-neighbor is smoother because it preserves the original pixel values exactly"
+      - label: B
+        text: "Bilinear interpolation is smoother — it creates gradual transitions between pixels by computing weighted averages, while nearest-neighbor creates visible blocky squares"
+        correct: true
+      - label: C
+        text: "Both produce identical results at 2x scaling"
+      - label: D
+        text: "Neither is smooth — you need at least 4x scaling for smooth results"
+    hints:
+      - "Imagine two adjacent pixels with values 100 and 200. Nearest-neighbor gives you 100, 100, 200, 200. What would bilinear give for the middle pixels?"
+    solution:
+      text: |
+        Nearest-neighbor duplicates each pixel, creating abrupt jumps between pixel blocks — the result looks "blocky" or pixelated. Bilinear interpolation computes weighted averages of neighboring pixels, creating smooth gradients. Between pixel values 100 and 200, bilinear might produce 100, 133, 167, 200 — a gradual ramp instead of a sudden step. The tradeoff: bilinear is smoother but slightly blurrier, while nearest-neighbor is sharper but blocky.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: Upsampling to a Non-Integer Scale
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "Upsampling to a Non-Integer Scale — 50x50 to 150x150"
+    intro: null
+
+  # ── Exercise 6.1 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "A New Challenge"
+    description: |
+      So far you've doubled the image (50→100). Now go from 50x50 to 150x150 — a scale factor of **3**.
+
+      Nearest neighbor is easy: output pixel `(r, c)` maps to input `(r//3, c//3)`.
+      Bilinear is similar: output `(r, c)` maps to input coordinates `(r/3, c/3)`.
+
+      **But here's a deeper challenge:** what about going from 50x50 to **75x75**? The scale factor is 1.5 — not an integer.
+
+      Output pixel `(r, c)` maps to input position `(r / 1.5, c / 1.5) = (r * 2/3, c * 2/3)`. This is a fractional coordinate — you must interpolate.
+
+      **The key insight:** Your bilinear implementation already handles this! The formula `in_r = r / scale` works for any scale — integer or fractional.
+
+      **Tasks:**
+
+      1. Generalize your `upsample_nearest` and `upsample_bilinear` to accept an arbitrary `target_h, target_w` instead of a fixed scale.
+      2. Implement `resize_nearest(img, target_h, target_w)` and `resize_bilinear(img, target_h, target_w)`.
+      3. Resize `img_50` to 150x150 using both methods.
+      4. Resize `img_50` to 75x75 using both methods.
+      5. Display and compare results.
+    provided_code: []
+    hints:
+      - "For `resize_nearest`: `in_r = int(r * h / target_h)`, clamped to `[0, h-1]`. For `resize_bilinear`: `in_r = r * (h - 1) / max(1, target_h - 1)` to map edges correctly."
+      - "The bilinear body is the same as Exercise 5.2 Method B, but with `in_r = r * (h - 1) / (target_h - 1)` instead of `r / scale`. This ensures that the first and last output pixels map exactly to the first and last input pixels."
+    solution:
+      code: |
+        def resize_nearest(img, target_h, target_w):
+            """Resizes img to (target_h, target_w) using nearest neighbor."""
+            h, w = img.shape
+            result = np.zeros((target_h, target_w), dtype=np.uint8)
+            for r in range(target_h):
+                for c in range(target_w):
+                    in_r = int(r * h / target_h)
+                    in_c = int(c * w / target_w)
+                    in_r = min(in_r, h - 1)
+                    in_c = min(in_c, w - 1)
+                    result[r, c] = img[in_r, in_c]
+            return result
+
+        def resize_bilinear(img, target_h, target_w):
+            """Resizes img to (target_h, target_w) using bilinear interpolation."""
+            h, w = img.shape
+            result = np.zeros((target_h, target_w), dtype=np.uint8)
+            for r in range(target_h):
+                for c in range(target_w):
+                    in_r = r * (h - 1) / max(1, target_h - 1)
+                    in_c = c * (w - 1) / max(1, target_w - 1)
+                    r0 = int(in_r)
+                    c0 = int(in_c)
+                    r1 = min(r0 + 1, h - 1)
+                    c1 = min(c0 + 1, w - 1)
+                    dr = in_r - r0
+                    dc = in_c - c0
+                    top    = lerp(float(img[r0, c0]), float(img[r0, c1]), dc)
+                    bottom = lerp(float(img[r1, c0]), float(img[r1, c1]), dc)
+                    value  = lerp(top, bottom, dr)
+                    result[r, c] = max(0, min(255, int(value)))
+            return result
+
+        # Resize to 150x150
+        img_150_nearest  = resize_nearest(img_50, 150, 150)
+        img_150_bilinear = resize_bilinear(img_50, 150, 150)
+        show_images([img_50, img_150_nearest, img_150_bilinear],
+                    titles=['Original 50x50', 'Nearest 150x150', 'Bilinear 150x150'],
+                    cmap_list=['gray'] * 3)
+
+        # Resize to 75x75
+        img_75_nearest  = resize_nearest(img_50, 75, 75)
+        img_75_bilinear = resize_bilinear(img_50, 75, 75)
+        show_images([img_50, img_75_nearest, img_75_bilinear],
+                    titles=['Original 50x50', 'Nearest 75x75', 'Bilinear 75x75'],
+                    cmap_list=['gray'] * 3)
+      text: null
+
+  # ── Exercise 6.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-6-2
+    part: 6
+    number: 2
+    title: "Extreme Upsampling"
+    description: |
+      Now let's push your implementation further.
+
+      **Tasks:**
+
+      1. Take a tiny 10x10 patch from `img_50` (top-left corner): `patch = img_50[:10, :10]`.
+      2. Upsample it to 200x200 using both nearest and bilinear.
+      3. Display all three (original 10x10 patch, nearest 200x200, bilinear 200x200).
+      4. The nearest result should look very blocky — you'll see the "pixels". The bilinear should be blurry. Why?
+      5. **Design question:** Is there a way to upsample that preserves sharp edges? Describe your idea (no code needed — just think and write).
+    provided_code: []
+    hints:
+      - "Bilinear is blurry because it linearly interpolates between pixels, which smooths out transitions. Nearest neighbor is sharp but blocky because it uses the same value for an entire block of output pixels."
+      - "For preserving sharp edges, you might consider edge-aware interpolation: detect where edges are and avoid interpolating across them. Higher-order interpolation (bicubic) can also help preserve some sharpness while reducing blockiness."
+    solution:
+      code: |
+        patch = img_50[:10, :10]
+        print("Patch shape:", patch.shape)
+
+        patch_200_nearest  = resize_nearest(patch, 200, 200)
+        patch_200_bilinear = resize_bilinear(patch, 200, 200)
+
+        show_images([patch, patch_200_nearest, patch_200_bilinear],
+                    titles=['10x10 Patch', 'Nearest (200x200)', 'Bilinear (200x200)'],
+                    cmap_list=['gray', 'gray', 'gray'],
+                    figsize=(15, 5))
+      text: |
+        Nearest neighbor is very blocky at 20x magnification because each original pixel becomes a 20x20 block of identical values. Bilinear is blurry because it linearly interpolates, creating smooth gradients that wash out details. To preserve sharp edges while upsampling, you could use edge-aware interpolation: detect edges first, then only interpolate along the edge (not across it). Bicubic interpolation also helps by using a wider neighborhood for smoother curves.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 7: Neighborhood Operations
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Neighborhood Operations"
+    intro: null
+
+  # ── Exercise 7.1 ──
+
+  - type: exercise
+    kind: conceptual
+    id: ex-7-1
+    part: 7
+    number: 1
+    title: "The Neighborhood Idea"
+    description: |
+      You've learned that a pixel is a single number. Now let's think differently: a pixel **together with its neighbors** tells you something about local structure.
+
+      Consider a grayscale image. Look at a 3x3 patch around any pixel `(r, c)`:
+
+      ```
+      img[r-1, c-1]   img[r-1, c]   img[r-1, c+1]
+      img[r,   c-1]   img[r,   c]   img[r,   c+1]
+      img[r+1, c-1]   img[r+1, c]   img[r+1, c+1]
+      ```
+
+      A **filter** (also called a **kernel** or **weight matrix**) is a small grid of numbers, also 3x3:
+
+      ```
+      w[0,0]  w[0,1]  w[0,2]
+      w[1,0]  w[1,1]  w[1,2]
+      w[2,0]  w[2,1]  w[2,2]
+      ```
+
+      The **convolution output** at pixel `(r, c)` is the **sum of element-wise products**. Write a mathematical expression for `out[r, c]` in terms of the image pixels and filter weights. Use summation notation if you can.
+
+      **Before coding**, think:
+
+      1. What happens at the edges of the image? (There are no neighbors outside the boundary.)
+      2. What does the output represent? Is it still an image? What size is it?
+      3. What would happen if all weights were `1/9`? What computation would that be?
+      4. What would happen if the center weight is `1` and all others are `0`?
+
+      **Your answers before coding:**
+
+      1. Edge problem: ...
+      2. Output: ...
+      3. All weights = 1/9: ...
+      4. Center weight = 1, rest = 0: ...
+    provided_code: []
+    hints:
+      - "The formula is: $$\\text{out}[r, c] = \\sum_{i=0}^{2} \\sum_{j=0}^{2} \\text{img}[r+i-1, c+j-1] \\times w[i, j]$$"
+      - "At the edges, the 3x3 neighborhood extends outside the image. One strategy: only compute the output where the kernel fits entirely — the output is 2 pixels smaller in each dimension."
+      - "All weights = 1/9 computes the average of the 3x3 neighborhood — a blur. Center = 1, rest = 0 copies the center pixel unchanged — the identity operation."
+    solution:
+      code: null
+      text: |
+        **1. Edge problem:** At the edges, the 3x3 neighborhood extends outside the image boundaries. One solution is to only compute output where the kernel fits entirely ("valid" mode), making the output smaller. Another is to pad the image with zeros.
+
+        **2. Output:** The output is still a 2D grid of numbers (an image). For a 3x3 kernel on an HxW image in "valid" mode, the output is (H-2) x (W-2).
+
+        **3. All weights = 1/9:** This computes the average of the 3x3 neighborhood at each pixel — a box blur that smooths the image.
+
+        **4. Center weight = 1, rest = 0:** This copies the center pixel unchanged — the identity operation. The output is the same image (just slightly cropped in valid mode).
+
+  # ── Exercise 7.2 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-2
+    part: 7
+    number: 2
+    title: "Apply Weights to a Neighborhood"
+    description: |
+      Implement `conv(image, weights)` where:
+
+      - `image` is a 2D numpy array of shape `(H, W)`
+      - `weights` is a 2D numpy array of shape `(K, K)` where `K` is odd (3, 5, 7, ...)
+      - Output is a 2D numpy array
+
+      **Boundary strategy — "valid" mode:** Only compute output where the kernel fits fully inside the image. For a 3x3 kernel on an HxW image, the output will be `(H-2) x (W-2)`. In general, for a KxK kernel the output is `(H-K+1) x (W-K+1)`.
+
+      For each output position `(r, c)`, you need to combine the KxK neighborhood of the image starting at `(r, c)` with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1.
+
+      > **Note:** The output can have values outside `[0, 255]` — don't clamp yet. Use `float` arrays for the output and we'll handle display separately.
+
+      **Sanity check:** Use the identity filter to verify your implementation:
+
+      ```python
+      identity_kernel = np.array([
+          [0, 0, 0],
+          [0, 1, 0],
+          [0, 0, 0]
+      ], dtype=np.float64)
+
+      result = conv(img_100.astype(np.float64), identity_kernel)
+      # result[0,0] should equal img_100[1,1]
+      ```
+    provided_code: []
+    hints:
+      - "The output shape is `(H - K + 1, W - K + 1)`. Inside the four nested loops: `total += image[r + i, c + j] * weights[i, j]`."
+      - "Use `np.zeros((out_H, out_W), dtype=np.float64)` for the output. Don't forget to convert the input image to float first with `img.astype(np.float64)` to avoid integer overflow."
+    solution:
+      code: |
+        def conv(image, weights):
+            """
+            Applies a convolution filter to a grayscale image.
+            image  : 2D numpy array of shape (H, W)
+            weights: 2D numpy array of shape (K, K)
+            Returns: 2D numpy array of shape (H-K+1, W-K+1)
+            """
+            H, W = image.shape
+            K    = weights.shape[0]
+            out_H = H - K + 1
+            out_W = W - K + 1
+            output = np.zeros((out_H, out_W), dtype=np.float64)
+
+            for r in range(out_H):
+                for c in range(out_W):
+                    total = 0.0
+                    for i in range(K):
+                        for j in range(K):
+                            total += image[r + i, c + j] * weights[i, j]
+                    output[r, c] = total
+
+            return output
+
+        # Sanity check: identity filter
+        identity_kernel = np.array([
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 0, 0]
+        ], dtype=np.float64)
+
+        result = conv(img_100.astype(np.float64), identity_kernel)
+        print("Output shape:", result.shape)        # (98, 98)
+        print(f"result[0,0] = {result[0,0]:.1f}")
+        print(f"img_100[1,1] = {img_100[1,1]}")
+        print("Match:", abs(result[0,0] - float(img_100[1,1])) < 1e-9)
+      text: null
+
+  # ── Exercise 7.3 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-3
+    part: 7
+    number: 3
+    title: "Helper for Displaying Convolution Output"
+    description: |
+      The output of convolution may have negative values or values > 255. We need a helper to normalize and display it.
+
+      Run this cell to make the helper available.
+    provided_code:
+      - label: "convolution display helper"
+        code: |
+          def show_conv_result(original, output, title='Convolution Output', clip=False):
+              """
+              Displays the original image and convolution output side by side.
+              Normalizes the output to [0, 255] for display.
+              """
+              if clip:
+                  display_out = np.clip(output, 0, 255).astype(np.uint8)
+              else:
+                  lo, hi = output.min(), output.max()
+                  if hi > lo:
+                      display_out = ((output - lo) / (hi - lo) * 255).astype(np.uint8)
+                  else:
+                      display_out = np.zeros_like(output, dtype=np.uint8)
+
+              pad = (original.shape[0] - display_out.shape[0]) // 2
+              orig_trimmed = original[pad:pad+display_out.shape[0],
+                                      pad:pad+display_out.shape[1]]
+
+              show_images(
+                  [orig_trimmed, display_out],
+                  titles=['Original (trimmed)', title],
+                  cmap_list=['gray', 'gray']
+              )
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  # ── Exercise 7.4 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-4
+    part: 7
+    number: 4
+    title: "Discover What Filters Do"
+    description: |
+      Now the fun part. Apply your `conv` function with different kernels and discover what each one *does* to the image.
+
+      **Rules:** You must apply each kernel, display the result, and describe what you see *before* reading the reveal below.
+
+      **Kernel A**
+
+      ```
+      1/9  1/9  1/9
+      1/9  1/9  1/9
+      1/9  1/9  1/9
+      ```
+
+      **Kernel B**
+
+      ```
+       0  -1   0
+      -1   5  -1
+       0  -1   0
+      ```
+
+      **Kernel C**
+
+      ```
+      -1  -2  -1
+       0   0   0
+       1   2   1
+      ```
+
+      **Kernel D**
+
+      ```
+      -1   0   1
+      -2   0   2
+      -1   0   1
+      ```
+
+      **Tasks:**
+
+      1. Apply each kernel to `img_100`.
+      2. For each result, write down what you observe *before* reading the reveal.
+      3. For Kernels C and D: can you combine the two output maps? Try:
+         ```python
+         combined[r,c] = sqrt(result_C[r,c]**2 + result_D[r,c]**2)
+         ```
+         (Implement with a loop.)
+
+      **Your observations (fill in before reading the reveal):**
+
+      - Kernel A: I see...
+      - Kernel B: I see...
+      - Kernel C: I see...
+      - Kernel D: I see...
+      - Combined C + D magnitude: I see...
+    provided_code: []
+    hints:
+      - "Look at each kernel's weights carefully. Think about what happens when you multiply and sum: does the kernel compute an average? Does it amplify the center relative to neighbors? Does it subtract one side from another?"
+      - "For combining Kernels C and D, use `import math` and `math.sqrt(result_C[r,c]**2 + result_D[r,c]**2)` in a loop. Both outputs have the same shape, so this works element-wise."
+    solution:
+      code: null
+      text: |
+        Now that you've seen what each kernel does:
+
+        - Kernel A is a **blur** filter — it averages the neighborhood, smoothing the image.
+        - Kernel B is a **sharpening** filter — it enhances differences between a pixel and its neighbors.
+        - Kernel C is a **horizontal edge detector** (Sobel) — it responds to vertical changes in brightness.
+        - Kernel D is a **vertical edge detector** (Sobel) — it responds to horizontal changes in brightness.
+
+  # ── Exercise 7.5 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-5
+    part: 7
+    number: 5
+    title: "Invent Your Own Filter"
+    description: |
+      Now you know what a convolution filter does. Design your own.
+
+      **Tasks:**
+
+      1. Invent a 3x3 filter that does something interesting. Apply it and display the result.
+      2. **Experiment with a 5x5 blur kernel.** A 5x5 blur has all weights = `1/25`. Apply it. Compare to the 3x3 blur. Which is blurrier? Why?
+      3. **Gaussian blur idea:** Instead of equal weights, what if the center gets more weight and edges get less? Design a 3x3 kernel where the center = 4, direct neighbors = 2, corners = 1 (then normalize so they sum to 1).
+         ```python
+         gaussian_approx = np.array([
+             [1, 2, 1],
+             [2, 4, 2],
+             [1, 2, 1]
+         ], dtype=np.float64)
+         gaussian_approx = gaussian_approx / gaussian_approx.sum()
+         ```
+         Apply it. How does it compare to the flat blur?
+      4. Try applying the blur filter **multiple times** in a row (chain: `conv(conv(img, blur), blur)`). What happens? Apply it 3 times, 5 times.
+    provided_code: []
+    hints:
+      - "A 5x5 blur is blurrier because it averages over a larger area (25 pixels instead of 9). The Gaussian-like kernel gives more weight to nearby pixels and less to corners, producing a smoother, more natural-looking blur."
+      - "Applying blur multiple times is equivalent to applying a larger blur kernel. Each application smooths further. After 5 iterations, fine details will be almost entirely erased. Note: the image shrinks slightly with each \"valid\" convolution — use `conv_same` (Exercise 7.6) to avoid this."
+    solution:
+      code: |
+        # Task 1: Custom emboss filter
+        my_kernel = np.array([
+            [-2, -1, 0],
+            [-1,  1, 1],
+            [ 0,  1, 2]
+        ], dtype=np.float64)
+        result_mine = conv(img_100.astype(np.float64), my_kernel)
+        show_conv_result(img_100, result_mine, title='Emboss Filter')
+
+        # Task 2: 5x5 blur
+        kernel_blur_5x5 = np.full((5, 5), 1.0 / 25.0)
+        result_blur_5 = conv(img_100.astype(np.float64), kernel_blur_5x5)
+        show_conv_result(img_100, result_blur_5, title='5x5 Blur')
+
+        # Task 3: Gaussian-like blur
+        gaussian_approx = np.array([
+            [1, 2, 1],
+            [2, 4, 2],
+            [1, 2, 1]
+        ], dtype=np.float64)
+        gaussian_approx = gaussian_approx / gaussian_approx.sum()  # normalize to sum=1
+        result_gaussian = conv(img_100.astype(np.float64), gaussian_approx)
+        show_conv_result(img_100, result_gaussian, title='Gaussian-like Blur')
+
+        # Task 4: Apply blur multiple times
+        img_float = img_100.astype(np.float64)
+        kernel_A = np.full((3, 3), 1.0 / 9.0)
+        current = img_float
+        for _ in range(5):
+            current = conv(current, kernel_A)
+
+        show_conv_result(img_100, current, title='5x Blur')
+      text: |
+        The 5x5 blur is blurrier than the 3x3 blur because it averages over 25 pixels instead of 9 — a larger neighborhood smooths more detail. The Gaussian-like kernel produces a more natural-looking blur because it gives higher weight to nearby pixels and less to corners. Repeated blurring progressively erases fine details until the image becomes uniformly smooth.
+
+  # ── Exercise 7.6 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-6
+    part: 7
+    number: 6
+    title: "Add Padding"
+    description: |
+      You may have noticed that each convolution slightly shrinks the image (98x98 from a 100x100 image with a 3x3 kernel).
+
+      A common fix is **zero-padding**: surround the image with a border of zeros before convolving, so the output stays the same size as the input.
+
+      - For a 3x3 kernel, add 1 pixel of zeros on all sides.
+      - For a 5x5 kernel, add 2 pixels.
+
+      **Formula:** `pad_size = (K - 1) // 2`
+
+      **Tasks:**
+
+      1. Implement `pad_image(img, pad_size)` that returns a new array with `pad_size` rows/columns of zeros added on all sides. Use loops — no `np.pad`!
+      2. Implement `conv_same(image, weights)` that uses `pad_image` internally, so the output is the same size as the input.
+      3. Apply `conv_same` with Kernel A to `img_100`. Verify the output shape is `(100, 100)`.
+      4. Apply `conv_same` with Kernels C and D. Notice that now edges near the image boundary are included in the output.
+    provided_code: []
+    hints:
+      - "For `pad_image`: create a new array of size `(H + 2*pad_size, W + 2*pad_size)` filled with zeros. Then copy the original image into the center: `result[r + pad_size, c + pad_size] = img[r, c]`."
+      - "For `conv_same`: compute `pad_size = (K - 1) // 2`, pad the image, then call your `conv` function on the padded image. The output will have the same size as the original."
+    solution:
+      code: |
+        def pad_image(img, pad_size):
+            """Pads a (H, W) image with pad_size zeros on all sides."""
+            H, W = img.shape
+            new_H = H + 2 * pad_size
+            new_W = W + 2 * pad_size
+            result = np.zeros((new_H, new_W), dtype=img.dtype)
+            for r in range(H):
+                for c in range(W):
+                    result[r + pad_size, c + pad_size] = img[r, c]
+            return result
+
+        def conv_same(image, weights):
+            """Convolution with 'same' padding: output is the same size as input."""
+            K = weights.shape[0]
+            pad_size = (K - 1) // 2
+            padded = pad_image(image, pad_size)
+            return conv(padded, weights)
+
+        # Test
+        padded = pad_image(img_100, pad_size=1)
+        print("Padded shape:", padded.shape)  # (102, 102)
+
+        kernel_A = np.full((3, 3), 1.0 / 9.0)
+        result_same = conv_same(img_100.astype(np.float64), kernel_A)
+        print("conv_same output shape:", result_same.shape)  # (100, 100)
+      text: null
+
+  # ── Exercise 7.7 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-7-7
+    part: 7
+    number: 7
+    title: "Convolution on a Color Image"
+    description: |
+      So far, `conv` works on grayscale (2D). But real images are color (3D: H x W x 3).
+
+      How should convolution work on a color image?
+
+      **Approach 1 — Per-channel:** Apply the same kernel independently to each of R, G, B. Stack the three results back into a color image.
+
+      **Tasks:**
+
+      1. Implement `conv_color(image_rgb, weights)` that:
+         - Takes a `(H, W, 3)` array and a kernel
+         - Applies `conv_same` to each channel separately
+         - Returns a `(H, W, 3)` float array
+      2. Apply it to `color_arr` with Kernel A. Display the result.
+      3. Apply it with the Sobel horizontal kernel. What do you get?
+      4. **Think:** What is a case where you'd want *different* kernels for different channels?
+    provided_code: []
+    hints:
+      - "Loop over `ch in range(3)`. Extract each channel as `image_rgb[:, :, ch].astype(np.float64)`, apply `conv_same`, store the result in the corresponding channel of the output array."
+      - "To display the color result, normalize to [0, 255]: `lo = output.min(); hi = output.max(); display = ((output - lo) / (hi - lo) * 255).astype(np.uint8)`."
+    solution:
+      code: |
+        def conv_color(image_rgb, weights):
+            """Applies conv_same independently to each color channel."""
+            H, W = image_rgb.shape[0], image_rgb.shape[1]
+            result = np.zeros((H, W, 3), dtype=np.float64)
+            for ch in range(3):
+                channel = image_rgb[:, :, ch].astype(np.float64)
+                result[:, :, ch] = conv_same(channel, weights)
+            return result
+
+        # Apply blur to color image
+        kernel_A = np.full((3, 3), 1.0 / 9.0)
+        color_blurred = conv_color(color_arr, kernel_A)
+
+        # Display helper for color convolution output
+        def show_color_conv(original, output, title='Color Convolution'):
+            lo = output.min()
+            hi = output.max()
+            if hi > lo:
+                display = ((output - lo) / (hi - lo) * 255).astype(np.uint8)
+            else:
+                display = np.zeros_like(output, dtype=np.uint8)
+            show_images([original, display], titles=['Original', title])
+
+        show_color_conv(color_arr, color_blurred, title='Color Blur (Kernel A)')
+
+        # Apply Sobel horizontal to color image
+        kernel_C = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=np.float64)
+        color_edges = conv_color(color_arr, kernel_C)
+        show_color_conv(color_arr, color_edges, title='Color Sobel Horizontal')
+      text: |
+        You might want different kernels per channel if, for example, you want to blur the blue channel more to reduce noise (blue sensors are noisier in cameras) while keeping the green channel sharp.
+
+  # ── MCQ 7.1 ──
+
+  - type: exercise
+    kind: mcq
+    id: mcq-7-1
+    part: 7
+    number: 8
+    title: "Quick Check — Edge Detection Filters"
+    question: |
+      A 3x3 convolution filter has the values `[[-1, -1, -1], [0, 0, 0], [1, 1, 1]]`. What does this filter detect?
+    options:
+      - label: A
+        text: "It blurs the image by averaging neighbors"
+      - label: B
+        text: "It detects horizontal edges — it responds strongly where pixel values change rapidly from top to bottom"
+        correct: true
+      - label: C
+        text: "It detects vertical edges"
+      - label: D
+        text: "It inverts the colors of the image"
+    hints:
+      - "The filter subtracts the top row of pixels from the bottom row. Where would this difference be large?"
+    solution:
+      text: |
+        This filter computes (bottom row) minus (top row). In a smooth area, the top and bottom pixels are similar — the result is near zero. But at a horizontal edge (where brightness suddenly changes from top to bottom), the difference is large, producing a strong response. The negative top row and positive bottom row form a "derivative in the vertical direction", which responds to horizontal boundaries. A filter like `[[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]]` would detect vertical edges instead (differences left-to-right).
+
+  # ═══════════════════════════════════════════════════════
+  # PART 8: Pulling It All Together
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 8
+    title: "Pulling It All Together"
+    intro: null
+
+  # ── Exercise 8.1 ──
+
+  - type: exercise
+    kind: coding
+    id: ex-8-1
+    part: 8
+    number: 1
+    title: "Build a Mini Image Processing Pipeline"
+    description: |
+      You now have all the building blocks. Let's build a real pipeline.
+
+      **Goal:** Given the original color image:
+
+      1. Convert to grayscale (using luminosity method)
+      2. Resize to 50x50
+      3. Apply a blur filter
+      4. Apply a Sobel edge detector (both H and V, then combine)
+      5. Display each step side by side
+
+      Use **your own implementations** of each step — no library functions for the image processing.
+    provided_code: []
+    hints:
+      - "Chain the functions: `step1 = rgb_to_gray_luminosity(color_arr)`, `step2 = resize_bilinear(step1, 50, 50)`, `step3 = conv_same(step2.astype(np.float64), kernel_A)`, then apply Kernels C and D to `step3` and combine with edge magnitude."
+      - "For display, you may need to convert intermediate float arrays to uint8 via `np.clip(arr, 0, 255).astype(np.uint8)`. Use `show_images` with all five steps to see the full pipeline at a glance."
+    solution:
+      code: |
+        import math
+
+        # Step 1: Convert to grayscale (luminosity)
+        step1_gray = rgb_to_gray_luminosity(color_arr)
+
+        # Step 2: Resize to 50x50
+        step2_small = resize_bilinear(step1_gray, 50, 50)
+
+        # Step 3: Blur (Kernel A)
+        kernel_A = np.full((3, 3), 1.0 / 9.0)
+        step3_blur = conv_same(step2_small.astype(np.float64), kernel_A)
+
+        # Step 4: Edge detection (Sobel H and V, then combine)
+        kernel_C = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=np.float64)
+        kernel_D = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float64)
+        step4_edges_h = conv_same(step3_blur, kernel_C)
+        step4_edges_v = conv_same(step3_blur, kernel_D)
+
+        h, w = step4_edges_h.shape
+        step4_edges = np.zeros((h, w), dtype=np.float64)
+        for r in range(h):
+            for c in range(w):
+                step4_edges[r, c] = math.sqrt(
+                    step4_edges_h[r, c] ** 2 + step4_edges_v[r, c] ** 2
+                )
+
+        # Normalize edge magnitude to [0, 255]
+        lo, hi = step4_edges.min(), step4_edges.max()
+        if hi > lo:
+            edges_display = ((step4_edges - lo) / (hi - lo) * 255).astype(np.uint8)
+        else:
+            edges_display = np.zeros_like(step4_edges, dtype=np.uint8)
+
+        # Display all steps
+        show_images(
+            [color_arr, step1_gray, step2_small,
+             np.clip(step3_blur, 0, 255).astype(np.uint8), edges_display],
+            titles=['1. Color', '2. Grayscale', '3. 50x50', '4. Blurred', '5. Edges'],
+            cmap_list=[None, 'gray', 'gray', 'gray', 'gray']
+        )
+      text: null
+
+  # ── Exercise 8.2 ──
+
+  - type: exercise
+    kind: challenge
+    id: ex-8-2
+    part: 8
+    number: 2
+    title: "Bonus: Design a Filter by Intuition"
+    description: |
+      Here is a challenge with no given formula — you must *invent* the filter.
+
+      **Goal:** Design a 3x3 kernel — experiment with different weight patterns and observe what each one does to the image.
+
+      **Think:**
+
+      - You've seen kernels where all weights are equal, kernels with a large center weight and negative neighbors, and kernels with positive values on one side and negative on the other.
+      - What other patterns can you create? What happens if you put opposite signs on diagonal corners? What if only the corners have non-zero weights?
+      - Try at least 3 different kernels of your own design.
+
+      **Tasks:**
+
+      1. Design a 3x3 kernel, sketch it on paper, predict what it will do, then apply it to `img_100` and check.
+      2. Design a second kernel with a very different weight pattern. Apply and compare.
+      3. Design a third kernel. Can you find one that highlights features the previous kernels missed?
+      4. For each kernel, write down what you predicted vs. what you observed.
+    provided_code: []
+    hints:
+      - "Think about what each kernel you've seen so far has in common: the weights determine which pixels contribute positively and which negatively. Placing opposite signs on different parts of the 3x3 grid highlights differences in that direction."
+      - "Try placing positive and negative weights in various arrangements: along diagonals, in L-shapes, or as rings. Make sure the weights sum to zero if you want to detect changes rather than compute averages. Compare each result to what you predicted."
+    solution:
+      code: |
+        # Kernel 1: Diagonal edge detector
+        # Positive on one diagonal, negative on the other
+        my_kernel_1 = np.array([
+            [-1,  0,  1],
+            [ 0,  0,  0],
+            [ 1,  0, -1]
+        ], dtype=np.float64)
+        result_1 = conv_same(img_100.astype(np.float64), my_kernel_1)
+        show_conv_result(img_100, result_1, title='Diagonal Edge Detector')
+        # Observation: highlights diagonal edges (top-left to bottom-right vs
+        # top-right to bottom-left)
+
+        # Kernel 2: Laplacian (all-direction edge detector)
+        # Negative ring around a large positive center; sums to zero
+        my_kernel_2 = np.array([
+            [-1, -1, -1],
+            [-1,  8, -1],
+            [-1, -1, -1]
+        ], dtype=np.float64)
+        result_2 = conv_same(img_100.astype(np.float64), my_kernel_2)
+        show_conv_result(img_100, result_2, title='Laplacian (All Edges)')
+        # Observation: detects edges in ALL directions, not just horizontal or vertical
+
+        # Kernel 3: Corner-only detector
+        # Only the corners have non-zero weights
+        my_kernel_3 = np.array([
+            [ 1,  0, -1],
+            [ 0,  0,  0],
+            [-1,  0,  1]
+        ], dtype=np.float64)
+        result_3 = conv_same(img_100.astype(np.float64), my_kernel_3)
+        show_conv_result(img_100, result_3, title='Corner Detector')
+        # Observation: responds to diagonal texture changes; highlights corners
+        # and diagonal patterns
+      text: null
+
+  # ── Exercise 8.3 ──
+
+  - type: exercise
+    kind: challenge
+    id: ex-8-3
+    part: 8
+    number: 3
+    title: "Bonus: What Does Repeated Convolution Do?"
+    description: |
+      **Tasks:**
+
+      1. Apply **Kernel B** 10 times in a row. Display the result after 1, 3, 5, 10 applications.
+      2. Apply **Kernel A** 20 times. What happens?
+      3. Apply **Kernel C** to an image, then apply **Kernel A** to the result. What does that produce?
+      4. **Think:** In a neural network, many convolution layers are stacked. Each layer has learned kernels. Based on what you've seen, what might the first, second, and deeper layers be detecting?
+
+      **Your thoughts on stacked layers:**
+
+      - Layer 1 (close to input) likely detects...
+      - Layer 2 detects...
+      - Deeper layers likely detect...
+    provided_code: []
+    hints:
+      - "Repeated sharpening amplifies noise and can cause extreme values. Repeated blurring progressively smooths the image until all detail is lost. In CNNs, early layers tend to detect simple features (edges, textures), while deeper layers combine these into complex features (shapes, object parts)."
+      - "Use `conv_same` to avoid the image shrinking with each application. Store snapshots at iteration counts [1, 3, 5, 10] and display them side by side."
+    solution:
+      code: |
+        # Define kernels
+        kernel_A = np.full((3, 3), 1.0 / 9.0)
+        kernel_B = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=np.float64)
+        kernel_C = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=np.float64)
+
+        # Task 1: Apply Kernel B (sharpen) 10 times
+        current = img_100.astype(np.float64)
+        snapshots_b = []
+        for i in range(10):
+            current = conv_same(current, kernel_B)
+            if i + 1 in [1, 3, 5, 10]:
+                snap = current.copy()
+                lo, hi = snap.min(), snap.max()
+                if hi > lo:
+                    snap = ((snap - lo) / (hi - lo) * 255).astype(np.uint8)
+                else:
+                    snap = np.zeros_like(snap, dtype=np.uint8)
+                snapshots_b.append((i + 1, snap))
+
+        show_images([s for _, s in snapshots_b],
+                    titles=[f'{n}x Kernel B' for n, _ in snapshots_b],
+                    cmap_list=['gray'] * len(snapshots_b))
+
+        # Task 2: Apply Kernel A (blur) 20 times
+        current = img_100.astype(np.float64)
+        for _ in range(20):
+            current = conv_same(current, kernel_A)
+        blur_20 = np.clip(current, 0, 255).astype(np.uint8)
+        show_images([img_100, blur_20],
+                    titles=['Original', '20x Blur'],
+                    cmap_list=['gray', 'gray'])
+
+        # Task 3: Kernel C then Kernel A (edge detect then blur)
+        edges = conv_same(img_100.astype(np.float64), kernel_C)
+        smoothed_edges = conv_same(edges, kernel_A)
+        show_conv_result(img_100, smoothed_edges, title='Sobel then Blur')
+      text: |
+        Repeated sharpening amplifies noise and creates extreme values. Repeated blurring progressively erases detail until the image becomes nearly uniform. Sobel followed by blur produces smooth, thick edge lines. In a CNN: Layer 1 detects simple features (edges, gradients). Layer 2 combines edges into textures and corners. Deeper layers detect complex structures like shapes, object parts, and eventually entire objects.
+
+  # ═══════════════════════════════════════════════════════
+  # Final Reflection
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 9
+    title: "Final Reflection"
+    intro: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-reflection
+    part: 9
+    number: 1
+    title: "Reflection"
+    description: |
+      Answer these questions in your own words:
+
+      1. **What is an image?** Describe it as a data structure, not visually.
+      2. **What is a convolution?** Explain in 3 sentences without using the word "filter".
+      3. **What is the difference between downsampling and upsampling?** Which one loses information permanently? Can you recover from either?
+      4. **Why does the blur kernel make the image blurry?** Explain using the math — what operation does it actually perform at each pixel?
+      5. **Why does the Sobel kernel detect edges?** Think about what happens when you apply it to a flat region vs. a sharp edge.
+      6. **In a Convolutional Neural Network (CNN)**, the kernels are not hand-designed — they are *learned* from data using gradient descent. Based on what you've built, what does "learning a kernel" mean? What is being optimized?
+    provided_code: []
+    hints: []
+    solution:
+      code: null
+      text: null

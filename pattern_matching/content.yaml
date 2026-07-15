@@ -1,0 +1,595 @@
+chapter:
+  id: pattern_matching
+  title: "Pattern Matching -- Inventing Wildcards and Regular Expressions"
+  intro: |
+    When you type `*.txt` in a file browser, or validate an email address on a signup form, or grep through a server log -- a **pattern matcher** is at work. In this chapter you will invent one from scratch: first exact matching, then the `?` wildcard, then the surprisingly deep `*` wildcard (a beautiful use of the recursion you already own), and finally you will graduate to Python's industrial-strength `re` module and mine a real web-server log with it.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/pattern_matching/pattern_matching.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented a pattern matcher from scratch -- exact matching, wildcards, globbing, and graduated to professional regular expressions to mine real server logs. That branching trick (backtracking) will come back again and again.
+
+blocks:
+  # ══════════════════════════════════════════════════
+  # PART 1: Exact Match
+  # ══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Exact Match"
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Character by Character"
+    description: |
+      Write `match_exact(pat, text)` that returns `True` only when the pattern and the text are exactly the same -- **without using `==` on whole strings**. Compare one character at a time.
+
+      Why the restriction? Because in a moment some pattern characters will stop meaning themselves -- and then whole-string `==` is useless. Build the loop (or recursion) now, while the problem is easy.
+
+      **Think recursively:** two strings match if their *first characters* match and the *rest* of them match. What are the base cases?
+
+      ```python
+      match_exact("abc", "abc")    # True
+      match_exact("abc", "abd")    # False
+      match_exact("abc", "abcd")   # False
+      match_exact("", "")          # True
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert match_exact("abc", "abc")   == True
+          assert match_exact("abc", "abd")   == False
+          assert match_exact("abc", "abcd")  == False
+          assert match_exact("abcd", "abc")  == False
+          assert match_exact("", "")         == True
+          assert match_exact("", "a")        == False
+          print("match_exact: OK")
+    hints:
+      - "Think about the base cases first. If both strings are empty, they match. If only one is empty (lengths differ), they don't match."
+      - "Recursive structure: if `pat[0] == text[0]`, recurse on `pat[1:]` and `text[1:]`. Otherwise return `False`."
+      - "You can also solve it iteratively: check `len(pat) == len(text)` first, then loop over indices comparing `pat[i]` to `text[i]`."
+    solution:
+      code: |
+        def match_exact(pat, text):
+            if len(pat) == 0 and len(text) == 0:
+                return True
+            if len(pat) == 0 or len(text) == 0:
+                return False
+            if pat[0] != text[0]:
+                return False
+            return match_exact(pat[1:], text[1:])
+      text: null
+
+  # ══════════════════════════════════════════════════
+  # PART 2: The ? Wildcard
+  # ══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "The `?` Wildcard"
+    intro: |
+      New rule: in the pattern, `?` matches **exactly one** character -- any character.
+
+      ```
+      a?  matches: a1, a2, aa, ax
+      a?  does not match: a, abc
+      ```
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Add `?` to Your Matcher"
+    description: |
+      Write `match_q(pat, text)`. It is `match_exact` with one extra case: when the first pattern character is `?`, what should you compare -- and what do you recurse on?
+
+      ```python
+      match_q("a?c", "abc")    # True
+      match_q("a?c", "axc")    # True
+      match_q("a?c", "ac")     # False
+      match_q("???", "xyz")    # True
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert match_q("a?c", "abc")  == True
+          assert match_q("a?c", "axc")  == True
+          assert match_q("a?c", "ac")   == False
+          assert match_q("a?c", "abcd") == False
+          assert match_q("???", "xyz")  == True
+          assert match_q("a?", "a1")    == True
+          assert match_q("a?", "a")     == False
+          assert match_q("abc", "abc")  == True
+          print("match_q: OK")
+    hints:
+      - "Copy your `match_exact` and add one condition: if `pat[0] == '?'`, you don't need to compare it with `text[0]` -- just skip both and recurse on the remainders."
+      - "The `?` case: if `pat[0] == '?'` and `text` is non-empty, return `match_q(pat[1:], text[1:])`. The key is that `?` still requires the text to have at least one character -- it matches *exactly* one, not zero."
+    solution:
+      code: |
+        def match_q(pat, text):
+            if len(pat) == 0 and len(text) == 0:
+                return True
+            if len(pat) == 0 or len(text) == 0:
+                return False
+            if pat[0] == '?':
+                return match_q(pat[1:], text[1:])
+            if pat[0] != text[0]:
+                return False
+            return match_q(pat[1:], text[1:])
+      text: null
+
+  # ══════════════════════════════════════════════════
+  # PART 3: The * Wildcard
+  # ══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "The `*` Wildcard"
+    intro: |
+      The big one: `*` matches **zero or more** characters -- any characters.
+
+      ```
+      a*     matches: a, ab, abc, ax
+      a*b    matches: ab, axyzb, a123b
+      a*b*c  matches: abc, abbbc, a1b1c
+      aa?b*  matches: aa1b, aaxby, aa1bcdeffgshshshsh
+      aa?b*  does not match: aab, ab
+      ```
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Think Before You Code"
+    description: |
+      Pattern `a*b`, text `"axyzb"`. The `a` matches. Now the pattern says `*` and the text says `"xyzb"`. **How many characters should the `*` swallow?**
+
+      You cannot know yet -- it depends on what comes *after* the star. So don't decide. **Try both options and let recursion explore:**
+
+      1. The `*` swallows **nothing** --> try matching the rest of the pattern (`b`) against `"xyzb"`.
+      2. The `*` swallows **one more character** --> the star *stays*, try `*b` against `"yzb"`.
+
+      If *either* branch succeeds, the match succeeds. What is the base case when the text runs out but the pattern is `"*"`?
+    hints:
+      - "When the text is empty and the pattern is `\"*\"`, that's a match -- the star can match zero characters. More generally, a pattern of all `*`s (like `\"***\"`) matches the empty string."
+      - "The two recursive branches when `pat[0] == '*'` are: (1) skip the star: `match(pat[1:], text)`, and (2) consume one text character: `match(pat, text[1:])`. Return `True` if either returns `True`."
+    solution:
+      code: null
+      text: |
+        The two choices at each step are:
+
+        1. The `*` **swallows nothing** (matches zero characters) -- drop the `*` from the pattern and try matching the rest of the pattern against the current text: `match(pat[1:], text)`.
+        2. The `*` **swallows one more character** -- the `*` stays in the pattern but we advance the text by one character: `match(pat, text[1:])`.
+
+        If *either* branch returns `True`, the overall match succeeds.
+
+        Base case: when the text is empty and the pattern is `"*"` (or any sequence of `*`s), that is a match -- the star(s) match zero characters. If the text is empty and the pattern has a non-`*` character, that is not a match.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "The Full Matcher"
+    description: |
+      Write `match(pat, text)` supporting literals, `?`, and `*`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          # literals and ? still work
+          assert match("abc", "abc")  == True
+          assert match("a?c", "axc")  == True
+
+          # star
+          assert match("a*", "a")     == True
+          assert match("a*", "ab")    == True
+          assert match("a*", "abc")   == True
+          assert match("a*b", "ab")       == True
+          assert match("a*b", "axyzb")    == True
+          assert match("a*b", "a123b")    == True
+          assert match("a*b", "axyz")     == False
+          assert match("a*b*c", "abc")    == True
+          assert match("a*b*c", "abbbc")  == True
+          assert match("a*b*c", "a1b1c")  == True
+          assert match("a*b*c", "a1c1b")  == False
+
+          # combined
+          assert match("aa?b*", "aa1b")                 == True
+          assert match("aa?b*", "aaxby")                == True
+          assert match("aa?b*", "aa1bcdeffgshshshsh")   == True
+          assert match("aa?b*", "aab")                  == False
+          assert match("aa?b*", "ab")                   == False
+
+          # edge cases
+          assert match("*", "")           == True
+          assert match("*", "anything")   == True
+          assert match("", "")            == True
+          assert match("", "x")           == False
+          print("match: OK -- you have built a glob matcher")
+    hints:
+      - "Start from your `match_q` and add one more case for `pat[0] == '*'`. The three cases are: literal character, `?`, and `*`."
+      - "Base cases: (1) both empty --> `True`. (2) pattern empty, text non-empty --> `False`. (3) pattern starts with `*` --> try skipping the star OR consuming a text character. (4) text empty but pattern non-empty and not `*` --> `False`."
+      - "Be careful with the order of checks. Handle `pat[0] == '*'` before checking whether `text` is empty, because `*` can match zero characters even when text is empty (e.g. `match(\"*\", \"\")` should be `True`)."
+    solution:
+      code: |
+        def match(pat, text):
+            if len(pat) == 0:
+                return len(text) == 0
+            if pat[0] == '*':
+                # Option 1: star matches zero chars (skip the star)
+                # Option 2: star matches one more char (advance text, keep star)
+                if match(pat[1:], text):
+                    return True
+                if len(text) > 0 and match(pat, text[1:]):
+                    return True
+                return False
+            if len(text) == 0:
+                return False
+            if pat[0] == '?' or pat[0] == text[0]:
+                return match(pat[1:], text[1:])
+            return False
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Use It Like a Shell"
+    description: |
+      Your `match` is exactly what the shell does with filenames (called *globbing*).
+
+      Write `find_matching(pattern, names)` that returns all names matching the pattern.
+
+      ```python
+      files = ["report.txt", "report.pdf", "data1.csv", "data2.csv", "notes.txt", "img.png"]
+      find_matching("*.txt", files)      # ["report.txt", "notes.txt"]
+      find_matching("data?.csv", files)  # ["data1.csv", "data2.csv"]
+      find_matching("report.*", files)   # ["report.txt", "report.pdf"]
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          files = ["report.txt", "report.pdf", "data1.csv", "data2.csv", "notes.txt", "img.png"]
+          assert find_matching("*.txt", files)     == ["report.txt", "notes.txt"]
+          assert find_matching("data?.csv", files) == ["data1.csv", "data2.csv"]
+          assert find_matching("report.*", files)  == ["report.txt", "report.pdf"]
+          assert find_matching("*", files)         == files
+          print("find_matching: OK")
+    hints:
+      - "A simple list comprehension: `[name for name in names if match(pattern, name)]`."
+    solution:
+      code: |
+        def find_matching(pattern, names):
+            return [name for name in names if match(pattern, name)]
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 4
+    title: "Why `*` Needs Backtracking"
+    question: |
+      The pattern `a*b` is matched against the string `axxbyyb`. The `*` is greedy -- it first tries to consume as many characters as possible. Why does the matcher need backtracking to find the correct match?
+    options:
+      - label: A
+        text: "Because `*` can only match letters, not `x` or `y`"
+      - label: B
+        text: "The greedy `*` initially consumes `xxbyyb`, but then the final `b` in the pattern has nothing left to match -- so the matcher must back up and try consuming fewer characters"
+        correct: true
+      - label: C
+        text: "Backtracking is needed because the string contains duplicate `b` characters"
+      - label: D
+        text: "The pattern is invalid -- `*` must be at the end"
+    hints:
+      - "If `*` greedily eats everything after `a`, what's left for the pattern's `b` to match?"
+    solution:
+      text: "The greedy `*` first consumes 'xxbyyb' (everything after 'a'), leaving an empty string for the final 'b' -- no match. So it backtracks: tries 'xxbyy' (leaving 'b') -- now the final 'b' matches! This try-and-retreat process is backtracking. It is necessary whenever `*` appears before other pattern characters, because the matcher doesn't know in advance how many characters `*` should consume."
+
+  # ══════════════════════════════════════════════════
+  # PART 4: Regular Expressions -- The Professional Version
+  # ══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Regular Expressions -- The Professional Version"
+    intro: |
+      What you invented is the core idea behind **regular expressions** -- a pattern language so useful it is built into every programming language. Python's `re` module speaks a richer dialect:
+
+      ```
+      .        any single character            (your ?)
+      *        previous thing, 0 or more times (your * -- but attached to what precedes it!)
+      +        previous thing, 1 or more times
+      [aeiou]  any ONE character from the set
+      [0-9]    any ONE digit (ranges work)
+      [^xyz]   any ONE character NOT in the set
+      {4}      previous thing, exactly 4 times
+      \.       a literal dot (backslash = escape)
+      ^  $     start / end of the line
+      ```
+
+      Note the twist: regex `*` means *"repeat the **previous** item"* -- so `ab*c` matches `ac`, `abc`, `abbbc`. Your glob-style `a*b` is written `a.*b` in regex.
+
+      The two functions you need:
+
+      ```python
+      import re
+      re.search(pattern, text)    # a match object if found anywhere in text, else None
+      re.findall(pattern, text)   # list of every match in the text
+      ```
+
+  - type: exercise
+    kind: coding
+    id: ex-4-0
+    part: 4
+    number: 0
+    title: "Quick Demo"
+    description: |
+      Run this quick demo to see `re.search` and `re.findall` in action.
+    provided_code:
+      - label: "quick demo (run as-is)"
+        code: |
+          import re
+
+          print(re.search("a.*b", "xxx_a123b_yyy"))       # found
+          print(re.search("a.*b", "no such thing"))       # None
+          print(re.findall("[0-9]+", "10 apples, 25 oranges, 3 kiwis"))
+    hints: []
+    solution:
+      code: null
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Match Dates"
+    description: |
+      Dates appear as `05/07/1980` or `05-07-1980` (day, month, year -- separator is `/` or `-`).
+
+      Write a regex string `DATE_PATTERN` so that `re.search(DATE_PATTERN, line)` finds dates. Start simple: two digits, a separator, two digits, a separator, four digits.
+
+      ```python
+      re.search(DATE_PATTERN, "Date: 05/07/1980")   # found
+      re.search(DATE_PATTERN, "Date: 05-07-1980")   # found
+      re.search(DATE_PATTERN, "hello world")        # None
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert re.search(DATE_PATTERN, "Date: 05/07/1980") is not None
+          assert re.search(DATE_PATTERN, "Date: 05-07-1980") is not None
+          assert re.search(DATE_PATTERN, "Date: 31/08/1980") is not None
+          assert re.search(DATE_PATTERN, "hello world")      is None
+          assert re.search(DATE_PATTERN, "12345")            is None
+          print("DATE_PATTERN: OK")
+    hints:
+      - "Use `[0-9]` for a digit and `[/-]` for either separator. Two digits is `[0-9]{2}`."
+      - "The pattern is: `[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}`. This matches any two-digit/two-digit/four-digit sequence with `/` or `-` separators."
+    solution:
+      code: |
+        DATE_PATTERN = r"[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}"
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Valid Dates Only"
+    description: |
+      Your pattern happily matches `99/88/1980`. Tighten it:
+
+      - **Day** 01--31: can you express it as alternatives? `0[1-9]` covers 01--09, `[12][0-9]` covers 10--29... what covers 30 and 31? Join alternatives with `|`.
+      - **Month** 01--12: same game.
+
+      Group alternatives in parentheses: `(0[1-9]|...)`.
+
+      Write `STRICT_DATE` that matches valid day/month combinations only.
+
+      ```python
+      is_valid_date("05/07/1980")   # True
+      is_valid_date("99/07/1980")   # False   (day 99)
+      is_valid_date("05/19/1980")   # False   (month 19)
+      is_valid_date("00/04/1980")   # False   (day 00)
+      ```
+
+      (Don't chase February 30th -- even real-world validators leave calendar logic out of regex.)
+    provided_code:
+      - label: "test cell"
+        code: |
+          def is_valid_date(s):
+              return re.fullmatch(STRICT_DATE, s) is not None
+
+          assert is_valid_date("05/07/1980") == True
+          assert is_valid_date("31/08/1980") == True
+          assert is_valid_date("05-11-1980") == True
+          assert is_valid_date("30/08/1980") == True
+          assert is_valid_date("99/07/1980") == False
+          assert is_valid_date("05/19/1980") == False
+          assert is_valid_date("00/04/1980") == False
+          assert is_valid_date("01/00/1980") == False
+          assert is_valid_date("05/88/1980") == False
+          print("STRICT_DATE: OK")
+    hints:
+      - "For days: `0[1-9]` matches 01--09, `[12][0-9]` matches 10--29, `3[01]` matches 30--31. Combine with `|` inside parentheses: `(0[1-9]|[12][0-9]|3[01])`."
+      - "For months: `(0[1-9]|1[0-2])`. The full pattern is: `(0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-][0-9]{4}`. Remember to use `re.fullmatch` so the entire string must match."
+    solution:
+      code: |
+        STRICT_DATE = r"(0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-][0-9]{4}"
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Find Credit Card Numbers"
+    description: |
+      A security audit: find credit-card-like numbers (four groups of 4 digits, separated by spaces, dashes, or nothing) leaking into text.
+
+      Write `find_card_numbers(text)` returning the list of matches.
+
+      ```python
+      find_card_numbers("cc: 1234-4567-8909-1111 and 1234 4567 8909 1111 and 1234456789091111")
+      # ["1234-4567-8909-1111", "1234 4567 8909 1111", "1234456789091111"]
+      ```
+
+      **Hint:** a group-plus-separator is `[0-9]{4}[- ]?` -- how many times does it repeat?
+    provided_code:
+      - label: "test cell"
+        code: |
+          result = find_card_numbers("cc: 1234-4567-8909-1111 and 1234 4567 8909 1111 and 1234456789091111")
+          assert result == ["1234-4567-8909-1111", "1234 4567 8909 1111", "1234456789091111"], result
+          assert find_card_numbers("call me at 12345") == []
+          print("find_card_numbers: OK")
+    hints:
+      - "You need three \"group + separator\" chunks followed by a final group: `[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}`. Or more compactly: `([0-9]{4}[- ]?){3}[0-9]{4}` -- but be careful with capturing groups in `re.findall`."
+      - "If you use `(...){3}`, `re.findall` returns only the captured group, not the full match. Use a non-capturing group `(?:...){3}` or write the pattern without grouping repetition."
+    solution:
+      code: |
+        def find_card_numbers(text):
+            return re.findall(r"[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}", text)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Extract Email Addresses"
+    description: |
+      Write `find_emails(text)` that extracts things shaped like email addresses: one-or-more "word characters" (letters, digits, `.`, `_`), then `@`, then a domain with at least one dot.
+
+      ```python
+      find_emails("Contact sandeep@example.com or admin.team@my-site.org today")
+      # ["sandeep@example.com", "admin.team@my-site.org"]
+      ```
+
+      (A regex that matches *every* legal email is famously monstrous -- the pragmatic version you are writing is what real codebases actually use.)
+    provided_code:
+      - label: "test cell"
+        code: |
+          result = find_emails("Contact sandeep@example.com or admin.team@my-site.org today")
+          assert result == ["sandeep@example.com", "admin.team@my-site.org"], result
+          assert find_emails("no emails here @ nothing") == []
+          print("find_emails: OK")
+    hints:
+      - "The local part (before `@`) can contain letters, digits, dots, and underscores: `[\\w.]+`. The domain part (after `@`) can contain letters, digits, dots, and hyphens: `[\\w.-]+`. And it must have at least one dot."
+      - "A practical email pattern: `[\\w.]+@[\\w.-]+\\.\\w+`. The `\\.\\w+` at the end ensures there's at least one dot in the domain (the TLD)."
+    solution:
+      code: |
+        def find_emails(text):
+            return re.findall(r"[\w.]+@[\w.-]+\.\w+", text)
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-5
+    part: 4
+    number: 5
+    title: "Mine a Real Server Log"
+    description: |
+      Below are genuine lines from an Apache web-server access log (`access.log.41` -- 5 MB of real traffic from a Hadoop training site). Each line may contain URLs in the user-agent or referrer fields.
+
+      1. Write `find_urls(text)` that extracts every `http://...` or `https://...` URL. Look closely at the lines: a URL ends where whitespace, a quote `"`, or a closing parenthesis `)` begins -- a negated set `[^...]` handles all three.
+      2. Run it over `LOG_LINES` and count which **domain** appears most (your `group_by` / word-count instincts from the Dictionaries chapter apply).
+
+      **Part A -- `find_urls`:**
+
+      **Part B -- `domain_counts`:**
+
+      Write `domain_counts(urls)` that extracts the domain from each URL and counts how many times each domain appears.
+    provided_code:
+      - label: "sample log data"
+        code: |
+          LOG_LINES = """\
+          180.76.5.195 - - [28/Dec/2014:06:53:43 -0500] "GET /comment/5 HTTP/1.1" 200 7305 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+          220.181.108.183 - - [28/Dec/2014:06:54:42 -0500] "GET / HTTP/1.1" 200 24390 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+          5.255.253.135 - - [28/Dec/2014:06:56:34 -0500] "GET /comment/10 HTTP/1.1" 200 9379 "-" "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
+          5.255.253.135 - - [28/Dec/2014:06:56:45 -0500] "GET /page/hdfs-storage HTTP/1.1" 200 9377 "-" "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
+          180.76.5.150 - - [28/Dec/2014:07:01:43 -0500] "GET /page/big-data-and-hadoop HTTP/1.1" 200 22337 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+          116.202.186.254 - - [28/Dec/2014:07:06:03 -0500] "GET /sites/default/files/css/style.css HTTP/1.1" 304 179 "http://www.knowbigdata.com/page/course-page-big-data-and-hadoop" "Mozilla/5.0 (Windows NT 6.1)"
+          """
+      - label: "test cell (Part A)"
+        code: |
+          urls = find_urls(LOG_LINES)
+          print(f"Found {len(urls)} URLs:")
+          for u in urls:
+              print("  ", u)
+
+          assert len(urls) == 6
+          assert "http://yandex.com/bots" in urls
+          assert "http://www.knowbigdata.com/page/course-page-big-data-and-hadoop" in urls
+          assert all(u.startswith("http") for u in urls)
+          print("find_urls: OK")
+      - label: "test cell (Part B)"
+        code: |
+          counts = domain_counts(find_urls(LOG_LINES))
+          print(counts)
+          assert counts["www.baidu.com"] == 3
+          assert counts["yandex.com"] == 2
+          assert counts["www.knowbigdata.com"] == 1
+          print("domain_counts: OK")
+    hints:
+      - "For `find_urls`: the pattern `https?://[^\\s\")\\]]+` will match URLs that start with `http` or `https` and continue until whitespace, a quote, or a closing paren/bracket."
+      - "For `domain_counts`: extract the domain from a URL by splitting on `/` -- the domain is the third element (`url.split(\"/\")[2]`). Then count with a dictionary, just like word-counting."
+    solution:
+      code: |
+        def find_urls(text):
+            return re.findall(r'https?://[^\s")\]]+', text)
+
+        def domain_counts(urls):
+            counts = {}
+            for url in urls:
+                domain = url.split("/")[2]
+                counts[domain] = counts.get(domain, 0) + 1
+            return counts
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 6
+    title: "Greedy vs Non-Greedy Matching"
+    question: |
+      Given the HTML string `<b>hello</b> and <b>world</b>`, what does the regex `<b>.*</b>` match?
+    options:
+      - label: A
+        text: "Just `<b>hello</b>`"
+      - label: B
+        text: "Both `<b>hello</b>` and `<b>world</b>` as two separate matches"
+      - label: C
+        text: "The entire string `<b>hello</b> and <b>world</b>` as one match, because `.*` is greedy"
+        correct: true
+      - label: D
+        text: "Nothing -- the regex is invalid"
+    hints:
+      - "The `.*` is greedy by default -- it matches as many characters as possible, including characters that look like HTML tags."
+    solution:
+      text: "The greedy `.*` matches everything from the first `<b>` to the LAST `</b>`, swallowing the middle tags and text. The match is: `<b>hello</b> and <b>world</b>`. To match each `<b>...</b>` separately, you would use the non-greedy `.*?`, which matches as FEW characters as possible -- stopping at the first `</b>` it finds."
+
+  # ══════════════════════════════════════════════════
+  # Summary
+  # ══════════════════════════════════════════════════
+
+  - type: table
+    id: summary
+    headers: [Stage, What you built, The idea]
+    rows:
+      - ["Exact match", "`match_exact`", "compare char by char, recurse on the rest"]
+      - ["`?` wildcard", "`match_q`", "one pattern char can stand for any text char"]
+      - ["`*` wildcard", "`match`", "*don't decide how much to swallow -- recurse on both options*"]
+      - ["Globbing", "`find_matching`", "your matcher is what shells use for `*.txt`"]
+      - ["Regex", "`re.search` / `re.findall`", "the same engine, richer language: sets `[..]`, repeats `{4}` `+`, alternatives `|`"]
+      - ["Log mining", "`find_urls`, `domain_counts`", "patterns + dictionaries = real data extraction"]
+
+  - type: reveal
+    text: "**What you just invented:** The branching trick in your `*` matcher -- *try both, succeed if either succeeds* -- is called **backtracking**. It is the same idea that solves mazes, Sudoku, and the N-Queens problem, and it is exactly how simple regex engines are implemented."

@@ -1,0 +1,796 @@
+chapter:
+  id: sorting
+  title: "Sorting — Inventing Order"
+  intro: |
+    Sorting looks like a solved problem: call `.sort()` and move on. But almost every important idea in algorithm design — nested loops, invariants, divide and conquer, trading memory for speed — shows up first in sorting. In this chapter you will invent five different sorting algorithms, measure them against each other, and discover *why* some are dramatically faster, and when you can beat all of them.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/sorting/sorting.ipynb"
+  mathjax: true
+  footer: |
+    You've just invented five sorting algorithms from scratch — bubble sort, insertion sort, merge sort, quick sort, and counting sort. You measured them, discovered why O(n·log n) crushes O(n²), and learned when you can beat even that. That's the real foundation of algorithm design.
+
+blocks:
+  # ═══════════════════════════════════════════════════════
+  # PART 0: Warm-Up
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 0
+    title: "Warm-Up"
+    intro: ""
+
+  - type: exercise
+    kind: coding
+    id: ex-0-1
+    part: 0
+    number: 1
+    title: "Is It Sorted?"
+    description: |
+      Before sorting anything, you need a way to *check* whether a list is sorted.
+
+      Write `is_sorted(lst)` that returns `True` if every element is less than or equal to the next one.
+
+      ```python
+      is_sorted([1, 2, 2, 9])   # True
+      is_sorted([1, 3, 2])      # False
+      is_sorted([5])            # True
+      is_sorted([])             # True
+      ```
+    hints:
+      - "Loop through indices `0` to `len(lst) - 2`. If you ever find `lst[i] > lst[i+1]`, return `False`. If the loop finishes without finding any such pair, return `True`."
+      - "An empty list and a single-element list are both trivially sorted — the loop body never runs, so you return `True`."
+    solution:
+      code: |
+        def is_sorted(lst):
+            for i in range(len(lst) - 1):
+                if lst[i] > lst[i + 1]:
+                    return False
+            return True
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-0-2
+    part: 0
+    number: 2
+    title: "Swap In Place"
+    description: |
+      All the algorithms in this chapter rearrange elements *inside* the same list. The basic move is a swap.
+
+      Write `swap(lst, i, j)` that exchanges the elements at positions `i` and `j` **in place** (modify the list, return nothing).
+
+      ```python
+      x = [10, 20, 30]
+      swap(x, 0, 2)
+      x   # [30, 20, 10]
+      ```
+    hints:
+      - "Python supports simultaneous assignment: `lst[i], lst[j] = lst[j], lst[i]`. This does the swap in one line without needing a temporary variable."
+    solution:
+      code: |
+        def swap(lst, i, j):
+            lst[i], lst[j] = lst[j], lst[i]
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 1: Comparing Neighbors (Bubble Sort)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Comparing Neighbors"
+    intro: |
+      The idea: walk through the list comparing **neighbors**. Whenever the left neighbor is bigger, swap them. What happens to the largest value after one full pass?
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "One Bubble Pass"
+    description: |
+      Write `bubble_pass(lst)` that goes through the list once, comparing each pair of neighbors `(lst[i], lst[i+1])` and swapping when they are out of order. Modify the list in place.
+
+      **Before you code:** Take `[3, 1, 4, 1, 5, 9, 2, 6]` and do one pass by hand. Where does the 9 end up? Why must the *largest* element always reach the last position after one full pass?
+
+      ```python
+      x = [3, 1, 4, 1, 5, 9, 2, 6]
+      bubble_pass(x)
+      x   # [1, 3, 1, 4, 5, 2, 6, 9]
+      ```
+    hints:
+      - "Loop `i` from `0` to `len(lst) - 2`. At each step, compare `lst[i]` and `lst[i+1]`. If the left is larger, swap them using your `swap` function."
+      - "The largest element always reaches the end because wherever it sits, it will be swapped rightward at every step — it \"wins\" every comparison until it reaches the last position."
+    solution:
+      code: |
+        def bubble_pass(lst):
+            for i in range(len(lst) - 1):
+                if lst[i] > lst[i + 1]:
+                    lst[i], lst[i + 1] = lst[i + 1], lst[i]
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Full Sort"
+    description: |
+      One pass guarantees the largest element is at the end. How many passes guarantee the whole list is sorted?
+
+      Write `pass_sort(lst)` that repeats passes until the list is sorted. Modify in place.
+
+      **Think about:**
+
+      - After pass 1, the last element is final. After pass 2, the last *two* are final. Can each pass stop earlier than the previous one?
+      - If a whole pass makes **zero swaps**, what do you know?
+
+      ```python
+      x = [5, 2, 9, 1, 5, 6]
+      pass_sort(x)
+      x   # [1, 2, 5, 5, 6, 9]
+      ```
+    hints:
+      - "You need at most `n - 1` passes (where `n = len(lst)`). On pass `k`, you only need to scan up to index `n - 1 - k` because the last `k` elements are already in place."
+      - "Optimization: track whether any swap happened during a pass. If a pass completes with zero swaps, the list is already sorted and you can stop early."
+    solution:
+      code: |
+        def pass_sort(lst):
+            n = len(lst)
+            for end in range(n - 1, 0, -1):
+                swapped = False
+                for i in range(end):
+                    if lst[i] > lst[i + 1]:
+                        lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                        swapped = True
+                if not swapped:
+                    break
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Count the Comparisons"
+    description: |
+      How much work does bubble sort actually do?
+
+      Write `pass_sort_counting(lst)` — same algorithm, but return the total number of **comparisons** made.
+
+      Run it on lists of length 10, 100, and 1000 (use `random.sample(range(10000), n)`). When the list gets 10x longer, how much does the comparison count grow?
+
+      Fill in the table:
+
+      | n | comparisons | comparisons / n² |
+      |---|-------------|------------------|
+      | 10 | ? | ? |
+      | 100 | ? | ? |
+      | 1000 | ? | ? |
+
+      This growth pattern is called **O(n²)** — quadratic time.
+
+      **Pause and think:** a modern laptop does roughly $10^8$–$10^9$ simple operations per second. If n = 1,000,000, then $n^2 = 10^{12}$. How long would bubble sort take? Hours? Days?
+
+      This is why we need better ideas.
+    hints:
+      - "Add a counter variable initialized to 0. Increment it every time you compare two elements. Return the counter at the end."
+      - "You should find that the ratio `comparisons / n²` stays roughly constant (around 0.5 for the worst case). This confirms O(n²) behavior: doubling n quadruples the work."
+    solution:
+      code: |
+        def pass_sort_counting(lst):
+            comparisons = 0
+            n = len(lst)
+            for end in range(n - 1, 0, -1):
+                swapped = False
+                for i in range(end):
+                    comparisons += 1
+                    if lst[i] > lst[i + 1]:
+                        lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                        swapped = True
+                if not swapped:
+                    break
+            return comparisons
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # PART 2: Sorting Like Playing Cards (Insertion Sort)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Sorting Like Playing Cards"
+    intro: |
+      Think about how you sort playing cards in your hand: you pick up cards one at a time, and **insert** each new card into its correct place among the cards you already hold — which are always sorted.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Insert Into a Sorted Prefix"
+    description: |
+      Suppose `lst[0:k]` is already sorted and `lst[k]` is the new card.
+
+      Write `insert_card(lst, k)` that moves `lst[k]` left, one swap at a time, until it sits in its correct position. In place.
+
+      ```python
+      x = [2, 5, 8, 3]      # first 3 elements sorted, insert the 3
+      insert_card(x, 3)
+      x   # [2, 3, 5, 8]
+      ```
+    hints:
+      - "Start at position `k`. While the element is smaller than its left neighbor (and you haven't reached the beginning), swap it one position to the left."
+      - "Use a `while` loop: `j = k`, then `while j > 0 and lst[j] < lst[j-1]: swap(lst, j, j-1); j -= 1`."
+    solution:
+      code: |
+        def insert_card(lst, k):
+            j = k
+            while j > 0 and lst[j] < lst[j - 1]:
+                lst[j], lst[j - 1] = lst[j - 1], lst[j]
+                j -= 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Sort the Whole Hand"
+    description: |
+      Now sort the whole list: the sorted prefix starts with just `lst[0:1]`, and you insert `lst[1]`, then `lst[2]`, ... one at a time.
+
+      Write `card_sort(lst)`. In place.
+
+      ```python
+      x = [5, 2, 9, 1, 5, 6]
+      card_sort(x)
+      x   # [1, 2, 5, 5, 6, 9]
+      ```
+    hints:
+      - "Loop `k` from `1` to `len(lst) - 1`. At each step, call `insert_card(lst, k)`. That's it — the entire sort is just repeated insertions."
+    solution:
+      code: |
+        def card_sort(lst):
+            for k in range(1, len(lst)):
+                j = k
+                while j > 0 and lst[j] < lst[j - 1]:
+                    lst[j], lst[j - 1] = lst[j - 1], lst[j]
+                    j -= 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "The Best Case"
+    description: |
+      Run your `card_sort` on a list that is **already sorted**, counting comparisons (write `card_sort_counting`, like you did for bubble sort).
+
+      - Already sorted list of length 1000: how many comparisons?
+      - Reversed list of length 1000: how many comparisons?
+
+      Insertion sort is O(n²) in the worst case, but **O(n) when the data is nearly sorted** — which is why real-world sorts (like Python's Timsort) use it as a building block.
+    hints:
+      - "For an already-sorted list, each new card is already in position — the inner `while` loop checks one comparison and stops immediately. That gives roughly `n - 1` comparisons total."
+      - "For a reversed list, every card must travel all the way to the front — the inner loop runs fully each time. You should see roughly n²/2 comparisons, matching the worst case."
+    solution:
+      code: |
+        def card_sort_counting(lst):
+            comparisons = 0
+            for k in range(1, len(lst)):
+                j = k
+                while j > 0:
+                    comparisons += 1
+                    if lst[j] < lst[j - 1]:
+                        lst[j], lst[j - 1] = lst[j - 1], lst[j]
+                        j -= 1
+                    else:
+                        break
+            return comparisons
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-2-1
+    part: 2
+    number: 4
+    title: "Stability in Sorting"
+    question: |
+      Two students both scored 85: Alice (entered first) and Bob (entered second). After sorting by score, a *stable* sort guarantees Alice still appears before Bob. Which of the following is true?
+    options:
+      - label: A
+        text: "Bubble sort and insertion sort are stable, but quicksort is not (in its typical implementation)"
+        correct: true
+      - label: B
+        text: "All comparison sorts are stable by definition"
+      - label: C
+        text: "Stability only matters for numbers, not for records with multiple fields"
+      - label: D
+        text: "Quicksort is stable but bubble sort is not"
+    hints:
+      - "Think about what happens in each algorithm when two elements are equal. Does it swap them or leave them in place?"
+    solution:
+      code: null
+      text: "Bubble sort and insertion sort only swap/move elements when one is strictly greater, preserving the original order of equal elements — that's stability. Quicksort's partition step can rearrange equal elements relative to each other because it swaps elements across the pivot without regard to their original order. Stability matters whenever you sort records by one field but want to preserve a previous ordering on another field."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 3: Split, Sort, Combine (Merge Sort)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Split, Sort, Combine"
+    intro: |
+      Here is a completely different idea, and it comes from a question: *If I hand you **two already-sorted lists**, can you combine them into one sorted list faster than sorting from scratch?*
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Merge Two Sorted Lists"
+    description: |
+      Write `merge(a, b)` where `a` and `b` are each sorted. Return a new sorted list containing all elements of both.
+
+      **Before you code:** merge `[1, 5, 9]` and `[2, 3, 7]` by hand. You only ever need to compare the two *front* elements. Why?
+
+      ```python
+      merge([1, 5, 9], [2, 3, 7])   # [1, 2, 3, 5, 7, 9]
+      merge([], [4, 8])             # [4, 8]
+      merge([1, 1], [1])            # [1, 1, 1]
+      ```
+
+      How many comparisons did merging cost, roughly, for lists of total length n?
+    hints:
+      - "Use two pointers, `i` and `j`, starting at the beginning of each list. At each step, append the smaller of `a[i]` and `b[j]` to the result and advance that pointer."
+      - "When one list is exhausted, append the remainder of the other. The total number of comparisons is at most `len(a) + len(b) - 1`, which is O(n)."
+    solution:
+      code: |
+        def merge(a, b):
+            result = []
+            i, j = 0, 0
+            while i < len(a) and j < len(b):
+                if a[i] <= b[j]:
+                    result.append(a[i])
+                    i += 1
+                else:
+                    result.append(b[j])
+                    j += 1
+            result.extend(a[i:])
+            result.extend(b[j:])
+            return result
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Sort by Splitting and Merging"
+    description: |
+      Now the recursive leap (remember the Recursion chapter):
+
+      > To sort a list: split it in half, **sort each half** (how? the same way!), then `merge` the two sorted halves.
+
+      Write `split_sort(lst)` that returns a new sorted list. What is the base case — the list so small it is already sorted?
+
+      ```python
+      split_sort([5, 2, 9, 1, 5, 6])   # [1, 2, 5, 5, 6, 9]
+      split_sort([])                   # []
+      ```
+    hints:
+      - "Base case: a list of length 0 or 1 is already sorted — return a copy of it. For the recursive case, find the midpoint `mid = len(lst) // 2` and split into `lst[:mid]` and `lst[mid:]`."
+      - "Recursively sort each half, then return `merge(left_sorted, right_sorted)`. The recursion bottoms out at single elements and builds the sorted result up through merging."
+    solution:
+      code: |
+        def split_sort(lst):
+            if len(lst) <= 1:
+                return list(lst)
+            mid = len(lst) // 2
+            left = split_sort(lst[:mid])
+            right = split_sort(lst[mid:])
+            return merge(left, right)
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Why Is It n·log(n)?"
+    description: |
+      Picture the recursion as levels:
+
+      ```
+      level 0:              [ n elements ]                 -> merged with ~n comparisons
+      level 1:        [ n/2 ]        [ n/2 ]               -> merged with ~n comparisons
+      level 2:     [n/4] [n/4]    [n/4] [n/4]              -> merged with ~n comparisons
+      ...
+      ```
+
+      - Each level does about **n** comparison work in total.
+      - How many times can you halve n before reaching lists of size 1? (You invented this number in the Binary Search chapter — it is **$\log_2(n)$**.)
+
+      So the total is about **$n \cdot \log_2(n)$**. For n = 1,000,000:
+
+      - $n^2 = 1{,}000{,}000{,}000{,}000$
+      - $n \cdot \log_2(n) \approx 20{,}000{,}000$
+
+      **50,000x less work.** Compute the ratio yourself for a few values of n.
+    provided_code:
+      - label: "ratio computation"
+        code: |
+          import math
+
+          for n in [1000, 1000000, 1000000000]:
+              quadratic = n * n
+              nlogn = n * math.log2(n)
+              print(f"n={n:>13,}   n^2={quadratic:>22,.0f}   n*log2(n)={nlogn:>18,.0f}   ratio={quadratic/nlogn:>12,.0f}x")
+    hints:
+      - "The key insight: each level of recursion does O(n) total work (merging), and there are O(log n) levels. Multiplying gives O(n·log n) total."
+    solution:
+      code: null
+      text: |
+        There is no code to write here — this exercise is about understanding the analysis.
+
+        Each level of the recursion tree does O(n) total merge work. There are $\log_2(n)$ levels because we halve the list each time. So the total work is **O(n · log n)**.
+
+        For n = 1,000,000: $n^2 = 10^{12}$ but $n \cdot \log_2(n) \approx 20{,}000{,}000$ — about 50,000x less work.
+
+  # ═══════════════════════════════════════════════════════
+  # PART 4: Sort by Splitting Smarter (Quick Sort)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Sort by Splitting Smarter"
+    intro: |
+      Part 3 splits blindly down the middle, then does its work while merging. What if you did the work **while splitting**, so no merge is needed?
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Partition 0s and 1s"
+    description: |
+      Warm-up from real life. You have records labeled 0 or 1:
+
+      ```python
+      [(0,"x"), (1, 12), (0, 34), (1, 90), (1, 89), (0, "s"), (1, "7")]
+      ```
+
+      Move all the 0-records to the front and all the 1-records to the back — **without creating another list**, touching each element only a constant number of times (a single O(n) pass with swaps).
+
+      **Hint:** keep two positions, one scanning from the left, one from the right. What should each of them look for?
+
+      Write `partition_01(lst)` that rearranges in place. (Order *within* the 0-group and 1-group may end up anything.)
+    hints:
+      - "Use two pointers: `left = 0` and `right = len(lst) - 1`. Move `left` rightward while it points at a 0-record. Move `right` leftward while it points at a 1-record. When both stop, swap and continue."
+      - "The loop continues while `left < right`. Each element is visited at most once by each pointer, so the total work is O(n)."
+    solution:
+      code: |
+        def partition_01(lst):
+            left = 0
+            right = len(lst) - 1
+            while left < right:
+                while left < right and lst[left][0] == 0:
+                    left += 1
+                while left < right and lst[right][0] == 1:
+                    right -= 1
+                if left < right:
+                    lst[left], lst[right] = lst[right], lst[left]
+                    left += 1
+                    right -= 1
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Partition Around a Pivot"
+    description: |
+      Generalize: instead of 0s and 1s, pick one element of the list — the **pivot** — and rearrange so that everything `< pivot` is on its left and everything `>= pivot` is on its right.
+
+      Write `partition(lst, lo, hi)` that:
+
+      - works on the slice `lst[lo..hi]` (inclusive) in place,
+      - uses `lst[hi]` as the pivot,
+      - returns the final index where the pivot lands.
+
+      ```python
+      x = [3, 8, 2, 5, 1, 4]
+      p = partition(x, 0, 5)    # pivot = 4
+      # afterwards: {3, 2, 1} somewhere left of 4, {8, 5} right of it
+      x[p]   # 4
+      ```
+    hints:
+      - "Lomuto partition scheme: keep a \"store index\" `s = lo`. Scan `i` from `lo` to `hi - 1`. Whenever `lst[i] < pivot`, swap `lst[i]` with `lst[s]` and increment `s`. Finally, swap `lst[s]` with `lst[hi]` (the pivot)."
+      - "After the loop, `s` is the correct final position for the pivot. Everything to the left of `s` is `< pivot`, everything to the right is `>= pivot`. Return `s`."
+    solution:
+      code: |
+        def partition(lst, lo, hi):
+            pivot = lst[hi]
+            s = lo
+            for i in range(lo, hi):
+                if lst[i] < pivot:
+                    lst[i], lst[s] = lst[s], lst[i]
+                    s += 1
+            lst[s], lst[hi] = lst[hi], lst[s]
+            return s
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Sort by Partitioning"
+    description: |
+      After partitioning, the pivot is in its **final sorted position**. What remains? Two smaller unsorted regions — one on each side. Sort each of them... the same way.
+
+      Write `pivot_sort(lst, lo=0, hi=None)` that sorts in place.
+
+      ```python
+      x = [5, 2, 9, 1, 5, 6]
+      pivot_sort(x)
+      x   # [1, 2, 5, 5, 6, 9]
+      ```
+
+      **Think about:** merge sort needed extra memory for merging. How much extra memory does quick sort need?
+    hints:
+      - "Base case: if `lo >= hi`, return (region has 0 or 1 elements). Otherwise: partition, then recursively sort `lst[lo..p-1]` and `lst[p+1..hi]`."
+      - "Handle the default `hi=None` at the top: `if hi is None: hi = len(lst) - 1`. Quick sort uses only O(log n) extra memory for the recursion stack — no auxiliary arrays needed."
+    solution:
+      code: |
+        def pivot_sort(lst, lo=0, hi=None):
+            if hi is None:
+                hi = len(lst) - 1
+            if lo >= hi:
+                return
+            p = partition(lst, lo, hi)
+            pivot_sort(lst, lo, p - 1)
+            pivot_sort(lst, p + 1, hi)
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-4-1
+    part: 4
+    number: 4
+    title: "Quicksort Worst Case"
+    question: |
+      Quicksort is O(n·log n) on average, but what input causes its worst-case O(n²) performance when always picking the first element as pivot?
+    options:
+      - label: A
+        text: "A list of random numbers"
+      - label: B
+        text: "A list that is already sorted (or reverse-sorted)"
+        correct: true
+      - label: C
+        text: "A list with many duplicate values"
+      - label: D
+        text: "A very short list (fewer than 5 elements)"
+    hints:
+      - "If the list is already sorted and you pick the first element as pivot, how many elements end up on each side of the partition?"
+    solution:
+      code: null
+      text: "When the list is already sorted and the first element is the pivot, every other element is greater — the partition puts 0 elements on the left and n-1 on the right. Each recursive call only reduces the problem by 1 element (instead of halving it), giving n + (n-1) + (n-2) + ... = O(n²) comparisons. Random inputs almost always give a near-balanced partition, which is why the average case is O(n·log n). This is why production quicksort implementations use techniques like \"median of three\" or random pivot selection."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 5: Sorting Without Comparing (Counting Sort)
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Sorting Without Comparing"
+    intro: |
+      A puzzle: You must sort the **ages of a billion people**. Ages are whole numbers between 0 and 200. Your Part 3 algorithm would need ~30 billion comparisons. Can you sort them with **zero comparisons between elements**?
+
+      **Hint:** how many *different* values can an age take?
+
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "Count Occurrences"
+    description: |
+      Write `count_values(ages, max_value)` that returns a list `counts` of length `max_value + 1`, where `counts[v]` is how many times age `v` appears.
+
+      ```python
+      count_values([3, 1, 3, 0], 3)   # [1, 1, 0, 2]
+      ```
+    hints:
+      - "Create a list of zeros: `counts = [0] * (max_value + 1)`. Then loop through the ages, incrementing `counts[age]` for each one."
+    solution:
+      code: |
+        def count_values(ages, max_value):
+            counts = [0] * (max_value + 1)
+            for age in ages:
+                counts[age] += 1
+            return counts
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Rebuild the Sorted List"
+    description: |
+      If you know there are three 0s, zero 1s, five 2s, ... you can write down the sorted list directly.
+
+      Write `tally_sort(ages, max_value)` that returns the sorted list using `count_values` — no comparisons between elements at all.
+
+      ```python
+      tally_sort([3, 1, 3, 0], 3)   # [0, 1, 3, 3]
+      ```
+
+      **Then answer:**
+
+      - How many operations for n ages with values up to k? (in terms of n and k)
+      - Why can't you use this trick to sort arbitrary floats or strings?
+    hints:
+      - "After building the counts array, loop through indices 0 to `max_value`. For each index `v`, append `v` to the result list `counts[v]` times."
+      - "The complexity is O(n + k): one pass to count (O(n)), one pass to rebuild (O(k) for iterating indices, O(n) for writing values). It only works when k is small — for floats or strings, the range of possible values is effectively infinite."
+    solution:
+      code: |
+        def tally_sort(ages, max_value):
+            counts = count_values(ages, max_value)
+            result = []
+            for v in range(max_value + 1):
+                result.extend([v] * counts[v])
+            return result
+      text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 3
+    title: "When O(n) Sorting Is Possible"
+    question: |
+      Counting sort can sort a billion ages in O(n) time. Why can't we always use it instead of O(n·log n) algorithms like merge sort?
+    options:
+      - label: A
+        text: "Counting sort only works on Python lists, not NumPy arrays"
+      - label: B
+        text: "Counting sort requires knowing the range of values and works best when that range is small — sorting a billion arbitrary floating-point numbers would need impossibly many buckets"
+        correct: true
+      - label: C
+        text: "Counting sort is unstable, so we can't use it for important data"
+      - label: D
+        text: "Counting sort uses too much memory for any list larger than 1,000 elements"
+    hints:
+      - "Counting sort creates one bucket per possible value. How many buckets would you need for decimal numbers like 3.14159?"
+    solution:
+      code: null
+      text: "Counting sort allocates an array of size (max_value - min_value + 1). For ages (0-150), that's 151 buckets — trivial. But for arbitrary floating-point numbers, the range and precision make this impractical (potentially billions of buckets). And for strings or complex objects, there's no natural integer range at all. Comparison-based sorts (merge sort, quicksort) work on anything that can be compared, which is why O(n·log n) is the general-purpose bound."
+
+  # ═══════════════════════════════════════════════════════
+  # PART 6: The Race
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "The Race"
+    intro: |
+      Time to put every algorithm you invented on the same track.
+
+  - type: exercise
+    kind: challenge
+    id: ex-6-0
+    part: 6
+    number: 0
+    title: "The Race — Timing All Algorithms"
+    description: |
+      The helper below times each sorting algorithm on progressively larger lists and plots the results on a log-log scale. Run it once all your sorts pass their tests.
+
+      **Reading the plot:** on a log-log plot, O(n²) algorithms climb with slope 2, O(n·log n) with slope ~1. You should see the two families separate clearly.
+    provided_code:
+      - label: "race timing & plotting"
+        code: |
+          def time_sort(sort_fn, data, in_place):
+              data = list(data)
+              t0 = time.perf_counter()
+              result = sort_fn(data)
+              elapsed = time.perf_counter() - t0
+              final = data if in_place else result
+              assert is_sorted(final), f"{sort_fn.__name__} failed to sort!"
+              return elapsed
+
+
+          def race(max_n_quadratic=4000, max_n_fast=64000):
+              contenders = [
+                  ("pass_sort",    pass_sort,           True,  max_n_quadratic),
+                  ("card_sort", card_sort,        True,  max_n_quadratic),
+                  ("split_sort",     split_sort,            False, max_n_fast),
+                  ("pivot_sort",     pivot_sort,            True,  max_n_fast),
+                  ("built-in sort",  lambda d: d.sort(),    True,  max_n_fast),
+              ]
+              plt.figure(figsize=(8, 5))
+              for name, fn, in_place, max_n in contenders:
+                  sizes, times = [], []
+                  n = 500
+                  while n <= max_n:
+                      data = random.sample(range(10 * n), n)
+                      times.append(time_sort(fn, data, in_place))
+                      sizes.append(n)
+                      n *= 2
+                  plt.plot(sizes, times, marker="o", label=name)
+                  print(f"{name:15s} n={sizes[-1]:6d}: {times[-1]:.4f}s")
+              plt.xlabel("list size n")
+              plt.ylabel("seconds")
+              plt.xscale("log"); plt.yscale("log")
+              plt.legend(); plt.grid(True, which="both", alpha=0.3)
+              plt.title("Sorting race (log-log): slope reveals the exponent")
+              plt.show()
+
+          race()
+    hints:
+      - "If your quick sort hits Python's recursion limit on large inputs, try adding `import sys; sys.setrecursionlimit(200000)` before the race."
+    solution:
+      code: null
+      text: |
+        The race code is provided above — just run it after all your sort functions are defined. You may need to add `import sys; sys.setrecursionlimit(200000)` before calling `race()` if quick sort hits the recursion limit.
+
+        On the log-log plot you should see two distinct groups: bubble sort and insertion sort climbing with slope ~2 (O(n²)), and merge sort, quick sort, and the built-in sort climbing with slope ~1 (O(n·log n)).
+
+  - type: exercise
+    kind: conceptual
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "Predict Before You Run"
+    description: |
+      Using your timing for `pass_sort` at n = 4000, **predict** how long it would take at n = 1,000,000 (scale by $(10^6/4000)^2$). Write the number down.
+
+      Then predict `split_sort` at n = 1,000,000 from its n = 64000 timing.
+
+      One of these predictions is minutes-to-hours. The other is around a second. Which is which?
+    hints:
+      - "For O(n²): if n grows by a factor of 250 (from 4000 to 1,000,000), time grows by 250² = 62,500. Even if bubble sort took 0.5s at n = 4000, that predicts about 31,250 seconds ~ 8.7 hours."
+      - "For O(n·log n): from 64000 to 1,000,000 is a factor of ~15.6. Time grows by roughly 15.6 x (log(10⁶)/log(64000)) ~ 15.6 x 1.25 ~ 19.5. So if merge sort took 0.05s at 64000, the prediction is about 1 second."
+    solution:
+      code: |
+        # Example prediction calculations:
+        # Suppose pass_sort took T_bubble seconds at n = 4000.
+        # At n = 1,000,000 (factor = 250):
+        #   predicted = T_bubble * 250**2 = T_bubble * 62,500
+        # If T_bubble = 0.5s, that is ~31,250s ~ 8.7 hours.
+
+        # Suppose split_sort took T_merge seconds at n = 64,000.
+        # At n = 1,000,000 (factor = 15.625):
+        #   predicted = T_merge * 15.625 * (log2(1e6) / log2(64000))
+        #             = T_merge * 15.625 * (19.93 / 15.97)
+        #             ~ T_merge * 19.5
+        # If T_merge = 0.05s, that is ~0.97s ~ 1 second.
+
+        # Bubble sort (O(n**2)) prediction: minutes to hours.
+        # Merge sort (O(n*log n)) prediction: around one second.
+      text: null
+
+  # ═══════════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════════
+
+  - type: part
+    number: 7
+    title: "Summary"
+    intro: ""
+
+  - type: table
+    id: summary
+    headers: ["Algorithm", "Idea you discovered", "Time", "Notes"]
+    rows:
+      - ["Bubble sort", "swap out-of-order neighbors, repeat", "O(n²)", "largest bubbles to the end each pass"]
+      - ["Insertion sort", "insert each card into a sorted hand", "O(n²), **O(n) if nearly sorted**", "building block of Timsort"]
+      - ["Merge sort", "sort halves recursively, merge", "O(n·log n)", "needs extra memory for merging"]
+      - ["Quick sort", "partition around a pivot, recurse", "O(n·log n) average", "in place; partition puts pivot in final spot"]
+      - ["Counting sort", "count values, rebuild", "O(n + k)", "no comparisons — only for small integer ranges"]
+
+  - type: reveal
+    text: "Python's built-in `sort()` (Timsort) combines two of your inventions: merge sort's structure with insertion sort's speed on nearly-sorted runs."

@@ -1,0 +1,593 @@
+chapter:
+  id: backtracking
+  title: "Backtracking — Exhaustive Search, Done Right"
+  intro: |
+    Some problems have no formula. Nobody can *compute* the solution of a Sudoku puzzle —
+    you have to **try possibilities**. The art is in trying them systematically:
+
+    1. **Enumerate** — walk through every candidate, missing none, repeating none.
+    2. **Check** — recognize a valid (or doomed) state quickly.
+    3. **Backtrack** — when a choice leads to a dead end, undo it and try the next one.
+
+    You already met this idea once: the `*` wildcard in the Pattern Matching chapter
+    tried both branches and gave up on the ones that failed. In this chapter you build
+    the technique up from tiny exercises until you can solve any Sudoku board.
+
+    **Prerequisite:** the Recursion chapter.
+  colab_url: "https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/backtracking/backtracking.ipynb"
+  mathjax: false
+  footer: |
+    You started with handshake pairs and ended by solving Sudoku — the same three-step pattern (try, recurse, undo) powers them all. That's backtracking.
+
+blocks:
+  # ── Part 1 ──────────────────────────────────────────────
+  - type: part
+    number: 1
+    title: "Warm-Up — Enumerating Pairs"
+    intro: |
+      A room of people all shake hands, each pair exactly once.
+
+  # Exercise 1.1
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "handshakes"
+    description: |
+      Write `handshakes(people)` that returns the list of all unique pairs as tuples.
+      A pair should appear once: if `("A", "B")` is in the list, `("B", "A")` must not be.
+
+      ```python
+      handshakes(["A", "B", "C"])
+      # [("A", "B"), ("A", "C"), ("B", "C")]
+      ```
+
+      **Think:** for `n` people, how many handshakes will there be? Test your formula
+      with the last assertion.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert handshakes(["A", "B", "C"]) == [("A", "B"), ("A", "C"), ("B", "C")]
+          assert handshakes(["A", "B", "C", "D"]) == [
+              ("A", "B"), ("A", "C"), ("A", "D"),
+              ("B", "C"), ("B", "D"), ("C", "D")]
+          assert handshakes(["solo"]) == []
+          n = 30
+          assert len(handshakes(list(range(n)))) == n * (n - 1) // 2
+    hints:
+      - "Use two nested loops. The outer loop picks person `i`; the inner loop picks person `j`. To avoid duplicates, the inner loop should start at `i + 1`, not at `0`."
+      - "The number of handshakes for `n` people is `n * (n - 1) // 2`. This is the number of ways to choose 2 items from `n` — the binomial coefficient \"n choose 2\"."
+    solution:
+      code: |
+        def handshakes(people):
+            result = []
+            for i in range(len(people)):
+                for j in range(i + 1, len(people)):
+                    result.append((people[i], people[j]))
+            return result
+      text: null
+
+  # ── Part 2 ──────────────────────────────────────────────
+  - type: part
+    number: 2
+    title: "Enumerating Everything — The Odometer"
+    intro: |
+      Print **all** numbers of length `n` where each digit runs from `0` to `m-1` —
+      that is, all n-digit numbers in base m. (No `itertools` allowed — you are inventing it.)
+
+      First idea: a car odometer. To go from `199` to `200` the rightmost wheel rolls
+      over to `0` and carries into the next wheel.
+
+  # Exercise 2.1
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "next_numb"
+    description: |
+      Write `next_numb(arr, m)` that treats the list `arr` as digits in base `m` and adds 1
+      **in place**. Return `True` if the increment succeeded, `False` if every digit was
+      already maxed out.
+
+      Work it out by hand first: what happens when you add 1 to `[0, 2, 2]` in base 3?
+      What about `[2, 2, 2]`? Where does the "carrying" start, and when does it stop?
+
+      ```python
+      a = [0, 1]
+      next_numb(a, 2)   # True, a is now [1, 0]
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          a = [0, 0]
+          assert next_numb(a, 2) == True and a == [0, 1]
+          assert next_numb(a, 2) == True and a == [1, 0]
+          assert next_numb(a, 2) == True and a == [1, 1]
+          assert next_numb(a, 2) == False
+
+          a = [2, 9]
+          assert next_numb(a, 10) == True and a == [3, 0]
+    hints:
+      - "Walk from right to left using an index that starts at `len(arr) - 1` and decreases. At each position, check if the digit can be incremented. If yes, increment and return `True`. If no, set it to `0` and continue left."
+      - "Use a `while` loop with a `pos` variable starting at `len(arr) - 1`. If `pos` goes below `0`, every digit overflowed — return `False`."
+    solution:
+      code: |
+        def next_numb(arr, m):
+            pos = len(arr) - 1
+            while pos >= 0:
+                if arr[pos] + 1 < m:
+                    arr[pos] += 1
+                    return True
+                arr[pos] = 0
+                pos -= 1
+            return False
+      text: null
+
+  # Exercise 2.2
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "generate"
+    description: |
+      Write `generate(n, m)` that returns **all** n-digit base-m numbers as strings, in
+      counting order. Start from `[0, 0, ..., 0]` and keep calling `next_numb` until it
+      returns `False`, collecting each state as a string.
+
+      ```python
+      generate(2, 2)   # ["00", "01", "10", "11"]
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert generate(1, 3) == ["0", "1", "2"]
+          assert generate(2, 2) == ["00", "01", "10", "11"]
+          out = generate(3, 3)
+          assert len(out) == 27
+          assert out[0] == "000" and out[-1] == "222"
+    hints:
+      - "Start with `arr = [0] * n`. Convert the current state to a string with `\"\".join(str(d) for d in arr)`, append it to your results list, then call `next_numb`. Repeat until `next_numb` returns `False`."
+      - "Remember to collect the initial `[0, 0, ..., 0]` state *before* the first call to `next_numb`. A `while True` loop with a break on `False` works well here."
+    solution:
+      code: |
+        def generate(n, m):
+            arr = [0] * n
+            result = []
+            while True:
+                result.append("".join(str(d) for d in arr))
+                if not next_numb(arr, m):
+                    break
+            return result
+      text: null
+
+  # Exercise 2.3
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "generate_rec"
+    description: |
+      Now the recursive view: *an n-digit number is a first digit followed by an
+      (n-1)-digit number.*
+
+      Write `generate_rec(n, m)`:
+
+      - **Base case:** `n == 0` — there is exactly one number of length 0: the empty string `""`.
+      - **Recursive case:** for each digit `d` from 0 to m-1, prepend `str(d)` to every
+        string in `generate_rec(n - 1, m)`.
+
+      It must produce exactly the same list as `generate`.
+
+      **Think:** how many strings does `generate_rec(n, m)` return? You met this
+      formula in the very first chapter (*Learning to Count*): d digits in base B
+      represent B^d numbers. Enumeration and counting are the same tree — one walks it,
+      one measures it.
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert generate_rec(1, 3) == ["0", "1", "2"]
+          assert generate_rec(2, 2) == ["00", "01", "10", "11"]
+          assert generate_rec(3, 3) == generate(3, 3)
+    hints:
+      - "For the base case, return `[\"\"]` (a list containing one empty string), not `[]`. This is the \"seed\" that every recursive step prepends to."
+      - "The recursive case: `result = []`, then `for d in range(m): for s in generate_rec(n-1, m): result.append(str(d) + s)`."
+    solution:
+      code: |
+        def generate_rec(n, m):
+            if n == 0:
+                return [""]
+            result = []
+            for d in range(m):
+                for s in generate_rec(n - 1, m):
+                    result.append(str(d) + s)
+            return result
+      text: null
+
+  # ── Part 3 ──────────────────────────────────────────────
+  - type: part
+    number: 3
+    title: "Permutations"
+    intro: null
+
+  # Exercise 3.1
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "perms"
+    description: |
+      Print all rearrangements of your name (assume all letters are distinct).
+
+      Write `perms(s)` returning the list of all permutations of the string `s`.
+
+      **Approach:** pick each character in turn to go first, then recurse on the string
+      *without* that character:
+
+      ```
+      perms("abc") = "a" + each of perms("bc")
+                   + "b" + each of perms("ac")
+                   + "c" + each of perms("ab")
+      ```
+
+      **Think:** how many permutations does a string of length n have? (Your name has
+      7 distinct letters — expect 5040.)
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert perms("x") == ["x"]
+          assert sorted(perms("ab")) == ["ab", "ba"]
+          assert sorted(perms("abc")) == ["abc", "acb", "bac", "bca", "cab", "cba"]
+          assert len(perms("abcde")) == 120
+    hints:
+      - "**Base case:** if `len(s) <= 1`, return `[s]`. **Recursive case:** loop over each index `i`, take `s[i]` as the first character, and prepend it to each permutation of the remaining string `s[:i] + s[i+1:]`."
+      - "The remaining string without character at index `i` is `s[:i] + s[i+1:]`. The number of permutations of a string of length n is `n!` (n factorial)."
+    solution:
+      code: |
+        def perms(s):
+            if len(s) <= 1:
+                return [s]
+            result = []
+            for i in range(len(s)):
+                first = s[i]
+                rest = s[:i] + s[i+1:]
+                for p in perms(rest):
+                    result.append(first + p)
+            return result
+      text: null
+
+  # MCQ 3.1
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 2
+    title: "Quick Check 3.1 — Permutation Count"
+    question: |
+      How many permutations does a list of 4 distinct elements have?
+    options:
+      - label: A
+        text: "4"
+      - label: B
+        text: "16"
+      - label: C
+        text: "24"
+        correct: true
+      - label: D
+        text: "256"
+    hints:
+      - "For the first position you have 4 choices, for the second position you have 3 remaining choices, and so on..."
+    solution:
+      text: |
+        The number of permutations is 4! = 4 × 3 × 2 × 1 = 24. Each position reduces the available choices by one. This factorial growth is why generating all permutations becomes impractical quickly: 10 elements have 3,628,800 permutations, and 20 elements have about 2.4 × 10¹⁸.
+
+  # ── Part 4 ──────────────────────────────────────────────
+  - type: part
+    number: 4
+    title: "Checking a State — Valid Parentheses"
+    intro: |
+      Exhaustive search lives or dies by its **checker** — the little function that says
+      "this state is fine" or "this state is broken". Before Sudoku, practice on brackets.
+
+  # Exercise 4.1
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "are_valid"
+    description: |
+      Write `are_valid(s)` for a string of `()`, `[]`, `{}` characters. It is valid when
+      every opener is closed by the matching closer, in the right order.
+
+      **Hint:** as you scan left to right, you need to remember which openers are still
+      waiting for their closers. What data structure naturally handles "most recent first"?
+
+      ```python
+      are_valid("([{}])")   # True
+      are_valid("}{")       # False — closes before opening
+      ```
+    provided_code:
+      - label: "test cell"
+        code: |
+          assert are_valid("[]") == True
+          assert are_valid("}{") == False
+          assert are_valid("([{}])") == True
+          assert are_valid("(]") == False
+          assert are_valid("(()") == False
+          assert are_valid("") == True
+          assert are_valid("()[]{}") == True
+    hints:
+      - "Create a dictionary mapping closers to openers: `{\")\" : \"(\", \"]\" : \"[\", \"}\" : \"{\"}`. When you see a closer, check that the stack is non-empty and its top matches."
+      - "Edge cases to handle: (1) a closer when the stack is empty — return `False` immediately; (2) after processing all characters, the stack must be empty for the string to be valid."
+    solution:
+      code: |
+        def are_valid(s):
+            stack = []
+            matching = {")": "(", "]": "[", "}": "{"}
+            for ch in s:
+                if ch in "([{":
+                    stack.append(ch)
+                elif ch in ")]}":
+                    if not stack or stack[-1] != matching[ch]:
+                        return False
+                    stack.pop()
+            return len(stack) == 0
+      text: null
+
+  # ── Part 5 ──────────────────────────────────────────────
+  - type: part
+    number: 5
+    title: "Sudoku"
+    intro: |
+      The main event. A Sudoku board is a 9×9 grid; every **row**, every **column**, and
+      every **3×3 block** must contain the digits 1–9 exactly once. The puzzle gives you
+      some digits (the *clues*); you fill the rest.
+
+      We represent the board as a list of 9 lists, with `0` meaning *empty*.
+
+  # Provided code for Part 5
+  - type: exercise
+    kind: coding
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "find_first_empty_space"
+    description: |
+      Write `find_first_empty_space(board)` that scans top-to-bottom, left-to-right and
+      returns the `(row, col)` of the first `0`. If the board has no empty cell, return
+      `(None, None)` — that will be our signal that the puzzle is solved.
+    provided_code:
+      - label: "puzzle and printer (run this cell as-is)"
+        code: |
+          puzzle = [
+              [5, 3, 0, 0, 7, 0, 0, 0, 0],
+              [6, 0, 0, 1, 9, 5, 0, 0, 0],
+              [0, 9, 8, 0, 0, 0, 0, 6, 0],
+              [8, 0, 0, 0, 6, 0, 0, 0, 3],
+              [4, 0, 0, 8, 0, 3, 0, 0, 1],
+              [7, 0, 0, 0, 2, 0, 0, 0, 6],
+              [0, 6, 0, 0, 0, 0, 2, 8, 0],
+              [0, 0, 0, 4, 1, 9, 0, 0, 5],
+              [0, 0, 0, 0, 8, 0, 0, 7, 9],
+          ]
+
+          def print_board(board):
+              for r in range(9):
+                  if r % 3 == 0 and r > 0:
+                      print("-" * 21)
+                  line = ""
+                  for c in range(9):
+                      if c % 3 == 0 and c > 0:
+                          line += "| "
+                      v = board[r][c]
+                      line += (str(v) if v != 0 else ".") + " "
+                  print(line)
+
+          print_board(puzzle)
+      - label: "test cell"
+        code: |
+          assert find_first_empty_space(puzzle) == (0, 2)
+          full = [[1] * 9 for _ in range(9)]
+          assert find_first_empty_space(full) == (None, None)
+    hints:
+      - "Two nested loops: outer over rows (`for r in range(9)`), inner over columns (`for c in range(9)`). Return `(r, c)` as soon as you find `board[r][c] == 0`."
+    solution:
+      code: |
+        def find_first_empty_space(board):
+            for r in range(9):
+                for c in range(9):
+                    if board[r][c] == 0:
+                        return (r, c)
+            return (None, None)
+      text: null
+
+  # Exercise 5.2
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "can_place"
+    description: |
+      The checker. Write `can_place(i, row, col, board)` — may digit `i` legally go into
+      cell `(row, col)`?
+
+      1. If `i` already appears anywhere in that **row** — `False`.
+      2. If `i` already appears anywhere in that **column** — `False`.
+      3. If `i` already appears in the cell's **3×3 block** — `False`.
+      4. Otherwise `True`.
+    provided_code:
+      - label: "test cell"
+        code: |
+          # Cell (0, 2) of the puzzle: its row holds {5, 3, 7}, its column holds {8},
+          # and its 3x3 block holds {5, 3, 6, 9, 8}.
+          assert can_place(5, 0, 2, puzzle) == False   # 5 is already in the row
+          assert can_place(7, 0, 2, puzzle) == False   # 7 is already in the row
+          assert can_place(8, 0, 2, puzzle) == False   # 8 is already in the column
+          assert can_place(9, 0, 2, puzzle) == False   # 9 is already in the block
+          assert can_place(1, 0, 2, puzzle) == True
+          assert can_place(2, 0, 2, puzzle) == True
+    hints:
+      - "Check the row: `if i in board[row]: return False`. Check the column: loop over all 9 rows and test `board[r][col]`. For the 3×3 block, compute the top-left corner as `(row // 3 * 3, col // 3 * 3)`."
+      - "For the block check, let `br = row // 3 * 3` and `bc = col // 3 * 3`. Then loop `for r in range(br, br+3): for c in range(bc, bc+3):` and test each cell."
+    solution:
+      code: |
+        def can_place(i, row, col, board):
+            # Check row
+            if i in board[row]:
+                return False
+            # Check column
+            for r in range(9):
+                if board[r][col] == i:
+                    return False
+            # Check 3x3 block
+            br = row // 3 * 3
+            bc = col // 3 * 3
+            for r in range(br, br + 3):
+                for c in range(bc, bc + 3):
+                    if board[r][c] == i:
+                        return False
+            return True
+      text: null
+
+  # Exercise 5.3
+  - type: exercise
+    kind: coding
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "solve_sudoku"
+    description: |
+      Now the backtracking itself. Write `solve_sudoku(board)` (it modifies the board
+      in place and returns `True`/`False`).
+
+      You have `find_first_empty_space` and `can_place`. For each empty cell, you could
+      try placing digits 1–9. If a placement leads to a dead end, what should you do?
+      Think about the pattern from `generate_rec` and the `*` wildcard matcher.
+    provided_code:
+      - label: "checker"
+        code: |
+          import copy
+
+          def is_solved(board):
+              want = set(range(1, 10))
+              for r in range(9):
+                  if set(board[r]) != want:
+                      return False
+              for c in range(9):
+                  if set(board[r][c] for r in range(9)) != want:
+                      return False
+              for br in range(0, 9, 3):
+                  for bc in range(0, 9, 3):
+                      if set(board[r][c]
+                             for r in range(br, br + 3)
+                             for c in range(bc, bc + 3)) != want:
+                          return False
+              return True
+      - label: "test cell"
+        code: |
+          board = copy.deepcopy(puzzle)
+          assert solve_sudoku(board) == True
+          assert is_solved(board)
+          for r in range(9):
+              for c in range(9):
+                  if puzzle[r][c] != 0:
+                      assert board[r][c] == puzzle[r][c], "a clue was overwritten!"
+          print_board(board)
+    hints:
+      - "The structure is: find empty cell, try each digit 1–9, place it, recurse, undo if needed. The key insight is that undoing (`board[row][col] = 0`) only happens when the recursive call returns `False`."
+      - |
+        Skeleton:
+
+        ```python
+        def solve_sudoku(board):
+            row, col = find_first_empty_space(board)
+            if row is None:
+                return True          # no empty cell = solved
+            for i in range(1, 10):
+                if can_place(i, row, col, board):
+                    board[row][col] = i
+                    if solve_sudoku(board):
+                        return True
+                    board[row][col] = 0   # undo
+            return False                  # dead end
+        ```
+    solution:
+      code: |
+        def solve_sudoku(board):
+            row, col = find_first_empty_space(board)
+            if row is None:
+                return True          # no empty cell = solved
+            for i in range(1, 10):
+                if can_place(i, row, col, board):
+                    board[row][col] = i
+                    if solve_sudoku(board):
+                        return True
+                    board[row][col] = 0   # undo
+            return False                  # dead end
+      text: null
+
+  # MCQ 5.1
+  - type: exercise
+    kind: mcq
+    id: mcq-5-1
+    part: 5
+    number: 4
+    title: "Quick Check 5.1 — Why Backtracking Prunes"
+    question: |
+      A 9×9 Sudoku has 81 cells. If you tried every possible assignment of digits 1–9 to all empty cells (brute force without checking constraints), approximately how many combinations would that be for a puzzle with 50 empty cells?
+    options:
+      - label: A
+        text: "50 × 9 = 450"
+      - label: B
+        text: "9^50 — an astronomically large number"
+        correct: true
+      - label: C
+        text: "50! (50 factorial)"
+      - label: D
+        text: "81 × 9 = 729"
+    hints:
+      - "Each empty cell can hold any of 9 digits. The choices are independent in brute force (no constraint checking)."
+    solution:
+      text: |
+        Without constraints, each of the 50 empty cells can be any of 9 digits, giving 9^50 ≈ 5.15 × 10⁴⁷ combinations — far more than atoms in the observable universe. Backtracking makes this tractable by checking constraints (row, column, box) at each step. If placing a 3 in row 1 immediately violates a constraint, the algorithm skips all 9⁴⁹ combinations that start with that choice. This 'pruning' is why your Sudoku solver finishes in milliseconds despite the astronomical search space.
+
+  # ── Think — Why Is This Fast? ───────────────────────────
+  - type: part
+    number: null
+    title: "Think — Why Is This Fast?"
+    intro: |
+      The puzzle has 51 empty cells. Blind enumeration would try up to 9⁵¹ ≈ 10⁴⁸
+      boards — the sun would burn out first. Your solver finishes in well under a second.
+
+      The difference is **pruning**: `can_place` kills a bad branch at its *first*
+      wrong digit, so the enormous tree of possibilities almost entirely never gets built.
+      Enumeration provides completeness; checking provides the speed.
+
+  # ── Summary ─────────────────────────────────────────────
+  - type: part
+    number: null
+    title: "Summary"
+    intro: null
+
+  - type: table
+    id: summary-table
+    title: null
+    description: null
+    headers: ["Function", "Idea"]
+    rows:
+      - ["`handshakes`", "nested loops that never repeat a pair"]
+      - ["`next_numb`, `generate`", "the odometer — iterative enumeration"]
+      - ["`generate_rec`, `perms`", "recursive enumeration: choose a first element, recurse on the rest"]
+      - ["`are_valid`", "a stack as a fast validity checker"]
+      - ["`find_first_empty_space`, `can_place`, `solve_sudoku`", "**backtracking: try → recurse → undo**"]
+    after: |
+      The same try/recurse/undo skeleton solves N-Queens, crossword filling, map
+      coloring, and constraint solvers in general. And you have seen it before: the `*`
+      wildcard matcher in the Pattern Matching chapter was backtracking over match
+      positions instead of board cells.
