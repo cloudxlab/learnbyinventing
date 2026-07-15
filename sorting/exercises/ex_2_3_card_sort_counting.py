@@ -1,5 +1,5 @@
-# Exercise 1.3 — Count the Comparisons
+# Exercise 2.3 — The Best Case
 # Write your solution in this file. Run test_exercises.py to check.
 
-def bubble_sort_counting(lst):
+def card_sort_counting(lst):
     pass  # replace this: sort AND return number of comparisons

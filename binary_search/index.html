@@ -231,14 +231,13 @@ plot_binary_search_convergence(2, 1e-9, title="sqrt(2) search")</code></pre>
   <h3>Exercise 2.1 &mdash; Cube Root</h3>
   <div class="question">
     <p>Write <code>cuberoot_binary_search(n, precision)</code>.</p>
-    <p><strong>Steps:</strong></p>
-    <ol>
-      <li>Handle <code>n == 0</code> (return 0).</li>
-      <li>Work on <code>abs_n = abs(n)</code>.</li>
-      <li>Set <code>low = 0</code>, <code>high = abs_n</code> if <code>abs_n &gt;= 1</code>, else <code>high = 1</code>.</li>
-      <li>Binary search until <code>abs(mid**3 - abs_n) &lt; precision</code>.</li>
-      <li>If <code>n &lt; 0</code>, return <code>-mid</code>.</li>
-    </ol>
+    <p>You already built <code>sqrt_binary_search</code> &mdash; adapt it. The core binary search loop is the same; what changes is the check and the edge cases.</p>
+    <p><strong>Think about:</strong></p>
+    <ul>
+      <li>What do you check instead of <code>mid * mid</code>?</li>
+      <li>Negative numbers: what is <code>(-2)&sup3;</code>? How can you handle negatives by working on <code>abs(n)</code> and fixing the sign at the end?</li>
+      <li>Numbers between -1 and 1: cuberoot(0.001) = 0.1, which is <em>larger</em> than 0.001. What does that mean for your initial <code>high</code>?</li>
+    </ul>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; test cell</div>
 <pre><code>assert abs(cuberoot_binary_search(27,    1e-6) - 3.0)    &lt; 1e-4

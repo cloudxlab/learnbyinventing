@@ -184,14 +184,14 @@ x   # [1, 3, 1, 4, 5, 2, 6, 9]</code></pre>
   <h3>Exercise 1.2 &mdash; Full Sort</h3>
   <div class="question">
     <p>One pass guarantees the largest element is at the end. How many passes guarantee the whole list is sorted?</p>
-    <p>Write <code>bubble_sort(lst)</code> that repeats passes until the list is sorted. Modify in place.</p>
+    <p>Write <code>pass_sort(lst)</code> that repeats passes until the list is sorted. Modify in place.</p>
     <p><strong>Think about:</strong></p>
     <ul>
       <li>After pass 1, the last element is final. After pass 2, the last <em>two</em> are final. Can each pass stop earlier than the previous one?</li>
       <li>If a whole pass makes <strong>zero swaps</strong>, what do you know?</li>
     </ul>
 <pre><code>x = [5, 2, 9, 1, 5, 6]
-bubble_sort(x)
+pass_sort(x)
 x   # [1, 2, 5, 5, 6, 9]</code></pre>
   </div>
 
@@ -211,7 +211,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def bubble_sort(lst):
+      <pre><code>def pass_sort(lst):
     n = len(lst)
     for end in range(n - 1, 0, -1):
         swapped = False
@@ -230,7 +230,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <h3>Exercise 1.3 &mdash; Count the Comparisons</h3>
   <div class="question">
     <p>How much work does bubble sort actually do?</p>
-    <p>Write <code>bubble_sort_counting(lst)</code> &mdash; same algorithm, but return the total number of <strong>comparisons</strong> made.</p>
+    <p>Write <code>pass_sort_counting(lst)</code> &mdash; same algorithm, but return the total number of <strong>comparisons</strong> made.</p>
     <p>Run it on lists of length 10, 100, and 1000 (use <code>random.sample(range(10000), n)</code>). When the list gets 10&times; longer, how much does the comparison count grow?</p>
     <p>Fill in the table:</p>
     <table>
@@ -260,7 +260,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def bubble_sort_counting(lst):
+      <pre><code>def pass_sort_counting(lst):
     comparisons = 0
     n = len(lst)
     for end in range(n - 1, 0, -1):
@@ -328,9 +328,9 @@ x   # [2, 3, 5, 8]</code></pre>
   <h3>Exercise 2.2 &mdash; Sort the Whole Hand</h3>
   <div class="question">
     <p>Now sort the whole list: the sorted prefix starts with just <code>lst[0:1]</code>, and you insert <code>lst[1]</code>, then <code>lst[2]</code>, &hellip; one at a time.</p>
-    <p>Write <code>insertion_sort(lst)</code>. In place.</p>
+    <p>Write <code>card_sort(lst)</code>. In place.</p>
 <pre><code>x = [5, 2, 9, 1, 5, 6]
-insertion_sort(x)
+card_sort(x)
 x   # [1, 2, 5, 5, 6, 9]</code></pre>
   </div>
 
@@ -344,7 +344,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def insertion_sort(lst):
+      <pre><code>def card_sort(lst):
     for k in range(1, len(lst)):
         j = k
         while j &gt; 0 and lst[j] &lt; lst[j - 1]:
@@ -358,7 +358,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
 <section class="exercise" id="ex-2-3">
   <h3>Exercise 2.3 &mdash; The Best Case</h3>
   <div class="question">
-    <p>Run your <code>insertion_sort</code> on a list that is <strong>already sorted</strong>, counting comparisons (write <code>insertion_sort_counting</code>, like you did for bubble sort).</p>
+    <p>Run your <code>card_sort</code> on a list that is <strong>already sorted</strong>, counting comparisons (write <code>card_sort_counting</code>, like you did for bubble sort).</p>
     <ul>
       <li>Already sorted list of length 1000: how many comparisons?</li>
       <li>Reversed list of length 1000: how many comparisons?</li>
@@ -382,7 +382,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def insertion_sort_counting(lst):
+      <pre><code>def card_sort_counting(lst):
     comparisons = 0
     for k in range(1, len(lst)):
         j = k
@@ -495,9 +495,9 @@ merge([1, 1], [1])            # [1, 1, 1]</code></pre>
   <div class="question">
     <p>Now the recursive leap (remember the Recursion chapter):</p>
     <blockquote>To sort a list: split it in half, <strong>sort each half</strong> (how? the same way!), then <code>merge</code> the two sorted halves.</blockquote>
-    <p>Write <code>merge_sort(lst)</code> that returns a new sorted list. What is the base case &mdash; the list so small it is already sorted?</p>
-<pre><code>merge_sort([5, 2, 9, 1, 5, 6])   # [1, 2, 5, 5, 6, 9]
-merge_sort([])                   # []</code></pre>
+    <p>Write <code>split_sort(lst)</code> that returns a new sorted list. What is the base case &mdash; the list so small it is already sorted?</p>
+<pre><code>split_sort([5, 2, 9, 1, 5, 6])   # [1, 2, 5, 5, 6, 9]
+split_sort([])                   # []</code></pre>
   </div>
 
   <details class="hint" data-level="1">
@@ -516,12 +516,12 @@ merge_sort([])                   # []</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def merge_sort(lst):
+      <pre><code>def split_sort(lst):
     if len(lst) &lt;= 1:
         return list(lst)
     mid = len(lst) // 2
-    left = merge_sort(lst[:mid])
-    right = merge_sort(lst[mid:])
+    left = split_sort(lst[:mid])
+    right = split_sort(lst[mid:])
     return merge(left, right)</code></pre>
     </div>
   </details>
@@ -678,9 +678,9 @@ x[p]   # 4</code></pre>
   <h3>Exercise 4.3 &mdash; Sort by Partitioning</h3>
   <div class="question">
     <p>After partitioning, the pivot is in its <strong>final sorted position</strong>. What remains? Two smaller unsorted regions &mdash; one on each side. Sort each of them&hellip; the same way.</p>
-    <p>Write <code>quick_sort(lst, lo=0, hi=None)</code> that sorts in place.</p>
+    <p>Write <code>pivot_sort(lst, lo=0, hi=None)</code> that sorts in place.</p>
 <pre><code>x = [5, 2, 9, 1, 5, 6]
-quick_sort(x)
+pivot_sort(x)
 x   # [1, 2, 5, 5, 6, 9]</code></pre>
     <p><strong>Think about:</strong> merge sort needed extra memory for merging. How much extra memory does quick sort need?</p>
   </div>
@@ -701,14 +701,14 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def quick_sort(lst, lo=0, hi=None):
+      <pre><code>def pivot_sort(lst, lo=0, hi=None):
     if hi is None:
         hi = len(lst) - 1
     if lo &gt;= hi:
         return
     p = partition(lst, lo, hi)
-    quick_sort(lst, lo, p - 1)
-    quick_sort(lst, p + 1, hi)</code></pre>
+    pivot_sort(lst, lo, p - 1)
+    pivot_sort(lst, p + 1, hi)</code></pre>
     </div>
   </details>
 </section>
@@ -792,8 +792,8 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <h3>Exercise 5.2 &mdash; Rebuild the Sorted List</h3>
   <div class="question">
     <p>If you know there are three 0s, zero 1s, five 2s, &hellip; you can write down the sorted list directly.</p>
-    <p>Write <code>counting_sort(ages, max_value)</code> that returns the sorted list using <code>count_values</code> &mdash; no comparisons between elements at all.</p>
-<pre><code>counting_sort([3, 1, 3, 0], 3)   # [0, 1, 3, 3]</code></pre>
+    <p>Write <code>tally_sort(ages, max_value)</code> that returns the sorted list using <code>count_values</code> &mdash; no comparisons between elements at all.</p>
+<pre><code>tally_sort([3, 1, 3, 0], 3)   # [0, 1, 3, 3]</code></pre>
     <p><strong>Then answer:</strong></p>
     <ul>
       <li>How many operations for n ages with values up to k? (in terms of n and k)</li>
@@ -817,7 +817,7 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   <details class="solution">
     <summary>Solution</summary>
     <div class="solution-body">
-      <pre><code>def counting_sort(ages, max_value):
+      <pre><code>def tally_sort(ages, max_value):
     counts = count_values(ages, max_value)
     result = []
     for v in range(max_value + 1):
@@ -891,10 +891,10 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
 
 def race(max_n_quadratic=4000, max_n_fast=64000):
     contenders = [
-        ("bubble_sort",    bubble_sort,           True,  max_n_quadratic),
-        ("insertion_sort", insertion_sort,        True,  max_n_quadratic),
-        ("merge_sort",     merge_sort,            False, max_n_fast),
-        ("quick_sort",     quick_sort,            True,  max_n_fast),
+        ("pass_sort",    pass_sort,           True,  max_n_quadratic),
+        ("card_sort", card_sort,        True,  max_n_quadratic),
+        ("split_sort",     split_sort,            False, max_n_fast),
+        ("pivot_sort",     pivot_sort,            True,  max_n_fast),
         ("built-in sort",  lambda d: d.sort(),    True,  max_n_fast),
     ]
     plt.figure(figsize=(8, 5))
@@ -940,8 +940,8 @@ race()</code></pre>
 <section class="exercise" id="ex-6-1">
   <h3>Exercise 6.1 &mdash; Predict Before You Run</h3>
   <div class="question">
-    <p>Using your timing for <code>bubble_sort</code> at n = 4000, <strong>predict</strong> how long it would take at n = 1,000,000 (scale by (10&sup6;/4000)&sup2;). Write the number down.</p>
-    <p>Then predict <code>merge_sort</code> at n = 1,000,000 from its n = 64000 timing.</p>
+    <p>Using your timing for <code>pass_sort</code> at n = 4000, <strong>predict</strong> how long it would take at n = 1,000,000 (scale by (10&sup6;/4000)&sup2;). Write the number down.</p>
+    <p>Then predict <code>split_sort</code> at n = 1,000,000 from its n = 64000 timing.</p>
     <p>One of these predictions is minutes-to-hours. The other is around a second. Which is which?</p>
   </div>
 
@@ -962,12 +962,12 @@ race()</code></pre>
     <summary>Solution</summary>
     <div class="solution-body">
       <pre><code># Example prediction calculations:
-# Suppose bubble_sort took T_bubble seconds at n = 4000.
+# Suppose pass_sort took T_bubble seconds at n = 4000.
 # At n = 1,000,000 (factor = 250):
 #   predicted = T_bubble * 250**2 = T_bubble * 62,500
 # If T_bubble = 0.5s, that is ~31,250s ~ 8.7 hours.
 
-# Suppose merge_sort took T_merge seconds at n = 64,000.
+# Suppose split_sort took T_merge seconds at n = 64,000.
 # At n = 1,000,000 (factor = 15.625):
 #   predicted = T_merge * 15.625 * (log2(1e6) / log2(64000))
 #             = T_merge * 15.625 * (19.93 / 15.97)

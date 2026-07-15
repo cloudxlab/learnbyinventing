@@ -1,5 +1,5 @@
-# Exercise 4.3 — Quick Sort
+# Exercise 2.2 — Card Sort
 # Write your solution in this file. Run test_exercises.py to check.
 
-def quick_sort(lst, lo=0, hi=None):
+def card_sort(lst):
     pass  # replace this

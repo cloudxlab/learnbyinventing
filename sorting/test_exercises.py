@@ -32,25 +32,25 @@ def test_ex_1_1_bubble_pass():
     bubble_pass(x)
     assert x == [1, 2]
 
-def test_ex_1_2_bubble_sort():
-    from exercises.ex_1_2_bubble_sort import bubble_sort
+def test_ex_1_2_pass_sort():
+    from exercises.ex_1_2_pass_sort import pass_sort
     x = [5, 2, 9, 1, 5, 6]
-    bubble_sort(x)
+    pass_sort(x)
     assert x == [1, 2, 5, 5, 6, 9]
 
     x = [1]
-    bubble_sort(x)
+    pass_sort(x)
     assert x == [1]
 
     x = list(range(100, 0, -1))     # worst case: reversed
-    bubble_sort(x)
+    pass_sort(x)
     assert is_sorted(x)
 
-def test_ex_1_3_bubble_sort_counting():
-    from exercises.ex_1_3_bubble_sort_counting import bubble_sort_counting
+def test_ex_1_3_pass_sort_counting():
+    from exercises.ex_1_3_pass_sort_counting import pass_sort_counting
     for n in [10, 100, 1000]:
         data = random.sample(range(10000), n)
-        comparisons = bubble_sort_counting(data)
+        comparisons = pass_sort_counting(data)
         assert is_sorted(data)
         print(f"n={n:5d}  comparisons={comparisons:8d}  ratio to n^2: {comparisons/(n*n):.3f}")
 
@@ -68,23 +68,23 @@ def test_ex_2_1_insert_card():
     insert_card(x, 3)
     assert x == [1, 2, 3, 9]
 
-def test_ex_2_2_insertion_sort():
-    from exercises.ex_2_2_insertion_sort import insertion_sort
+def test_ex_2_2_card_sort():
+    from exercises.ex_2_2_card_sort import card_sort
     x = [5, 2, 9, 1, 5, 6]
-    insertion_sort(x)
+    card_sort(x)
     assert x == [1, 2, 5, 5, 6, 9]
 
     x = list(range(200, 0, -1))
-    insertion_sort(x)
+    card_sort(x)
     assert is_sorted(x)
 
-def test_ex_2_3_insertion_sort_counting():
-    from exercises.ex_2_3_insertion_sort_counting import insertion_sort_counting
+def test_ex_2_3_card_sort_counting():
+    from exercises.ex_2_3_card_sort_counting import card_sort_counting
     sorted_data   = list(range(1000))
     reversed_data = list(range(1000, 0, -1))
 
-    c1 = insertion_sort_counting(sorted_data)
-    c2 = insertion_sort_counting(reversed_data)
+    c1 = card_sort_counting(sorted_data)
+    c2 = card_sort_counting(reversed_data)
     assert is_sorted(sorted_data) and is_sorted(reversed_data)
     print(f"Already sorted (n=1000): {c1} comparisons")
     print(f"Reversed       (n=1000): {c2} comparisons")
@@ -96,14 +96,14 @@ def test_ex_3_1_merge():
     assert merge([4, 8], [])           == [4, 8]
     assert merge([1, 1], [1])          == [1, 1, 1]
 
-def test_ex_3_2_merge_sort():
-    from exercises.ex_3_2_merge_sort import merge_sort
-    assert merge_sort([5, 2, 9, 1, 5, 6]) == [1, 2, 5, 5, 6, 9]
-    assert merge_sort([])  == []
-    assert merge_sort([7]) == [7]
+def test_ex_3_2_split_sort():
+    from exercises.ex_3_2_split_sort import split_sort
+    assert split_sort([5, 2, 9, 1, 5, 6]) == [1, 2, 5, 5, 6, 9]
+    assert split_sort([])  == []
+    assert split_sort([7]) == [7]
 
     data = random.sample(range(100000), 10000)
-    assert merge_sort(data) == sorted(data)
+    assert split_sort(data) == sorted(data)
 
 def test_ex_4_1_partition_01():
     from exercises.ex_4_1_partition_01 import partition_01
@@ -121,15 +121,15 @@ def test_ex_4_2_partition():
     assert all(v < 4 for v in x[:p])
     assert all(v >= 4 for v in x[p:])
 
-def test_ex_4_3_quick_sort():
-    from exercises.ex_4_3_quick_sort import quick_sort
+def test_ex_4_3_pivot_sort():
+    from exercises.ex_4_3_pivot_sort import pivot_sort
     x = [5, 2, 9, 1, 5, 6]
-    quick_sort(x)
+    pivot_sort(x)
     assert x == [1, 2, 5, 5, 6, 9]
 
     data = random.sample(range(100000), 10000)
     expected = sorted(data)
-    quick_sort(data)
+    pivot_sort(data)
     assert data == expected
 
 def test_ex_5_1_count_values():
@@ -137,13 +137,13 @@ def test_ex_5_1_count_values():
     assert count_values([3, 1, 3, 0], 3) == [1, 1, 0, 2]
     assert count_values([], 2)           == [0, 0, 0]
 
-def test_ex_5_2_counting_sort():
-    from exercises.ex_5_2_counting_sort import counting_sort
-    assert counting_sort([3, 1, 3, 0], 3) == [0, 1, 3, 3]
+def test_ex_5_2_tally_sort():
+    from exercises.ex_5_2_tally_sort import tally_sort
+    assert tally_sort([3, 1, 3, 0], 3) == [0, 1, 3, 3]
 
     ages = [random.randint(0, 200) for _ in range(1000000)]
     t0 = time.perf_counter()
-    result = counting_sort(ages, 200)
+    result = tally_sort(ages, 200)
     t1 = time.perf_counter()
     assert result == sorted(ages)
 

@@ -1,5 +1,5 @@
-# Exercise 5.2 — Rebuild the Sorted List
+# Exercise 3.2 — Split Sort
 # Write your solution in this file. Run test_exercises.py to check.
 
-def counting_sort(ages, max_value):
+def split_sort(lst):
     pass  # replace this
