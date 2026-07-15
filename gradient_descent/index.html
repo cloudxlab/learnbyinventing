@@ -460,6 +460,42 @@ guesses = [
   </details>
 </section>
 
+<!-- MCQ 3.1 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Learning Rate Tradeoff</h3>
+  <div class="question">
+    <p>You&rsquo;re running gradient descent and the loss keeps oscillating wildly instead of decreasing. What is the most likely cause?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> The function has no minimum</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> The learning rate is too large &mdash; each step overshoots the minimum and lands on the other side</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> The learning rate is too small</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> You need more training data</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>What happens when you take a very large step on a steep slope? Do you land near the bottom, or do you fly past it?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A learning rate that's too large causes the algorithm to overshoot the minimum on each step, landing on the opposite slope, then overshooting again &mdash; producing wild oscillations. Too-small learning rate would cause very slow but steady convergence, not oscillation. The fix is to reduce the learning rate so each step is conservative enough to approach the minimum without overshooting.</p></div>
+  </details>
+</section>
+
 
 <!-- ===============================================================
      PART 4: Two Variables — A Landscape Instead of a Curve
@@ -973,6 +1009,42 @@ plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
   </details>
 </section>
 
+<!-- MCQ 6.1 -->
+<section class="exercise mcq" id="mcq-6-1">
+  <h3>Quick Check 6.1 &mdash; Local Minima</h3>
+  <div class="question">
+    <p>Gradient descent found a minimum of your loss function. Can you be certain it found the <em>global</em> minimum (the absolute lowest point)?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="A" />
+      <span><strong>A.</strong> Yes &mdash; gradient descent always finds the global minimum</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="B" />
+      <span><strong>B.</strong> Only if the loss function is convex (bowl-shaped) &mdash; non-convex functions can trap gradient descent in a local minimum</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="C" />
+      <span><strong>C.</strong> No &mdash; gradient descent never finds the true minimum, only an approximation</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="D" />
+      <span><strong>D.</strong> Yes, as long as you run enough iterations</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Think about a function with multiple valleys. If you start in a small valley, can gradient descent see a deeper valley far away?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Gradient descent follows the local slope downhill. If the loss function has multiple valleys (non-convex), the algorithm can get trapped in a shallow local minimum with no way to &lsquo;see&rsquo; a deeper minimum elsewhere. For convex functions (single bowl shape), like MSE for linear regression, any minimum is the global minimum &mdash; gradient descent is guaranteed to find it. This is why convexity of the loss function matters in ML.</p></div>
+  </details>
+</section>
+
 
 <!-- ===============================================================
      PART 7: Putting It All Together — Linear Regression via Gradient Descent
@@ -1403,6 +1475,42 @@ gm_n, gc_n = gradients(X, y, [0.5, -1.0], 2.0)
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 8.1 -->
+<section class="exercise mcq" id="mcq-8-1">
+  <h3>Quick Check 8.1 &mdash; Curse of Dimensionality</h3>
+  <div class="question">
+    <p>In Part 8, you extended gradient descent from 2 weights to many. As the number of features grows from 2 to 100, what happens to the gradient computation?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-8-1" value="A" />
+      <span><strong>A.</strong> It stays the same &mdash; one gradient call handles any number of features</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-8-1" value="B" />
+      <span><strong>B.</strong> You need one partial derivative per weight, so 100 features means computing 100 partial derivatives per step</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-8-1" value="C" />
+      <span><strong>C.</strong> The number of partial derivatives grows as 100&sup2; = 10,000</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-8-1" value="D" />
+      <span><strong>D.</strong> Gradient descent stops working beyond 10 features</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>You computed partial_derivative for each weight independently. How many weights do you have with 100 features?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>With 100 features, you have ~101 weights (one per feature plus the intercept). Each gradient step requires computing one partial derivative per weight &mdash; 101 derivative evaluations per step. This scales linearly with the number of features, not quadratically. That linear scaling is exactly why gradient descent remains practical for high-dimensional problems (even thousands of features), unlike approaches that require inverting matrices (which scale as O(n&sup3;)).</p></div>
   </details>
 </section>
 

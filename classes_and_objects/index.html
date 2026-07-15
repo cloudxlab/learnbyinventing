@@ -259,6 +259,42 @@ class Dog(Animal):
   </details>
 </section>
 
+<!-- MCQ 3.1 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Why Inherit?</h3>
+  <div class="question">
+    <p>In the <code>Animal</code>/<code>Dog</code>/<code>Cat</code> example, <code>Dog</code> inherits from <code>Animal</code>. What is the main benefit of this inheritance?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> Dogs run faster in Python than standalone classes</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> Shared behavior (like <code>speak</code> or <code>name</code>) is defined once in <code>Animal</code>, and each subclass only adds or overrides what&rsquo;s different</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> Python requires all classes to inherit from something</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> It prevents you from creating <code>Animal</code> objects directly</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>What would you have to do if Dog and Cat didn&rsquo;t inherit from Animal? Would any code be duplicated?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Inheritance lets you write shared logic (name storage, common methods) once in the parent class. Dog and Cat only define what&rsquo;s unique to them (their specific <code>speak()</code> behavior). Without inheritance, you&rsquo;d duplicate the shared code in every class. Python does NOT require inheritance (though all classes implicitly inherit from <code>object</code>), and inheritance doesn&rsquo;t prevent creating parent instances.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 4: Objects That Contain Objects — Trees
@@ -444,6 +480,42 @@ print("DecisionNode: OK")</code></pre>
   <p><strong>This is a real decision tree</strong></p>
   <p>You built its structure by hand. The <em>Decision Trees</em> chapter later in this book answers the natural next question: given a table of past decisions, how can <code>fit</code> discover the right criteria and boundaries <strong>automatically</strong>? Same object, learned instead of hand-crafted.</p>
 </div>
+
+<!-- MCQ 5.1 -->
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; Classes vs. Dicts</h3>
+  <div class="question">
+    <p>You built a decision tree using <code>DecisionNode</code>, <code>Yes</code>, and <code>No</code> classes. Could you have represented the same tree using nested dictionaries instead? What would you lose?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> Dictionaries can&rsquo;t be nested, so it&rsquo;s impossible</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> It would work, but you&rsquo;d lose the ability to call methods like <code>.predict()</code> directly on the tree &mdash; you&rsquo;d need separate functions that know the dict structure</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> Dictionaries are faster, so you&rsquo;d actually gain performance</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> You&rsquo;d lose nothing &mdash; classes and dicts are interchangeable</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Think about how you call <code>tree.predict(answers)</code>. What makes that possible? Could you do the same with a dict?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Nested dicts CAN represent a tree structure, but you&rsquo;d need standalone functions like <code>predict(tree_dict, answers)</code> that manually check keys and navigate the nesting. With classes, the behavior lives WITH the data: <code>tree.predict(answers)</code> knows how to traverse itself. Classes bundle data + behavior together, making the code more organized and the API cleaner. You could use dicts, but the code would be more fragile &mdash; any change to the dict structure would break all the functions that depend on it.</p></div>
+  </details>
+</section>
 
 
 <!-- ═══════════════════════════════════════════════════════

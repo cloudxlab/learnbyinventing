@@ -286,6 +286,42 @@ top_n_words(passage, 5)</code></pre>
   </details>
 </section>
 
+<!-- MCQ 1 -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Dict vs List for Counting</h3>
+  <div class="question">
+    <p>You used a dictionary to count words. Could you have used a list of <code>[word, count]</code> pairs instead? What would be the main drawback?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> Lists can&rsquo;t store pairs &mdash; only single values</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> It would work identically with no drawback</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> Finding whether a word already exists would require scanning the entire list each time &mdash; much slower for large texts</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> Lists can&rsquo;t be sorted</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>To increment a word&rsquo;s count, you first need to check if it&rsquo;s already in the collection. How does that lookup work in a dict vs a list?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A list of pairs would work, but finding a word requires scanning from the beginning each time &mdash; O(n) per lookup. A dict does the same lookup in O(1) on average using hashing. For a document with thousands of unique words, the dict approach is dramatically faster. Lists CAN store pairs and CAN be sorted, so A and D are wrong.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Anagrams
@@ -565,6 +601,42 @@ over_budget(expenses, limits)
   </details>
 </section>
 
+<!-- MCQ 2 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Assignment vs Accumulation</h3>
+  <div class="question">
+    <p>In the expense tracker, you used category names as dictionary keys. What would happen if you accidentally used <code>expenses[category] = amount</code> instead of <code>expenses[category] += amount</code> for a category that already exists?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> Python would throw a KeyError</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> The new amount would be added to the old one automatically</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> The old total would be silently replaced &mdash; you&rsquo;d lose all previous expenses in that category</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> Python would create a list of both amounts</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>What does <code>=</code> do to an existing dictionary key versus <code>+=</code>?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Assignment (<code>=</code>) replaces the value entirely, while <code>+=</code> adds to it. Using <code>d[key] = value</code> when the key already exists silently overwrites the previous value &mdash; a common bug. Python won&rsquo;t warn you. This is why the pattern <code>d[key] = d.get(key, 0) + amount</code> or <code>d[key] += amount</code> (after initializing) is important.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      BONUS B: Invert a Dictionary / Group By
@@ -796,6 +868,42 @@ which_shard(12345, 7)   # 4</code></pre>
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 3 -->
+<section class="exercise mcq" id="mcq-c-1">
+  <h3>Quick Check C.1 &mdash; What Happens on a Collision?</h3>
+  <div class="question">
+    <p>You built a hash function that converts a string to a number, then uses modulo to pick a bucket. What happens when two different keys hash to the same bucket (a collision)?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-c-1" value="A" />
+      <span><strong>A.</strong> The second key silently replaces the first &mdash; data is lost</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-c-1" value="B" />
+      <span><strong>B.</strong> Python raises an error and refuses to insert</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-c-1" value="C" />
+      <span><strong>C.</strong> The bucket stores both key-value pairs, and lookup checks each one &mdash; O(1) on average if collisions are rare</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-c-1" value="D" />
+      <span><strong>D.</strong> The hash function automatically picks a different bucket</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>You saw collisions in Exercise C.3. Did the system break, or did it handle them?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Collisions are expected and handled: the bucket stores multiple entries (often as a linked list or similar structure). On lookup, Python hashes the key to find the bucket, then scans the entries in that bucket to find the exact match. As long as collisions are rare (a good hash function distributes keys evenly), each bucket has only 1&ndash;2 entries, keeping lookup effectively O(1).</p></div>
   </details>
 </section>
 

@@ -271,6 +271,42 @@ print(f"Is prefix-free:   {is_prefix_free(VAR_SCHEME)}")</code></pre>
   </details>
 </section>
 
+<!-- MCQ 2.1 -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; Why Prefix-Free Matters</h3>
+  <div class="question">
+    <p>In a prefix-free code, no codeword is a prefix of another. Why is this property essential for decoding?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> It makes the codes shorter</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> Without it, the decoder can&rsquo;t tell where one codeword ends and the next begins &mdash; the bit stream becomes ambiguous</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> It ensures all codewords have the same length</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> It prevents errors during transmission</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Imagine codes A=0, B=01. When you see the bits '01', is it 'AB' (0 then 1) or just 'B' (01)? How would you know?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>If code A=0 is a prefix of code B=01, then the bit sequence '01' is ambiguous: it could be A followed by a '1' (start of another symbol) or it could be B. The decoder has no separators between symbols &mdash; only the prefix-free property guarantees that the moment you match a codeword, you KNOW it's complete and can't be the start of a longer codeword. This allows unique, unambiguous decoding of any bit stream.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 3: Frequencies Matter (A, B, C, D)
@@ -721,6 +757,42 @@ plot_comparison(frequencies)</code></pre>
   </details>
 </section>
 
+<!-- MCQ 4.1 -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Huffman Optimality</h3>
+  <div class="question">
+    <p>Huffman coding assigns shorter codes to more frequent symbols. Is this always the most efficient possible prefix-free encoding?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> No &mdash; there are always better encodings that Huffman misses</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> Yes &mdash; Huffman is provably optimal among all prefix-free codes that assign a whole number of bits per symbol</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> Yes, but only for alphabets with exactly 4 symbols</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> No &mdash; fixed-length codes are always more efficient</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Huffman is a greedy algorithm that always merges the two least frequent nodes. Can you do better with a different merge order?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Huffman coding is provably optimal among prefix-free codes with integer bit lengths per symbol. No rearrangement of the merge order or code assignments can beat it. The only caveat: it assigns whole bits per symbol. Arithmetic coding can use fractional bits (e.g., 1.3 bits for a symbol), getting slightly closer to the entropy bound. But among integer-length prefix-free codes, Huffman is the best possible.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 5: Generalized Encode and Decode
@@ -886,6 +958,42 @@ for sym in ["q", "z", "j", "x"]:
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 5.1 -->
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; Entropy as a Lower Bound</h3>
+  <div class="question">
+    <p>The entropy of an alphabet with frequencies {A: 50%, B: 25%, C: 12.5%, D: 12.5%} is exactly 1.75 bits per symbol. Your Huffman code achieves exactly 1.75 bits per symbol. Is it always possible to match the entropy exactly?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> Yes &mdash; Huffman always matches entropy exactly</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> No &mdash; this case works because the frequencies are all powers of 1/2, giving exact integer code lengths. For other frequency distributions, Huffman gets close but can&rsquo;t go below the entropy bound</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> No &mdash; entropy is a theoretical concept that can never be achieved</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> Yes, but only if you use more than 4 symbols</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Entropy says A's ideal code length is log&#8322;(1/0.50) = 1 bit, B's is 2 bits, C's is 3 bits. These are all whole numbers. What if a symbol's ideal length were 1.5 bits?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>When all ideal code lengths (-log&#8322;(p)) happen to be integers (because frequencies are powers of 1/2), Huffman achieves entropy exactly. But for arbitrary frequencies like {A: 40%, B: 35%, C: 25%}, the ideal lengths are non-integers (e.g., 1.32 bits for A). Since Huffman must assign whole bits, it rounds up &mdash; the result is close to entropy but slightly above it. Entropy is the theoretical lower bound: no lossless code can do better on average, and only power-of-2 distributions can match it with integer codes.</p></div>
   </details>
 </section>
 

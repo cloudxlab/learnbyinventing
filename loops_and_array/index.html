@@ -311,6 +311,42 @@ plot_stats([10, 12, 12, 13, 12, 11, 90], "Outlier example")</code></pre>
   </details>
 </section>
 
+<!-- MCQ 1-1: When to normalize -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; When to Normalize</h3>
+  <div class="question">
+    <p>A dataset has two features: age (range 0&ndash;100) and salary (range 20,000&ndash;200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON&rsquo;T normalize the features first?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> The algorithm won&rsquo;t run &mdash; Python will throw an error</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> Age will dominate because it has a smaller range</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> It makes no difference &mdash; Euclidean distance handles different scales automatically</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Error Metrics
@@ -426,6 +462,42 @@ compute_huber_loss([1,2,3],[1,2,3],1)                              # 0.0</code><
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 2-1: RMSE vs MAE -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; RMSE vs MAE</h3>
+  <div class="question">
+    <p>Your model&rsquo;s predictions for 5 data points have errors: [1, 1, 1, 1, 20]. Which error metric will be affected MORE by the single large error of 20?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> MAE (Mean Absolute Error)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> RMSE (Root Mean Square Error)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> Both are affected equally</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> Neither &mdash; both ignore outliers</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>RMSE squares the errors before averaging. What does squaring do to a large number compared to a small number?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>RMSE squares each error: 1&sup2;=1 appears four times, but 20&sup2;=400 is massive. The mean of squares is (4+400)/5 = 80.8, giving RMSE &asymp; 8.99. MAE just averages the absolute values: (4+20)/5 = 4.8. The outlier inflates RMSE much more than MAE. This is why RMSE is said to &ldquo;penalize large errors more heavily&rdquo; &mdash; squaring amplifies big errors disproportionately.</p></div>
   </details>
 </section>
 
@@ -1191,6 +1263,42 @@ plot_softmax_temps([1, 2, 3], [0.5, 1.0, 2.0])</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 6-1: Softmax temperature -->
+<section class="exercise mcq" id="mcq-6-1">
+  <h3>Quick Check 6.1 &mdash; Softmax Temperature</h3>
+  <div class="question">
+    <p>In softmax with temperature, what happens as the temperature T approaches 0?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="A" />
+      <span><strong>A.</strong> All outputs become equal (uniform distribution)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="B" />
+      <span><strong>B.</strong> The output with the highest input gets nearly all the probability &mdash; the distribution becomes &ldquo;sharper&rdquo;</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="C" />
+      <span><strong>C.</strong> All outputs become 0</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="D" />
+      <span><strong>D.</strong> The function becomes undefined</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Dividing by a very small T makes the input values very large. What does softmax do with very large differences between inputs?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>As T &rarr; 0, dividing inputs by T amplifies their differences enormously. The largest input dominates the exponentials, getting nearly 100% of the probability mass. This makes the choice nearly deterministic &mdash; always picking the highest-scored option. Conversely, as T &rarr; &infin;, all inputs approach 0 after division, making all exponentials &asymp; 1 and the distribution uniform. Temperature controls the exploration-exploitation tradeoff.</p></div>
   </details>
 </section>
 

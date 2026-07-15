@@ -266,6 +266,42 @@ assert (preds == labels).all()</code></pre>
   </details>
 </section>
 
+<!-- MCQ 1 — Sigmoid saturation -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Sigmoid saturation</h3>
+  <div class="question">
+    <p>In Exercise 1.4, the sigmoid neuron &ldquo;refused to learn&rdquo; when given large input values. What caused this?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> Large values cause Python to crash with overflow errors</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> The sigmoid function flattens to nearly 0 or 1 for large inputs &mdash; the gradient becomes almost zero, so gradient descent makes almost no progress</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> Large values make the learning rate too high</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> The sigmoid can only handle inputs between 0 and 1</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Plot the sigmoid for values like -100 and +100. How steep is the curve there? What does a flat curve mean for the gradient?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The sigmoid squashes all inputs to the range (0, 1). For large positive or negative inputs, the output is nearly 1 or nearly 0, and the curve is almost flat. A flat curve means the derivative (gradient) is nearly zero. Gradient descent multiplies the learning rate by the gradient &mdash; so near-zero gradient means near-zero weight updates. This is &ldquo;saturation&rdquo;. The fix is to keep inputs small (centered near 0) where the sigmoid&rsquo;s curve is steepest and the gradient is largest.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Wiring Neurons Together: Computation Graphs
@@ -360,6 +396,42 @@ plt.show()</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 2 — Why multiple neurons -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; Why multiple neurons?</h3>
+  <div class="question">
+    <p>A single sigmoid neuron can fit a smooth S-shaped curve. Why do we need multiple neurons?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> Multiple neurons run faster on modern hardware</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> A single S-curve can only capture one transition (e.g., &ldquo;low to high&rdquo;), but real problems often have multiple transitions or complex shapes that require combining several curves</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> Python limits each neuron to 10 weights</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> Multiple neurons are needed only for classification, not regression</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Think about the tax problem in Part 3: income tax has a different rate in different brackets. Can one S-curve capture multiple bracket boundaries?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A single sigmoid produces exactly one transition &mdash; from one value to another. But many real-world functions have multiple transitions: tax brackets change rates at different incomes, temperature varies up and down during the day, etc. By combining multiple sigmoid neurons (each capturing one transition at different positions), a network can approximate complex multi-transition functions. The upcoming tax problem in Part 3 demonstrates this directly.</p></div>
   </details>
 </section>
 
@@ -633,6 +705,42 @@ assert relu_rmse &lt; 0.02</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 3 — ReLU advantage -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; ReLU advantage</h3>
+  <div class="question">
+    <p>ReLU (max(0, z)) is simpler than sigmoid. What is its main practical advantage for training neural networks?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> ReLU outputs larger numbers, making predictions more accurate</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> ReLU&rsquo;s gradient is either 0 or 1 &mdash; it never becomes a tiny fraction like sigmoid&rsquo;s, so gradient descent doesn&rsquo;t slow down for large inputs</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> ReLU uses less memory than sigmoid</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> ReLU can only be used in the output layer</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>You saw that sigmoid&rsquo;s gradient nearly vanishes for large inputs. What is the slope of ReLU for positive inputs, no matter how large?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>For any positive input, ReLU&rsquo;s derivative is exactly 1 &mdash; the gradient never shrinks. Compare this to sigmoid, where the gradient can be as small as 0.0000001 for large inputs (saturation). This constant gradient means gradient descent updates remain meaningful regardless of input magnitude. ReLU was a key breakthrough that enabled training of deep neural networks &mdash; it avoids the &ldquo;vanishing gradient&rdquo; problem that plagued sigmoid-based deep networks. The tradeoff: for negative inputs, ReLU&rsquo;s gradient is 0 (the &ldquo;dying ReLU&rdquo; problem), but this is less severe in practice.</p></div>
   </details>
 </section>
 

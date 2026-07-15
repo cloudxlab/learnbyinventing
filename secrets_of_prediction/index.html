@@ -201,6 +201,42 @@ assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)</code></pre
   </details>
 </section>
 
+<!-- MCQ 1: Cosine similarity meaning -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Cosine Similarity Meaning</h3>
+  <div class="question">
+    <p>Two vectors have a cosine similarity of 0. What does this tell you about their relationship?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> They are identical</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> They point in exactly opposite directions</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> They are perpendicular (at 90&deg;) &mdash; knowing one tells you nothing about the other</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> One of the vectors is all zeros</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Cosine similarity measures the cosine of the angle between two vectors. What angle has cosine = 0?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>cos(90&deg;) = 0, so cosine similarity of 0 means the vectors are perpendicular &mdash; completely unrelated in direction. Identical vectors have cosine similarity of 1 (angle = 0&deg;). Opposite vectors have cosine similarity of -1 (angle = 180&deg;). A zero vector would make the computation undefined (division by zero in the denominator), not produce a result of 0.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Bring Your Solver
@@ -555,6 +591,42 @@ plt.show()</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 2: Why square the errors -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Why Square the Errors</h3>
+  <div class="question">
+    <p>In the least squares method, you minimize the sum of <em>squared</em> errors. Why not just minimize the sum of raw errors (without squaring)?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> Squaring makes the computation faster</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> Raw errors can be positive or negative &mdash; a prediction 10 too high and one 10 too low would cancel out, giving a total error of 0 even though both predictions are wrong</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> Python can't handle negative numbers in sums</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> Squaring is needed because the data might contain negative values</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If actual = 20 and predicted = 30, the error is -10. If actual = 40 and predicted = 30, the error is +10. What's their sum?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Raw errors cancel: an overestimate of +10 and an underestimate of -10 sum to 0, suggesting 'no error' when both predictions are clearly wrong. Squaring makes all errors positive ((-10)&sup2; = 100, (+10)&sup2; = 100), so they can't cancel. It also penalizes large errors more heavily than small ones. Absolute values would also prevent cancellation (that's MAE), but squaring has a mathematical advantage: the squared-error function is smooth and differentiable everywhere, making it easier to minimize with calculus.</p></div>
   </details>
 </section>
 

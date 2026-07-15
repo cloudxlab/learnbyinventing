@@ -359,6 +359,42 @@ for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
   </details>
 </section>
 
+<!-- MCQ 2.1 -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; Why Normalize Ratings?</h3>
+  <div class="question">
+    <p>Before computing cosine similarity, you applied min-max scaling to each person&rsquo;s ratings. Why is this normalization step important?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> It makes the computation faster</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> Without normalization, a generous rater (who gives 4s and 5s to everything) would appear similar to another generous rater even if their actual preferences are completely different</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> Python requires values between 0 and 1 for cosine similarity</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> It removes missing values from the matrix</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Person A rates everything 4-5. Person B also rates everything 4-5. Their raw ratings are similar &mdash; but do they actually like the same movies?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A generous rater gives high scores to everything, while a stingy rater gives lower scores. Without normalization, two generous raters look similar (both have high numbers) even if they prefer completely different movies. Min-max scaling converts each person&rsquo;s ratings to a 0&ndash;1 scale relative to THEIR OWN range, so a &ldquo;1.0&rdquo; means &ldquo;this person&rsquo;s favorite&rdquo; regardless of whether the raw rating was 3 or 5. This captures preference patterns rather than rating habits.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 3: Making Recommendations
@@ -442,6 +478,42 @@ print("Abhishek should watch:  ", recommend("Abhishek", 3))</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 3.1 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; The Cold Start Problem</h3>
+  <div class="question">
+    <p>A brand-new user signs up and hasn&rsquo;t rated any movies yet. What happens when the recommender tries to find their taste twin?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> The system recommends the most popular movies by default</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> Cosine similarity can&rsquo;t be computed &mdash; the user&rsquo;s rating vector is all zeros (or NaN), so there&rsquo;s no direction to compare</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> The system assigns random ratings and proceeds normally</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> The user is automatically matched with the most active rater</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Cosine similarity divides by the vector length. What is the length of a zero vector?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Cosine similarity requires dividing by the vector&rsquo;s length (its norm). A user with no ratings has a zero vector &mdash; its length is 0, causing division by zero. Even if you fill NaNs with zeros (as you did for existing users), a user who has rated NOTHING has a flat zero vector with no direction. This is the &ldquo;cold start problem&rdquo; &mdash; collaborative filtering can&rsquo;t work without some initial data. Real systems handle this with content-based recommendations, popularity-based defaults, or by asking new users to rate a few items.</p></div>
   </details>
 </section>
 

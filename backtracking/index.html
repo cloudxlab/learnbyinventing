@@ -286,6 +286,42 @@ assert len(perms("abcde")) == 120
   </details>
 </section>
 
+<!-- MCQ 3.1 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Permutation Count</h3>
+  <div class="question">
+    <p>How many permutations does a list of 4 distinct elements have?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> 4</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> 16</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> 24</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> 256</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>For the first position you have 4 choices, for the second position you have 3 remaining choices, and so on...</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The number of permutations is 4! = 4 &times; 3 &times; 2 &times; 1 = 24. Each position reduces the available choices by one. This factorial growth is why generating all permutations becomes impractical quickly: 10 elements have 3,628,800 permutations, and 20 elements have about 2.4 &times; 10&sup1;&sup8;.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 4: Checking a State: Valid Parentheses
@@ -543,6 +579,42 @@ print_board(board)
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 5.1 -->
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; Why Backtracking Prunes</h3>
+  <div class="question">
+    <p>A 9&times;9 Sudoku has 81 cells. If you tried every possible assignment of digits 1&ndash;9 to all empty cells (brute force without checking constraints), approximately how many combinations would that be for a puzzle with 50 empty cells?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> 50 &times; 9 = 450</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> 9<sup>50</sup> &mdash; an astronomically large number</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> 50! (50 factorial)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> 81 &times; 9 = 729</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Each empty cell can hold any of 9 digits. The choices are independent in brute force (no constraint checking).</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Without constraints, each of the 50 empty cells can be any of 9 digits, giving 9<sup>50</sup> &asymp; 5.15 &times; 10<sup>47</sup> combinations — far more than atoms in the observable universe. Backtracking makes this tractable by checking constraints (row, column, box) at each step. If placing a 3 in row 1 immediately violates a constraint, the algorithm skips all 9<sup>49</sup> combinations that start with that choice. This 'pruning' is why your Sudoku solver finishes in milliseconds despite the astronomical search space.</p></div>
   </details>
 </section>
 

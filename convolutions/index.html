@@ -569,6 +569,43 @@ gray_img  = load_gray_image()</code></pre>
 </section>
 
 
+<!-- MCQ 3.1 — Why grayscale loses information -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Why Grayscale Loses Information</h3>
+  <div class="question">
+    <p>After converting a color image to grayscale, can you recover the original colors?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> Yes &mdash; the grayscale values contain enough information to reconstruct RGB</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> No &mdash; grayscale combines three channels (R, G, B) into one number, permanently losing which colors contributed to that brightness</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> Yes, but only if you used the averaging method</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> No, but only because Python deletes the original data</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>A pixel with (R=200, G=100, B=0) and a pixel with (R=100, G=100, B=100) could produce the same grayscale value. Can you tell them apart from just that one number?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Grayscale maps three numbers (R, G, B) to one number (brightness). Many different color combinations produce the same brightness &mdash; a pure red pixel and a pure green pixel could have identical grayscale values. Since multiple inputs map to the same output, you can't invert the process. This is a many-to-one function, and information is permanently lost. This matters in practice: algorithms working on grayscale can detect shapes and edges but can't distinguish objects by color.</p></div>
+  </details>
+</section>
+
+
 <!-- ═══════════════════════════════════════════════════════
      PART 4: Shrinking an Image — Downsampling
      ═══════════════════════════════════════════════════════ -->
@@ -835,6 +872,43 @@ show_images([img_100], titles=['100x100 Grayscale'], cmap_list=['gray'])</code><
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+
+<!-- MCQ 5.1 — Nearest neighbor vs bilinear upsampling -->
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; Nearest Neighbor vs Bilinear Upsampling</h3>
+  <div class="question">
+    <p>When upsampling a 50&times;50 image to 100&times;100, nearest-neighbor repeats each pixel while bilinear interpolation blends neighboring pixels. Which produces a smoother result, and why?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> Nearest-neighbor is smoother because it preserves the original pixel values exactly</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> Bilinear interpolation is smoother &mdash; it creates gradual transitions between pixels by computing weighted averages, while nearest-neighbor creates visible blocky squares</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> Both produce identical results at 2&times; scaling</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> Neither is smooth &mdash; you need at least 4&times; scaling for smooth results</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Imagine two adjacent pixels with values 100 and 200. Nearest-neighbor gives you 100, 100, 200, 200. What would bilinear give for the middle pixels?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Nearest-neighbor duplicates each pixel, creating abrupt jumps between pixel blocks &mdash; the result looks &ldquo;blocky&rdquo; or pixelated. Bilinear interpolation computes weighted averages of neighboring pixels, creating smooth gradients. Between pixel values 100 and 200, bilinear might produce 100, 133, 167, 200 &mdash; a gradual ramp instead of a sudden step. The tradeoff: bilinear is smoother but slightly blurrier, while nearest-neighbor is sharper but blocky.</p></div>
   </details>
 </section>
 
@@ -1280,6 +1354,43 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+
+<!-- MCQ 7.1 — Edge detection filters -->
+<section class="exercise mcq" id="mcq-7-1">
+  <h3>Quick Check 7.1 &mdash; Edge Detection Filters</h3>
+  <div class="question">
+    <p>A 3&times;3 convolution filter has the values <code>[[-1, -1, -1], [0, 0, 0], [1, 1, 1]]</code>. What does this filter detect?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="A" />
+      <span><strong>A.</strong> It blurs the image by averaging neighbors</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="B" />
+      <span><strong>B.</strong> It detects horizontal edges &mdash; it responds strongly where pixel values change rapidly from top to bottom</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="C" />
+      <span><strong>C.</strong> It detects vertical edges</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="D" />
+      <span><strong>D.</strong> It inverts the colors of the image</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>The filter subtracts the top row of pixels from the bottom row. Where would this difference be large?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>This filter computes (bottom row) minus (top row). In a smooth area, the top and bottom pixels are similar &mdash; the result is near zero. But at a horizontal edge (where brightness suddenly changes from top to bottom), the difference is large, producing a strong response. The negative top row and positive bottom row form a &ldquo;derivative in the vertical direction&rdquo;, which responds to horizontal boundaries. A filter like <code>[[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]]</code> would detect vertical edges instead (differences left-to-right).</p></div>
   </details>
 </section>
 

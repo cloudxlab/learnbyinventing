@@ -296,6 +296,42 @@ print("find_matching: OK")</code></pre>
   </details>
 </section>
 
+<!-- MCQ 3.1 -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Why <code>*</code> Needs Backtracking</h3>
+  <div class="question">
+    <p>The pattern <code>a*b</code> is matched against the string <code>axxbyyb</code>. The <code>*</code> is greedy &mdash; it first tries to consume as many characters as possible. Why does the matcher need backtracking to find the correct match?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> Because <code>*</code> can only match letters, not <code>x</code> or <code>y</code></span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> The greedy <code>*</code> initially consumes <code>xxbyyb</code>, but then the final <code>b</code> in the pattern has nothing left to match &mdash; so the matcher must back up and try consuming fewer characters</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> Backtracking is needed because the string contains duplicate <code>b</code> characters</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> The pattern is invalid &mdash; <code>*</code> must be at the end</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If <code>*</code> greedily eats everything after <code>a</code>, what&rsquo;s left for the pattern&rsquo;s <code>b</code> to match?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The greedy <code>*</code> first consumes &lsquo;xxbyyb&rsquo; (everything after &lsquo;a&rsquo;), leaving an empty string for the final &lsquo;b&rsquo; &mdash; no match. So it backtracks: tries &lsquo;xxbyy&rsquo; (leaving &lsquo;b&rsquo;) &mdash; now the final &lsquo;b&rsquo; matches! This try-and-retreat process is backtracking. It is necessary whenever <code>*</code> appears before other pattern characters, because the matcher doesn&rsquo;t know in advance how many characters <code>*</code> should consume.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 4: Regular Expressions — The Professional Version
@@ -576,6 +612,42 @@ print("domain_counts: OK")</code></pre>
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 4.1 -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Greedy vs Non-Greedy Matching</h3>
+  <div class="question">
+    <p>Given the HTML string <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code>, what does the regex <code>&lt;b&gt;.*&lt;/b&gt;</code> match?</p>
+  </div>
+  <div class="mcq-options" data-correct="C">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> Just <code>&lt;b&gt;hello&lt;/b&gt;</code></span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> Both <code>&lt;b&gt;hello&lt;/b&gt;</code> and <code>&lt;b&gt;world&lt;/b&gt;</code> as two separate matches</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> The entire string <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code> as one match, because <code>.*</code> is greedy</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> Nothing &mdash; the regex is invalid</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>The <code>.*</code> is greedy by default &mdash; it matches as many characters as possible, including characters that look like HTML tags.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The greedy <code>.*</code> matches everything from the first <code>&lt;b&gt;</code> to the LAST <code>&lt;/b&gt;</code>, swallowing the middle tags and text. The match is: <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code>. To match each <code>&lt;b&gt;...&lt;/b&gt;</code> separately, you would use the non-greedy <code>.*?</code>, which matches as FEW characters as possible &mdash; stopping at the first <code>&lt;/b&gt;</code> it finds.</p></div>
   </details>
 </section>
 

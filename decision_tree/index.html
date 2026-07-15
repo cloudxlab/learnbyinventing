@@ -242,6 +242,42 @@ impurity(1, 0)      &rarr;  0</code></pre>
   </details>
 </section>
 
+<!-- MCQ 1 — Impurity interpretation -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Impurity Interpretation</h3>
+  <div class="question">
+    <p>A group contains 50 apples and 50 oranges. Another group contains 95 apples and 5 oranges. Which group has higher impurity?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> The 95/5 group &mdash; it has more items</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> The 50/50 group &mdash; it is the most mixed, so predicting the label of a random item is hardest</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> Both have the same impurity</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> Impurity can only be computed with the formula, not by intuition</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If you randomly pick an item from each group, in which group are you more likely to guess wrong?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Impurity measures how mixed a group is. The 50/50 group is maximally mixed &mdash; a random guess has only 50% chance of being right. The 95/5 group is nearly pure &mdash; guessing &ldquo;apple&rdquo; is right 95% of the time. Higher impurity means the group is harder to predict, which is exactly what the impurity formula you built captures: it peaks at a 50/50 split and approaches 0 for pure groups.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Impurity of a List
@@ -712,6 +748,42 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 2 — What a threshold means -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; What a Threshold Means</h3>
+  <div class="question">
+    <p>Your algorithm found that the best split for a height-based gender classifier is at 167 cm. What does this threshold mean for prediction?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> Everyone shorter than 167 cm is male</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> People below 167 cm get the majority label of the left group, and people at or above get the majority label of the right group</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> 167 cm is the average height in the dataset</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> People exactly at 167 cm cannot be classified</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>The threshold splits the data into two groups. Each group predicts the most common label within it.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The threshold divides the data into two groups. Each group makes predictions based on its own majority label. If the left group (height &lt; 167) is mostly female, it predicts &ldquo;female&rdquo; for everyone in it. If the right group (height &ge; 167) is mostly male, it predicts &ldquo;male&rdquo;. The threshold isn&rsquo;t the average &mdash; it&rsquo;s the split point that minimizes impurity (maximizes the purity of both groups).</p></div>
   </details>
 </section>
 
@@ -1224,6 +1296,42 @@ is_pure(["M", "M", "F"])             # → False</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 3 — Overfitting via depth -->
+<section class="exercise mcq" id="mcq-7-1">
+  <h3>Quick Check 7.1 &mdash; Overfitting via Depth</h3>
+  <div class="question">
+    <p>A decision tree is allowed to grow until every leaf contains exactly one data point. It achieves 100% accuracy on the training data. Is this a good model?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="A" />
+      <span><strong>A.</strong> Yes &mdash; 100% accuracy means perfect predictions</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="B" />
+      <span><strong>B.</strong> Probably not &mdash; it has likely memorized the training data (including noise) and will perform poorly on new, unseen data</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="C" />
+      <span><strong>C.</strong> It depends on whether the data is sorted</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-7-1" value="D" />
+      <span><strong>D.</strong> No &mdash; decision trees can never achieve 100% accuracy</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If every leaf has one data point, the tree has essentially memorized the location of each training example. What happens when a new example falls in a slightly different spot?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A tree that splits until every leaf has one point has memorized the training data &mdash; it hasn&rsquo;t learned general patterns, just the exact positions of the training examples. This is called overfitting. New data points, even slightly different from training data, may land in the wrong leaf. This is why real decision trees use stopping conditions like max_depth or min_samples_split &mdash; they sacrifice some training accuracy to gain the ability to generalize to unseen data.</p></div>
   </details>
 </section>
 

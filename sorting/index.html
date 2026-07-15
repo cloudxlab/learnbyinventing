@@ -317,6 +317,42 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   </details>
 </section>
 
+<!-- MCQ 2.1 — Stability -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; Stability in Sorting</h3>
+  <div class="question">
+    <p>Two students both scored 85: Alice (entered first) and Bob (entered second). After sorting by score, a <em>stable</em> sort guarantees Alice still appears before Bob. Which of the following is true?</p>
+  </div>
+  <div class="mcq-options" data-correct="A">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> Bubble sort and insertion sort are stable, but quicksort is not (in its typical implementation)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> All comparison sorts are stable by definition</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> Stability only matters for numbers, not for records with multiple fields</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> Quicksort is stable but bubble sort is not</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Think about what happens in each algorithm when two elements are equal. Does it swap them or leave them in place?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Bubble sort and insertion sort only swap/move elements when one is strictly greater, preserving the original order of equal elements &mdash; that&rsquo;s stability. Quicksort&rsquo;s partition step can rearrange equal elements relative to each other because it swaps elements across the pivot without regard to their original order. Stability matters whenever you sort records by one field but want to preserve a previous ordering on another field.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 3: Merge Sort — Divide and Conquer
@@ -556,6 +592,42 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
   </details>
 </section>
 
+<!-- MCQ 4.1 — Quicksort worst case -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Quicksort Worst Case</h3>
+  <div class="question">
+    <p>Quicksort is O(n&middot;log n) on average, but what input causes its worst-case O(n&sup2;) performance when always picking the first element as pivot?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> A list of random numbers</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> A list that is already sorted (or reverse-sorted)</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> A list with many duplicate values</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> A very short list (fewer than 5 elements)</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If the list is already sorted and you pick the first element as pivot, how many elements end up on each side of the partition?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>When the list is already sorted and the first element is the pivot, every other element is greater &mdash; the partition puts 0 elements on the left and n-1 on the right. Each recursive call only reduces the problem by 1 element (instead of halving it), giving n + (n-1) + (n-2) + &hellip; = O(n&sup2;) comparisons. Random inputs almost always give a near-balanced partition, which is why the average case is O(n&middot;log n). This is why production quicksort implementations use techniques like &ldquo;median of three&rdquo; or random pivot selection.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 5: Beating n·log(n) — Counting Sort
@@ -624,6 +696,42 @@ x   # [1, 2, 5, 5, 6, 9]</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 5.1 — When O(n) sorting is possible -->
+<section class="exercise mcq" id="mcq-5-1">
+  <h3>Quick Check 5.1 &mdash; When O(n) Sorting Is Possible</h3>
+  <div class="question">
+    <p>Counting sort can sort a billion ages in O(n) time. Why can&rsquo;t we always use it instead of O(n&middot;log n) algorithms like merge sort?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="A" />
+      <span><strong>A.</strong> Counting sort only works on Python lists, not NumPy arrays</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="B" />
+      <span><strong>B.</strong> Counting sort requires knowing the range of values and works best when that range is small &mdash; sorting a billion arbitrary floating-point numbers would need impossibly many buckets</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="C" />
+      <span><strong>C.</strong> Counting sort is unstable, so we can&rsquo;t use it for important data</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-5-1" value="D" />
+      <span><strong>D.</strong> Counting sort uses too much memory for any list larger than 1,000 elements</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Counting sort creates one bucket per possible value. How many buckets would you need for decimal numbers like 3.14159?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Counting sort allocates an array of size (max_value - min_value + 1). For ages (0&ndash;150), that&rsquo;s 151 buckets &mdash; trivial. But for arbitrary floating-point numbers, the range and precision make this impractical (potentially billions of buckets). And for strings or complex objects, there&rsquo;s no natural integer range at all. Comparison-based sorts (merge sort, quicksort) work on anything that can be compared, which is why O(n&middot;log n) is the general-purpose bound.</p></div>
   </details>
 </section>
 

@@ -151,6 +151,42 @@ assert good &gt; bad</code></pre>
   </details>
 </section>
 
+<!-- MCQ 1-1 -->
+<section class="exercise mcq" id="mcq-1-1">
+  <h3>Quick Check 1.1 &mdash; Variance vs Impurity</h3>
+  <div class="question">
+    <p>In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="A" />
+      <span><strong>A.</strong> Variance is faster to compute than impurity</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="B" />
+      <span><strong>B.</strong> Regression targets are continuous numbers, not categories &mdash; you can&rsquo;t count &ldquo;how mixed&rdquo; the labels are when labels are numbers like 23.5 or 41.2, but you CAN measure how spread out they are</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="C" />
+      <span><strong>C.</strong> Variance works for classification too, so impurity was unnecessary</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-1-1" value="D" />
+      <span><strong>D.</strong> Python&rsquo;s standard library only has a variance function, not an impurity function</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Impurity counts how many different categories are present. What does &ldquo;categories&rdquo; even mean when your target is a continuous number?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Impurity measures label mixing by counting class proportions (e.g., 60% apple, 40% orange). But regression targets are continuous values like house prices &mdash; there are no &ldquo;classes&rdquo; to count. Variance captures a similar idea for numbers: a group with values [100, 101, 102] is &ldquo;pure&rdquo; (low variance), while [10, 100, 500] is &ldquo;mixed&rdquo; (high variance). Low variance means the group&rsquo;s average is a good prediction; high variance means it isn&rsquo;t.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 2: Choosing the Best Split
@@ -465,6 +501,42 @@ assert set(feats) &lt;= {0, 1, 2, 3}</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 4-1 -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Why Randomness Helps</h3>
+  <div class="question">
+    <p>In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> Random trees run faster because they see less data</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> Randomness makes each tree different, so their errors are independent &mdash; averaging independent errors cancels them out, while averaging identical errors would not</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> It prevents Python from running out of memory</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> Random selection always finds better splits than checking all features</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If all trees were identical, averaging them would give you the same answer as one tree. What needs to be different for averaging to help?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>If every tree makes the same mistakes (because they&rsquo;re trained identically), averaging doesn&rsquo;t help &mdash; you just get the same wrong answer. But random bootstrap samples and random feature subsets make each tree different, so they make different mistakes. When you average, the individual errors (which point in different directions) tend to cancel out, while the correct signal (which is consistent) is preserved. This is the statistical principle behind ensembles: averaging reduces variance when errors are uncorrelated.</p></div>
   </details>
 </section>
 

@@ -499,6 +499,42 @@ print_tree(chain)</code></pre>
   </div>
 </section>
 
+<!-- MCQ 2.1 — BST search complexity -->
+<section class="exercise mcq" id="mcq-2-1">
+  <h3>Quick Check 2.1 &mdash; BST Search Complexity</h3>
+  <div class="question">
+    <p>You insert the numbers 1, 2, 3, 4, 5 (in that order) into an empty BST. What does the tree look like, and how many comparisons does finding the value 5 require?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="A" />
+      <span><strong>A.</strong> A balanced tree with 3 levels &mdash; finding 5 takes 3 comparisons</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="B" />
+      <span><strong>B.</strong> A straight chain leaning right (like a linked list) &mdash; finding 5 takes 5 comparisons</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="C" />
+      <span><strong>C.</strong> A straight chain leaning left &mdash; finding 5 takes 1 comparison</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-2-1" value="D" />
+      <span><strong>D.</strong> The BST refuses to insert sorted data</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>When you insert 2 into a tree containing only 1, where does 2 go? Then where does 3 go relative to 2?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Each new value is larger than all existing values, so it always goes to the right child. The tree becomes 1&rarr;2&rarr;3&rarr;4&rarr;5, a chain with no left children &mdash; effectively a linked list. Finding 5 requires walking all 5 nodes. This is the worst case for BSTs: O(n) instead of the hoped-for O(log n). Balanced BST variants (AVL, Red-Black) prevent this by rebalancing after insertions.</p></div>
+  </details>
+</section>
+
 
 <!-- ===============================================================
      PART 3: The Scheduler Problem & The Heap
@@ -769,6 +805,78 @@ print(&quot;heap_sort + heapq agreement: OK&quot;)</code></pre>
       <!-- TODO -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 3.1 — Heap property -->
+<section class="exercise mcq" id="mcq-3-1">
+  <h3>Quick Check 3.1 &mdash; Heap Property</h3>
+  <div class="question">
+    <p>In a min-heap, which of the following is guaranteed?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> The left child is always smaller than the right child</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> Every parent is smaller than or equal to both its children, and the root is the overall minimum</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> The tree is sorted from left to right at every level</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> The smallest element is always at the bottom-left</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>The heap property is about parent-child relationships, not about siblings.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>The min-heap property guarantees only that each parent &le; its children. This means the root is the minimum (it's smaller than its children, which are smaller than theirs, etc.). But siblings have NO ordering guarantee &mdash; the left child can be larger than the right child or vice versa. The heap is NOT fully sorted; it only guarantees the minimum is accessible in O(1) and can be removed in O(log n).</p></div>
+  </details>
+</section>
+
+<!-- MCQ 3.2 — Heap vs BST -->
+<section class="exercise mcq" id="mcq-3-2">
+  <h3>Quick Check 3.2 &mdash; Heap vs BST</h3>
+  <div class="question">
+    <p>Both a BST and a min-heap store elements. When would you choose a heap over a BST?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-2" value="A" />
+      <span><strong>A.</strong> When you need to search for arbitrary elements quickly</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-2" value="B" />
+      <span><strong>B.</strong> When you repeatedly need the minimum (or maximum) element and don't need to search for arbitrary values</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-2" value="C" />
+      <span><strong>C.</strong> When you need to iterate elements in sorted order</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-2" value="D" />
+      <span><strong>D.</strong> When the data contains duplicates</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>What operation is O(1) in a heap but O(log n) in a BST? And what operation is easy in a BST but hard in a heap?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>A heap excels at one thing: quickly accessing and removing the min (or max). The root gives you the min in O(1), and removal is O(log n). But finding an arbitrary element requires scanning the entire heap &mdash; O(n). A BST gives O(log n) search for any element and O(n) sorted traversal, but the minimum requires walking to the leftmost node &mdash; O(log n). Choose a heap for priority queues (always need the &ldquo;next most urgent&rdquo;); choose a BST when you need general search or sorted iteration.</p></div>
   </details>
 </section>
 

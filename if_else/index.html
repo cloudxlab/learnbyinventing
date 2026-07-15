@@ -625,6 +625,42 @@ print(are_lines_touching_or_overlapping(-2, -7, -4, -3))    # True</code></pre>
   </details>
 </section>
 
+<!-- MCQ 4.1 -->
+<section class="exercise mcq" id="mcq-4-1">
+  <h3>Quick Check 4.1 &mdash; Separation vs Overlap Logic</h3>
+  <div class="question">
+    <p>You wrote <code>are_lines_touching_or_overlapping</code> by checking whether the segments are NOT separated. Why is it easier to check for separation instead of directly checking for overlap?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="A" />
+      <span><strong>A.</strong> Separation is faster to compute</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="B" />
+      <span><strong>B.</strong> Overlap has many sub-cases (partial overlap, containment, touching at endpoint) but separation has only two simple conditions</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="C" />
+      <span><strong>C.</strong> Python can only check inequality, not equality</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-4-1" value="D" />
+      <span><strong>D.</strong> Separation works in 2D but overlap doesn't</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Think about all the different ways two segments can overlap versus the ways they can be apart.</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Two segments can overlap partially, one can contain the other entirely, or they can just touch at an endpoint &mdash; that's many cases to enumerate. But &ldquo;separated&rdquo; has only two clean conditions: one ends before the other starts (left-separated) or vice versa (right-separated). Checking NOT-separated captures all overlap cases at once.</p></div>
+  </details>
+</section>
+
 
 <!-- ═══════════════════════════════════════════════════════
      PART 5: Is a Point Inside a Rectangle? (2D)
@@ -867,6 +903,42 @@ plot_rectangles(((0, 0), (1, 1)), ((2, 2), (3, 3)))</code></pre>
       <!-- TODO: solution -->
       <p><em>Solution will be added later.</em></p>
     </div>
+  </details>
+</section>
+
+<!-- MCQ 6.1 -->
+<section class="exercise mcq" id="mcq-6-1">
+  <h3>Quick Check 6.1 &mdash; Dimension Decomposition</h3>
+  <div class="question">
+    <p>To check if two rectangles intersect in 2D, you checked whether their projections overlap on BOTH axes. What happens if you only check one axis?</p>
+  </div>
+  <div class="mcq-options" data-correct="B">
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="A" />
+      <span><strong>A.</strong> You get the correct answer for squares, but not rectangles</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="B" />
+      <span><strong>B.</strong> You might say they intersect when they actually don't &mdash; projections can overlap on one axis while the rectangles are side by side on the other</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="C" />
+      <span><strong>C.</strong> You miss some valid intersections</span>
+    </label>
+    <label class="mcq-option">
+      <input type="radio" name="mcq-6-1" value="D" />
+      <span><strong>D.</strong> It works fine for 2D &mdash; one axis is enough</span>
+    </label>
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>Draw two rectangles that are side by side horizontally but at the same height. What do their y-projections look like?</p></div>
+  </details>
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body"><p>Projections on a single axis can overlap even when rectangles don't touch. For example, two rectangles at the same height but far apart horizontally will have overlapping y-projections. You need BOTH axes to confirm intersection &mdash; that's the power of dimension decomposition: a 2D problem becomes two independent 1D problems that must both pass.</p></div>
   </details>
 </section>
 
