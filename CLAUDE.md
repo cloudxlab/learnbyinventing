@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Learn By Inventing** is an open educational resource published at GitHub Pages that teaches machine learning and CS algorithms through guided invention — learners derive algorithms themselves via stepwise exercises rather than reading explanations. The audience is motivated beginners to intermediate practitioners.
 
+## Core Principles
+
+1. **Never reveal — guide to discover.** Learners derive algorithms and concepts themselves through stepwise exercises. No explanations upfront, no solutions shown until they've tried.
+2. **Granular steps.** One concrete, self-contained problem per exercise. Each step is small enough that the learner can succeed without guessing.
+3. **Cumulative building.** Exercises build on each other toward a final concept (e.g., impurity → splitting → decision tree; gradient → MSE → linear regression). The learner constructs the idea piece by piece.
+4. **Invention over instruction.** The learner "invents" the algorithm — they solve a sequence of problems that naturally leads them to rediscover what experts already know.
+5. **Provide boilerplate, not answers.** Helper code, plotting utilities, and test cells are given so learners don't fight infrastructure. But the core logic is always theirs to write.
+6. **Progressive hints.** Hints unlock one at a time, from gentle nudges to near-giveaways — the learner chooses how much help they need.
+7. **Accessible audience.** Written for motivated beginners to intermediate practitioners — assume motivation but not prior expertise. Keep language conversational, not academic.
+
 ## Content Workflow
 
 Each chapter is split across two locations:
