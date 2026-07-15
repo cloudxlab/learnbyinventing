@@ -1003,11 +1003,11 @@ show_images([img_100], titles=['100x100 Grayscale'], cmap_list=['gray'])</code><
 
 
 <!-- ═══════════════════════════════════════════════════════
-     PART 7: Designing a Convolution
+     PART 7: Neighborhood Operations
      ═══════════════════════════════════════════════════════ -->
 
 <div class="part">
-  <h2>Part 7: Designing a Convolution</h2>
+  <h2>Part 7: Neighborhood Operations</h2>
 </div>
 
 <!-- Exercise 7.1 -->
@@ -1073,7 +1073,7 @@ w[2,0]  w[2,1]  w[2,2]</code></pre>
 
 <!-- Exercise 7.2 -->
 <section class="exercise" id="ex-7-2">
-  <h3>Exercise 7.2 &mdash; Your First Convolution</h3>
+  <h3>Exercise 7.2 &mdash; Apply Weights to a Neighborhood</h3>
   <div class="question">
     <p>Implement <code>conv(image, weights)</code> where:</p>
     <ul>
@@ -1081,13 +1081,8 @@ w[2,0]  w[2,1]  w[2,2]</code></pre>
       <li><code>weights</code> is a 2D numpy array of shape <code>(K, K)</code> where <code>K</code> is odd (3, 5, 7, &hellip;)</li>
       <li>Output is a 2D numpy array</li>
     </ul>
-    <p><strong>Boundary strategy &mdash; "valid" mode:</strong> Only compute output where the kernel fits fully inside the image. For a 3&times;3 kernel on an H&times;W image, the output will be <code>(H-2) &times; (W-2)</code>.</p>
-    <p><strong>Algorithm:</strong></p>
-<pre><code>For each output position (r, c):
-    total = 0
-    For each kernel position (i, j):
-        total += image[r + i, c + j] * weights[i, j]
-    output[r, c] = total</code></pre>
+    <p><strong>Boundary strategy &mdash; "valid" mode:</strong> Only compute output where the kernel fits fully inside the image. For a 3&times;3 kernel on an H&times;W image, the output will be <code>(H-2) &times; (W-2)</code>. In general, for a K&times;K kernel the output is <code>(H-K+1) &times; (W-K+1)</code>.</p>
+    <p>For each output position <code>(r, c)</code>, you need to combine the K&times;K neighborhood of the image starting at <code>(r, c)</code> with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1.</p>
     <blockquote><strong>Note:</strong> The output can have values outside <code>[0, 255]</code> &mdash; don't clamp yet. Use <code>float</code> arrays for the output and we'll handle display separately.</blockquote>
     <p><strong>Sanity check:</strong> Use the identity filter to verify your implementation:</p>
 <pre><code>identity_kernel = np.array([
@@ -1164,62 +1159,66 @@ result = conv(img_100.astype(np.float64), identity_kernel)
   <h3>Exercise 7.4 &mdash; Discover What Filters Do</h3>
   <div class="question">
     <p>Now the fun part. Apply your <code>conv</code> function with different kernels and discover what each one <em>does</em> to the image.</p>
-    <p><strong>Rules:</strong> You must apply each kernel, display the result, and describe what you see <em>before</em> reading the description.</p>
-    <p><strong>Kernel A &mdash; Blur</strong></p>
+    <p><strong>Rules:</strong> You must apply each kernel, display the result, and describe what you see <em>before</em> reading the reveal below.</p>
+    <p><strong>Kernel A</strong></p>
 <pre><code>1/9  1/9  1/9
 1/9  1/9  1/9
 1/9  1/9  1/9</code></pre>
-    <p><strong>Kernel B &mdash; Sharpen</strong></p>
+    <p><strong>Kernel B</strong></p>
 <pre><code> 0  -1   0
 -1   5  -1
  0  -1   0</code></pre>
-    <p><strong>Kernel C &mdash; Horizontal Edge Detector (Sobel)</strong></p>
+    <p><strong>Kernel C</strong></p>
 <pre><code>-1  -2  -1
  0   0   0
  1   2   1</code></pre>
-    <p><strong>Kernel D &mdash; Vertical Edge Detector (Sobel)</strong></p>
+    <p><strong>Kernel D</strong></p>
 <pre><code>-1   0   1
 -2   0   2
 -1   0   1</code></pre>
     <p><strong>Tasks:</strong></p>
     <ol>
       <li>Apply each kernel to <code>img_100</code>.</li>
-      <li>For each result, write down what you observe <em>before</em> reading what the filter does.</li>
-      <li>For Kernels C and D: can you combine the horizontal and vertical edge maps? Try:
-<pre><code>edge_magnitude[r,c] = sqrt(horiz[r,c]**2 + vert[r,c]**2)</code></pre>
+      <li>For each result, write down what you observe <em>before</em> reading the reveal.</li>
+      <li>For Kernels C and D: can you combine the two output maps? Try:
+<pre><code>combined[r,c] = sqrt(result_C[r,c]**2 + result_D[r,c]**2)</code></pre>
         (Implement with a loop.)
       </li>
     </ol>
     <div class="answer-prompt">
-      <strong>Your observations (fill in before reading explanations):</strong>
+      <strong>Your observations (fill in before reading the reveal):</strong>
       <ul>
-        <li>Blur kernel: I see&hellip;</li>
-        <li>Sharpen kernel: I see&hellip;</li>
-        <li>Horizontal Sobel: I see&hellip;</li>
-        <li>Vertical Sobel: I see&hellip;</li>
-        <li>Edge magnitude: I see&hellip;</li>
+        <li>Kernel A: I see&hellip;</li>
+        <li>Kernel B: I see&hellip;</li>
+        <li>Kernel C: I see&hellip;</li>
+        <li>Kernel D: I see&hellip;</li>
+        <li>Combined C + D magnitude: I see&hellip;</li>
       </ul>
     </div>
+    <details class="solution">
+      <summary>Reveal &mdash; What each kernel does</summary>
+      <div class="solution-body">
+        <p>Now that you've seen what each kernel does:</p>
+        <ul>
+          <li>Kernel A is a <strong>blur</strong> filter &mdash; it averages the neighborhood, smoothing the image.</li>
+          <li>Kernel B is a <strong>sharpening</strong> filter &mdash; it enhances differences between a pixel and its neighbors.</li>
+          <li>Kernel C is a <strong>horizontal edge detector</strong> (Sobel) &mdash; it responds to vertical changes in brightness.</li>
+          <li>Kernel D is a <strong>vertical edge detector</strong> (Sobel) &mdash; it responds to horizontal changes in brightness.</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>The blur kernel averages the 3&times;3 neighborhood, smoothing the image. The sharpen kernel enhances differences between a pixel and its neighbors. The Sobel kernels detect gradients (changes in brightness) in specific directions.</p>
+      <p>Look at each kernel's weights carefully. Think about what happens when you multiply and sum: does the kernel compute an average? Does it amplify the center relative to neighbors? Does it subtract one side from another?</p>
     </div>
   </details>
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
     <div class="hint-body">
-      <p>For the edge magnitude, use <code>import math</code> and <code>math.sqrt(horiz[r,c]**2 + vert[r,c]**2)</code> in a loop. Both Sobel outputs have the same shape, so this works element-wise.</p>
-    </div>
-  </details>
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-      <!-- TODO -->
-      <p><em>Solution will be added later.</em></p>
+      <p>For combining Kernels C and D, use <code>import math</code> and <code>math.sqrt(result_C[r,c]**2 + result_D[r,c]**2)</code> in a loop. Both outputs have the same shape, so this works element-wise.</p>
     </div>
   </details>
 </section>
@@ -1285,8 +1284,8 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
     <ol>
       <li>Implement <code>pad_image(img, pad_size)</code> that returns a new array with <code>pad_size</code> rows/columns of zeros added on all sides. Use loops &mdash; no <code>np.pad</code>!</li>
       <li>Implement <code>conv_same(image, weights)</code> that uses <code>pad_image</code> internally, so the output is the same size as the input.</li>
-      <li>Apply <code>conv_same</code> with the blur kernel to <code>img_100</code>. Verify the output shape is <code>(100, 100)</code>.</li>
-      <li>Apply <code>conv_same</code> with the Sobel kernels. Notice that now edges near the image boundary are included in the output.</li>
+      <li>Apply <code>conv_same</code> with Kernel A to <code>img_100</code>. Verify the output shape is <code>(100, 100)</code>.</li>
+      <li>Apply <code>conv_same</code> with Kernels C and D. Notice that now edges near the image boundary are included in the output.</li>
     </ol>
   </div>
 
@@ -1329,7 +1328,7 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
           <li>Returns a <code>(H, W, 3)</code> float array</li>
         </ul>
       </li>
-      <li>Apply it to <code>color_arr</code> with the blur kernel. Display the result.</li>
+      <li>Apply it to <code>color_arr</code> with Kernel A. Display the result.</li>
       <li>Apply it with the Sobel horizontal kernel. What do you get?</li>
       <li><strong>Think:</strong> What is a case where you'd want <em>different</em> kernels for different channels?</li>
     </ol>
@@ -1422,7 +1421,7 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>Chain the functions: <code>step1 = rgb_to_gray_luminosity(color_arr)</code>, <code>step2 = resize_bilinear(step1, 50, 50)</code>, <code>step3 = conv_same(step2.astype(np.float64), kernel_blur)</code>, then apply both Sobel kernels to <code>step3</code> and combine with edge magnitude.</p>
+      <p>Chain the functions: <code>step1 = rgb_to_gray_luminosity(color_arr)</code>, <code>step2 = resize_bilinear(step1, 50, 50)</code>, <code>step3 = conv_same(step2.astype(np.float64), kernel_A)</code>, then apply Kernels C and D to <code>step3</code> and combine with edge magnitude.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -1447,33 +1446,32 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
   <h3>Exercise 8.2 &mdash; Bonus: Design a Filter by Intuition</h3>
   <div class="question">
     <p>Here is a challenge with no given formula &mdash; you must <em>invent</em> the filter.</p>
-    <p><strong>Goal:</strong> Design a 3&times;3 kernel that detects <strong>diagonal edges</strong> (edges going from bottom-left to top-right, like <code>\</code>).</p>
+    <p><strong>Goal:</strong> Design a 3&times;3 kernel &mdash; experiment with different weight patterns and observe what each one does to the image.</p>
     <p><strong>Think:</strong></p>
     <ul>
-      <li>The horizontal Sobel detects horizontal edges (top vs. bottom brightness difference)</li>
-      <li>The vertical Sobel detects vertical edges (left vs. right brightness difference)</li>
-      <li>What would a diagonal edge look like in the 3&times;3 patch?</li>
-      <li>Which pixels would be bright and which dark for a <code>\</code> edge?</li>
+      <li>You've seen kernels where all weights are equal, kernels with a large center weight and negative neighbors, and kernels with positive values on one side and negative on the other.</li>
+      <li>What other patterns can you create? What happens if you put opposite signs on diagonal corners? What if only the corners have non-zero weights?</li>
+      <li>Try at least 3 different kernels of your own design.</li>
     </ul>
     <p><strong>Tasks:</strong></p>
     <ol>
-      <li>Sketch the 3&times;3 kernel on paper first.</li>
-      <li>Implement it in code and apply to <code>img_100</code>.</li>
-      <li>Does the result highlight diagonal edges? If not, adjust and try again.</li>
-      <li>Also design a <code>/</code> edge detector.</li>
+      <li>Design a 3&times;3 kernel, sketch it on paper, predict what it will do, then apply it to <code>img_100</code> and check.</li>
+      <li>Design a second kernel with a very different weight pattern. Apply and compare.</li>
+      <li>Design a third kernel. Can you find one that highlights features the previous kernels missed?</li>
+      <li>For each kernel, write down what you predicted vs. what you observed.</li>
     </ol>
   </div>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>For a <code>\</code> edge detector, you want positive weights on one side of the diagonal and negative on the other. Think about which corner pixels are on which side of the <code>\</code> diagonal.</p>
+      <p>Think about what each kernel you've seen so far has in common: the weights determine which pixels contribute positively and which negatively. Placing opposite signs on different parts of the 3&times;3 grid highlights differences in that direction.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
     <div class="hint-body">
-      <p>One approach: top-right triangle positive, bottom-left triangle negative (or vice versa). For example: <code>[[-1, -1, 0], [-1, 0, 1], [0, 1, 1]]</code> or similar variations. The key is that the kernel should have opposite signs across the diagonal.</p>
+      <p>Try placing positive and negative weights in various arrangements: along diagonals, in L-shapes, or as rings. Make sure the weights sum to zero if you want to detect changes rather than compute averages. Compare each result to what you predicted.</p>
     </div>
   </details>
 
@@ -1493,9 +1491,9 @@ gaussian_approx = gaussian_approx / gaussian_approx.sum()</code></pre>
   <div class="question">
     <p><strong>Tasks:</strong></p>
     <ol>
-      <li>Apply the <strong>sharpen</strong> kernel 10 times in a row. Display the result after 1, 3, 5, 10 applications.</li>
-      <li>Apply the <strong>blur</strong> kernel 20 times. What happens?</li>
-      <li>Apply the <strong>edge detector</strong> to an image, then apply <strong>blur</strong> to the edge map. What does that produce?</li>
+      <li>Apply <strong>Kernel B</strong> 10 times in a row. Display the result after 1, 3, 5, 10 applications.</li>
+      <li>Apply <strong>Kernel A</strong> 20 times. What happens?</li>
+      <li>Apply <strong>Kernel C</strong> to an image, then apply <strong>Kernel A</strong> to the result. What does that produce?</li>
       <li><strong>Think:</strong> In a neural network, many convolution layers are stacked. Each layer has learned kernels. Based on what you've seen, what might the first, second, and deeper layers be detecting?</li>
     </ol>
     <div class="answer-prompt">

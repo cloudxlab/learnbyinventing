@@ -18,7 +18,7 @@
 </nav>
 
 <h1>Information Theory &mdash; Lossless Compression</h1>
-<p class="chapter-intro">You can only send <strong>0s and 1s</strong> over a wire. Your job is to design a scheme that converts any message into bits &mdash; and lets the receiver convert it back without any confusion. By the end of this chapter you will build a fully general compressor and decompressor that produces the <strong>shortest possible binary encoding</strong> for any alphabet and any set of letter frequencies. This is called <strong>Huffman coding</strong>, though you will invent it yourself.</p>
+<p class="chapter-intro">You can only send <strong>0s and 1s</strong> over a wire. Your job is to design a scheme that converts any message into bits &mdash; and lets the receiver convert it back without any confusion. By the end of this chapter you will invent a method that produces the <strong>shortest possible binary encoding</strong> for any alphabet and any set of letter frequencies.</p>
 
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
@@ -494,39 +494,24 @@ for name, scheme in [("Scheme 1 (fixed)", scheme1),
   <h2>Part 4: Finding the Shortest Encoding</h2>
   <p class="part-intro">Scheme 2 was shorter than the fixed scheme. But is it the <em>shortest possible</em>?</p>
   <p><strong>Key insight:</strong> Give the <strong>shortest codes to the most frequent symbols</strong>. The rare symbols are used infrequently, so making their codes long barely hurts.</p>
-  <p>But <em>how</em> do you decide which symbols to group together?</p>
-  <p><strong>Greedy algorithm:</strong></p>
-  <ol>
-    <li>Sort symbols by frequency, rarest first.</li>
-    <li>Take the two rarest symbols. They will share the same long prefix &mdash; combine them into one group.</li>
-    <li>Treat the group as a single "super-symbol" with combined frequency.</li>
-    <li>Repeat from step 1 until only one group remains.</li>
-    <li>Assign codes by tracing the tree: 0 for left branch, 1 for right branch.</li>
-  </ol>
-  <p>Let us work through this for A=50%, B=25%, C=20%, D=5%.</p>
+  <p>But <em>how</em> do you decide which symbols to group together? Think about it: if you had to start combining symbols into groups of two, which ones would you pair first? Why?</p>
+  <p>Once you pair two symbols, you can treat the pair as a single &ldquo;super-symbol&rdquo; whose frequency is the sum of its parts. Now you have a smaller problem &mdash; what do you do next?</p>
+  <p>Keep this idea in mind as you work through the exercises below.</p>
 </div>
 
 <!-- Exercise 4.1 -->
 <section class="exercise" id="ex-4-1">
   <h3>Exercise 4.1 &mdash; Build the Tree by Hand</h3>
   <div class="question">
-    <p>Trace the algorithm:</p>
-    <p><strong>Step 1:</strong> Sort by frequency: <code>D(0.05), C(0.20), B(0.25), A(0.50)</code><br/>
-    Take the two rarest: D and C &rarr; form group <code>(D, C)</code> with frequency <code>0.05 + 0.20 = 0.25</code>.</p>
-    <p><strong>Step 2:</strong> Now we have: <code>B(0.25), (D,C)(0.25), A(0.50)</code>.<br/>
-    Take the two rarest: B and (D,C) &rarr; form <code>(B, (D,C))</code> with frequency <code>0.50</code>.</p>
-    <p><strong>Step 3:</strong> Now we have: <code>(B,(D,C))(0.50), A(0.50)</code>.<br/>
-    Combine into root: <code>(A, (B,(D,C)))</code>.</p>
-    <p><strong>The tree looks like this:</strong></p>
-<pre><code>         root
-        /    \
-       A      (B, (D,C))
-       0     1/         \
-             B         (D,C)
-             10        1/  \
-                       D    C
-                      110  111</code></pre>
-    <p><strong>Before you code:</strong> What codes does this tree assign to each symbol?</p>
+    <p>You have four symbols with frequencies: A=50%, B=25%, C=20%, D=5%.</p>
+    <p>You want to build a binary tree where each leaf is a symbol, and you assign codes by tracing from root to leaf (0 for left, 1 for right). Symbols deeper in the tree get longer codes.</p>
+    <p><strong>Your task:</strong> Trace the process by hand.</p>
+    <ul>
+      <li>Start by pairing the two <strong>rarest</strong> symbols. What combined frequency does the pair have?</li>
+      <li>Now treat that pair as a single super-symbol and look at what remains. Again pick the two rarest and combine them.</li>
+      <li>Repeat until everything is merged into one tree.</li>
+    </ul>
+    <p>Draw the tree you get. What code does each symbol end up with?</p>
 <pre><code># A = ?   B = ?   C = ?   D = ?</code></pre>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; verify the codes</div>

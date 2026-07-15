@@ -203,7 +203,7 @@ print(filled.head(5).round(2))</code></pre>
 
 <!-- Exercise 2.1 -->
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Cosine Similarity</h3>
+  <h3>Exercise 2.1 &mdash; How Similar Are Two People?</h3>
   <div class="question">
     <p>Each person is now a column of 25 numbers &mdash; a <strong>vector</strong> in 25-dimensional space (one dimension per movie).</p>
     <p>Two people with similar taste should have vectors pointing in a similar <em>direction</em>. You already know the dot product from the Secrets of Prediction chapter. Think about these questions:</p>
@@ -212,13 +212,13 @@ print(filled.head(5).round(2))</code></pre>
     <li>What if you divided the dot product by both vectors' lengths? What would that give you for identical vectors? For perpendicular vectors?</li>
     </ul>
     <p>This quantity &mdash; the dot product divided by the product of lengths &mdash; is called <strong>cosine similarity</strong>: 1 means identical taste, 0 means unrelated taste. It measures <em>direction only</em>, which is one more defense against scale differences between raters.</p>
-    <p><strong>Your task:</strong> write <code>cosine_similarity(a, b)</code> for two columns of <code>filled</code>.</p>
+    <p><strong>Your task:</strong> write <code>similarity(a, b)</code> for two columns of <code>filled</code>.</p>
     <p><strong>Test your result:</strong></p>
 <pre><code>me = filled["SandeepGiri"]
-assert abs(cosine_similarity(me, me) - 1.0) &lt; 1e-9        # identical vectors
-assert abs(cosine_similarity(me, filled["Abhishek"]) - 0.8198) &lt; 1e-3
+assert abs(similarity(me, me) - 1.0) &lt; 1e-9        # identical vectors
+assert abs(similarity(me, filled["Abhishek"]) - 0.8198) &lt; 1e-3
 print("sim(SandeepGiri, Abhishek) =",
-      round(cosine_similarity(me, filled["Abhishek"]), 4))</code></pre>
+      round(similarity(me, filled["Abhishek"]), 4))</code></pre>
   </div>
 
   <details class="hint" data-level="1">
@@ -254,8 +254,8 @@ print("sim(SandeepGiri, Abhishek) =",
 <section class="exercise" id="ex-2-2">
   <h3>Exercise 2.2 &mdash; Unit Vectors</h3>
   <div class="question">
-    <p>We want the similarity between <em>every</em> pair of people &mdash; that's $15 \times 15 = 225$ numbers. Calling <code>cosine_similarity</code> in a double loop would work, but there is a spectacular shortcut. It starts with one observation:</p>
-    <blockquote>If every column already has length 1, cosine similarity is <em>just the dot product</em> &mdash; the division by lengths does nothing.</blockquote>
+    <p>We want the similarity between <em>every</em> pair of people &mdash; that's $15 \times 15 = 225$ numbers. Calling <code>similarity</code> in a double loop would work, but there is a spectacular shortcut. It starts with one observation:</p>
+    <blockquote>If every column already has length 1, the similarity is <em>just the dot product</em> &mdash; the division by lengths does nothing.</blockquote>
     <p>A vector divided by its own length has length 1 (a <strong>unit vector</strong>).</p>
     <p><strong>Your task:</strong> build the numpy array <code>uM</code> where every column of <code>M = filled.values</code> is scaled to length 1.</p>
     <p><strong>Test your result:</strong></p>
@@ -288,10 +288,10 @@ print("all 15 columns are unit vectors")</code></pre>
 
 <!-- Exercise 2.3 -->
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; All 225 Similarities in One Multiplication</h3>
+  <h3>Exercise 2.3 &mdash; All 225 Similarities at Once</h3>
   <div class="question">
     <p>Here's the payoff. Remember how matrix multiplication works: entry $(i, j)$ of $AB$ is the dot product of <strong>row $i$ of $A$</strong> with <strong>column $j$ of $B$</strong>.</p>
-    <p>So what is $uM^T uM$? Row $i$ of $uM^T$ is <em>column $i$ of $uM$</em> &mdash; person $i$'s unit vector. So entry $(i, j)$ is the dot product of person $i$'s unit vector with person $j$'s unit vector&hellip; which is exactly their cosine similarity. <strong>One matrix multiplication computes the entire similarity table.</strong> This is not a toy trick &mdash; it is precisely how real recommender systems (and the attention layers inside LLMs!) compute all-pairs similarity.</p>
+    <p>So what is $uM^T uM$? Row $i$ of $uM^T$ is <em>column $i$ of $uM$</em> &mdash; person $i$'s unit vector. So entry $(i, j)$ is the dot product of person $i$'s unit vector with person $j$'s unit vector&hellip; which is exactly their cosine similarity. <strong>One operation computes the entire similarity table.</strong> This is not a toy trick &mdash; it is precisely how real recommender systems (and the attention layers inside LLMs!) compute all-pairs similarity.</p>
     <p><strong>Your task:</strong> compute <code>S = uM.T @ uM</code>, then wrap it as a labeled DataFrame:</p>
 <pre><code>sim = pd.DataFrame(S, index=filled.columns, columns=filled.columns)</code></pre>
     <p>Before running the tests, predict: what should the diagonal of <code>S</code> be, and why? Should <code>S</code> equal its own transpose?</p>

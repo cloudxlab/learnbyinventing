@@ -103,13 +103,10 @@ assert len(handshakes(list(range(n)))) == n * (n - 1) // 2
   <h3>Exercise 2.1 &mdash; <code>next_numb</code></h3>
   <div class="question">
     <p>Write <code>next_numb(arr, m)</code> that treats the list <code>arr</code> as digits in base <code>m</code> and adds 1
-    <strong>in place</strong>:</p>
-    <ul>
-      <li>Start at the rightmost digit.</li>
-      <li>If it is below <code>m - 1</code>, increase it and return <code>True</code>.</li>
-      <li>Otherwise set it to <code>0</code> and move one digit left (the carry).</li>
-      <li>If the carry falls off the left end, every digit was maxed out &mdash; return <code>False</code>.</li>
-    </ul>
+    <strong>in place</strong>. Return <code>True</code> if the increment succeeded, <code>False</code> if every digit was
+    already maxed out.</p>
+    <p>Work it out by hand first: what happens when you add 1 to <code>[0, 2, 2]</code> in base 3?
+    What about <code>[2, 2, 2]</code>? Where does the &ldquo;carrying&rdquo; start, and when does it stop?</p>
 <pre><code>a = [0, 1]
 next_numb(a, 2)   # True, a is now [1, 0]
 </code></pre>
@@ -339,9 +336,8 @@ assert len(perms("abcde")) == 120
   <div class="question">
     <p>Write <code>are_valid(s)</code> for a string of <code>()</code>, <code>[]</code>, <code>{}</code> characters. It is valid when
     every opener is closed by the matching closer, in the right order.</p>
-    <p><strong>Approach:</strong> keep a list as a <em>stack</em>. On an opener, <code>append</code> it. On a closer, the
-    last thing pushed must be the matching opener &mdash; <code>pop</code> and compare. Valid means you
-    never fail a match <strong>and</strong> the stack is empty at the end.</p>
+    <p><strong>Hint:</strong> as you scan left to right, you need to remember which openers are still
+    waiting for their closers. What data structure naturally handles &ldquo;most recent first&rdquo;?</p>
 <pre><code>are_valid("([{}])")   # True
 are_valid("}{")       # False &mdash; closes before opening
 </code></pre>
@@ -501,20 +497,10 @@ assert can_place(2, 0, 2, puzzle) == True
   <h3>Exercise 5.3 &mdash; <code>solve_sudoku</code></h3>
   <div class="question">
     <p>Now the backtracking itself. Write <code>solve_sudoku(board)</code> (it modifies the board
-    in place and returns <code>True</code>/<code>False</code>):</p>
-    <ol>
-      <li>Find the first empty cell. <strong>No empty cell &rarr; the board is solved &rarr; return <code>True</code>.</strong></li>
-      <li>For each digit <code>i</code> from 1 to 9:
-        <ul>
-          <li>if <code>can_place(i, row, col, board)</code>:</li>
-          <li style="list-style:none; margin-left:1em;"><strong>make the move</strong> &mdash; set <code>board[row][col] = i</code></li>
-          <li style="list-style:none; margin-left:1em;"><strong>recurse</strong> &mdash; if <code>solve_sudoku(board)</code> returns <code>True</code>, pass the <code>True</code> up</li>
-          <li style="list-style:none; margin-left:1em;"><strong>backtrack</strong> &mdash; otherwise undo the move: <code>board[row][col] = 0</code></li>
-        </ul>
-      </li>
-      <li>Every digit failed &rarr; this position is a dead end &rarr; return <code>False</code>.</li>
-    </ol>
-    <p>That's the whole algorithm. Three steps: <strong>try, recurse, undo.</strong></p>
+    in place and returns <code>True</code>/<code>False</code>).</p>
+    <p>You have <code>find_first_empty_space</code> and <code>can_place</code>. For each empty cell, you could
+    try placing digits 1&ndash;9. If a placement leads to a dead end, what should you do?
+    Think about the pattern from <code>generate_rec</code> and the <code>*</code> wildcard matcher.</p>
 
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; checker</div>

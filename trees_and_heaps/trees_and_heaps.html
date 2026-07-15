@@ -7929,19 +7929,16 @@ of a million values, about 20 steps to either extreme.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-2.5-%E2%80%94-Delete">Exercise 2.5 — Delete<a class="anchor-link" href="#Exercise-2.5-%E2%80%94-Delete">¶</a></h3><p>Deletion is the tricky one. Watch it in the animation first
-(<a href="https://www.cs.usfca.edu/~galles/visualization/BST.html">https://www.cs.usfca.edu/~galles/visualization/BST.html</a> — insert some values, then delete).</p>
+<h3 id="Exercise-2.5-%E2%80%94-Delete">Exercise 2.5 — Delete<a class="anchor-link" href="#Exercise-2.5-%E2%80%94-Delete">¶</a></h3><p>Deletion is the tricky one.</p>
 <p>Write <code>delete(node, val)</code> that removes <code>val</code> and returns the root of the
-resulting subtree. Three cases when you find the node:</p>
-<ol>
-<li><strong>Leaf</strong> (no children) — just remove it. What do you return?</li>
-<li><strong>One child</strong> — the child takes its place.</li>
-<li><strong>Two children</strong> — you cannot just remove it; a hole would split the tree.
-Trick: replace the node's value with its <strong>successor</strong> — the <em>smallest value
-in its right subtree</em> (you just wrote <code>find_min</code>!) — then delete that
-successor from the right subtree. Why is the successor guaranteed to have
-at most one child?</li>
-</ol>
+resulting subtree. Think about what happens in each case:</p>
+<ul>
+<li>What if the node you want to delete has <strong>no children</strong>?</li>
+<li>What if it has <strong>one child</strong>?</li>
+<li>What if it has <strong>two children</strong> — this is the tricky one. If removing it
+leaves a "hole", what value could you put there that would keep the BST
+property? (Hint: you just wrote <code>find_min</code>.)</li>
+</ul>
 <div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="n">delete</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>     <span class="c1"># leaf</span>
 <span class="n">root</span> <span class="o">=</span> <span class="n">delete</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>    <span class="c1"># two children</span>
 <span class="n">in_order</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>             <span class="c1"># [3, 10, 11, 13]</span>
@@ -8153,9 +8150,9 @@ need Node objects at all — we can store it in a <strong>plain list</strong>:</
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.2-%E2%80%94-Push-(Bubble-Up)">Exercise 3.2 — Push (Bubble Up)<a class="anchor-link" href="#Exercise-3.2-%E2%80%94-Push-(Bubble-Up)">¶</a></h3><p>To add a value: append it at the end of the list (keeping the shape), then
-repair the heap rule — while the new value is <em>smaller than its parent</em>,
-swap them, and keep climbing.</p>
+<h3 id="Exercise-3.2-%E2%80%94-Push">Exercise 3.2 — Push<a class="anchor-link" href="#Exercise-3.2-%E2%80%94-Push">¶</a></h3><p>To add a value, append it at the end of the list (this keeps the shape correct).
+But the heap rule might now be broken — the new value could be smaller than its
+parent. How would you fix this?</p>
 <p>Write <code>heap_push(heap, val)</code> (in place).</p>
 <div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">heap_push</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -8199,11 +8196,11 @@ swap them, and keep climbing.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Exercise-3.3-%E2%80%94-Pop-the-Minimum-(Sink-Down)">Exercise 3.3 — Pop the Minimum (Sink Down)<a class="anchor-link" href="#Exercise-3.3-%E2%80%94-Pop-the-Minimum-(Sink-Down)">¶</a></h3><p>The minimum is <code>heap[0]</code>. Removing it leaves a hole at the root. To keep the
-shape, move the <strong>last</strong> element into the hole — then repair: while it is
-<em>bigger than one of its children</em>, swap it with its <strong>smaller child</strong> and keep sinking.</p>
+<h3 id="Exercise-3.3-%E2%80%94-Pop-the-Minimum">Exercise 3.3 — Pop the Minimum<a class="anchor-link" href="#Exercise-3.3-%E2%80%94-Pop-the-Minimum">¶</a></h3><p>The minimum is <code>heap[0]</code>. Removing it leaves a hole at the root. To keep the
+shape, move the <strong>last</strong> element into the root position. But now the heap rule
+might be broken — how would you fix it?</p>
 <p>Write <code>heap_pop(heap)</code> that removes and returns the minimum. In place.</p>
-<p><strong>Edge cases:</strong> why must you swap with the <em>smaller</em> child, not just any child?
+<p><strong>Edge case to think about:</strong> why must you swap with the <em>smaller</em> child?
 What if a node has only a left child?</p>
 <div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">heap_pop</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>   <span class="c1"># 1</span>

@@ -383,19 +383,16 @@ print(&quot;find_max: OK&quot;)</code></pre>
 <section class="exercise" id="ex-2-5">
   <h3>Exercise 2.5 &mdash; Delete</h3>
   <div class="question">
-    <p>Deletion is the tricky one. Watch it in the animation first
-    (<a href="https://www.cs.usfca.edu/~galles/visualization/BST.html" target="_blank">BST Visualization</a> &mdash; insert some values, then delete).</p>
+    <p>Deletion is the tricky one.</p>
     <p>Write <code>delete(node, val)</code> that removes <code>val</code> and returns the root of the
-    resulting subtree. Three cases when you find the node:</p>
-    <ol>
-      <li><strong>Leaf</strong> (no children) &mdash; just remove it. What do you return?</li>
-      <li><strong>One child</strong> &mdash; the child takes its place.</li>
-      <li><strong>Two children</strong> &mdash; you cannot just remove it; a hole would split the tree.
-        Trick: replace the node's value with its <strong>successor</strong> &mdash; the <em>smallest value
-        in its right subtree</em> (you just wrote <code>find_min</code>!) &mdash; then delete that
-        successor from the right subtree. Why is the successor guaranteed to have
-        at most one child?</li>
-    </ol>
+    resulting subtree. Think about what happens in each case:</p>
+    <ul>
+      <li>What if the node you want to delete has <strong>no children</strong>?</li>
+      <li>What if it has <strong>one child</strong>?</li>
+      <li>What if it has <strong>two children</strong> &mdash; this is the tricky one. If removing it
+        leaves a &ldquo;hole&rdquo;, what value could you put there that would keep the BST
+        property? (Hint: you just wrote <code>find_min</code>.)</li>
+    </ul>
 <pre><code>root = delete(root, 1)     # leaf
 root = delete(root, 12)    # two children
 in_order(root)             # [3, 10, 11, 13]</code></pre>
@@ -621,11 +618,11 @@ print(&quot;index arithmetic: OK&quot;)</code></pre>
 
 <!-- Exercise 3.2 -->
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; Push (Bubble Up)</h3>
+  <h3>Exercise 3.2 &mdash; Push</h3>
   <div class="question">
-    <p>To add a value: append it at the end of the list (keeping the shape), then
-    repair the heap rule &mdash; while the new value is <em>smaller than its parent</em>,
-    swap them, and keep climbing.</p>
+    <p>To add a value, append it at the end of the list (this keeps the shape correct).
+    But the heap rule might now be broken &mdash; the new value could be smaller than its
+    parent. How would you fix this?</p>
     <p>Write <code>heap_push(heap, val)</code> (in place).</p>
 <pre><code>h = [1, 3, 2, 8, 5]
 heap_push(h, 0)
@@ -664,13 +661,13 @@ print(&quot;heap_push: OK&quot;)</code></pre>
 
 <!-- Exercise 3.3 -->
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; Pop the Minimum (Sink Down)</h3>
+  <h3>Exercise 3.3 &mdash; Pop the Minimum</h3>
   <div class="question">
     <p>The minimum is <code>heap[0]</code>. Removing it leaves a hole at the root. To keep the
-    shape, move the <strong>last</strong> element into the hole &mdash; then repair: while it is
-    <em>bigger than one of its children</em>, swap it with its <strong>smaller child</strong> and keep sinking.</p>
+    shape, move the <strong>last</strong> element into the root position. But now the heap rule
+    might be broken &mdash; how would you fix it?</p>
     <p>Write <code>heap_pop(heap)</code> that removes and returns the minimum. In place.</p>
-    <p><strong>Edge cases:</strong> why must you swap with the <em>smaller</em> child, not just any child?
+    <p><strong>Edge case to think about:</strong> why must you swap with the <em>smaller</em> child?
     What if a node has only a left child?</p>
 <pre><code>h = [1, 3, 2, 8, 5]
 heap_pop(h)   # 1

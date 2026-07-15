@@ -354,8 +354,8 @@ assert not Node(feature=0, threshold=1200,
 <section class="exercise" id="ex-3-1">
   <h3>Exercise 3.1 &mdash; The Tree</h3>
   <div class="question">
-    <p>Now assemble everything into a <code>DecisionTreeRegressor</code> class:</p>
-<pre><code>class DecisionTreeRegressor:
+    <p>Now assemble everything into a <code>DecisionTree</code> class:</p>
+<pre><code>class DecisionTree:
     def __init__(self, max_depth=5, min_samples_split=2,
                  feature_indices=None):
         ...
@@ -373,12 +373,12 @@ assert not Node(feature=0, threshold=1200,
     <p><strong><code>predict</code></strong> walks each row from the root &mdash; go left if <code>row[feature] &lt;= threshold</code> &mdash; and returns the leaf&rsquo;s value.</p>
     <p>Test cases:</p>
 <pre><code># A deep tree memorizes this tiny dataset perfectly...
-deep = DecisionTreeRegressor(max_depth=5, min_samples_split=2)
+deep = DecisionTree(max_depth=5, min_samples_split=2)
 deep.fit(X, y)
 assert root_mean_squared_error(y, deep.predict(X)) &lt; 1e-9
 
 # ...a depth-1 "stump" can only ask one question, so it must generalize:
-stump = DecisionTreeRegressor(max_depth=1, min_samples_split=2)
+stump = DecisionTree(max_depth=1, min_samples_split=2)
 stump.fit(X, y)
 assert root_mean_squared_error(y, stump.predict(X)) &gt; 5
 
@@ -562,7 +562,7 @@ assert set(feats) &lt;= {0, 1, 2, 3}</code></pre>
         ...
     def predict(self, X):
         ...</code></pre>
-    <p><strong><code>fit</code></strong>: for each of <code>n_estimators</code> trees &mdash; take a bootstrap sample, choose a random feature subset (all features if <code>max_features</code> is <code>None</code>), train a <code>DecisionTreeRegressor</code> on the sample with those <code>feature_indices</code>, and store it in <code>self.trees</code>.</p>
+    <p><strong><code>fit</code></strong>: for each of <code>n_estimators</code> trees &mdash; take a bootstrap sample, choose a random feature subset (all features if <code>max_features</code> is <code>None</code>), train a <code>DecisionTree</code> on the sample with those <code>feature_indices</code>, and store it in <code>self.trees</code>.</p>
     <p><strong><code>predict</code></strong>: ask every tree, and return the <strong>average</strong> of their answers for each row.</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; test data</div>
@@ -579,7 +579,7 @@ assert len(rf.trees) == 20
 rf_train = root_mean_squared_error(y16, rf.predict(X16))
 rf_test  = root_mean_squared_error(y_test, rf.predict(X_test))
 
-single = DecisionTreeRegressor(max_depth=10, min_samples_split=2)
+single = DecisionTree(max_depth=10, min_samples_split=2)
 single.fit(X16, y16)
 single_train = root_mean_squared_error(y16, single.predict(X16))
 single_test  = root_mean_squared_error(y_test, single.predict(X_test))
@@ -594,7 +594,7 @@ assert rf_train &lt; 30 and rf_test &lt; 30</code></pre>
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body">
-      <p>In <code>fit</code>, loop <code>n_estimators</code> times. Each iteration: call <code>bootstrap_sample</code>, then <code>choose_features</code> (use <code>len(X[0])</code> for <code>n_features</code> and <code>self.max_features or len(X[0])</code>), then create and fit a <code>DecisionTreeRegressor</code> with those <code>feature_indices</code>.</p>
+      <p>In <code>fit</code>, loop <code>n_estimators</code> times. Each iteration: call <code>bootstrap_sample</code>, then <code>choose_features</code> (use <code>len(X[0])</code> for <code>n_features</code> and <code>self.max_features or len(X[0])</code>), then create and fit a <code>DecisionTree</code> with those <code>feature_indices</code>.</p>
     </div>
   </details>
   <details class="hint" data-level="2">
@@ -669,7 +669,7 @@ assert rf_train &lt; 30 and rf_test &lt; 30</code></pre>
       <tr><th>Idea</th><th>You built</th><th>Why it matters</th></tr>
       <tr><td>Variance as impurity</td><td><code>variance</code>, <code>total_variance</code>, <code>variance_reduction</code></td><td>extends decision trees from categories to numbers</td></tr>
       <tr><td>Best split</td><td><code>find_best_split</code></td><td>the greedy heart of every tree learner</td></tr>
-      <tr><td>Regression tree</td><td><code>Node</code>, <code>DecisionTreeRegressor</code></td><td><code>fit</code>/<code>predict</code> with <code>max_depth</code>, <code>min_samples_split</code> brakes</td></tr>
+      <tr><td>Regression tree</td><td><code>Node</code>, <code>DecisionTree</code></td><td><code>fit</code>/<code>predict</code> with <code>max_depth</code>, <code>min_samples_split</code> brakes</td></tr>
       <tr><td>Bootstrap + feature randomness</td><td><code>bootstrap_sample</code>, <code>choose_features</code></td><td>makes trees <em>disagree</em> so averaging helps</td></tr>
       <tr><td>Ensemble</td><td><code>RandomForestRegressor</code></td><td>many weak models &rarr; one strong, stable model</td></tr>
     </table>

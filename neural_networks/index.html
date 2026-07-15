@@ -22,9 +22,9 @@
 
 <p>In this chapter you will:</p>
 <ol>
-  <li>Build a <strong>neuron</strong> &mdash; and discover it's just logistic regression.</li>
-  <li>Trip over the most classic bug in deep learning (<strong>saturation</strong>) and fix it.</li>
-  <li>Chain small functions into <strong>computation graphs</strong> and watch weights reshape curves.</li>
+  <li>Turn a line into a yes/no classifier &mdash; and discover what the field calls it.</li>
+  <li>Trip over the most classic training bug and fix it.</li>
+  <li>Chain small functions together and watch weights reshape curves.</li>
   <li>Take on a problem no straight line can solve &mdash; a realistic <strong>income-tax rule</strong> &mdash; and beat it three ways, ending with the activation function that powers modern deep learning.</li>
 </ol>
 <p>You need <code>numpy</code>, <code>matplotlib</code>, and your gradient-descent instincts from Chapter 15. Nothing else.</p>
@@ -36,11 +36,11 @@
 
 
 <!-- ═══════════════════════════════════════════════════════
-     PART 1: A Neuron That Says Yes or No
+     PART 1: From Numbers to Yes/No
      ═══════════════════════════════════════════════════════ -->
 
 <div class="part">
-  <h2>Part 1: A Neuron That Says Yes or No</h2>
+  <h2>Part 1: From Numbers to Yes/No</h2>
 </div>
 
 <p>Here are five people's heights, labeled <code>1</code> for adult and <code>0</code> for teenager:</p>
@@ -241,7 +241,9 @@ assert err &lt; 0.05
 
 preds = np.array([classify(x) for x in centered])
 assert (preds == labels).all()</code></pre>
+    <div class="reveal">
     <p><strong>What you just invented</strong> is <strong>logistic regression</strong> &mdash; and it is exactly one <strong>neuron</strong>: weighted sum, plus bias, through a squashing <em>activation function</em>. The centering trick you used is why every deep-learning tutorial starts by normalizing inputs.</p>
+    </div>
   </div>
 
   <details class="hint" data-level="1">
@@ -304,14 +306,15 @@ assert (preds == labels).all()</code></pre>
 
 
 <!-- ═══════════════════════════════════════════════════════
-     PART 2: Wiring Neurons Together: Computation Graphs
+     PART 2: Wiring Small Functions Together
      ═══════════════════════════════════════════════════════ -->
 
 <div class="part">
-  <h2>Part 2: Wiring Neurons Together &mdash; Computation Graphs</h2>
+  <h2>Part 2: Wiring Small Functions Together</h2>
 </div>
 
-<p>One neuron draws one soft boundary. The power move is <em>composition</em>: feed one small function's output into the next. A recipe of chained steps is called a <strong>computation graph</strong> &mdash; and a neural network is nothing more than a large one.</p>
+<p>Your Part 1 function draws one boundary. But many real problems need more than one boundary &mdash; what if the answer depends on combining several simple decisions?</p>
+<p>Let's find out what happens when you feed one small function's output into another.</p>
 
 <!-- Exercise 2.1 -->
 <section class="exercise" id="ex-2-1">
@@ -374,7 +377,7 @@ plt.legend(); plt.grid(alpha=0.3)
 plt.title("Same graph, different weights, different curve")
 plt.show()</code></pre>
     </div>
-    <p>This is the whole game of neural networks: the <em>graph</em> fixes what shapes are possible; the <em>weights</em> choose one shape; gradient descent finds the weights.</p>
+    <p>What you just built &mdash; a recipe of chained steps with tunable weights &mdash; is called a <strong>computation graph</strong>. A neural network is nothing more than a large one. The <em>graph</em> fixes what shapes are possible; the <em>weights</em> choose one shape; gradient descent finds the weights.</p>
   </div>
 
   <details class="hint" data-level="1">

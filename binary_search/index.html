@@ -90,13 +90,9 @@ print(f"To find a number in [1..1000], at most {count_halvings(1000)+1} guesses 
   <h2>Part 1: Square Root via Binary Search</h2>
   <p class="part-intro">The square root of <code>n</code> is the number <code>x</code> such that <code>x * x = n</code>. For example, sqrt(25) = 5 because 5 * 5 = 25.</p>
   <p><strong>Before you code &mdash; think about the search:</strong></p>
-  <ol>
-    <li>If you want sqrt(25), you know the answer is between <strong>0</strong> and <strong>25</strong>. Why?</li>
-    <li>Guess <code>mid = (0 + 25) / 2 = 12.5</code>. Compute <code>12.5 * 12.5 = 156.25</code>. Is that too big or too small compared to 25?</li>
-    <li>So the answer must be in the range [0, 12.5]. Next mid = 6.25. Compute <code>6.25 * 6.25 = 39.06</code>. Still too big. Range becomes [0, 6.25].</li>
-    <li>Continue until <code>mid * mid</code> is within <code>precision</code> of <code>n</code>.</li>
-  </ol>
-  <p><strong>Stopping rule:</strong> Stop when <code>abs(mid * mid - n) &lt; precision</code>.</p>
+  <p>If you want sqrt(25), you know the answer is between <strong>0</strong> and <strong>25</strong>. Why?</p>
+  <p>Now suppose you could make one guess to narrow that range as much as possible. What single guess would eliminate the most possibilities? And once you check that guess, how do you decide which half of the range to keep?</p>
+  <p>Keep narrowing until <code>mid * mid</code> is within <code>precision</code> of <code>n</code>.</p>
 </div>
 
 <!-- Exercise 1.1 -->
@@ -299,17 +295,17 @@ print(f"cuberoot(-125) &asymp; {cuberoot_binary_search(-125, 1e-9):.6f}  (expect
 <section class="exercise" id="ex-3-1">
   <h3>Exercise 3.1 &mdash; Nth Root</h3>
   <div class="question">
-    <p>Write <code>nth_root_binary_search(x, n, precision=1e-9)</code> that returns the real nth root of x.</p>
+    <p>Write <code>nth_root(x, n, precision=1e-9)</code> that returns the real nth root of x.</p>
     <p>For simplicity, assume x &ge; 0 (handle negatives as a bonus below).</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; test cell</div>
-<pre><code>assert abs(nth_root_binary_search(16,  2) - 4.0)             &lt; 1e-6
-assert abs(nth_root_binary_search(27,  3) - 3.0)             &lt; 1e-6
-assert abs(nth_root_binary_search(81,  4) - 3.0)             &lt; 1e-6
-assert abs(nth_root_binary_search(32,  5) - 2.0)             &lt; 1e-6
-assert abs(nth_root_binary_search(1,   7) - 1.0)             &lt; 1e-6
-assert abs(nth_root_binary_search(0.5, 2) - math.sqrt(0.5))  &lt; 1e-6
-print("nth_root_binary_search: OK")</code></pre>
+<pre><code>assert abs(nth_root(16,  2) - 4.0)             &lt; 1e-6
+assert abs(nth_root(27,  3) - 3.0)             &lt; 1e-6
+assert abs(nth_root(81,  4) - 3.0)             &lt; 1e-6
+assert abs(nth_root(32,  5) - 2.0)             &lt; 1e-6
+assert abs(nth_root(1,   7) - 1.0)             &lt; 1e-6
+assert abs(nth_root(0.5, 2) - math.sqrt(0.5))  &lt; 1e-6
+print("nth_root: OK")</code></pre>
     </div>
   </div>
 
@@ -343,9 +339,9 @@ print("nth_root_binary_search: OK")</code></pre>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; verification code</div>
 <pre><code>for x, n in [(16, 2), (27, 3), (81, 4), (32, 5), (2, 10)]:
-    mine = nth_root_binary_search(x, n)
+    mine = nth_root(x, n)
     builtin = x ** (1 / n)
-    print(f"nth_root_binary_search({x}, {n}) = {mine:.9f}  |  "
+    print(f"nth_root({x}, {n}) = {mine:.9f}  |  "
           f"{x}**(1/{n}) = {builtin:.9f}  |  diff = {abs(mine-builtin):.2e}")</code></pre>
     </div>
   </div>
@@ -398,12 +394,8 @@ print("nth_root_binary_search: OK")</code></pre>
   <p>This is exactly the definition of the logarithm:</p>
   <p>$$\log_{10}(x) = y \quad \Leftrightarrow \quad 10^y = x$$</p>
   <p><strong>Why does binary search still work?</strong> The function $f(y) = 10^y$ is strictly increasing. So if <code>10**mid &lt; x</code>, the true exponent must be larger: move <code>low = mid</code>. If <code>10**mid &gt; x</code>, move <code>high = mid</code>.</p>
-  <p><strong>Bracket the search range:</strong></p>
-  <ul>
-    <li>If <code>x &gt;= 1</code>: we need <code>y &gt;= 0</code>. Start with <code>low = 0, high = 1</code>. Keep doubling <code>high</code> until <code>10**high &gt;= x</code>.</li>
-    <li>If <code>0 &lt; x &lt; 1</code>: we need <code>y &lt; 0</code>. Start with <code>low = -1, high = 0</code>. Keep doubling the magnitude of <code>low</code> (i.e., <code>low *= 2</code>) until <code>10**low &lt;= x</code>.</li>
-  </ul>
-  <p><strong>Stopping rule:</strong> <code>high - low &lt; 1e-12</code> or <code>abs(10**mid - x) &lt;= tol * max(1, x)</code>.</p>
+  <p><strong>Before you code &mdash; think about the bracket:</strong></p>
+  <p>Before you can search, you need to know where to look. How would you find a range [low, high] such that the answer is definitely inside? Think about what <code>10**0</code> and <code>10**1</code> equal &mdash; when do you need to look beyond that range? What about when <code>x &lt; 1</code>?</p>
 </div>
 
 <!-- Exercise 4.1 -->
@@ -411,20 +403,7 @@ print("nth_root_binary_search: OK")</code></pre>
   <h3>Exercise 4.1 &mdash; Log Base 10</h3>
   <div class="question">
     <p>Write <code>log10_binary_search(x, tol=1e-7)</code>.</p>
-    <p><strong>Steps:</strong></p>
-    <ol>
-      <li>Raise <code>ValueError</code> if <code>x &lt;= 0</code>.</li>
-      <li>Return <code>0.0</code> if <code>x == 1</code>.</li>
-      <li>Find the bracket <code>[low, high]</code>:
-        <ul>
-          <li>If <code>x &gt;= 1</code>: start <code>low=0, high=1</code>; keep <code>high *= 2</code> until <code>10**high &gt;= x</code>.</li>
-          <li>If <code>x &lt; 1</code>: start <code>low=-1, high=0</code>; keep <code>low *= 2</code> until <code>10**low &lt;= x</code>.</li>
-        </ul>
-      </li>
-      <li>Binary search: <code>mid = (low+high)/2</code>; adjust <code>low</code> or <code>high</code>.</li>
-      <li>Stop when <code>high - low &lt; 1e-12</code>.</li>
-      <li>Return <code>(low + high) / 2</code>.</li>
-    </ol>
+    <p>You have already built binary search for roots &mdash; this is the same idea applied to exponents. The new challenge is figuring out the initial search bracket, since the exponent could be any real number.</p>
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; test cell</div>
 <pre><code>assert abs(log10_binary_search(100)  - 2.0)    &lt; 1e-6
@@ -860,7 +839,7 @@ print("find_min_convex: OK")</code></pre>
       <tr><th>Function</th><th>Searching for</th><th>Check condition</th></tr>
       <tr><td><code>sqrt_binary_search(n, p)</code></td><td>x such that x&sup2; = n</td><td><code>mid*mid</code> vs <code>n</code></td></tr>
       <tr><td><code>cuberoot_binary_search(n, p)</code></td><td>x such that x&sup3; = n</td><td><code>mid**3</code> vs <code>n</code> (handle sign)</td></tr>
-      <tr><td><code>nth_root_binary_search(x, n, p)</code></td><td>x such that x^n = target</td><td><code>mid**n</code> vs <code>target</code></td></tr>
+      <tr><td><code>nth_root(x, n, p)</code></td><td>x such that x^n = target</td><td><code>mid**n</code> vs <code>target</code></td></tr>
       <tr><td><code>log10_binary_search(x, tol)</code></td><td>y such that 10^y = x</td><td><code>10**mid</code> vs <code>x</code></td></tr>
       <tr><td><code>log_base_n(x, n, tol)</code></td><td>y such that n^y = x</td><td><code>n**mid</code> vs <code>x</code> (flip if n&lt;1)</td></tr>
     </table>

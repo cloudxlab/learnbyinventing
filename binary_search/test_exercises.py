@@ -32,14 +32,14 @@ def test_ex_2_1_cuberoot_binary_search():
     assert abs(cuberoot_binary_search(0,     1e-6) - 0.0)    < 1e-4
     print(f"cuberoot(-125) ≈ {cuberoot_binary_search(-125, 1e-9):.6f}  (expect -5.0)")
 
-def test_ex_3_1_nth_root_binary_search():
-    from exercises.ex_3_1_nth_root_binary_search import nth_root_binary_search
-    assert abs(nth_root_binary_search(16,  2) - 4.0)             < 1e-6
-    assert abs(nth_root_binary_search(27,  3) - 3.0)             < 1e-6
-    assert abs(nth_root_binary_search(81,  4) - 3.0)             < 1e-6
-    assert abs(nth_root_binary_search(32,  5) - 2.0)             < 1e-6
-    assert abs(nth_root_binary_search(1,   7) - 1.0)             < 1e-6
-    assert abs(nth_root_binary_search(0.5, 2) - math.sqrt(0.5))  < 1e-6
+def test_ex_3_1_nth_root():
+    from exercises.ex_3_1_nth_root import nth_root
+    assert abs(nth_root(16,  2) - 4.0)             < 1e-6
+    assert abs(nth_root(27,  3) - 3.0)             < 1e-6
+    assert abs(nth_root(81,  4) - 3.0)             < 1e-6
+    assert abs(nth_root(32,  5) - 2.0)             < 1e-6
+    assert abs(nth_root(1,   7) - 1.0)             < 1e-6
+    assert abs(nth_root(0.5, 2) - math.sqrt(0.5))  < 1e-6
 
 def test_ex_4_1_log10_binary_search():
     from exercises.ex_4_1_log10_binary_search import log10_binary_search
