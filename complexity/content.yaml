@@ -1,0 +1,1057 @@
+chapter:
+  id: complexity
+  title: "Inventing Big O Notation"
+  intro: |
+    Some programs finish in a blink. Others take hours — or years. In this chapter you'll
+    discover *why* by measuring, counting, and eventually inventing the notation that
+    computer scientists use to describe algorithmic speed.
+  mathjax: true
+  footer: |
+    You started by timing two functions and ended by inventing Big O notation — the
+    universal language for describing algorithmic efficiency. Every chapter that follows
+    will use it. When someone says "merge sort is O(n log n)," you now know exactly
+    what that means and *why* it matters.
+  glossary:
+    - term: Time complexity
+      definition: "How the running time of an algorithm grows as the input size increases."
+    - term: Space complexity
+      definition: "How the memory usage of an algorithm grows as the input size increases."
+    - term: Big O notation
+      definition: "A shorthand for describing growth rate. O(n) means the time grows at most proportionally to n."
+    - term: "O(1) — constant"
+      definition: "The algorithm takes the same time regardless of input size. Example: looking up an item by index."
+    - term: "O(log n) — logarithmic"
+      definition: "The algorithm halves the problem at each step. Example: binary search."
+    - term: "O(n) — linear"
+      definition: "The time grows proportionally to the input size. Example: scanning a list once."
+    - term: "O(n²) — quadratic"
+      definition: "The time grows with the square of the input. Example: checking every pair in a list."
+    - term: "O(n log n) — linearithmic"
+      definition: "Slightly above linear. Example: efficient sorting algorithms like merge sort."
+    - term: Constant factor
+      definition: "The multiplier in front of the growth term (e.g. the 3 in 3n). Big O ignores it because it doesn't affect the *rate* of growth."
+    - term: Dominant term
+      definition: "The fastest-growing term in an expression. In 2n² + 10n + 7, the dominant term is n²."
+
+blocks:
+  # ═══════════════════════════════════════════════════
+  # PART 1: How Long Does It Take?
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "How Long Does It Take?"
+    estimated_time: "~15 min"
+    intro: |
+      You've written functions. Some are fast, some are slow. But *how* slow? And what
+      happens when the input gets bigger? Let's find out by measuring.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Time It"
+    description: |
+      Here are two functions. `sum_list` adds up all the numbers in a list (one loop).
+      `has_pair_with_sum` checks whether any two numbers in the list add up to a target
+      (a loop inside a loop).
+
+      Time both on lists of size **1,000**, **10,000**, and **100,000**. When the input
+      gets 10× bigger, how much slower does each function get?
+    provided_code:
+      - label: "the two functions"
+        code: |
+          import time
+          import random
+
+          def sum_list(lst):
+              total = 0
+              for x in lst:
+                  total += x
+              return total
+
+          def has_pair_with_sum(lst, target):
+              for i in range(len(lst)):
+                  for j in range(i + 1, len(lst)):
+                      if lst[i] + lst[j] == target:
+                          return True
+              return False
+      - label: "timing helper"
+        code: |
+          def time_it(func, *args):
+              start = time.time()
+              func(*args)
+              return time.time() - start
+    hints:
+      - |
+        Try this:
+        ```python
+        for n in [1000, 10000, 100000]:
+            lst = list(range(n))
+            t = time_it(sum_list, lst)
+            print(f"sum_list n={n:>6}: {t:.4f}s")
+        ```
+        Then do the same for `has_pair_with_sum(lst, -1)` (using -1 so it always checks
+        every pair — the worst case).
+      - "For `sum_list`, going from 1,000 to 10,000 should take about 10× longer. For `has_pair_with_sum`, it should take about **100×** longer. Why 100×? Because it has a loop *inside* a loop — 10× more items means 10 × 10 = 100× more pairs to check."
+    solution:
+      code: |
+        for n in [1000, 10000, 100000]:
+            lst = list(range(n))
+
+            t1 = time_it(sum_list, lst)
+            t2 = time_it(has_pair_with_sum, lst, -1)
+
+            print(f"n={n:>6}  sum_list: {t1:.4f}s  has_pair: {t2:.4f}s")
+      text: |
+        `sum_list` grows ~10× when n grows 10×. `has_pair_with_sum` grows ~100×.
+        One grows *linearly* with the input, the other grows with the *square* of the input.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Plot the Growth"
+    description: |
+      Plot **time vs input size** for both functions on the same graph.
+
+      Use input sizes from 100 to 5,000 (going higher will make `has_pair_with_sum` too
+      slow to wait for). What shape does each curve have?
+    provided_code:
+      - label: "plotting setup"
+        code: |
+          import matplotlib.pyplot as plt
+
+          sizes = [100, 500, 1000, 2000, 3000, 4000, 5000]
+    hints:
+      - |
+        ```python
+        times_sum = []
+        times_pair = []
+
+        for n in sizes:
+            lst = list(range(n))
+            times_sum.append(time_it(sum_list, lst))
+            times_pair.append(time_it(has_pair_with_sum, lst, -1))
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(sizes, times_sum, 'o-', label='sum_list')
+        plt.plot(sizes, times_pair, 's-', label='has_pair_with_sum')
+        plt.xlabel('Input size (n)')
+        plt.ylabel('Time (seconds)')
+        plt.legend()
+        plt.title('How does time grow with input size?')
+        plt.grid(True, alpha=0.3)
+        plt.show()
+        ```
+    solution:
+      code: |
+        times_sum = []
+        times_pair = []
+
+        for n in sizes:
+            lst = list(range(n))
+            times_sum.append(time_it(sum_list, lst))
+            times_pair.append(time_it(has_pair_with_sum, lst, -1))
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(sizes, times_sum, 'o-', label='sum_list')
+        plt.plot(sizes, times_pair, 's-', label='has_pair_with_sum')
+        plt.xlabel('Input size (n)')
+        plt.ylabel('Time (seconds)')
+        plt.legend()
+        plt.title('How does time grow with input size?')
+        plt.grid(True, alpha=0.3)
+        plt.show()
+      text: |
+        `sum_list` is nearly flat — a straight line barely above zero. `has_pair_with_sum`
+        curves upward steeply. One grows linearly, the other quadratically.
+
+  - type: reveal
+    text: |
+      One function's time grows **proportionally** to the input size. The other grows
+      proportionally to the **square** of the input size.
+
+      This distinction is enormous. On a million items:
+      - The linear function takes ~1 second
+      - The quadratic function takes ~**11 days**
+
+      Understanding which category your algorithm falls into is one of the most important
+      skills in programming.
+
+  # ═══════════════════════════════════════════════════
+  # PART 2: Counting Steps
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Counting Steps"
+    estimated_time: "~15 min"
+    intro: |
+      Timing is noisy — it depends on your computer's speed, what else is running, even
+      the room temperature. Can we predict how an algorithm grows *without* running it?
+
+      Yes: **count the key operations**.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Count the Operations"
+    description: |
+      Modify `sum_list` and `has_pair_with_sum` to **count** how many times the inner
+      operation runs instead of timing it.
+
+      Run both on sizes 10, 100, and 1,000. How does the count relate to n?
+    provided_code:
+      - label: "counting versions"
+        code: |
+          def sum_list_counted(lst):
+              count = 0
+              total = 0
+              for x in lst:
+                  total += x
+                  count += 1
+              return total, count
+
+          def has_pair_counted(lst, target):
+              count = 0
+              for i in range(len(lst)):
+                  for j in range(i + 1, len(lst)):
+                      count += 1
+                      if lst[i] + lst[j] == target:
+                          return True, count
+              return False, count
+    hints:
+      - |
+        ```python
+        for n in [10, 100, 1000]:
+            lst = list(range(n))
+            _, c1 = sum_list_counted(lst)
+            _, c2 = has_pair_counted(lst, -1)
+            print(f"n={n:>4}  sum_list: {c1:>8}  has_pair: {c2:>8}")
+        ```
+      - "For sum_list, count = n exactly. For has_pair, count = n×(n-1)/2. When n = 1000, that's 499,500 — close to n²/2."
+    solution:
+      code: |
+        for n in [10, 100, 1000]:
+            lst = list(range(n))
+            _, c1 = sum_list_counted(lst)
+            _, c2 = has_pair_counted(lst, -1)
+            ratio = c2 / n**2 if n > 0 else 0
+            print(f"n={n:>4}  sum_list: {c1:>8}  has_pair: {c2:>8}  (has_pair/n²={ratio:.3f})")
+      text: |
+        sum_list: count = n. has_pair: count = n(n-1)/2 ≈ n²/2. The ratio count/n²
+        stays around 0.5 regardless of n — confirming quadratic growth.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "The Pattern"
+    description: |
+      Look at your operation counts:
+
+      1. For `sum_list`, what's the exact formula relating count to n?
+      2. For `has_pair`, the count is $\frac{n(n-1)}{2}$. Expand this:
+         $\frac{n^2 - n}{2} = \frac{1}{2}n^2 - \frac{1}{2}n$
+      3. When $n = 1{,}000{,}000$, the $n^2$ term is $10^{12}$. The $n$ term is $10^6$.
+         What fraction of the total does the $n$ term contribute?
+      4. Does the "$\div 2$" change how fast the count grows when n doubles?
+    prompts:
+      - "Formula for sum_list count:"
+      - "When n = 1,000,000, fraction from the n term:"
+      - "Does the ÷2 affect the growth rate?"
+    hints:
+      - "The n term contributes $10^6 / 10^{12} = 0.0001\\%$ — it's irrelevant. And the ÷2 just means everything takes half as long, but it still *doubles* when n doubles by $\\sqrt{2}$. The growth *shape* is the same."
+    solution:
+      text: |
+        1. count = n (exactly)
+        2. The $n$ term is 0.0001% of the total when $n = 10^6$ — negligible.
+        3. The ÷2 is a constant multiplier — it doesn't change the *rate* of growth.
+           Whether it's $n^2$ or $n^2/2$ or $7n^2$, the count still quadruples when n doubles.
+
+        **The shape of growth is what matters, not the exact count.**
+      code: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Does the Constant Matter?"
+    description: |
+      Here are two functions that both loop through a list, but one does 3× as much work
+      per element:
+
+      ```python
+      def work_n(lst):
+          s = 0
+          for x in lst:
+              s += x
+          return s
+
+      def work_3n(lst):
+          s = 0
+          for x in lst:
+              s += x
+              s += x
+              s += x
+          return s
+      ```
+
+      Time both on sizes 10,000, 100,000, and 1,000,000. Compute the ratio
+      `time_3n / time_n` for each size.
+
+      Does the ratio stay constant or change as n grows?
+    hints:
+      - "The ratio should be roughly constant (around 2–4×) regardless of n. The 3× constant makes it proportionally slower, but both grow at the same *rate* — they're in the same growth family."
+    solution:
+      code: |
+        def work_n(lst):
+            s = 0
+            for x in lst:
+                s += x
+            return s
+
+        def work_3n(lst):
+            s = 0
+            for x in lst:
+                s += x
+                s += x
+                s += x
+            return s
+
+        for n in [10000, 100000, 1000000]:
+            lst = list(range(n))
+            t1 = time_it(work_n, lst)
+            t2 = time_it(work_3n, lst)
+            print(f"n={n:>7}  work_n: {t1:.4f}s  work_3n: {t2:.4f}s  ratio: {t2/t1:.1f}x")
+      text: |
+        The ratio stays roughly constant. Both functions are "linear" — they grow at
+        the same rate. The constant multiplier is a detail, not the defining characteristic.
+
+  - type: reveal
+    text: |
+      We care about the **growth rate**, not the exact count. Whether it's $n$, $2n$, or
+      $100n$ — they all grow at the same rate. Whether it's $n^2$, $n^2/2$, or $5n^2 + 3n$
+      — they all grow quadratically.
+
+      We need a notation that captures the growth family and throws away the constants.
+
+  # ═══════════════════════════════════════════════════
+  # PART 3: Inventing a Notation
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Inventing a Notation"
+    estimated_time: "~20 min"
+    intro: |
+      We need a shorthand for "this algorithm's time grows like \_\_\_\_\_ as the input
+      gets large." Let's invent one.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "Classify the Growth"
+    description: |
+      Five algorithms were tested on different input sizes. Here are their operation counts:
+
+      | n | Algo A | Algo B | Algo C | Algo D | Algo E |
+      |---|--------|--------|--------|--------|--------|
+      | 10 | 5 | 10 | 100 | 3 | 33 |
+      | 100 | 5 | 100 | 10,000 | 7 | 664 |
+      | 1,000 | 5 | 1,000 | 1,000,000 | 10 | 9,966 |
+      | 10,000 | 5 | 10,000 | 100,000,000 | 13 | 132,877 |
+
+      For each algorithm, describe the growth pattern in one word:
+
+      1. **Algo A:** count stays at 5 regardless of n → ?
+      2. **Algo B:** count equals n → ?
+      3. **Algo C:** count equals n² → ?
+      4. **Algo D:** count grows very slowly — what operation on n gives 3, 7, 10, 13? → ?
+      5. **Algo E:** count grows faster than n but much slower than n² → ?
+    prompts:
+      - "Algo A growth pattern:"
+      - "Algo B growth pattern:"
+      - "Algo C growth pattern:"
+      - "Algo D growth pattern:"
+      - "Algo E growth pattern:"
+    hints:
+      - "Algo D: $\\log_2(10) \\approx 3.3$, $\\log_2(100) \\approx 6.6$, $\\log_2(1000) \\approx 10$. That's **logarithmic** growth."
+      - "Algo E: $10 \\times \\log_2(10) \\approx 33$, $100 \\times \\log_2(100) \\approx 664$. It's $n \\times \\log(n)$."
+    solution:
+      text: |
+        - **A:** Constant — always the same regardless of n
+        - **B:** Linear — grows proportionally to n
+        - **C:** Quadratic — grows with n²
+        - **D:** Logarithmic — grows with log(n)
+        - **E:** n·log(n) — between linear and quadratic
+      code: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Drop the Constants"
+    description: |
+      If we only care about the *growth family*, we can simplify expressions by:
+
+      1. **Dropping constant multipliers** (3n → n)
+      2. **Keeping only the dominant (fastest-growing) term** (n² + 10n → n²)
+
+      Simplify each of these to just the dominant growth term:
+
+      1. $5n + 3$
+      2. $2n^2 + 10n + 7$
+      3. $100$
+      4. $n^3 + 1000n^2$
+      5. $3n \log n + 5n$
+    prompts:
+      - "5n + 3 simplifies to:"
+      - "2n² + 10n + 7 simplifies to:"
+      - "100 simplifies to:"
+      - "n³ + 1000n² simplifies to:"
+      - "3n·log(n) + 5n simplifies to:"
+    hints:
+      - "Drop the constant multiplier, then drop any term that grows slower than the biggest one. $5n + 3$: the dominant term is $5n$; drop the 5 → answer is $n$."
+    solution:
+      text: |
+        1. $5n + 3$ → **n** (drop the 5 and the +3)
+        2. $2n^2 + 10n + 7$ → **n²** (n² dominates 10n and 7)
+        3. $100$ → **1** (it's constant — doesn't grow at all)
+        4. $n^3 + 1000n^2$ → **n³** (even 1000n² is tiny compared to n³ for large n)
+        5. $3n\log n + 5n$ → **n·log(n)** (n·log(n) grows faster than n)
+      code: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Verify by Plotting"
+    description: |
+      Plot all five growth families on the same graph for $n$ from 1 to 100:
+      - Constant: $f(n) = 1$
+      - Logarithmic: $f(n) = \log_2(n)$
+      - Linear: $f(n) = n$
+      - n·log(n): $f(n) = n \cdot \log_2(n)$
+      - Quadratic: $f(n) = n^2$
+
+      Which ones are practically indistinguishable at small n? Which one dominates
+      everything at large n?
+    provided_code:
+      - label: "setup"
+        code: |
+          import numpy as np
+          import matplotlib.pyplot as plt
+
+          n = np.arange(1, 101)
+    hints:
+      - |
+        ```python
+        plt.figure(figsize=(8, 6))
+        plt.plot(n, np.ones_like(n), label='constant (1)')
+        plt.plot(n, np.log2(n), label='log(n)')
+        plt.plot(n, n, label='n')
+        plt.plot(n, n * np.log2(n), label='n·log(n)')
+        plt.plot(n, n**2, label='n²')
+        plt.xlabel('n')
+        plt.ylabel('Operations')
+        plt.legend()
+        plt.title('Growth families')
+        plt.grid(True, alpha=0.3)
+        plt.show()
+        ```
+    solution:
+      code: |
+        plt.figure(figsize=(8, 6))
+        plt.plot(n, np.ones_like(n), '-', linewidth=2, label='constant (1)')
+        plt.plot(n, np.log2(n), '-', linewidth=2, label='log(n)')
+        plt.plot(n, n, '-', linewidth=2, label='n')
+        plt.plot(n, n * np.log2(n), '-', linewidth=2, label='n·log(n)')
+        plt.plot(n, n**2, '-', linewidth=2, label='n²')
+        plt.xlabel('n', fontsize=12)
+        plt.ylabel('Operations', fontsize=12)
+        plt.legend(fontsize=11)
+        plt.title('Growth families — the hierarchy', fontsize=13)
+        plt.grid(True, alpha=0.3)
+        plt.show()
+      text: |
+        At $n = 100$: constant = 1, log = 7, linear = 100, n·log(n) = 664, quadratic = 10,000.
+        The quadratic curve dwarfs everything else. And it only gets worse as n grows.
+
+  - type: reveal
+    text: |
+      Computer scientists write this hierarchy using **Big O notation**:
+
+      $$O(1) < O(\log n) < O(n) < O(n \log n) < O(n^2) < O(n^3) < O(2^n)$$
+
+      The $O(\ldots)$ means "grows **at most** as fast as \_\_\_\_\_." When we say an
+      algorithm is $O(n^2)$, we mean: as the input gets large, the time grows no faster
+      than some constant times $n^2$.
+
+      **You just invented it.** The formal notation was introduced by Paul Bachmann in
+      1894 and popularised by Edmund Landau — but the idea is exactly what you discovered:
+      classify algorithms by their growth family, ignore the constants.
+
+  # ═══════════════════════════════════════════════════
+  # PART 4: Analysing Real Code
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Analysing Real Code"
+    estimated_time: "~20 min"
+    intro: |
+      Now that you have the notation, let's use it. Given a piece of code, how do you
+      figure out its Big O without running it?
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Read the Loops"
+    description: |
+      Determine the Big O of each code snippet. The input is a list of length $n$.
+
+      **Snippet A:**
+      ```python
+      def find_max(lst):
+          best = lst[0]
+          for x in lst:
+              if x > best:
+                  best = x
+          return best
+      ```
+
+      **Snippet B:**
+      ```python
+      def all_pairs(lst):
+          pairs = []
+          for i in range(len(lst)):
+              for j in range(i + 1, len(lst)):
+                  pairs.append((lst[i], lst[j]))
+          return pairs
+      ```
+
+      **Snippet C:**
+      ```python
+      def double_scan(lst):
+          total = 0
+          for x in lst:       # first loop
+              total += x
+          for x in lst:       # second loop
+              total += x * 2
+          return total
+      ```
+
+      **Snippet D:**
+      ```python
+      def halving_search(lst, target):
+          lo, hi = 0, len(lst) - 1
+          while lo <= hi:
+              mid = (lo + hi) // 2
+              if lst[mid] == target:
+                  return mid
+              elif lst[mid] < target:
+                  lo = mid + 1
+              else:
+                  hi = mid - 1
+          return -1
+      ```
+
+      **Snippet E:**
+      ```python
+      def get_first(lst):
+          return lst[0]
+      ```
+    prompts:
+      - "Snippet A (find_max):"
+      - "Snippet B (all_pairs):"
+      - "Snippet C (double_scan):"
+      - "Snippet D (halving_search):"
+      - "Snippet E (get_first):"
+    hints:
+      - "Count how many times the innermost operation runs. For A: one loop, n iterations → O(n). For B: nested loops → n(n-1)/2 → O(n²)."
+      - "C has two separate loops (not nested): n + n = 2n → O(n). D halves the range each step → O(log n). E does one operation regardless of n → O(1)."
+    solution:
+      text: |
+        - **A:** O(n) — single loop through the list
+        - **B:** O(n²) — loop inside a loop
+        - **C:** O(n) — two separate loops: $n + n = 2n$, but constants don't matter
+        - **D:** O(log n) — halves the search range each step
+        - **E:** O(1) — constant time, just one index lookup
+      code: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Predict Then Measure"
+    description: |
+      For snippets A through D above, you predicted the Big O. Now **verify** your
+      predictions by adding an operation counter and running on sizes 100, 1000, and 10000.
+
+      For each snippet, compute the ratio `count / f(n)` where `f(n)` is your predicted
+      growth function ($n$, $n^2$, or $\log_2 n$). If your prediction is correct, the
+      ratio should stay roughly constant as n grows.
+    provided_code:
+      - label: "counted versions"
+        code: |
+          import math
+
+          def find_max_counted(lst):
+              count = 0
+              best = lst[0]
+              for x in lst:
+                  count += 1
+                  if x > best:
+                      best = x
+              return best, count
+
+          def all_pairs_counted(lst):
+              count = 0
+              for i in range(len(lst)):
+                  for j in range(i + 1, len(lst)):
+                      count += 1
+              return count
+
+          def double_scan_counted(lst):
+              count = 0
+              for x in lst:
+                  count += 1
+              for x in lst:
+                  count += 1
+              return count
+
+          def halving_search_counted(lst, target):
+              count = 0
+              lo, hi = 0, len(lst) - 1
+              while lo <= hi:
+                  count += 1
+                  mid = (lo + hi) // 2
+                  if lst[mid] == target:
+                      return count
+                  elif lst[mid] < target:
+                      lo = mid + 1
+                  else:
+                      hi = mid - 1
+              return count
+    hints:
+      - |
+        ```python
+        for n in [100, 1000, 10000]:
+            lst = list(range(n))
+            _, c_max = find_max_counted(lst)
+            c_pairs = all_pairs_counted(lst)
+            c_scan = double_scan_counted(lst)
+            c_halve = halving_search_counted(lst, -1)
+
+            print(f"n={n:>5}  max/n={c_max/n:.2f}  pairs/n²={c_pairs/n**2:.4f}"
+                  f"  scan/n={c_scan/n:.2f}  halve/log₂n={c_halve/math.log2(n):.2f}")
+        ```
+        All ratios should stay roughly constant — that confirms your Big O predictions.
+    solution:
+      code: |
+        for n in [100, 1000, 10000]:
+            lst = list(range(n))
+            _, c_max = find_max_counted(lst)
+            c_pairs = all_pairs_counted(lst)
+            c_scan = double_scan_counted(lst)
+            c_halve = halving_search_counted(lst, -1)
+
+            print(f"n={n:>5}  max/n={c_max/n:.2f}  pairs/n²={c_pairs/n**2:.4f}"
+                  f"  scan/n={c_scan/n:.2f}  halve/log₂n={c_halve/math.log2(n):.2f}")
+      text: |
+        Every ratio stays roughly constant — max/n ≈ 1, pairs/n² ≈ 0.5, scan/n ≈ 2,
+        halve/log₂n ≈ 1. This confirms the predictions: O(n), O(n²), O(n), O(log n).
+
+  - type: exercise
+    kind: conceptual
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "Best, Worst, and Average"
+    description: |
+      Consider linear search — scanning a list from left to right looking for a target:
+
+      ```python
+      def linear_search(lst, target):
+          for i, x in enumerate(lst):
+              if x == target:
+                  return i
+          return -1
+      ```
+
+      1. **Best case:** What input makes this as fast as possible? How many comparisons?
+      2. **Worst case:** What input makes this as slow as possible? How many comparisons?
+      3. **Average case:** If the target is equally likely to be at any position, how many
+         comparisons on average?
+
+      When someone says "linear search is O(n)" without qualification, which case do they
+      usually mean?
+    prompts:
+      - "Best case — how many comparisons:"
+      - "Worst case — how many comparisons:"
+      - "Average case — how many comparisons:"
+      - "O(n) usually refers to:"
+    hints:
+      - "Best: target is the first element → 1 comparison. Worst: target is last or not present → n comparisons. Average: n/2 comparisons (but n/2 is still O(n) since we drop constants)."
+    solution:
+      text: |
+        - **Best case:** 1 comparison — target is at index 0. This is O(1).
+        - **Worst case:** n comparisons — target is last or missing. This is O(n).
+        - **Average case:** n/2 comparisons — still O(n) since we drop the ½.
+
+        **Big O without qualification usually means worst case** — it's a guarantee.
+        "This algorithm is O(n)" means it will *never* take more than proportional-to-n
+        time, no matter what input you give it.
+      code: null
+
+  - type: reveal
+    text: |
+      **Rules of thumb for reading code:**
+
+      | Pattern | Big O |
+      |---------|-------|
+      | No loop — fixed number of operations | O(1) |
+      | Single loop over n items | O(n) |
+      | Two separate loops (not nested) | O(n) — it's $n + n = 2n$, constants drop |
+      | Loop inside a loop | O(n²) |
+      | Loop that halves the range each step | O(log n) |
+      | Loop over n, each iteration does O(log n) work | O(n log n) |
+
+      These patterns will help you evaluate every algorithm in the chapters ahead.
+
+  # ═══════════════════════════════════════════════════
+  # PART 5: Memory Complexity
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 5
+    title: "Memory Complexity"
+    estimated_time: "~15 min"
+    intro: |
+      Time isn't the only resource that matters. **Memory** (space) does too. The same
+      Big O notation works — instead of asking "how does time grow?" we ask "how much
+      **extra memory** does this algorithm need as the input grows?"
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-1
+    part: 5
+    number: 1
+    title: "How Much Space?"
+    description: |
+      For each function, determine how much **extra** memory it uses (beyond the input
+      itself) as a function of n:
+
+      **Function A:**
+      ```python
+      def sum_in_place(lst):
+          total = 0
+          for x in lst:
+              total += x
+          return total
+      ```
+
+      **Function B:**
+      ```python
+      def make_copy(lst):
+          copy = []
+          for x in lst:
+              copy.append(x)
+          return copy
+      ```
+
+      **Function C:**
+      ```python
+      def make_matrix(n):
+          matrix = []
+          for i in range(n):
+              row = [0] * n
+              matrix.append(row)
+          return matrix
+      ```
+
+      **Function D:**
+      ```python
+      def find_min_max(lst):
+          lo = lst[0]
+          hi = lst[0]
+          for x in lst:
+              if x < lo: lo = x
+              if x > hi: hi = x
+          return lo, hi
+      ```
+    prompts:
+      - "Function A extra space:"
+      - "Function B extra space:"
+      - "Function C extra space:"
+      - "Function D extra space:"
+    hints:
+      - "Count the new data structures created. A: just one variable `total` → O(1). B: a new list of n items → O(n). C: n rows of n items each → O(n²). D: two variables → O(1)."
+    solution:
+      text: |
+        - **A:** O(1) — just one variable, regardless of n
+        - **B:** O(n) — creates a new list with n items
+        - **C:** O(n²) — creates n × n items
+        - **D:** O(1) — just two variables, regardless of n
+      code: null
+
+  - type: exercise
+    kind: coding
+    id: ex-5-2
+    part: 5
+    number: 2
+    title: "Measure Memory"
+    description: |
+      Create lists of size 100, 1,000, and 10,000. Check their memory usage using
+      `sys.getsizeof`. Does memory grow linearly with size?
+
+      Then create $n \times n$ matrices (lists of lists) for $n$ = 10, 100, and 300.
+      How does memory grow?
+    provided_code:
+      - label: "setup"
+        code: |
+          import sys
+
+          def list_memory(n):
+              lst = list(range(n))
+              return sys.getsizeof(lst) + sum(sys.getsizeof(x) for x in lst)
+
+          def matrix_memory(n):
+              mat = [[0] * n for _ in range(n)]
+              total = sys.getsizeof(mat)
+              for row in mat:
+                  total += sys.getsizeof(row)
+              return total
+    hints:
+      - |
+        ```python
+        print("List memory:")
+        for n in [100, 1000, 10000]:
+            mem = list_memory(n)
+            print(f"  n={n:>5}: {mem:>10} bytes  (bytes/n = {mem/n:.0f})")
+
+        print("\nMatrix memory:")
+        for n in [10, 100, 300]:
+            mem = matrix_memory(n)
+            print(f"  n={n:>3}: {mem:>10} bytes  (bytes/n² = {mem/n**2:.1f})")
+        ```
+    solution:
+      code: |
+        print("List memory:")
+        for n in [100, 1000, 10000]:
+            mem = list_memory(n)
+            print(f"  n={n:>5}: {mem:>10} bytes  (bytes/n = {mem/n:.0f})")
+
+        print("\nMatrix memory:")
+        for n in [10, 100, 300]:
+            mem = matrix_memory(n)
+            print(f"  n={n:>3}: {mem:>10} bytes  (bytes/n² = {mem/n**2:.1f})")
+      text: |
+        The bytes/n ratio stays roughly constant for lists → O(n) space. The bytes/n²
+        ratio stays roughly constant for matrices → O(n²) space.
+
+  - type: exercise
+    kind: conceptual
+    id: ex-5-3
+    part: 5
+    number: 3
+    title: "The Time–Space Tradeoff"
+    description: |
+      You need to check if a list has any duplicate values. Here are two approaches:
+
+      **Approach 1 — Nested loops (no extra memory):**
+      ```python
+      def has_dup_loops(lst):
+          for i in range(len(lst)):
+              for j in range(i + 1, len(lst)):
+                  if lst[i] == lst[j]:
+                      return True
+          return False
+      ```
+
+      **Approach 2 — Use a set (extra memory):**
+      ```python
+      def has_dup_set(lst):
+          seen = set()
+          for x in lst:
+              if x in seen:
+                  return True
+              seen.add(x)
+          return False
+      ```
+
+      1. What's the time complexity of each?
+      2. What's the space complexity of each?
+      3. Which is "better"?
+    prompts:
+      - "Approach 1 — time / space:"
+      - "Approach 2 — time / space:"
+      - "Which is better and why:"
+    hints:
+      - "Approach 1: O(n²) time, O(1) space. Approach 2: O(n) time, O(n) space. Faster but uses more memory."
+    solution:
+      text: |
+        | | Time | Space |
+        |---|---|---|
+        | Nested loops | O(n²) | O(1) |
+        | Set | O(n) | O(n) |
+
+        Which is "better"? **It depends.** If you have a billion items and limited
+        RAM, the O(1) space approach might be your only option (even though it's slow).
+        If speed matters and you have memory to spare, the set wins.
+
+        This is the **time–space tradeoff** — one of the most fundamental tensions in
+        computer science. Faster algorithms often use more memory, and memory-efficient
+        ones are often slower.
+      code: null
+
+  - type: reveal
+    text: |
+      Time and space complexity are two sides of the same coin. Knowing both helps you
+      choose the right algorithm for your constraints:
+
+      - **Hash tables** trade O(n) space for O(1) lookups
+      - **Merge sort** uses O(n) extra memory but guarantees O(n log n) time
+      - **In-place sorting** (like insertion sort) uses O(1) space but takes O(n²) time
+
+      Every algorithm in the chapters ahead will have both a time and space complexity.
+      Now you know how to read and evaluate them.
+
+  # ═══════════════════════════════════════════════════
+  # PART 6: The Complete Hierarchy
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 6
+    title: "The Complete Hierarchy"
+    estimated_time: "~10 min"
+    intro: |
+      Let's see the full picture. How long does each complexity class take on real-world
+      input sizes?
+
+  - type: exercise
+    kind: coding
+    id: ex-6-1
+    part: 6
+    number: 1
+    title: "The Race"
+    description: |
+      Assume each operation takes 1 microsecond (one millionth of a second). Compute
+      how long each complexity class takes for $n$ = 10, 100, 1,000, $10^6$, and $10^9$.
+
+      Fill in the table by computing the number of operations and converting to human
+      readable time.
+    provided_code:
+      - label: "time formatter"
+        code: |
+          import math
+
+          def human_time(microseconds):
+              if microseconds < 1000:
+                  return f"{microseconds:.0f} μs"
+              elif microseconds < 1_000_000:
+                  return f"{microseconds/1000:.1f} ms"
+              elif microseconds < 60_000_000:
+                  return f"{microseconds/1_000_000:.1f} s"
+              elif microseconds < 3_600_000_000:
+                  return f"{microseconds/60_000_000:.1f} min"
+              elif microseconds < 86_400_000_000:
+                  return f"{microseconds/3_600_000_000:.1f} hrs"
+              elif microseconds < 31_536_000_000_000:
+                  return f"{microseconds/86_400_000_000:.1f} days"
+              else:
+                  return f"{microseconds/31_536_000_000_000:.1f} years"
+    hints:
+      - |
+        ```python
+        sizes = [10, 100, 1000, 10**6, 10**9]
+        for n in sizes:
+            ops = {
+                'O(1)':      1,
+                'O(log n)':  math.log2(n),
+                'O(n)':      n,
+                'O(n log n)': n * math.log2(n),
+                'O(n²)':     n ** 2,
+            }
+            row = f"n={n:<10}"
+            for name, count in ops.items():
+                row += f"  {name}: {human_time(count):<12}"
+            print(row)
+        ```
+      - "For $n = 10^9$: O(n²) = $10^{18}$ microseconds = about **31,710 years**. That's why quadratic algorithms don't scale."
+    solution:
+      code: |
+        sizes = [10, 100, 1000, 10**6, 10**9]
+        families = ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'O(n²)']
+
+        print(f"{'n':>12}", end="")
+        for f in families:
+            print(f"  {f:>14}", end="")
+        print()
+        print("-" * 85)
+
+        for n in sizes:
+            ops = [1, math.log2(n), n, n * math.log2(n), n ** 2]
+            print(f"{n:>12}", end="")
+            for o in ops:
+                print(f"  {human_time(o):>14}", end="")
+            print()
+      text: |
+        At $n = 10^6$: O(n) takes 1 second, O(n²) takes **11.6 days**. At $n = 10^9$:
+        O(n) takes 17 minutes, O(n²) takes **31,710 years**. This is why Big O matters —
+        it's the difference between "runs on my laptop" and "outlives the sun."
+
+  # ═══════════════════════════════════════════════════
+  # SUMMARY
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: null
+    title: "What You Invented"
+    intro: null
+
+  - type: table
+    id: summary-table
+    title: "Your Journey"
+    headers: ["Exercise", "What You Did", "Concept"]
+    rows:
+      - ["1.1–1.2", "Timed two functions, plotted growth curves", "Empirical performance measurement"]
+      - ["2.1–2.3", "Counted operations, discovered constants don't matter", "Operation counting, growth rate"]
+      - ["3.1–3.2", "Classified growth families, simplified expressions", "Big O notation"]
+      - ["3.3", "Plotted the hierarchy of growth rates", "O(1) < O(log n) < O(n) < O(n log n) < O(n²)"]
+      - ["4.1–4.2", "Analysed code snippets, predicted and verified Big O", "Static code analysis"]
+      - ["4.3", "Explored best, worst, and average case", "Worst-case analysis"]
+      - ["5.1–5.3", "Measured memory, discovered the time–space tradeoff", "Space complexity"]
+      - ["6.1", "Computed running times for real-world input sizes", "Why Big O matters in practice"]
+
+  - type: reveal
+    text: |
+      **Going further:**
+
+      - **O(2ⁿ) — exponential:** The number of subsets of a set with n items. Algorithms
+        that try every subset are O(2ⁿ) — feasible for n ≤ 20, impossible for n = 100.
+      - **O(n!) — factorial:** The number of permutations. Even worse than exponential.
+        Brute-force travelling salesman is O(n!).
+      - **Amortized analysis:** Some operations are usually fast but occasionally slow
+        (like appending to a Python list that needs to resize). Amortized analysis averages
+        the cost over many operations.
+      - **The O(n log n) barrier:** No comparison-based sorting algorithm can do better
+        than O(n log n) in the worst case. This is a proven mathematical lower bound.
+      - **P vs NP:** The biggest open question in computer science — are there problems
+        where checking a solution is easy (polynomial time) but *finding* one is
+        fundamentally hard? A million-dollar prize awaits the answer.
