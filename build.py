@@ -104,10 +104,11 @@ def render_slides(env, data):
     return template.render(chapter=data["chapter"], slides=slides)
 
 
-def build_chapter(chapter_name, fmt="all"):
+def build_chapter(chapter_name, fmt="all", env=None):
     chapter_dir = REPO_ROOT / chapter_name
     data = load_chapter(chapter_dir)
-    env = create_jinja_env()
+    if env is None:
+        env = create_jinja_env()
 
     if fmt in ("all", "html"):
         html_out = render_html(env, data)
@@ -120,6 +121,20 @@ def build_chapter(chapter_name, fmt="all"):
         out_path = chapter_dir / "slides.html"
         out_path.write_text(slides_out)
         print(f"  wrote {out_path}")
+
+
+def build_index(env):
+    site_path = REPO_ROOT / "site.yaml"
+    if not site_path.exists():
+        print("  site.yaml not found — skipping index generation", file=sys.stderr)
+        return
+    with open(site_path) as f:
+        data = yaml.safe_load(f)
+    template = env.get_template("index.html.j2")
+    html_out = template.render(**data)
+    out_path = REPO_ROOT / "index.html"
+    out_path.write_text(html_out)
+    print(f"  wrote {out_path}")
 
 
 def find_chapters():
@@ -142,6 +157,11 @@ def main():
         print("No chapters with content.yaml found.")
         return
 
+    env = create_jinja_env()
+
+    print("Building index.html...")
+    build_index(env)
+
     errors = 0
     for ch in chapters:
         chapter_dir = REPO_ROOT / ch
@@ -155,7 +175,7 @@ def main():
                 print(f"  {ch}: OK")
             else:
                 print(f"Building {ch}...")
-                build_chapter(ch, args.format)
+                build_chapter(ch, args.format, env)
         except Exception as e:
             print(f"  {ch}: ERROR: {e}", file=sys.stderr)
             errors += 1
