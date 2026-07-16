@@ -6,6 +6,39 @@ chapter:
   mathjax: true
   footer: |
     You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.
+  glossary:
+    - term: Environment
+      definition: "The world the agent interacts with — it receives actions and returns observations and rewards."
+    - term: Observation
+      definition: "The numbers describing the current state of the environment (also called *state*)."
+    - term: Action
+      definition: "A choice the agent makes at each step (e.g. push left or push right)."
+    - term: Reward
+      definition: "A scalar signal the environment returns after each action, indicating how good the outcome was."
+    - term: Policy
+      definition: "A function that maps observations to actions — the agent's strategy."
+    - term: Episode
+      definition: "One complete run of the game from start to termination."
+    - term: Discount factor (γ)
+      definition: "A number between 0 and 1 that controls how much future rewards are worth compared to immediate ones."
+    - term: Discounted return
+      definition: "The sum of future rewards, each multiplied by γ raised to the number of steps away."
+    - term: Genetic algorithm
+      definition: "An optimization method inspired by evolution — keep the best, mutate, repeat."
+    - term: REINFORCE
+      definition: "A policy gradient algorithm that updates weights by multiplying the gradient of log-probability by the discounted return."
+    - term: Value function
+      definition: "A model that predicts the expected total future reward from a given state."
+    - term: TD error
+      definition: "The difference between the estimated return (reward + γ·V(next)) and the predicted value V(current) — measures surprise."
+    - term: Advantage
+      definition: "How much better an action turned out compared to what was expected — the TD error serves as an estimate."
+    - term: Actor
+      definition: "The component that picks actions (the policy)."
+    - term: Critic
+      definition: "The component that evaluates states (the value function)."
+    - term: Actor-Critic
+      definition: "An architecture combining a policy (actor) and a value function (critic) that learn together."
 
 blocks:
   # ═══════════════════════════════════════════════════
@@ -15,10 +48,38 @@ blocks:
   - type: part
     number: 1
     title: "Let's Play a Game"
+    estimated_time: "~15 min"
     intro: |
       Forget theory. We're going to play a game. The game is called **CartPole** — there's a cart on a track with a pole balanced on top. You can push the cart left or right. The goal: keep the pole from falling over as long as possible.
 
       The twist? You play using Python code.
+
+  - type: text
+    text: |
+      <div class="cartpole-demo">
+        <svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+          <!-- track -->
+          <line x1="20" y1="155" x2="380" y2="155" stroke="#888" stroke-width="2"/>
+          <line x1="20" y1="155" x2="20" y2="148" stroke="#888" stroke-width="2"/>
+          <line x1="380" y1="155" x2="380" y2="148" stroke="#888" stroke-width="2"/>
+          <!-- cart -->
+          <rect x="160" y="130" width="80" height="30" rx="4" fill="#c8a96e" stroke="#7a6b3a" stroke-width="1.5"/>
+          <!-- wheels -->
+          <circle cx="178" cy="160" r="6" fill="#555"/>
+          <circle cx="222" cy="160" r="6" fill="#555"/>
+          <!-- pole (animated) -->
+          <g class="cartpole-pole">
+            <line x1="200" y1="130" x2="200" y2="40" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="200" cy="40" r="6" fill="#c0392b"/>
+          </g>
+          <!-- pivot -->
+          <circle cx="200" cy="130" r="4" fill="#333"/>
+          <!-- arrows -->
+          <text x="120" y="150" font-size="18" fill="#888" font-family="system-ui">&larr;</text>
+          <text x="268" y="150" font-size="18" fill="#888" font-family="system-ui">&rarr;</text>
+        </svg>
+        <p class="cartpole-caption">The CartPole environment: keep the pole balanced by pushing the cart left or right.</p>
+      </div>
 
   - type: exercise
     kind: coding
@@ -159,6 +220,7 @@ blocks:
   - type: part
     number: 2
     title: "Build Your Own Player"
+    estimated_time: "~20 min"
     intro: |
       Random actions give terrible scores. You already have intuition about what to do — let's turn it into code.
 
@@ -270,6 +332,7 @@ blocks:
   - type: part
     number: 3
     title: "What Just Happened?"
+    estimated_time: "~10 min"
     intro: null
 
   - type: reveal
@@ -319,6 +382,7 @@ blocks:
   - type: part
     number: 4
     title: "Policy as a Formula"
+    estimated_time: "~15 min"
     intro: |
       Look at your best heuristic from Part 2. It probably looked something like: "if angle > 0, go right" or "if angle + 0.5 × angular_velocity > 0, go right." That's really just: **multiply each observation by some number, add them up, and check the sign**. Your action is a function of the observations.
 
@@ -399,6 +463,7 @@ blocks:
   - type: part
     number: 5
     title: "The Search for Best Parameters"
+    estimated_time: "~25 min"
     intro: |
       You need 4 good numbers. How hard can it be?
 
@@ -590,6 +655,7 @@ blocks:
   - type: part
     number: 6
     title: "Can Gradients Help?"
+    estimated_time: "~30 min"
     intro: |
       Genetic algorithms work but feel brute-force. In the Gradient Descent chapter, you learned a more targeted approach: compute the gradient, move in the direction that improves the objective. Can we do that here?
 
@@ -835,6 +901,7 @@ blocks:
   - type: part
     number: 7
     title: "Teaching a Model to Play"
+    estimated_time: "~30 min"
     intro: |
       So far you've been hand-tuning weights or using evolution. But there's something unsatisfying — you're searching OUTSIDE the game. You try weights, play a full game, check the score, try new weights. What if the model could learn FROM each game it plays?
 
@@ -1021,6 +1088,12 @@ blocks:
             return weights, sum(rewards)
       text: null
 
+  - type: text
+    text: |
+      Here's what a typical REINFORCE training curve looks like. Notice the high variance — scores bounce around wildly because each episode is different and the model is still exploring.
+
+      ![Typical REINFORCE learning curve — noisy but trending upward](img/reinforce_curve.png)
+
   - type: exercise
     kind: coding
     id: ex-7-4
@@ -1091,6 +1164,7 @@ blocks:
   - type: part
     number: 8
     title: "Predicting Value"
+    estimated_time: "~25 min"
     intro: |
       REINFORCE works, but notice something: it has to finish the ENTIRE game before it can learn anything. It plays 200 steps, then looks back and assigns credit. Can we do better?
 
@@ -1309,6 +1383,7 @@ blocks:
   - type: part
     number: 9
     title: "Best of Both Worlds — Actor-Critic"
+    estimated_time: "~30 min"
     intro: |
       You now have two models:
       1. The **actor** (REINFORCE policy from Part 7) — picks actions
@@ -1334,6 +1409,12 @@ blocks:
       code: null
       text: |
         Actor update: gradient × advantage (instead of gradient × discounted_reward). Critic update: minimize TD error (same as before). Both update every step — no need to finish the episode. The critic provides instant feedback to the actor, and gets better at predicting as the actor improves.
+
+  - type: text
+    text: |
+      Here's a typical Actor-Critic learning curve. Compare it to the REINFORCE curve — notice how Actor-Critic converges faster and with less variance, because the critic provides a per-step learning signal instead of waiting until the episode ends.
+
+      ![Typical Actor-Critic learning curve — faster convergence, less variance](img/actor_critic_curve.png)
 
   - type: exercise
     kind: coding

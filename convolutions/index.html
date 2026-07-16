@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="convolutions">
+
+<div class="progress-indicator" id="progress-indicator" data-total="9"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="convolutions.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/convolutions/convolutions.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/convolutions/convolutions.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -43,10 +46,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: What Is an Image?</h2>
 
   <div class="codehilite">
@@ -136,7 +141,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Load and Look</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Load and Look</h3>
   <div class="question">
     <p>Before we can process images, we need to understand what they <em>are</em> to a computer.</p>
 
@@ -197,7 +202,7 @@ show_images([color_img, gray_img],
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Peek Inside: Images as Numbers</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Peek Inside: Images as Numbers</h3>
   <div class="question">
     <p>An image is just a grid of numbers. Let's prove it.</p>
 
@@ -280,7 +285,7 @@ print(gray_arr[:5, :5])
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; Navigate the Grid</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; Navigate the Grid</h3>
   <div class="question">
     <p>Now that you know the structure, explore the image as a grid.</p>
 
@@ -364,7 +369,7 @@ print(f"Verify with numpy:                {gray_arr.mean():.2f}")
 
 
 <section class="exercise" id="ex-1-4">
-  <h3>Exercise 1.4 &mdash; Visualize a Tiny Slice</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-4" /></label>Exercise 1.4 &mdash; Visualize a Tiny Slice</h3>
   <div class="question">
     <p>Let's look at a small patch of the image zoomed in, so we can literally see the pixels.</p>
 
@@ -423,7 +428,7 @@ show_images([gray_mid, color_mid],
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Extracting a Color Channel</h2>
 
 </div>
@@ -433,7 +438,7 @@ show_images([gray_mid, color_mid],
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; What Are R, G, B?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; What Are R, G, B?</h3>
   <div class="question">
     <p>A color pixel is stored as three numbers: <strong>(R, G, B)</strong> — Red, Green, Blue. Each value is between 0 and 255.</p>
 
@@ -518,7 +523,7 @@ print("test[1,0,1] (Green of second row):  ", test[1, 0, 1])   # 255
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Extract the Red Channel Using Loops</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Extract the Red Channel Using Loops</h3>
   <div class="question">
     <p>Your job is to extract only the <strong>Red channel</strong> from the color image. The result should be a 2D array (H x W) of numbers — just the red values.</p>
 
@@ -606,7 +611,7 @@ show_images(
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; Visualize a Single Channel in Its True Color</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; Visualize a Single Channel in Its True Color</h3>
   <div class="question">
     <p>When we display the Red channel as grayscale, bright = high red value, dark = low red value. But what if we want to display it as an actual <em>red</em> image?</p>
 
@@ -698,7 +703,7 @@ show_images([color_arr, combined],
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Converting Color to Grayscale</h2>
 
 </div>
@@ -707,7 +712,7 @@ show_images([color_arr, combined],
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; What *Is* Grayscale?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; What *Is* Grayscale?</h3>
   <div class="question">
 
     <p>A grayscale image has only one number per pixel — its <strong>brightness</strong>. A color image has three (R, G, B).</p>
@@ -774,7 +779,7 @@ show_images([color_arr, combined],
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; Implement Your Formulas</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; Implement Your Formulas</h3>
   <div class="question">
     <p>For each formula you invented (and the ones below), write a function <code>rgb_to_gray_METHOD(color_array)</code> that:</p>
 
@@ -914,7 +919,7 @@ def rgb_to_gray_mymethod(arr):
 
 
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; Compare the Methods</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; Compare the Methods</h3>
   <div class="question">
     <p><strong>Tasks:</strong></p>
 
@@ -1000,7 +1005,7 @@ show_images([diff], titles=['Difference: Average vs Luminosity'], cmap_list=['ho
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.4 &mdash; Quick Check — Why Grayscale Loses Information</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.4 &mdash; Quick Check — Why Grayscale Loses Information</h3>
   <div class="question">
     <p>After converting a color image to grayscale, can you recover the original colors?</p>
 
@@ -1057,7 +1062,7 @@ show_images([diff], titles=['Difference: Average vs Luminosity'], cmap_list=['ho
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Shrinking an Image — Downsampling</h2>
 
   <div class="codehilite">
@@ -1074,7 +1079,7 @@ show_images([diff], titles=['Difference: Average vs Luminosity'], cmap_list=['ho
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Think Before You Code</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Think Before You Code</h3>
   <div class="question">
 
     <p>You have a 100x100 image. You want to produce a 50x50 image.</p>
@@ -1137,7 +1142,7 @@ show_images([diff], titles=['Difference: Average vs Luminosity'], cmap_list=['ho
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Implement Three Downsampling Methods</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Implement Three Downsampling Methods</h3>
   <div class="question">
     <p><strong>Rules:</strong> Use only Python loops. No <code>cv2.resize</code>, no PIL <code>.resize</code>, no <code>np.mean</code> over blocks.</p>
 
@@ -1239,7 +1244,7 @@ print("Output shape:", small.shape)  # (50, 50)
 
 
 <section class="exercise" id="ex-4-3">
-  <h3>Exercise 4.3 &mdash; Compare and Analyze</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Compare and Analyze</h3>
   <div class="question">
     <p><strong>Tasks:</strong></p>
 
@@ -1310,7 +1315,7 @@ show_images([diff_down], titles=['Difference: Nearest vs Average'], cmap_list=['
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Growing an Image — Upsampling to 100x100</h2>
 
 </div>
@@ -1319,7 +1324,7 @@ show_images([diff_down], titles=['Difference: Nearest vs Average'], cmap_list=['
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; The Reverse Problem</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; The Reverse Problem</h3>
   <div class="question">
 
     <p>Now you have a 50x50 image (use <code>small_nearest</code> from Part 4). You want to produce a 100x100 image.</p>
@@ -1379,7 +1384,7 @@ show_images([diff_down], titles=['Difference: Nearest vs Average'], cmap_list=['
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Exercise 5.2 &mdash; Implement Three Upsampling Methods</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; Implement Three Upsampling Methods</h3>
   <div class="question">
     <p><strong>Rules:</strong> Use only Python loops. No <code>cv2.resize</code>, no PIL <code>.resize</code>.</p>
 
@@ -1485,7 +1490,7 @@ print("Output shape:", big_nearest.shape)  # (100, 100)
 
 
 <section class="exercise" id="ex-5-3">
-  <h3>Exercise 5.3 &mdash; Compare and Analyze</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-3" /></label>Exercise 5.3 &mdash; Compare and Analyze</h3>
   <div class="question">
     <p><strong>Tasks:</strong></p>
 
@@ -1571,7 +1576,7 @@ print(f"MAE (Bilinear): {mae_bilinear:.4f}")
 
 
 <section class="exercise mcq" id="mcq-5-1">
-  <h3>Quick Check 5.4 &mdash; Quick Check — Nearest Neighbor vs Bilinear Upsampling</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-5-1" /></label>Quick Check 5.4 &mdash; Quick Check — Nearest Neighbor vs Bilinear Upsampling</h3>
   <div class="question">
     <p>When upsampling a 50x50 image to 100x100, nearest-neighbor repeats each pixel while bilinear interpolation blends neighboring pixels. Which produces a smoother result, and why?</p>
 
@@ -1628,7 +1633,7 @@ print(f"MAE (Bilinear): {mae_bilinear:.4f}")
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: Upsampling to a Non-Integer Scale — 50x50 to 150x150</h2>
 
 </div>
@@ -1638,7 +1643,7 @@ print(f"MAE (Bilinear): {mae_bilinear:.4f}")
 
 
 <section class="exercise" id="ex-6-1">
-  <h3>Exercise 6.1 &mdash; A New Challenge</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; A New Challenge</h3>
   <div class="question">
     <p>So far you've doubled the image (50→100). Now go from 50x50 to 150x150 — a scale factor of <strong>3</strong>.</p>
 
@@ -1745,7 +1750,7 @@ show_images([img_50, img_75_nearest, img_75_bilinear],
 
 
 <section class="exercise" id="ex-6-2">
-  <h3>Exercise 6.2 &mdash; Extreme Upsampling</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.2 &mdash; Extreme Upsampling</h3>
   <div class="question">
     <p>Now let's push your implementation further.</p>
 
@@ -1807,7 +1812,7 @@ show_images([patch, patch_200_nearest, patch_200_bilinear],
 
 
 
-<div class="part">
+<div class="part" data-part-number="7">
   <h2>Part 7: Neighborhood Operations</h2>
 
 </div>
@@ -1816,7 +1821,7 @@ show_images([patch, patch_200_nearest, patch_200_bilinear],
 
 
 <section class="exercise" id="ex-7-1">
-  <h3>Exercise 7.1 &mdash; The Neighborhood Idea</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1" /></label>Exercise 7.1 &mdash; The Neighborhood Idea</h3>
   <div class="question">
 
     <p>You've learned that a pixel is a single number. Now let's think differently: a pixel <strong>together with its neighbors</strong> tells you something about local structure.</p>
@@ -1909,7 +1914,7 @@ w[2,0]  w[2,1]  w[2,2]
 
 
 <section class="exercise" id="ex-7-2">
-  <h3>Exercise 7.2 &mdash; Apply Weights to a Neighborhood</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2" /></label>Exercise 7.2 &mdash; Apply Weights to a Neighborhood</h3>
   <div class="question">
     <p>Implement <code>conv(image, weights)</code> where:</p>
 
@@ -2014,7 +2019,7 @@ print("Match:", abs(result[0,0] - float(img_100[1,1])) &lt; 1e-9)
 
 
 <section class="exercise" id="ex-7-3">
-  <h3>Exercise 7.3 &mdash; Helper for Displaying Convolution Output</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.3 &mdash; Helper for Displaying Convolution Output</h3>
   <div class="question">
     <p>The output of convolution may have negative values or values &gt; 255. We need a helper to normalize and display it.</p>
 
@@ -2070,7 +2075,7 @@ print("Match:", abs(result[0,0] - float(img_100[1,1])) &lt; 1e-9)
 
 
 <section class="exercise" id="ex-7-4">
-  <h3>Exercise 7.4 &mdash; Discover What Filters Do</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.4 &mdash; Discover What Filters Do</h3>
   <div class="question">
     <p>Now the fun part. Apply your <code>conv</code> function with different kernels and discover what each one <em>does</em> to the image.</p>
 
@@ -2175,7 +2180,7 @@ print("Match:", abs(result[0,0] - float(img_100[1,1])) &lt; 1e-9)
 
 
 <section class="exercise" id="ex-7-5">
-  <h3>Exercise 7.5 &mdash; Invent Your Own Filter</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-5" /></label>Exercise 7.5 &mdash; Invent Your Own Filter</h3>
   <div class="question">
     <p>Now you know what a convolution filter does. Design your own.</p>
 
@@ -2273,7 +2278,7 @@ show_conv_result(img_100, current, title='5x Blur')
 
 
 <section class="exercise" id="ex-7-6">
-  <h3>Exercise 7.6 &mdash; Add Padding</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-6" /></label>Exercise 7.6 &mdash; Add Padding</h3>
   <div class="question">
     <p>You may have noticed that each convolution slightly shrinks the image (98x98 from a 100x100 image with a 3x3 kernel).</p>
 
@@ -2358,7 +2363,7 @@ print("conv_same output shape:", result_same.shape)  # (100, 100)
 
 
 <section class="exercise" id="ex-7-7">
-  <h3>Exercise 7.7 &mdash; Convolution on a Color Image</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-7" /></label>Exercise 7.7 &mdash; Convolution on a Color Image</h3>
   <div class="question">
     <p>So far, <code>conv</code> works on grayscale (2D). But real images are color (3D: H x W x 3).</p>
 
@@ -2449,7 +2454,7 @@ show_color_conv(color_arr, color_edges, title='Color Sobel Horizontal')
 
 
 <section class="exercise mcq" id="mcq-7-1">
-  <h3>Quick Check 7.8 &mdash; Quick Check — Edge Detection Filters</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-7-1" /></label>Quick Check 7.8 &mdash; Quick Check — Edge Detection Filters</h3>
   <div class="question">
     <p>A 3x3 convolution filter has the values <code>[[-1, -1, -1], [0, 0, 0], [1, 1, 1]]</code>. What does this filter detect?</p>
 
@@ -2506,7 +2511,7 @@ show_color_conv(color_arr, color_edges, title='Color Sobel Horizontal')
 
 
 
-<div class="part">
+<div class="part" data-part-number="8">
   <h2>Part 8: Pulling It All Together</h2>
 
 </div>
@@ -2516,7 +2521,7 @@ show_color_conv(color_arr, color_edges, title='Color Sobel Horizontal')
 
 
 <section class="exercise" id="ex-8-1">
-  <h3>Exercise 8.1 &mdash; Build a Mini Image Processing Pipeline</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-1" /></label>Exercise 8.1 &mdash; Build a Mini Image Processing Pipeline</h3>
   <div class="question">
     <p>You now have all the building blocks. Let's build a real pipeline.</p>
 
@@ -2609,7 +2614,7 @@ show_images(
 
 
 <section class="exercise" id="ex-8-2">
-  <h3>Bonus: Design a Filter by Intuition</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-2" /></label>Bonus: Design a Filter by Intuition</h3>
   <div class="question">
     <p>Here is a challenge with no given formula — you must <em>invent</em> the filter.</p>
 
@@ -2704,7 +2709,7 @@ show_conv_result(img_100, result_3, title='Corner Detector')
 
 
 <section class="exercise" id="ex-8-3">
-  <h3>Bonus: What Does Repeated Convolution Do?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-3" /></label>Bonus: What Does Repeated Convolution Do?</h3>
   <div class="question">
     <p><strong>Tasks:</strong></p>
 
@@ -2798,7 +2803,7 @@ show_conv_result(img_100, smoothed_edges, title='Sobel then Blur')
 
 
 
-<div class="part">
+<div class="part" data-part-number="9">
   <h2>Part 9: Final Reflection</h2>
 
 </div>
@@ -2807,7 +2812,7 @@ show_conv_result(img_100, smoothed_edges, title='Sobel then Blur')
 
 
 <section class="exercise" id="ex-reflection">
-  <h3>Exercise 9.1 &mdash; Reflection</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-reflection" /></label>Exercise 9.1 &mdash; Reflection</h3>
   <div class="question">
 
     <p>Answer these questions in your own words:</p>
@@ -2850,6 +2855,8 @@ show_conv_result(img_100, smoothed_edges, title='Sobel then Blur')
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

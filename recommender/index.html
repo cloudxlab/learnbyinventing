@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="recommender">
+
+<div class="progress-indicator" id="progress-indicator" data-total="7"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="recommender.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/recommender/recommender.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/recommender/recommender.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -60,10 +63,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="0">
   <h2>Part 0: The Data</h2>
 
   <p>Run the cell below as-is. It loads <code>movies_ratings.csv</code> -- 25 Bollywood movies rated 0-5 by 18 people (a real class!). Rows are movies, columns are people, and an empty cell means <em>that person never rated that movie</em>. Pandas shows these as <code>NaN</code> (Not a Number).</p>
@@ -75,7 +80,7 @@
 
 
 <section class="exercise" id="ex-0-load">
-  <h3>Load the Data</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-0-load" /></label>Load the Data</h3>
   <div class="question">
     <p>Run the cell below as-is to load the dataset.</p>
 
@@ -108,7 +113,7 @@ df.head(8)
 
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Cleaning Real Data</h2>
 
 </div>
@@ -118,7 +123,7 @@ df.head(8)
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Drop People Who Barely Rated Anything</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Drop People Who Barely Rated Anything</h3>
   <div class="question">
     <p>Look at the data: the table is full of <code>NaN</code>. Some people rated almost every movie; a few rated <em>nothing at all</em>. Someone with 0 or 2 ratings tells us nothing about their taste -- keeping them would only add noise.</p>
 
@@ -173,7 +178,7 @@ ratings = df[keep]
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Generous Raters vs Stingy Raters</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Generous Raters vs Stingy Raters</h3>
   <div class="question">
     <p>Print <code>ratings.mean().sort_values()</code>. Notice something? Bhaskar's <em>average</em> rating is about <strong>1.7</strong> while Venu's is about <strong>4.1</strong>. Does Venu love every movie and Bhaskar hate them all? More likely they just use the scale differently -- a 3 from Bhaskar might mean the same as a 5 from Venu.</p>
 
@@ -237,7 +242,7 @@ print("NaNs remaining:", int(scaled.isna().sum().sum()))
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; Filling the Holes</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; Filling the Holes</h3>
   <div class="question">
     <p>The similarity math coming in Part 2 can't handle <code>NaN</code> -- we need a number in every cell. But which number?</p>
 
@@ -296,7 +301,7 @@ print(filled.head(5).round(2))
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Measuring Taste</h2>
 
 </div>
@@ -306,7 +311,7 @@ print(filled.head(5).round(2))
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; How Similar Are Two People?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; How Similar Are Two People?</h3>
   <div class="question">
     <p>Each person is now a column of 25 numbers -- a <strong>vector</strong> in 25-dimensional space (one dimension per movie).</p>
 
@@ -379,7 +384,7 @@ print("sim(SandeepGiri, Abhishek) =",
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Unit Vectors</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Unit Vectors</h3>
   <div class="question">
     <p>We want the similarity between <em>every</em> pair of people -- that's $15 \times 15 = 225$ numbers. Calling <code>similarity</code> in a double loop would work, but there is a spectacular shortcut. It starts with one observation:</p>
 
@@ -440,7 +445,7 @@ uM = M / lengths
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; All 225 Similarities at Once</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; All 225 Similarities at Once</h3>
   <div class="question">
     <p>Here's the payoff. Remember how matrix multiplication works: entry $(i, j)$ of $AB$ is the dot product of <strong>row $i$ of $A$</strong> with <strong>column $j$ of $B$</strong>.</p>
 
@@ -505,7 +510,7 @@ sim = pd.DataFrame(S, index=filled.columns, columns=filled.columns)
 
 
 <section class="exercise" id="ex-2-4">
-  <h3>Exercise 2.4 &mdash; Your Taste Twin</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-4" /></label>Exercise 2.4 &mdash; Your Taste Twin</h3>
   <div class="question">
     <p><strong>Your task:</strong> write <code>most_similar(person)</code> returning the name of the person with the highest similarity to <code>person</code> -- <em>excluding</em> the person themselves (everyone's best match would otherwise be themselves, similarity 1.0).</p>
 
@@ -557,7 +562,7 @@ for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
 
 
 <section class="exercise mcq" id="mcq-2-1">
-  <h3>Quick Check 2.5 &mdash; Why Normalize Ratings?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-2-1" /></label>Quick Check 2.5 &mdash; Why Normalize Ratings?</h3>
   <div class="question">
     <p>Before computing cosine similarity, you applied min-max scaling to each person's ratings. Why is this normalization step important?</p>
 
@@ -614,7 +619,7 @@ for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Making Recommendations</h2>
 
 </div>
@@ -624,7 +629,7 @@ for p in ["SandeepGiri", "Abhishek", "Venu", "Gurpreet"]:
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; What Haven't You Seen?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; What Haven't You Seen?</h3>
   <div class="question">
     <p>We only want to recommend movies the person <em>hasn't rated yet</em> -- no point suggesting a movie they already gave 5 stars.</p>
 
@@ -681,7 +686,7 @@ print("SandeepGiri hasn't rated:", mine)
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; The Recommender</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; The Recommender</h3>
   <div class="question">
     <p>Now assemble the pieces. To score a candidate movie $m$ for a person $p$:</p>
 
@@ -750,7 +755,7 @@ print("Abhishek should watch:  ", recommend("Abhishek", 3))
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.3 &mdash; The Cold Start Problem</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.3 &mdash; The Cold Start Problem</h3>
   <div class="question">
     <p>A brand-new user signs up and hasn't rated any movies yet. What happens when the recommender tries to find their taste twin?</p>
 
@@ -816,7 +821,7 @@ print("Abhishek should watch:  ", recommend("Abhishek", 3))
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Two More Recommender Moves</h2>
 
 </div>
@@ -825,7 +830,7 @@ print("Abhishek should watch:  ", recommend("Abhishek", 3))
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Ask Your Five Best Taste Twins</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Ask Your Five Best Taste Twins</h3>
   <div class="question">
     <p><code>recommend()</code> let <em>everyone</em> vote, weighted by similarity. Real systems often do something blunter and cheaper: find your <strong>top 5 most similar people</strong>, pool their <strong>top 5 favorite movies</strong>, and drop anything you've already seen. No scores, no weighted sums -- just "what do people like me love?"</p>
 
@@ -907,7 +912,7 @@ def recommend_by_friends(person):
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Flip the Matrix: Similar Movies</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Flip the Matrix: Similar Movies</h3>
   <div class="question">
     <p>Everything we built compared <strong>people</strong> -- the columns of <code>filled</code>. But the same data read the other way compares <strong>movies</strong>: each <em>row</em> is a movie's vector of 15 ratings, and two movies whose rows point the same way are liked by the same people.</p>
 
@@ -980,7 +985,7 @@ def most_similar_movie(name):
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Scaling to Netflix -- MapReduce Matrix Multiplication</h2>
 
   <p>Our class matrix was 25x15. Netflix has ~300 million users and ~20,000 titles. The user-similarity matrix alone would have $3\times10^8 \times 3\times10^8$ entries -- no single machine can even <em>hold</em> that, let alone compute it.</p>
@@ -999,7 +1004,7 @@ def most_similar_movie(name):
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Sparse MapReduce Matrix Multiplication</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Sparse MapReduce Matrix Multiplication</h3>
   <div class="question">
     <p><strong>Your task:</strong> write <code>sparse_matmul(A_triples, B_triples)</code> where each argument is a list of <code>(row, col, value)</code> triples of the non-zero entries. Return a dict mapping <code>(i, j) -&gt; value</code> for the non-zero entries of the product.</p>
 
@@ -1067,7 +1072,7 @@ print("sparse_matmul works -- zeros never stored, never multiplied")
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: What You Invented</h2>
 
   <p>This is <strong>collaborative filtering</strong> -- recommending purely from the pattern of who-likes-what, knowing nothing about the movies themselves (no genres, no actors, no plots). The alternative, <strong>content-based filtering</strong>, compares movie <em>features</em> instead; modern systems blend both.</p>
@@ -1178,6 +1183,8 @@ print("sparse_matmul works -- zeros never stored, never multiplied")
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

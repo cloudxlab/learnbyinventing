@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="decision_tree">
+
+<div class="progress-indicator" id="progress-indicator" data-total="10"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="decision_tree.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/decision_tree/decision_tree.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/decision_tree/decision_tree.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -43,10 +46,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: What Is Impurity?</h2>
 
 </div>
@@ -55,7 +60,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Think About Mixing</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Think About Mixing</h3>
   <div class="question">
 
     <p>Imagine a bag of coloured balls — some <strong>Red</strong>, some <strong>Black</strong>.</p>
@@ -131,7 +136,7 @@ impurity(1, 0)      →  0
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Invent the Formula</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Invent the Formula</h3>
   <div class="question">
     <p>We're going to invent the formula for <code>impurity(p, q)</code> where:</p>
 
@@ -309,7 +314,7 @@ plot_impurity_candidate(lambda p: p * (1 - p), title="f(p) = p * (1-p)")
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; Scale It</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; Scale It</h3>
   <div class="question">
     <p>From Exercise 1.2, you found that $f(p) = p \times (1-p)$ peaks at $p = 0.5$ with a value of $0.25$.</p>
 
@@ -413,7 +418,7 @@ plot_impurity_candidate(lambda p: impurity(p, 1 - p),
 
 
 <section class="exercise" id="ex-1-4">
-  <h3>Exercise 1.4 &mdash; Explore the Function</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-4" /></label>Exercise 1.4 &mdash; Explore the Function</h3>
   <div class="question">
     <p>Now that you have <code>impurity(p, q)</code>, explore it.</p>
 
@@ -532,7 +537,7 @@ for name, p, q in bags:
 
 
 <section class="exercise mcq" id="mcq-1-1">
-  <h3>Quick Check 1.5 &mdash; Impurity Interpretation</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-1-1" /></label>Quick Check 1.5 &mdash; Impurity Interpretation</h3>
   <div class="question">
     <p>A group contains 50 apples and 50 oranges. Another group contains 95 apples and 5 oranges. Which group has higher impurity?</p>
 
@@ -589,7 +594,7 @@ for name, p, q in bags:
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Impurity of a List</h2>
 
 </div>
@@ -599,7 +604,7 @@ for name, p, q in bags:
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; From Fractions to Lists</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; From Fractions to Lists</h3>
   <div class="question">
     <p>So far, <code>impurity(p, q)</code> takes fractions directly. But in practice, you have a <strong>list</strong> like:</p>
 
@@ -710,7 +715,7 @@ list_C = ["R"]*7 + ["B"]*3  # p=0.7  imp=0.84
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Weighted Impurity of Two Groups</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Weighted Impurity of Two Groups</h3>
   <div class="question">
     <p>When we split a list into two parts, we get two separate impurity values — one for each part.</p>
 
@@ -795,7 +800,7 @@ print(total_impurity(["R"]*9 + ["B"], ["B"]))
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Finding the Best Split</h2>
 
 </div>
@@ -805,7 +810,7 @@ print(total_impurity(["R"]*9 + ["B"], ["B"]))
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; Splitting a List at a Position</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; Splitting a List at a Position</h3>
   <div class="question">
     <p>You are given an ordered list:</p>
 
@@ -894,7 +899,7 @@ for k in range(1, len(items)):
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; The Best Split Function</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; The Best Split Function</h3>
   <div class="question">
     <p>Now automate it: write a function <code>find_best_split_position(items)</code> that:</p>
 
@@ -987,7 +992,7 @@ for lst in [["R","B","B","R","R"],
 
 
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; Visualise the Split Scores</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; Visualise the Split Scores</h3>
   <div class="question">
     <p>Use the plotting helper below to visualise how total impurity changes at each split position.</p>
 
@@ -1059,7 +1064,7 @@ for lst in test_lists:
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Splitting Real Data — Height & Gender</h2>
 
 </div>
@@ -1068,7 +1073,7 @@ for lst in test_lists:
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Meet the Dataset</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Meet the Dataset</h3>
   <div class="question">
 
     <p>You are given a dataset of students in a class. Each student has a <strong>height</strong> (in cm) and a <strong>gender</strong> ("M" or "F").</p>
@@ -1133,7 +1138,7 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Visualise the Data</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Visualise the Data</h3>
   <div class="question">
     <p>Run the plotting helper below to see the data.</p>
 
@@ -1188,7 +1193,7 @@ genders = ["F",  "F",  "F",  "F",  "M",  "F",  "M",  "M",  "F",  "M",
 
 
 <section class="exercise" id="ex-4-3">
-  <h3>Exercise 4.3 &mdash; Split by Height Threshold</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Split by Height Threshold</h3>
   <div class="question">
     <p>Now the key idea: instead of splitting at a <em>position</em> in a list, we split at a <strong>threshold value</strong> in a feature.</p>
 
@@ -1273,7 +1278,7 @@ for t in [160, 165, 170, 172, 175, 178, 182, 185, 188]:
 
 
 <section class="exercise" id="ex-4-4">
-  <h3>Exercise 4.4 &mdash; Find the Best Threshold Automatically</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-4" /></label>Exercise 4.4 &mdash; Find the Best Threshold Automatically</h3>
   <div class="question">
     <p>Instead of manually trying thresholds, automate it.</p>
 
@@ -1359,7 +1364,7 @@ plot_height_gender(heights, genders, split_height=best_t)
 
 
 <section class="exercise" id="ex-4-5">
-  <h3>Exercise 4.5 &mdash; Plot Impurity vs Threshold</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-5" /></label>Exercise 4.5 &mdash; Plot Impurity vs Threshold</h3>
   <div class="question">
     <p>Use the plotting helper below to visualise how impurity changes as the threshold varies.</p>
 
@@ -1416,7 +1421,7 @@ plot_height_gender(heights, genders, split_height=best_t)
 
 
 <section class="exercise mcq" id="mcq-4-1">
-  <h3>Quick Check 4.6 &mdash; What a Threshold Means</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-4-1" /></label>Quick Check 4.6 &mdash; What a Threshold Means</h3>
   <div class="question">
     <p>Your algorithm found that the best split for a height-based gender classifier is at 167 cm. What does this threshold mean for prediction?</p>
 
@@ -1473,7 +1478,7 @@ plot_height_gender(heights, genders, split_height=best_t)
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: A Decision Node — The Job Offer</h2>
 
 </div>
@@ -1482,7 +1487,7 @@ plot_height_gender(heights, genders, split_height=best_t)
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; What Is a Decision Tree Node?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; What Is a Decision Tree Node?</h3>
   <div class="question">
 
     <p>Before we build a full tree from data, let's understand the structure of a decision tree by <strong>constructing one by hand</strong>.</p>
@@ -1560,7 +1565,7 @@ plot_height_gender(heights, genders, split_height=best_t)
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Exercise 5.2 &mdash; Build the DecisionTreeNode Class</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; Build the DecisionTreeNode Class</h3>
   <div class="question">
     <p>Design a class <code>DecisionTreeNode</code> that can be either a <strong>boundary node</strong> or a <strong>leaf node</strong>.</p>
 
@@ -1691,7 +1696,7 @@ print(job_tree.check({"salary": 1000, "distance": 15}))  # False
 
 
 <section class="exercise" id="ex-5-3">
-  <h3>Exercise 5.3 &mdash; A Bigger Tree</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-3" /></label>Exercise 5.3 &mdash; A Bigger Tree</h3>
   <div class="question">
     <p>Now build a more complex tree by hand. This tree has 3 levels:</p>
 
@@ -1809,7 +1814,7 @@ for job in tests:
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: Multiple Features — Finding the Best Split</h2>
 
 </div>
@@ -1819,7 +1824,7 @@ for job in tests:
 
 
 <section class="exercise" id="ex-6-1">
-  <h3>Exercise 6.1 &mdash; Add a Second Feature: Weight</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; Add a Second Feature: Weight</h3>
   <div class="question">
     <p>Now the dataset has <strong>two features</strong>: height and weight. We want to find which feature and which threshold gives the best split.</p>
 
@@ -1875,7 +1880,7 @@ for job in tests:
 
 
 <section class="exercise" id="ex-6-2">
-  <h3>Exercise 6.2 &mdash; Find the Best Feature and Threshold</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.2 &mdash; Find the Best Feature and Threshold</h3>
   <div class="question">
     <p><strong>The question:</strong> Should we split on <strong>height</strong> or <strong>weight</strong>, and at what value?</p>
 
@@ -1976,7 +1981,7 @@ print(f"Right: {right_group}")
 
 
 <section class="exercise" id="ex-6-3">
-  <h3>Exercise 6.3 &mdash; Visualise Both Features</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-3" /></label>Exercise 6.3 &mdash; Visualise Both Features</h3>
   <div class="question">
     <p>Use the helper below to visualise both the height split and the weight split.</p>
 
@@ -2051,7 +2056,7 @@ plot_feature_split(data, "weight", "gender",
 
 
 
-<div class="part">
+<div class="part" data-part-number="7">
   <h2>Part 7: Growing the Tree — Recursive Splitting</h2>
 
 </div>
@@ -2060,7 +2065,7 @@ plot_feature_split(data, "weight", "gender",
 
 
 <section class="exercise" id="ex-7-1">
-  <h3>Exercise 7.1 &mdash; What Happens After the First Split?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1" /></label>Exercise 7.1 &mdash; What Happens After the First Split?</h3>
   <div class="question">
 
     <p>After the first split, you have two groups. Each group may still be impure (mixed).</p>
@@ -2146,7 +2151,7 @@ plot_feature_split(data, "weight", "gender",
 
 
 <section class="exercise" id="ex-7-2">
-  <h3>Exercise 7.2 &mdash; Stopping Conditions</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2" /></label>Exercise 7.2 &mdash; Stopping Conditions</h3>
   <div class="question">
     <p>Before writing the recursive function, think about <strong>when to stop</strong>.</p>
 
@@ -2237,7 +2242,7 @@ print(is_pure([]))                            # True
 
 
 <section class="exercise" id="ex-7-3">
-  <h3>Exercise 7.3 &mdash; Build the Tree Recursively</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.3 &mdash; Build the Tree Recursively</h3>
   <div class="question">
     <p>Now write <code>build_tree(data, features, label)</code> that:</p>
 
@@ -2364,7 +2369,7 @@ print_tree(tree)
 
 
 <section class="exercise" id="ex-7-4">
-  <h3>Exercise 7.4 &mdash; Use the Tree to Predict</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.4 &mdash; Use the Tree to Predict</h3>
   <div class="question">
     <p>Now use your built tree to predict the gender of each row in the original <code>data</code>.</p>
 
@@ -2421,7 +2426,7 @@ print(f"\nAccuracy: {correct}/{len(data)} "
 
 
 <section class="exercise mcq" id="mcq-7-1">
-  <h3>Quick Check 7.5 &mdash; Overfitting via Depth</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-7-1" /></label>Quick Check 7.5 &mdash; Overfitting via Depth</h3>
   <div class="question">
     <p>A decision tree is allowed to grow until every leaf contains exactly one data point. It achieves 100% accuracy on the training data. Is this a good model?</p>
 
@@ -2478,7 +2483,7 @@ print(f"\nAccuracy: {correct}/{len(data)} "
 
 
 
-<div class="part">
+<div class="part" data-part-number="8">
   <h2>Part 8: The Full Decision Tree — fit and predict</h2>
 
 </div>
@@ -2487,7 +2492,7 @@ print(f"\nAccuracy: {correct}/{len(data)} "
 
 
 <section class="exercise" id="ex-8-1">
-  <h3>Exercise 8.1 &mdash; The Interface</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-1" /></label>Exercise 8.1 &mdash; The Interface</h3>
   <div class="question">
 
     <p>Real ML libraries use a standard interface:</p>
@@ -2553,7 +2558,7 @@ print(f"\nAccuracy: {correct}/{len(data)} "
 
 
 <section class="exercise" id="ex-8-2">
-  <h3>Exercise 8.2 &mdash; Implement SimpleDecisionTree</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-2" /></label>Exercise 8.2 &mdash; Implement SimpleDecisionTree</h3>
   <div class="question">
     <p>Wrap everything into a clean class:</p>
 
@@ -2681,7 +2686,7 @@ for person, pred in zip(new_people, new_preds):
 
 
 <section class="exercise" id="ex-8-3">
-  <h3>Exercise 8.3 &mdash; Print the Learned Tree</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-3" /></label>Exercise 8.3 &mdash; Print the Learned Tree</h3>
   <div class="question">
     <p>Use your <code>print_tree</code> function to display the tree learned by <code>SimpleDecisionTree</code>.</p>
 
@@ -2727,7 +2732,7 @@ for person, pred in zip(new_people, new_preds):
 
 
 
-<div class="part">
+<div class="part" data-part-number="9">
   <h2>Part 9: Bonus Challenges</h2>
 
   <p>If you've made it here, you've built a decision tree from scratch — impurity formula, split search, recursive tree growth, and a full ML-style class. Here are open-ended extensions.</p>
@@ -2739,7 +2744,7 @@ for person, pred in zip(new_people, new_preds):
 
 
 <section class="exercise" id="ex-9-a">
-  <h3>Max Depth</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-a" /></label>Max Depth</h3>
   <div class="question">
     <p>Your tree keeps splitting until each leaf is pure. This can lead to <strong>overfitting</strong> — the tree memorises the training data but won't generalise to new data.</p>
 
@@ -2832,7 +2837,7 @@ for md in [1, 2, 3, None]:
 
 
 <section class="exercise" id="ex-9-b">
-  <h3>Min Samples to Split</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-b" /></label>Min Samples to Split</h3>
   <div class="question">
     <p>Another way to prevent overfitting: don't split a group if it has fewer than <code>min_samples</code> rows.</p>
 
@@ -2911,7 +2916,7 @@ for ms in [1, 3, 5]:
 
 
 <section class="exercise" id="ex-9-c">
-  <h3>A New Dataset</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-c" /></label>A New Dataset</h3>
   <div class="question">
     <p>Try your tree on the Iris dataset — a classic ML benchmark.</p>
 
@@ -3008,7 +3013,7 @@ print(f"\nTest accuracy: {test_acc}/{len(y_test)} "
 
 
 <section class="exercise" id="ex-9-d">
-  <h3>What Is Gini Impurity?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-d" /></label>What Is Gini Impurity?</h3>
   <div class="question">
     <p>The impurity function you invented is based on $p(1-p)$. Look up <strong>Gini impurity</strong>:</p>
 
@@ -3098,7 +3103,7 @@ plt.legend(); plt.grid(True); plt.show()
 
 
 
-<div class="part">
+<div class="part" data-part-number="10">
   <h2>Part 10: Reflection — What Did You Just Build?</h2>
 
 </div>
@@ -3107,7 +3112,7 @@ plt.legend(); plt.grid(True); plt.show()
 
 
 <section class="exercise" id="ex-reflection">
-  <h3>Exercise 10.1 &mdash; Reflection</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-reflection" /></label>Exercise 10.1 &mdash; Reflection</h3>
   <div class="question">
 
     <p>Take a moment to answer these questions in your own words.</p>
@@ -3155,6 +3160,8 @@ plt.legend(); plt.grid(True); plt.show()
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

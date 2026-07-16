@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="pattern_matching">
+
+<div class="progress-indicator" id="progress-indicator" data-total="4"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="pattern_matching.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/pattern_matching/pattern_matching.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/pattern_matching/pattern_matching.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -43,10 +46,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Exact Match</h2>
 
 </div>
@@ -56,7 +61,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Character by Character</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Character by Character</h3>
   <div class="question">
     <p>Write <code>match_exact(pat, text)</code> that returns <code>True</code> only when the pattern and the text are exactly the same -- <strong>without using <code>==</code> on whole strings</strong>. Compare one character at a time.</p>
 
@@ -133,7 +138,7 @@ print("match_exact: OK")
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: The `?` Wildcard</h2>
 
   <p>New rule: in the pattern, <code>?</code> matches <strong>exactly one</strong> character -- any character.</p>
@@ -150,7 +155,7 @@ a?  does not match: a, abc
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Add `?` to Your Matcher</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Add `?` to Your Matcher</h3>
   <div class="question">
     <p>Write <code>match_q(pat, text)</code>. It is <code>match_exact</code> with one extra case: when the first pattern character is <code>?</code>, what should you compare -- and what do you recurse on?</p>
 
@@ -221,7 +226,7 @@ print("match_q: OK")
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: The `*` Wildcard</h2>
 
   <p>The big one: <code>*</code> matches <strong>zero or more</strong> characters -- any characters.</p>
@@ -240,7 +245,7 @@ aa?b*  does not match: aab, ab
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; Think Before You Code</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; Think Before You Code</h3>
   <div class="question">
 
     <p>Pattern <code>a*b</code>, text <code>"axyzb"</code>. The <code>a</code> matches. Now the pattern says <code>*</code> and the text says <code>"xyzb"</code>. <strong>How many characters should the <code>*</code> swallow?</strong></p>
@@ -303,7 +308,7 @@ aa?b*  does not match: aab, ab
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; The Full Matcher</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; The Full Matcher</h3>
   <div class="question">
     <p>Write <code>match(pat, text)</code> supporting literals, <code>?</code>, and <code>*</code>.</p>
 
@@ -402,7 +407,7 @@ print("match: OK -- you have built a glob matcher")
 
 
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; Use It Like a Shell</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; Use It Like a Shell</h3>
   <div class="question">
     <p>Your <code>match</code> is exactly what the shell does with filenames (called <em>globbing</em>).</p>
 
@@ -460,7 +465,7 @@ print("find_matching: OK")
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.4 &mdash; Why `*` Needs Backtracking</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.4 &mdash; Why `*` Needs Backtracking</h3>
   <div class="question">
     <p>The pattern <code>a*b</code> is matched against the string <code>axxbyyb</code>. The <code>*</code> is greedy -- it first tries to consume as many characters as possible. Why does the matcher need backtracking to find the correct match?</p>
 
@@ -517,7 +522,7 @@ print("find_matching: OK")
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Regular Expressions -- The Professional Version</h2>
 
   <p>What you invented is the core idea behind <strong>regular expressions</strong> -- a pattern language so useful it is built into every programming language. Python's <code>re</code> module speaks a richer dialect:</p>
@@ -552,7 +557,7 @@ print("find_matching: OK")
 
 
 <section class="exercise" id="ex-4-0">
-  <h3>Exercise 4.0 &mdash; Quick Demo</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-0" /></label>Exercise 4.0 &mdash; Quick Demo</h3>
   <div class="question">
     <p>Run this quick demo to see <code>re.search</code> and <code>re.findall</code> in action.</p>
 
@@ -588,7 +593,7 @@ print(re.findall("[0-9]+", "10 apples, 25 oranges, 3 kiwis"))
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Match Dates</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Match Dates</h3>
   <div class="question">
     <p>Dates appear as <code>05/07/1980</code> or <code>05-07-1980</code> (day, month, year -- separator is <code>/</code> or <code>-</code>).</p>
 
@@ -651,7 +656,7 @@ print("DATE_PATTERN: OK")
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Valid Dates Only</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Valid Dates Only</h3>
   <div class="question">
     <p>Your pattern happily matches <code>99/88/1980</code>. Tighten it:</p>
 
@@ -731,7 +736,7 @@ print("STRICT_DATE: OK")
 
 
 <section class="exercise" id="ex-4-3">
-  <h3>Exercise 4.3 &mdash; Find Credit Card Numbers</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Find Credit Card Numbers</h3>
   <div class="question">
     <p>A security audit: find credit-card-like numbers (four groups of 4 digits, separated by spaces, dashes, or nothing) leaking into text.</p>
 
@@ -794,7 +799,7 @@ print("find_card_numbers: OK")
 
 
 <section class="exercise" id="ex-4-4">
-  <h3>Exercise 4.4 &mdash; Extract Email Addresses</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-4" /></label>Exercise 4.4 &mdash; Extract Email Addresses</h3>
   <div class="question">
     <p>Write <code>find_emails(text)</code> that extracts things shaped like email addresses: one-or-more "word characters" (letters, digits, <code>.</code>, <code>_</code>), then <code>@</code>, then a domain with at least one dot.</p>
 
@@ -855,7 +860,7 @@ print("find_emails: OK")
 
 
 <section class="exercise" id="ex-4-5">
-  <h3>Exercise 4.5 &mdash; Mine a Real Server Log</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-5" /></label>Exercise 4.5 &mdash; Mine a Real Server Log</h3>
   <div class="question">
     <p>Below are genuine lines from an Apache web-server access log (<code>access.log.41</code> -- 5 MB of real traffic from a Hadoop training site). Each line may contain URLs in the user-agent or referrer fields.</p>
 
@@ -955,7 +960,7 @@ def domain_counts(urls):
 
 
 <section class="exercise mcq" id="mcq-4-1">
-  <h3>Quick Check 4.6 &mdash; Greedy vs Non-Greedy Matching</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-4-1" /></label>Quick Check 4.6 &mdash; Greedy vs Non-Greedy Matching</h3>
   <div class="question">
     <p>Given the HTML string <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code>, what does the regex <code>&lt;b&gt;.*&lt;/b&gt;</code> match?</p>
 
@@ -1108,6 +1113,8 @@ def domain_counts(urls):
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

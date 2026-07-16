@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="secrets_of_prediction">
+
+<div class="progress-indicator" id="progress-indicator" data-total="5"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="secrets_of_prediction.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/secrets_of_prediction/secrets_of_prediction.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/secrets_of_prediction/secrets_of_prediction.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -53,10 +56,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Vectors --- the Arithmetic of Prediction</h2>
 
   <p>A fitted model is just a list of coefficients --- a <strong>vector</strong>. Evaluating it at a point is a <em>dot product</em>. Build that toolkit first.</p>
@@ -69,7 +74,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; `dot_product`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; `dot_product`</h3>
   <div class="question">
     <p><code>dot_product(a, b)</code> multiplies element-by-element and sums: <code>dot_product([1, 2], [3, 4])</code> is <code>1*3 + 2*4 = 11</code>.</p>
 
@@ -135,7 +140,7 @@ assert dot_product([2], [7]) == 14
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; `vector_length` and `convert_to_unit`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; `vector_length` and `convert_to_unit`</h3>
   <div class="question">
     <p>The length of a vector is the distance formula in disguise: $\|v\| = \sqrt{v \cdot v}$ --- reuse your <code>dot_product</code>.</p>
 
@@ -210,7 +215,7 @@ def convert_to_unit(v):
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; `cosine_similarity`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; `cosine_similarity`</h3>
   <div class="question">
     <p>How <em>aligned</em> are two vectors? Take the dot product of their <strong>unit</strong> versions. The result is the cosine of the angle between them:</p>
 
@@ -284,7 +289,7 @@ assert abs(cosine_similarity([1, 2], [-1, -2]) + 1.0) &lt; 1e-9   # opposite
 
 
 <section class="exercise" id="ex-1-4">
-  <h3>Exercise 1.4 &mdash; `matrix_mul`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-4" /></label>Exercise 1.4 &mdash; `matrix_mul`</h3>
   <div class="question">
     <p>A matrix is a list of rows. In the product <code>C = A @ B</code>, entry <code>C[i][j]</code> is the dot product of <strong>row i of A</strong> with <strong>column j of B</strong>. An (n x k) matrix times a (k x m) matrix gives an (n x m) matrix.</p>
 
@@ -370,7 +375,7 @@ assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)
 
 
 <section class="exercise mcq" id="mcq-1-1">
-  <h3>Quick Check 1.5 &mdash; Cosine Similarity Meaning</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-1-1" /></label>Quick Check 1.5 &mdash; Cosine Similarity Meaning</h3>
   <div class="question">
     <p>Two vectors have a cosine similarity of 0. What does this tell you about their relationship?</p>
 
@@ -427,7 +432,7 @@ assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Bring Your Solver</h2>
 
   <p>We store the equation $a_1 x_1 + a_2 x_2 + \dots + a_n x_n = b$ as the list <code>[a1, a2, ..., an, b]</code>, and a system as a list of such lists --- exactly the representation you used in <strong>Loops and Arrays, Part 5</strong>.</p>
@@ -440,7 +445,7 @@ assert matrix_mul(M, v) == [[7], [16]]   # (2x3) @ (3x1) -&gt; (2x1)
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Paste and Verify Your Solver</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Paste and Verify Your Solver</h3>
   <div class="question">
     <p>Paste your <code>solve_equations</code> (with its helpers <code>solve_for_first_variable</code>, <code>eliminate_variable_pair</code>, <code>eliminate_variable</code>) into the code cell. The test must pass before you go on.</p>
 
@@ -518,7 +523,7 @@ def solve_equations(equations):
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Prediction as Equation Solving</h2>
 
 </div>
@@ -528,7 +533,7 @@ def solve_equations(equations):
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; The Apple Trips, by Code</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; The Apple Trips, by Code</h3>
   <div class="question">
     <p>Redo the opening story with your tools:</p>
 
@@ -592,7 +597,7 @@ prediction = dot_product(beta, [10, 1])
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; When a Line Isn't Enough</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; When a Line Isn't Enough</h3>
   <div class="question">
     <p>Traffic through a junction is measured three times:</p>
 
@@ -683,7 +688,7 @@ prediction = dot_product(abc, [16, 4, 1])
 
 
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; `solve_poly`: the General Machine</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; `solve_poly`: the General Machine</h3>
   <div class="question">
     <p>Automate it. Write <code>solve_poly(x, y, xp)</code>:</p>
 
@@ -750,7 +755,7 @@ print("solve_poly: OK")
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: When No Curve Fits</h2>
 
   <p>A factory reports:</p>
@@ -794,7 +799,7 @@ print("solve_poly: OK")
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; `total_error`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; `total_error`</h3>
   <div class="question">
     <p>For a candidate line $y = mx + c$, each data point $(x_i, y_i)$ has an error: the prediction $mx_i + c$ minus the actual $y_i$. But some errors are positive (prediction too high) and some are negative (prediction too low) --- if you just add them up, they cancel out.</p>
 
@@ -852,7 +857,7 @@ print("total_error: OK")
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; The Best Line, Without Guessing</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; The Best Line, Without Guessing</h3>
   <div class="question">
     <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing --- both partial derivatives are zero.</p>
 
@@ -933,7 +938,7 @@ m, c = solve_equations([
 
 
 <section class="exercise" id="ex-4-3">
-  <h3>Exercise 4.3 &mdash; `best_line`: Least Squares for Any Data</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; `best_line`: Least Squares for Any Data</h3>
   <div class="question">
     <p>Wrap it up. Write <code>best_line(data)</code>:</p>
 
@@ -1026,7 +1031,7 @@ plt.show()
 
 
 <section class="exercise mcq" id="mcq-4-1">
-  <h3>Quick Check 4.4 &mdash; Why Square the Errors</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-4-1" /></label>Quick Check 4.4 &mdash; Why Square the Errors</h3>
   <div class="question">
     <p>In the least squares method, you minimize the sum of <em>squared</em> errors. Why not just minimize the sum of raw errors (without squaring)?</p>
 
@@ -1083,7 +1088,7 @@ plt.show()
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Bonus --- Matrices That Move the World</h2>
 
   <p>So far matrices held <em>data</em> (trips, prices). But <code>matrix_mul</code> has a second life: a matrix can be a <strong>machine that moves points</strong>. Every video game, every 3D animation, every graphics chip is built on this.</p>
@@ -1098,7 +1103,7 @@ plt.show()
 
 
 <section class="exercise" id="ex-r-1">
-  <h3>Exercise 5.1 &mdash; The Rotation Matrix</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-r-1" /></label>Exercise 5.1 &mdash; The Rotation Matrix</h3>
   <div class="question">
     <p>The matrix that rotates every point counter-clockwise by angle $\theta$ (with points as rows) is:</p>
 
@@ -1166,7 +1171,7 @@ def rotation_matrix(angle_degrees):
 
 
 <section class="exercise" id="ex-r-2">
-  <h3>Exercise 5.2 &mdash; Turn a Whole Shape</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-r-2" /></label>Exercise 5.2 &mdash; Turn a Whole Shape</h3>
   <div class="question">
     <p>Here is a kite, five points as rows (the last repeats the first so it draws closed):</p>
 
@@ -1238,7 +1243,7 @@ turned = matrix_mul(kite, rotation_matrix(45))
 
 
 <section class="exercise" id="ex-r-3">
-  <h3>Exercise 5.3 &mdash; What Does a *Random* Matrix Do?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-r-3" /></label>Exercise 5.3 &mdash; What Does a *Random* Matrix Do?</h3>
   <div class="question">
 
     <p>Rotation matrices are special. What happens with an arbitrary 2x2 matrix?</p>
@@ -1371,6 +1376,8 @@ plt.show()
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

@@ -17,15 +17,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="encoder_decoder">
+
+<div class="progress-indicator" id="progress-indicator" data-total="6"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="encoder_decoder.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/encoder_decoder/encoder_decoder.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/encoder_decoder/encoder_decoder.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -69,10 +72,12 @@ This pattern (encode → black box → decode) is everywhere: ML pipelines call 
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Reading the Data</h2>
 
   <p>First, create the input data file. Run this provided cell as-is.</p>
@@ -85,7 +90,7 @@ This pattern (encode → black box → decode) is everywhere: ML pipelines call 
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Parse One Line</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Parse One Line</h3>
   <div class="question">
     <p>The lines are messy: spaces after commas, a newline at the end. Write
 <code>parse_line(line)</code> that returns a clean tuple <code>(user, product_id, score)</code>
@@ -166,7 +171,7 @@ assert parse_line("a@b.com , 7 , 0.5") == ("a@b.com", 7, 0.5)
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Read the Whole File</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Read the Whole File</h3>
   <div class="question">
     <p>Write <code>read_data(filename)</code> that opens the file and returns a list of parsed
 tuples, skipping any blank lines.</p>
@@ -227,7 +232,7 @@ assert rows == [("sandeep", 1, 1.0), ("nitin", 2, 3.0), ("subodh", 2, 1.0),
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: The Encoder</h2>
 
 </div>
@@ -237,7 +242,7 @@ assert rows == [("sandeep", 1, 1.0), ("nitin", 2, 3.0), ("subodh", 2, 1.0),
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Assign an Integer to Each Email</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Assign an Integer to Each Email</h3>
   <div class="question">
     <p>Write <code>build_mapping(rows)</code> that gives each <strong>distinct</strong> user an integer ID:
 1 for the first user seen, 2 for the second new user, and so on.
@@ -299,7 +304,7 @@ assert mapping == {"sandeep": 1, "nitin": 2, "subodh": 3}
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Persist the Mapping</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Persist the Mapping</h3>
   <div class="question">
     <p>The mapping file maps email → id. The decoder needs id → email.
 The Decoder is a <em>separate program</em> — it will not share memory with the Encoder.
@@ -375,7 +380,7 @@ def load_mapping(filename):
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; The Complete Encoder Program</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; The Complete Encoder Program</h3>
   <div class="question">
     <p>Put it together. Write <code>encode_file(input_file, encoded_file, mapping_file)</code> that reads the raw data, builds and saves the mapping, and writes the encoded CSV with emails replaced by their integer IDs.</p>
 
@@ -440,7 +445,7 @@ assert load_mapping("mapping.csv") == {"sandeep": 1, "nitin": 2, "subodh": 3}
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: The Recommendation Engine (Black Box)</h2>
 
   <p>Here is the engine you bought. <strong>You are not allowed to modify it</strong> — run the
@@ -462,7 +467,7 @@ Time for the Decoder.</p>
 
 
 <section class="exercise" id="provided-3-1">
-  <h3>Exercise 3.1 &mdash; The Black-Box Recommender</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="provided-3-1" /></label>Exercise 3.1 &mdash; The Black-Box Recommender</h3>
   <div class="question">
     <p>Run this provided cell as-is. <strong>Do not modify</strong> the recommender.</p>
 
@@ -516,7 +521,7 @@ print(open("recommendations.csv").read())
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: The Decoder</h2>
 
 </div>
@@ -526,7 +531,7 @@ print(open("recommendations.csv").read())
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Invert the Mapping</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Invert the Mapping</h3>
   <div class="question">
     <p>The mapping file maps email → id. The decoder needs id → email.</p>
 
@@ -587,7 +592,7 @@ it from memory.) Why is inversion safe here — what property must the mapping h
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; The Complete Decoder Program</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; The Complete Decoder Program</h3>
   <div class="question">
     <p>Write <code>decode_file(recs_file, mapping_file, output_file)</code> that loads the mapping from its file, inverts it, reads the engine's recommendations, and writes the final CSV with integer IDs translated back to emails.</p>
 
@@ -654,7 +659,7 @@ with score 1.5.</p>
 
 
 <section class="exercise mcq" id="mcq-4-1">
-  <h3>Quick Check 4.3 &mdash; Why Encode at All?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-4-1" /></label>Quick Check 4.3 &mdash; Why Encode at All?</h3>
   <div class="question">
     <p>The recommendation engine takes integer IDs instead of email addresses. Why is this encoding step necessary?</p>
 
@@ -711,7 +716,7 @@ with score 1.5.</p>
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Prove the Pipeline</h2>
 
 </div>
@@ -721,7 +726,7 @@ with score 1.5.</p>
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; Round Trip on Bigger Data</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; Round Trip on Bigger Data</h3>
   <div class="question">
     <p>A pipeline you have run once works once. A pipeline you have <strong>tested</strong> works.</p>
 
@@ -820,7 +825,7 @@ for line in open("big_final.csv").readlines()[:5]:
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: Summary</h2>
 
   <p>The same encode → black box → decode shape appears when you one-hot-encode
@@ -931,6 +936,8 @@ network hop (your Huffman coder!). The black box changes; the wrapper pattern ne
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="neural_networks">
+
+<div class="progress-indicator" id="progress-indicator" data-total="3"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="neural_networks.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/neural_networks/neural_networks.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/neural_networks/neural_networks.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -54,10 +57,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: From Numbers to Yes/No</h2>
 
   <p>Here are five people's heights, labeled <code>1</code> for adult and <code>0</code> for teenager:</p>
@@ -78,7 +83,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; The step function</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; The step function</h3>
   <div class="question">
     <p>The bluntest squasher possible: <code>step_function(z)</code> returns <code>1</code> if <code>z &gt;= 0</code>, else <code>0</code>. Write it.</p>
 
@@ -144,7 +149,7 @@ assert step_function(-0.5) == 0
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; The smooth step</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; The smooth step</h3>
   <div class="question">
     <p>Here's the problem with <code>step_function</code>: imagine gradient descent trying to tune <code>m</code> and <code>c</code> inside <code>step_function(m*x + c)</code>. Nudge <code>m</code> a little — the output usually doesn't change <em>at all</em> (it's still exactly 0 or exactly 1). The gradient is zero almost everywhere. Gradient descent is blind; there is no downhill to follow.</p>
 
@@ -229,7 +234,7 @@ plt.show()
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; An error we can descend</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; An error we can descend</h3>
   <div class="question">
     <p>Our model is now <code>sigmoid(m*x + c)</code> — a line squashed into (0, 1). Read its output as "how confident am I that this is an adult."</p>
 
@@ -285,7 +290,7 @@ assert abs(sigmoid_error(0, 0, heights, labels) - 0.25) &lt; 1e-9
 
 
 <section class="exercise" id="ex-1-4">
-  <h3>Exercise 1.4 &mdash; Train it... and watch it refuse to learn</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-4" /></label>Exercise 1.4 &mdash; Train it... and watch it refuse to learn</h3>
   <div class="question">
     <p>Below is the finite-difference gradient helper you've built twice before, provided as-is.</p>
 
@@ -359,7 +364,7 @@ assert err_after &gt; 0.5                        # stuck!
 
 
 <section class="exercise" id="ex-1-5">
-  <h3>Exercise 1.5 &mdash; The fix: feed the neuron small numbers</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-5" /></label>Exercise 1.5 &mdash; The fix: feed the neuron small numbers</h3>
   <div class="question">
     <p>The plateau problem came from <code>m*x</code> being huge, because heights are ~170. Keep the inputs near zero and sigmoid operates on its steep middle section, where gradients live.</p>
 
@@ -428,7 +433,7 @@ def classify(x_centered):
 
 
 <section class="exercise mcq" id="mcq-1-1">
-  <h3>Quick Check 1.6 &mdash; Sigmoid saturation</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-1-1" /></label>Quick Check 1.6 &mdash; Sigmoid saturation</h3>
   <div class="question">
     <p>In Exercise 1.4, the sigmoid neuron "refused to learn" when given large input values. What caused this?</p>
 
@@ -485,7 +490,7 @@ def classify(x_centered):
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Wiring Small Functions Together</h2>
 
   <p>Your Part 1 function draws one boundary. But many real problems need more than one boundary — what if the answer depends on combining several simple decisions?</p>
@@ -500,7 +505,7 @@ def classify(x_centered):
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Follow the wires</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Follow the wires</h3>
   <div class="question">
     <p>Implement this four-step graph as <code>compute_graph(x, w10, w11, w20, w21, w30, w31)</code>:</p>
 
@@ -564,7 +569,7 @@ assert abs(compute_graph(-5, 1, 1, 1, 1, 1, 1) - (-2.6555)) &lt; 1e-3
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Weights reshape the curve</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Weights reshape the curve</h3>
   <div class="question">
     <p>Run the provided cell: it plots <code>y</code> versus <code>x</code> for the graph above with one set of weights. Then:</p>
 
@@ -647,7 +652,7 @@ def my_graph(x, w0, w1, w2, w3):
 
 
 <section class="exercise mcq" id="mcq-2-1">
-  <h3>Quick Check 2.3 &mdash; Why multiple neurons?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-2-1" /></label>Quick Check 2.3 &mdash; Why multiple neurons?</h3>
   <div class="question">
     <p>A single sigmoid neuron can fit a smooth S-shaped curve. Why do we need multiple neurons?</p>
 
@@ -704,7 +709,7 @@ def my_graph(x, w0, w1, w2, w3):
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: The Tax Problem — When No Line Will Do</h2>
 
   <p>A country taxes income like this: <strong>nothing on the first 5000; 30% on everything above.</strong> So <code>tax = 0.3 * (income - 5000)</code> if income &gt; 5000, else 0. Plotted, it's a hockey stick — flat, then a straight climb, with a sharp kink at 5000.</p>
@@ -734,7 +739,7 @@ def my_graph(x, w0, w1, w2, w3):
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; Prove the line fails</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; Prove the line fails</h3>
   <div class="question">
     <p>Fit the best straight line to <code>(x, y)</code> — you may use <code>np.polyfit(x, y, 1)</code> (you derived what it computes, least squares, in Chapter 14). Compute its RMSE and look at what it predicts for low incomes.</p>
 
@@ -794,7 +799,7 @@ assert np.mean(line_pred[low]) &lt; 0    # negative tax!
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; Idea 1: first decide, then predict</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; Idea 1: first decide, then predict</h3>
   <div class="question">
     <p>A human would solve this in two steps: <em>is this person taxable at all?</em> If no, the answer is 0. If yes, it's a simple line. Let's build exactly that.</p>
 
@@ -855,7 +860,7 @@ mk, ck = train(1, 0, x, is_taxable, learning_rate=2.0, epochs=3000)
 
 
 <section class="exercise" id="ex-3-3">
-  <h3>Exercise 3.3 &mdash; The pipeline: classify, then regress</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; The pipeline: classify, then regress</h3>
   <div class="question">
     <p>Step two: for the taxable people <em>only</em>, the relationship is a perfect straight line. Fit a line on just the rows where <code>is_taxable == 1</code> — on the scaled data it should come out at exactly <code>m=2, c=-1</code> (check: at <code>x=1</code>, i.e. income 10000, scaled tax is <code>2*1 - 1 = 1</code>, i.e. 1500).</p>
 
@@ -927,7 +932,7 @@ def predict_tax(xi):
 
 
 <section class="exercise" id="ex-3-4">
-  <h3>Exercise 3.4 &mdash; Idea 2: one network, end to end</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-4" /></label>Exercise 3.4 &mdash; Idea 2: one network, end to end</h3>
   <div class="question">
     <p>The pipeline needed <em>us</em> to know the problem splits into classify-then-regress. Could a single network figure the shape out by itself? Try the smallest one imaginable — two neurons in a chain:</p>
 
@@ -1011,7 +1016,7 @@ def net_error(params, x, y):
 
 
 <section class="exercise" id="ex-3-5">
-  <h3>Exercise 3.5 &mdash; The right activation: ReLU</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-5" /></label>Exercise 3.5 &mdash; The right activation: ReLU</h3>
   <div class="question">
     <p>Look at the tax rule one more time: <em>zero below a threshold, a straight ramp above it.</em> There is an activation function that <strong>is</strong> that shape:</p>
 
@@ -1086,7 +1091,7 @@ def relu_error(params, x, y):
 
 
 <section class="exercise" id="ex-3-6">
-  <h3>Explorations (open-ended)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-6" /></label>Explorations (open-ended)</h3>
   <div class="question">
     <p>No tests here — experiment and observe:</p>
 
@@ -1152,7 +1157,7 @@ def residual_error(params, x, y):
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.7 &mdash; ReLU advantage</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.7 &mdash; ReLU advantage</h3>
   <div class="question">
     <p>ReLU (max(0, z)) is simpler than sigmoid. What is its main practical advantage for training neural networks?</p>
 
@@ -1292,6 +1297,8 @@ def residual_error(params, x, y):
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

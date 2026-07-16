@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="gradient_descent">
+
+<div class="progress-indicator" id="progress-indicator" data-total="10"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="gradient_descent.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/gradient_descent/linear_regression_gradient_descent.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/gradient_descent/linear_regression_gradient_descent.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -43,10 +46,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Finding the Bottom of a Valley</h2>
 
 </div>
@@ -56,7 +61,7 @@
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Look Before You Leap</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Look Before You Leap</h3>
   <div class="question">
     <p>Consider this function:</p>
 
@@ -142,7 +147,7 @@ plot_function(f, x_range=(-3, 3), title="x^4 - 4x + 10")
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Hit and Trial</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Hit and Trial</h3>
   <div class="question">
     <p>Now let's find the minimum by hand — no calculus, just trying values.</p>
 
@@ -225,7 +230,7 @@ for i, (x, fx) in enumerate(guesses):
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Making the Machine Do the Searching</h2>
 
 </div>
@@ -235,7 +240,7 @@ for i, (x, fx) in enumerate(guesses):
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; The Slope Tells You Which Way to Walk</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; The Slope Tells You Which Way to Walk</h3>
   <div class="question">
     <p>You had a strategy when doing hit-and-trial. Let's make it precise.</p>
 
@@ -315,7 +320,7 @@ for x in test_points:
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; One Step at a Time</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; One Step at a Time</h3>
   <div class="question">
     <p>Now let's build the update rule. You're at position $x$ and the slope is $s$.</p>
 
@@ -389,7 +394,7 @@ for step in range(5):
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; Build `find_minima_1d`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; Build `find_minima_1d`</h3>
   <div class="question">
     <p>Now automate the process. Write a function that keeps taking steps until the slope is close enough to zero.</p>
 
@@ -479,7 +484,7 @@ print(f"Steps taken: {len(history)}")
 
 
 <section class="exercise" id="ex-2-4">
-  <h3>Exercise 2.4 &mdash; Watch It Learn</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-4" /></label>Exercise 2.4 &mdash; Watch It Learn</h3>
   <div class="question">
     <p>Use the plotting helper below to visualize the descent path. Run it after you have <code>history</code> from Exercise 2.3.</p>
 
@@ -584,7 +589,7 @@ plot_descent(f, history3, title="Start x=2.0, alpha=0.1")
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Stress-Testing Your Algorithm</h2>
 
 </div>
@@ -594,7 +599,7 @@ plot_descent(f, history3, title="Start x=2.0, alpha=0.1")
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; New Functions, Same Algorithm</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; New Functions, Same Algorithm</h3>
   <div class="question">
     <p>Your <code>find_minima_1d</code> is general — it should work on any function. Let's test it.</p>
 
@@ -737,7 +742,7 @@ print(f"fE: min at x={x_min:.6f}, f={f_min:.6f}")  # x ≈ 2.25
 
 
 <section class="exercise" id="ex-3-2">
-  <h3>Exercise 3.2 &mdash; Function A Is Sneaky</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; Function A Is Sneaky</h3>
   <div class="question">
     <p>Plot Function A carefully. You should notice it has <strong>two local minima</strong> — one on the left and one on the right.</p>
 
@@ -803,7 +808,7 @@ for x_start in [1.5, -1.5, 0.0]:
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.3 &mdash; Learning Rate Tradeoff</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.3 &mdash; Learning Rate Tradeoff</h3>
   <div class="question">
     <p>You're running gradient descent and the loss keeps oscillating wildly instead of decreasing. What is the most likely cause?</p>
 
@@ -860,7 +865,7 @@ for x_start in [1.5, -1.5, 0.0]:
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Two Variables — A Landscape Instead of a Curve</h2>
 
 </div>
@@ -870,7 +875,7 @@ for x_start in [1.5, -1.5, 0.0]:
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; See the Landscape</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; See the Landscape</h3>
   <div class="question">
     <p>Now consider a function of <strong>two variables</strong>:</p>
 
@@ -984,7 +989,7 @@ plot_function_2d(h3, title="h3(x,y) = x^2 + y^2 + xy")
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Partial Derivatives</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Partial Derivatives</h3>
   <div class="question">
     <p>With two variables, the slope has <strong>two components</strong> — one for each variable.</p>
 
@@ -1072,7 +1077,7 @@ print(f"h2 gradient at (0,2) = {gradient_2d(h2, 0, 2)}")   # (0, 16)
 
 
 <section class="exercise" id="ex-4-3">
-  <h3>Exercise 4.3 &mdash; Build `find_minima_2d`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Build `find_minima_2d`</h3>
   <div class="question">
     <p>Now extend the 1D algorithm to 2D. In 1D, you updated $x$ using the slope. Now you have <strong>two</strong> slopes (one per variable). Update each variable independently, using its own partial derivative, the same way you updated $x$ in 1D.</p>
 
@@ -1156,7 +1161,7 @@ print(f"h2: min at ({x_min:.4f}, {y_min:.4f}), f={f_min:.6f}")
 
 
 <section class="exercise" id="ex-4-4">
-  <h3>Exercise 4.4 &mdash; Visualize the Path (2D)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-4" /></label>Exercise 4.4 &mdash; Visualize the Path (2D)</h3>
   <div class="question">
     <p>Use the helper below to draw the descent path on the contour map.</p>
 
@@ -1257,7 +1262,7 @@ for alpha in [0.1, 0.3]:
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Going Generic</h2>
 
 </div>
@@ -1267,7 +1272,7 @@ for alpha in [0.1, 0.3]:
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; N Variables</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; N Variables</h3>
   <div class="question">
     <p>Your 1D and 2D algorithms are very similar. Can you unify them?</p>
 
@@ -1389,7 +1394,7 @@ print(f"2D minimum: x = {min_vars[0]:.6f}, y = {min_vars[1]:.6f}, f = {f_min:.6f
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Exercise 5.2 &mdash; Three Variables</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; Three Variables</h3>
   <div class="question">
     <p>Test your generic <code>find_minima</code> on 3D functions:</p>
 
@@ -1456,7 +1461,7 @@ print(f"q minimum: ({min_vars[0]:.4f}, {min_vars[1]:.4f}, {min_vars[2]:.4f}), f 
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: The Real Problem — Fitting a Line to Data</h2>
 
 </div>
@@ -1466,7 +1471,7 @@ print(f"q minimum: ({min_vars[0]:.4f}, {min_vars[1]:.4f}, {min_vars[2]:.4f}), f 
 
 
 <section class="exercise" id="ex-6-1">
-  <h3>Exercise 6.1 &mdash; What Does It Mean to Fit a Line?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; What Does It Mean to Fit a Line?</h3>
   <div class="question">
     <p>Suppose you have a dataset: some $x$ values and corresponding $y$ values. You want to find the <strong>straight line</strong> $\hat{y} = mx + c$ that best fits the data.</p>
 
@@ -1564,7 +1569,7 @@ plot_data_and_line(X_data, y_data, m=5.0, c=0.0, title="m=5.0, c=0.0")
 
 
 <section class="exercise" id="ex-6-2">
-  <h3>Exercise 6.2 &mdash; Write the MSE Function</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.2 &mdash; Write the MSE Function</h3>
   <div class="question">
     <p>Now write a function that quantifies how well a line fits the data.</p>
 
@@ -1665,7 +1670,7 @@ for m_val, c_val, label in lines_to_test:
 
 
 <section class="exercise" id="ex-6-3">
-  <h3>Exercise 6.3 &mdash; The MSE Landscape</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-3" /></label>Exercise 6.3 &mdash; The MSE Landscape</h3>
   <div class="question">
     <p>MSE is a function of $m$ and $c$. Let's visualize it as a 2D landscape.</p>
 
@@ -1730,7 +1735,7 @@ plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
 
 
 <section class="exercise mcq" id="mcq-6-1">
-  <h3>Quick Check 6.4 &mdash; Local Minima</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-6-1" /></label>Quick Check 6.4 &mdash; Local Minima</h3>
   <div class="question">
     <p>Gradient descent found a minimum of your loss function. Can you be certain it found the <em>global</em> minimum (the absolute lowest point)?</p>
 
@@ -1787,7 +1792,7 @@ plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
 
 
 
-<div class="part">
+<div class="part" data-part-number="7">
   <h2>Part 7: Putting It All Together — Linear Regression via Gradient Descent</h2>
 
 </div>
@@ -1797,7 +1802,7 @@ plot_function_2d(mse_landscape, x_range=(0, 5), y_range=(-5, 15),
 
 
 <section class="exercise" id="ex-7-1">
-  <h3>Exercise 7.1 &mdash; Minimize MSE with `find_minima`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1" /></label>Exercise 7.1 &mdash; Minimize MSE with `find_minima`</h3>
   <div class="question">
     <p>You now have:</p>
 
@@ -1881,7 +1886,7 @@ plot_data_and_line(X_data, y_data, m=m_found, c=c_found,
 
 
 <section class="exercise" id="ex-7-2">
-  <h3>Exercise 7.2 &mdash; Watch the Line Learn</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2" /></label>Exercise 7.2 &mdash; Watch the Line Learn</h3>
   <div class="question">
     <p>Let's visualize how the line evolves during gradient descent.</p>
 
@@ -1970,7 +1975,7 @@ plot_learning_progress(X_data, y_data, history, steps_to_show=[0, 5, 20, 100, 50
 
 
 <section class="exercise" id="ex-7-3">
-  <h3>Exercise 7.3 &mdash; New Dataset, Same Code</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.3 &mdash; New Dataset, Same Code</h3>
   <div class="question">
     <p>Here are three new datasets. For each:</p>
 
@@ -2061,7 +2066,7 @@ plot_data_and_line(X3, y3, m=min_p[0], c=min_p[1], title="Dataset 3 fit")
 
 
 <section class="exercise" id="ex-7-4">
-  <h3>Exercise 7.4 &mdash; Sanity Check with NumPy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.4 &mdash; Sanity Check with NumPy</h3>
   <div class="question">
     <p>NumPy has a function <code>np.polyfit(X, y, 1)</code> that finds the best-fit line using an exact mathematical formula (not gradient descent).</p>
 
@@ -2128,7 +2133,7 @@ print(f"Dataset 3 — NumPy: m={m3:.4f}, c={c3:.4f}")
 
 
 
-<div class="part">
+<div class="part" data-part-number="8">
   <h2>Part 8: More Than One Feature</h2>
 
   <p>Your line <code>y = m*x + c</code> predicts from a <em>single</em> number. But a house price depends on size <strong>and</strong> bedrooms <strong>and</strong> age. A student's score depends on hours studied <strong>and</strong> hours slept. Real prediction almost always uses several inputs — called <strong>features</strong>.</p>
@@ -2147,7 +2152,7 @@ print(f"Dataset 3 — NumPy: m={m3:.4f}, c={c3:.4f}")
 
 
 <section class="exercise" id="ex-8-1">
-  <h3>Exercise 8.1 &mdash; `predict` with Many Features</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-1" /></label>Exercise 8.1 &mdash; `predict` with Many Features</h3>
   <div class="question">
     <p>Write <code>predict(x, m, c)</code> where <code>x</code> is a list of feature values and <code>m</code> is a list of slopes (same length): return $m_0 x_0 + m_1 x_1 + \dots + c$.</p>
 
@@ -2202,7 +2207,7 @@ print("predict: OK")
 
 
 <section class="exercise" id="ex-8-2">
-  <h3>Exercise 8.2 &mdash; MSE for Many Features</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-2" /></label>Exercise 8.2 &mdash; MSE for Many Features</h3>
   <div class="question">
     <p>Here is a dataset that follows the plane $y = 2 x_0 + 3 x_1 + 1$ <em>exactly</em> (check one row by hand!):</p>
 
@@ -2263,7 +2268,7 @@ print("total_err_sqr: OK")
 
 
 <section class="exercise" id="ex-8-3">
-  <h3>Exercise 8.3 &mdash; A Gradient per Weight</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-3" /></label>Exercise 8.3 &mdash; A Gradient per Weight</h3>
   <div class="question">
     <p>In Exercise 4.2 you discovered partial derivatives: nudge <em>one</em> variable, hold the rest still, measure the change. Same move here, just more knobs.</p>
 
@@ -2335,7 +2340,7 @@ print("gradients at zero weights:", [round(g, 1) for g in gm], round(gc, 1))
 
 
 <section class="exercise" id="ex-8-4">
-  <h3>Exercise 8.4 &mdash; `fit`</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-4" /></label>Exercise 8.4 &mdash; `fit`</h3>
   <div class="question">
     <p>Assemble the full trainer. Write <code>fit(X, y, learning_rate=0.01, epochs=5000)</code>:</p>
 
@@ -2412,7 +2417,7 @@ print("fit: OK")
 
 
 <section class="exercise" id="ex-8-5">
-  <h3>Exercise 8.5 &mdash; Inventing Features</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-5" /></label>Exercise 8.5 &mdash; Inventing Features</h3>
   <div class="question">
     <p>In Challenge A (coming up) you'll see a straight line fail on curved data. Here is the escape hatch: if the data follows $y = x^2$, then <em>as a function of $x^2$</em> it's a straight line! We don't need a new algorithm — we need a new <strong>column</strong>.</p>
 
@@ -2495,7 +2500,7 @@ print("add_feature: OK")
 
 
 <section class="exercise" id="ex-8-6">
-  <h3>Exercise 8.6 &mdash; Skip the Nudging: the Chain Rule</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-6" /></label>Exercise 8.6 &mdash; Skip the Nudging: the Chain Rule</h3>
   <div class="question">
     <p>Your <code>gradients</code> calls <code>total_err_sqr</code> once per weight per epoch — thousands of full passes over the data just to <em>estimate</em> slopes. Calculus hands us the exact answer for free.</p>
 
@@ -2571,7 +2576,7 @@ print("chain rule verified — calculus agrees with nudging")
 
 
 <section class="exercise mcq" id="mcq-8-1">
-  <h3>Quick Check 8.7 &mdash; Curse of Dimensionality</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-8-1" /></label>Quick Check 8.7 &mdash; Curse of Dimensionality</h3>
   <div class="question">
     <p>In Part 8, you extended gradient descent from 2 weights to many. As the number of features grows from 2 to 100, what happens to the gradient computation?</p>
 
@@ -2628,7 +2633,7 @@ print("chain rule verified — calculus agrees with nudging")
 
 
 
-<div class="part">
+<div class="part" data-part-number="9">
   <h2>Part 9: Bonus Challenges</h2>
 
   <p>If you've made it this far, you've independently discovered <strong>gradient descent</strong> and used it to implement <strong>linear regression</strong>. These are the foundations of almost every machine learning algorithm. Here are some open-ended challenges to push further.</p>
@@ -2640,7 +2645,7 @@ print("chain rule verified — calculus agrees with nudging")
 
 
 <section class="exercise" id="ex-9-a">
-  <h3>What If the Data Isn't Linear?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-a" /></label>What If the Data Isn't Linear?</h3>
   <div class="question">
     <p>Generate this dataset:</p>
 
@@ -2721,7 +2726,7 @@ print(f"MSE: {f_min:.4f}")
 
 
 <section class="exercise" id="ex-9-b">
-  <h3>Learning Rate Scheduler</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-b" /></label>Learning Rate Scheduler</h3>
   <div class="question">
     <p>You've seen that a large $\alpha$ causes oscillation and a small $\alpha$ is slow.</p>
 
@@ -2797,7 +2802,7 @@ plt.title("Fixed vs Decaying Learning Rate"); plt.show()
 
 
 <section class="exercise" id="ex-9-c">
-  <h3>Stochastic Gradient Descent</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-c" /></label>Stochastic Gradient Descent</h3>
   <div class="question">
     <p>In real ML, datasets have millions of points. Computing MSE over all of them every step is expensive.</p>
 
@@ -2880,7 +2885,7 @@ plt.xlabel("step"); plt.ylabel("MSE"); plt.grid(True); plt.show()
 
 
 
-<div class="part">
+<div class="part" data-part-number="10">
   <h2>Part 10: Reflection — What Did You Just Build?</h2>
 
 </div>
@@ -2889,7 +2894,7 @@ plt.xlabel("step"); plt.ylabel("MSE"); plt.grid(True); plt.show()
 
 
 <section class="exercise" id="ex-reflection">
-  <h3>Exercise 10.1 &mdash; Reflection</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-reflection" /></label>Exercise 10.1 &mdash; Reflection</h3>
   <div class="question">
 
     <p>Take a moment to answer these questions in your own words.</p>
@@ -2930,6 +2935,8 @@ plt.xlabel("step"); plt.ylabel("MSE"); plt.grid(True); plt.show()
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

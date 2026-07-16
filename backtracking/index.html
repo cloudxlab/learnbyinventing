@@ -17,15 +17,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="backtracking">
+
+<div class="progress-indicator" id="progress-indicator" data-total="5"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="backtracking.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/backtracking/backtracking.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/backtracking/backtracking.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -51,10 +54,12 @@ the technique up from tiny exercises until you can solve any Sudoku board.</p>
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Warm-Up — Enumerating Pairs</h2>
 
   <p>A room of people all shake hands, each pair exactly once.</p>
@@ -67,7 +72,7 @@ the technique up from tiny exercises until you can solve any Sudoku board.</p>
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; handshakes</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; handshakes</h3>
   <div class="question">
     <p>Write <code>handshakes(people)</code> that returns the list of all unique pairs as tuples.
 A pair should appear once: if <code>("A", "B")</code> is in the list, <code>("B", "A")</code> must not be.</p>
@@ -134,7 +139,7 @@ assert len(handshakes(list(range(n)))) == n * (n - 1) // 2
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Enumerating Everything — The Odometer</h2>
 
   <p>Print <strong>all</strong> numbers of length <code>n</code> where each digit runs from <code>0</code> to <code>m-1</code> —
@@ -151,7 +156,7 @@ over to <code>0</code> and carries into the next wheel.</p>
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; next_numb</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; next_numb</h3>
   <div class="question">
     <p>Write <code>next_numb(arr, m)</code> that treats the list <code>arr</code> as digits in base <code>m</code> and adds 1
 <strong>in place</strong>. Return <code>True</code> if the increment succeeded, <code>False</code> if every digit was
@@ -226,7 +231,7 @@ assert next_numb(a, 10) == True and a == [3, 0]
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; generate</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; generate</h3>
   <div class="question">
     <p>Write <code>generate(n, m)</code> that returns <strong>all</strong> n-digit base-m numbers as strings, in
 counting order. Start from <code>[0, 0, ..., 0]</code> and keep calling <code>next_numb</code> until it
@@ -293,7 +298,7 @@ assert out[0] == "000" and out[-1] == "222"
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; generate_rec</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; generate_rec</h3>
   <div class="question">
     <p>Now the recursive view: <em>an n-digit number is a first digit followed by an
 (n-1)-digit number.</em></p>
@@ -364,7 +369,7 @@ assert generate_rec(3, 3) == generate(3, 3)
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Permutations</h2>
 
 </div>
@@ -374,7 +379,7 @@ assert generate_rec(3, 3) == generate(3, 3)
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; perms</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; perms</h3>
   <div class="question">
     <p>Print all rearrangements of your name (assume all letters are distinct).</p>
 
@@ -447,7 +452,7 @@ assert len(perms("abcde")) == 120
 
 
 <section class="exercise mcq" id="mcq-3-1">
-  <h3>Quick Check 3.2 &mdash; Quick Check 3.1 — Permutation Count</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.2 &mdash; Quick Check 3.1 — Permutation Count</h3>
   <div class="question">
     <p>How many permutations does a list of 4 distinct elements have?</p>
 
@@ -504,7 +509,7 @@ assert len(perms("abcde")) == 120
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Checking a State — Valid Parentheses</h2>
 
   <p>Exhaustive search lives or dies by its <strong>checker</strong> — the little function that says
@@ -518,7 +523,7 @@ assert len(perms("abcde")) == 120
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; are_valid</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; are_valid</h3>
   <div class="question">
     <p>Write <code>are_valid(s)</code> for a string of <code>()</code>, <code>[]</code>, <code>{}</code> characters. It is valid when
 every opener is closed by the matching closer, in the right order.</p>
@@ -590,7 +595,7 @@ assert are_valid("()[]{}") == True
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: Sudoku</h2>
 
   <p>The main event. A Sudoku board is a 9×9 grid; every <strong>row</strong>, every <strong>column</strong>, and
@@ -607,7 +612,7 @@ some digits (the <em>clues</em>); you fill the rest.</p>
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; find_first_empty_space</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; find_first_empty_space</h3>
   <div class="question">
     <p>Write <code>find_first_empty_space(board)</code> that scans top-to-bottom, left-to-right and
 returns the <code>(row, col)</code> of the first <code>0</code>. If the board has no empty cell, return
@@ -689,7 +694,7 @@ assert find_first_empty_space(full) == (None, None)
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Exercise 5.2 &mdash; can_place</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; can_place</h3>
   <div class="question">
     <p>The checker. Write <code>can_place(i, row, col, board)</code> — may digit <code>i</code> legally go into
 cell <code>(row, col)</code>?</p>
@@ -768,7 +773,7 @@ assert can_place(2, 0, 2, puzzle) == True
 
 
 <section class="exercise" id="ex-5-3">
-  <h3>Exercise 5.3 &mdash; solve_sudoku</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-3" /></label>Exercise 5.3 &mdash; solve_sudoku</h3>
   <div class="question">
     <p>Now the backtracking itself. Write <code>solve_sudoku(board)</code> (it modifies the board
 in place and returns <code>True</code>/<code>False</code>).</p>
@@ -875,7 +880,7 @@ print_board(board)
 
 
 <section class="exercise mcq" id="mcq-5-1">
-  <h3>Quick Check 5.4 &mdash; Quick Check 5.1 — Why Backtracking Prunes</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-5-1" /></label>Quick Check 5.4 &mdash; Quick Check 5.1 — Why Backtracking Prunes</h3>
   <div class="question">
     <p>A 9×9 Sudoku has 81 cells. If you tried every possible assignment of digits 1–9 to all empty cells (brute force without checking constraints), approximately how many combinations would that be for a puzzle with 50 empty cells?</p>
 
@@ -1027,6 +1032,8 @@ positions instead of board cells.</p>
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

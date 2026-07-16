@@ -1,6 +1,6 @@
 {% if block.kind == 'mcq' %}
 <section class="exercise mcq" id="{{ block.id | default('') }}">
-  <h3>Quick Check {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="{{ block.id | default('') }}" /></label>Quick Check {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
   <div class="question">
     {{ block.question | md }}
   </div>
@@ -39,7 +39,7 @@
 
 {% elif block.kind == 'conceptual' %}
 <section class="exercise" id="{{ block.id | default('') }}">
-  <h3>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="{{ block.id | default('') }}" /></label>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
   <div class="question">
 {% if block.description is defined and block.description %}
     {{ block.description | md }}
@@ -48,7 +48,8 @@
 {% for prompt in block.prompts %}
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      {{ prompt | md_inline }}
+      <p class="prompt-text">{{ prompt | md_inline }}</p>
+      <textarea class="answer-input" data-exercise="{{ block.id | default('') }}" data-prompt="{{ loop.index0 }}" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 {% endfor %}
 {% endif %}
@@ -86,7 +87,7 @@
 
 {% elif block.kind == 'challenge' %}
 <section class="exercise" id="{{ block.id | default('') }}">
-  <h3>{{ block.title }}</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="{{ block.id | default('') }}" /></label>{{ block.title }}</h3>
   <div class="question">
     {{ block.description | md }}
 {% if block.provided_code is defined %}
@@ -124,7 +125,7 @@
 {% else %}
 {# Default: coding exercise #}
 <section class="exercise" id="{{ block.id | default('') }}">
-  <h3>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="{{ block.id | default('') }}" /></label>Exercise {{ block.part }}.{{ block.number }} &mdash; {{ block.title }}</h3>
   <div class="question">
     {{ block.description | md }}
 {% if block.provided_code is defined %}

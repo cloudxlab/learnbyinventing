@@ -22,13 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="reinforcement_learning">
+
+<div class="progress-indicator" id="progress-indicator" data-total="9"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="reinforcement_learning.ipynb" download>Notebook</a>
+
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/reinforcement_learning/reinforcement_learning.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -41,11 +46,13 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
-  <h2>Part 1: Let's Play a Game</h2>
+<div class="part" data-part-number="1">
+  <h2>Part 1: Let's Play a Game<span class="time-estimate">~15 min</span></h2>
 
   <p>Forget theory. We're going to play a game. The game is called <strong>CartPole</strong> — there's a cart on a track with a pole balanced on top. You can push the cart left or right. The goal: keep the pole from falling over as long as possible.</p>
 
@@ -56,10 +63,38 @@
 
 
 
+<div class="cartpole-demo">
+  <svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- track -->
+    <line x1="20" y1="155" x2="380" y2="155" stroke="#888" stroke-width="2"/>
+    <line x1="20" y1="155" x2="20" y2="148" stroke="#888" stroke-width="2"/>
+    <line x1="380" y1="155" x2="380" y2="148" stroke="#888" stroke-width="2"/>
+    <!-- cart -->
+    <rect x="160" y="130" width="80" height="30" rx="4" fill="#c8a96e" stroke="#7a6b3a" stroke-width="1.5"/>
+    <!-- wheels -->
+    <circle cx="178" cy="160" r="6" fill="#555"/>
+    <circle cx="222" cy="160" r="6" fill="#555"/>
+    <!-- pole (animated) -->
+    <g class="cartpole-pole">
+      <line x1="200" y1="130" x2="200" y2="40" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="200" cy="40" r="6" fill="#c0392b"/>
+    </g>
+    <!-- pivot -->
+    <circle cx="200" cy="130" r="4" fill="#333"/>
+    <!-- arrows -->
+    <text x="120" y="150" font-size="18" fill="#888" font-family="system-ui">&larr;</text>
+    <text x="268" y="150" font-size="18" fill="#888" font-family="system-ui">&rarr;</text>
+  </svg>
+  <p class="cartpole-caption">The CartPole environment: keep the pole balanced by pushing the cart left or right.</p>
+</div>
+
+
+
+
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Set Up the Game</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Set Up the Game</h3>
   <div class="question">
     <p>First, install the game environment and create a CartPole game. Run <code>env.reset()</code> — it gives you back 4 numbers. Print them. What do you think they mean?</p>
 
@@ -159,7 +194,7 @@ print("Number of values:", len(obs))
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; Take a Step</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; Take a Step</h3>
   <div class="question">
     <p>Call <code>env.step(action)</code> with action 0 (push left) or 1 (push right). It returns 5 things. Print them all and figure out what each one means.</p>
 
@@ -211,7 +246,7 @@ print(f"Truncated: {truncated}")    # False — haven't hit 500 steps
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; Play a Full Game (Randomly)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; Play a Full Game (Randomly)</h3>
   <div class="question">
     <p>Write a loop that keeps taking random actions (0 or 1) until the game ends (<code>terminated</code> or <code>truncated</code>). Count how many steps you survived — that's your score. Run it a few times. What scores do you get?</p>
 
@@ -276,7 +311,7 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
 
 
 <section class="exercise" id="ex-1-4">
-  <h3>Exercise 1.4 &mdash; Develop Your Intuition</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-4" /></label>Exercise 1.4 &mdash; Develop Your Intuition</h3>
   <div class="question">
 
     <p>Before writing any strategy, just think:</p>
@@ -286,17 +321,20 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      The pole is tilting to the RIGHT. Should you push the cart left or right to keep it balanced?
+      <p class="prompt-text">The pole is tilting to the RIGHT. Should you push the cart left or right to keep it balanced?</p>
+      <textarea class="answer-input" data-exercise="ex-1-4" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      The pole is tilting to the LEFT. Which way should you push?
+      <p class="prompt-text">The pole is tilting to the LEFT. Which way should you push?</p>
+      <textarea class="answer-input" data-exercise="ex-1-4" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      The pole is nearly vertical but moving (rotating) fast to the right. What should you do?
+      <p class="prompt-text">The pole is nearly vertical but moving (rotating) fast to the right. What should you do?</p>
+      <textarea class="answer-input" data-exercise="ex-1-4" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -329,8 +367,8 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
 
 
 
-<div class="part">
-  <h2>Part 2: Build Your Own Player</h2>
+<div class="part" data-part-number="2">
+  <h2>Part 2: Build Your Own Player<span class="time-estimate">~20 min</span></h2>
 
   <p>Random actions give terrible scores. You already have intuition about what to do — let's turn it into code.</p>
 
@@ -342,7 +380,7 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
 
 
 <section class="exercise" id="ex-2-0">
-  <h3>Exercise 2.0 &mdash; Helper Functions</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-0" /></label>Exercise 2.0 &mdash; Helper Functions</h3>
   <div class="question">
     <p>Run these helper functions first. They'll save you from rewriting the game loop every time.</p>
 
@@ -389,7 +427,7 @@ def evaluate(policy_fn, env, n=100):
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Your First Policy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Your First Policy</h3>
   <div class="question">
     <p>Write a function <code>my_policy(obs)</code> that takes the 4 observation numbers and returns 0 (left) or 1 (right).</p>
 
@@ -435,7 +473,7 @@ print(f"Average score: {avg:.1f}")
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Improve Your Policy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Improve Your Policy</h3>
   <div class="question">
     <p>Your angle-only policy probably scores around 40–60. Can you do better?</p>
 
@@ -484,7 +522,7 @@ print(f"Average score: {avg:.1f}")
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>The Best You Can Do By Hand</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>The Best You Can Do By Hand</h3>
   <div class="question">
     <p>Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores.</p>
 
@@ -518,8 +556,8 @@ print(f"Average score: {avg:.1f}")
 
 
 
-<div class="part">
-  <h2>Part 3: What Just Happened?</h2>
+<div class="part" data-part-number="3">
+  <h2>Part 3: What Just Happened?<span class="time-estimate">~10 min</span></h2>
 
 </div>
 
@@ -571,7 +609,7 @@ print(f"Average score: {avg:.1f}")
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; RL Is Everywhere</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; RL Is Everywhere</h3>
   <div class="question">
 
     <p>Map the RL terms to a real-life example: a child learning to ride a bicycle.</p>
@@ -581,27 +619,32 @@ print(f"Average score: {avg:.1f}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What is the environment?
+      <p class="prompt-text">What is the environment?</p>
+      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What are the observations (state)?
+      <p class="prompt-text">What are the observations (state)?</p>
+      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What are the actions?
+      <p class="prompt-text">What are the actions?</p>
+      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What are the rewards and penalties?
+      <p class="prompt-text">What are the rewards and penalties?</p>
+      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What is the policy?
+      <p class="prompt-text">What is the policy?</p>
+      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -640,8 +683,8 @@ print(f"Average score: {avg:.1f}")
 
 
 
-<div class="part">
-  <h2>Part 4: Policy as a Formula</h2>
+<div class="part" data-part-number="4">
+  <h2>Part 4: Policy as a Formula<span class="time-estimate">~15 min</span></h2>
 
   <p>Look at your best heuristic from Part 2. It probably looked something like: "if angle &gt; 0, go right" or "if angle + 0.5 × angular_velocity &gt; 0, go right." That's really just: <strong>multiply each observation by some number, add them up, and check the sign</strong>. Your action is a function of the observations.</p>
 
@@ -653,7 +696,7 @@ print(f"Average score: {avg:.1f}")
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Two-Weight Policy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Two-Weight Policy</h3>
   <div class="question">
     <p>Write a policy that computes <code>score = w1 * obs[2] + w2 * obs[3]</code> (angle and angular velocity). If score &gt; 0, go right. Otherwise go left.</p>
 
@@ -712,7 +755,7 @@ for w1, w2 in [(1,0), (1,1), (1,0.5), (0.5,1)]:
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Four-Weight Policy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Four-Weight Policy</h3>
   <div class="question">
     <p>Now use ALL 4 observations. Write <code>weighted_policy(obs, weights)</code> that computes:</p>
 
@@ -768,8 +811,8 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
 
 
-<div class="part">
-  <h2>Part 5: The Search for Best Parameters</h2>
+<div class="part" data-part-number="5">
+  <h2>Part 5: The Search for Best Parameters<span class="time-estimate">~25 min</span></h2>
 
   <p>You need 4 good numbers. How hard can it be?</p>
 
@@ -780,7 +823,7 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; Brute Force?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; Brute Force?</h3>
   <div class="question">
 
     <p>One idea: try ALL possible combinations of the 4 weights.</p>
@@ -790,17 +833,20 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Each weight is a real number (like 0.37 or -1.2). How many possible values does a single weight have?
+      <p class="prompt-text">Each weight is a real number (like 0.37 or -1.2). How many possible values does a single weight have?</p>
+      <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If you discretized each weight to 100 values (from -1 to 1 in steps of 0.02), how many combinations of 4 weights would you need to try?
+      <p class="prompt-text">If you discretized each weight to 100 values (from -1 to 1 in steps of 0.02), how many combinations of 4 weights would you need to try?</p>
+      <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Why is this approach impractical?
+      <p class="prompt-text">Why is this approach impractical?</p>
+      <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -835,7 +881,7 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Exercise 5.2 &mdash; Your Ideas</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; Your Ideas</h3>
   <div class="question">
 
     <p>Think for a minute. What strategies can YOU think of for finding 4 good weight values without trying every combination? Write down at least 2 ideas before looking at hints.</p>
@@ -845,12 +891,14 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Strategy 1?
+      <p class="prompt-text">Strategy 1?</p>
+      <textarea class="answer-input" data-exercise="ex-5-2" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Strategy 2?
+      <p class="prompt-text">Strategy 2?</p>
+      <textarea class="answer-input" data-exercise="ex-5-2" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -889,7 +937,7 @@ for w in [[0, 0, 1, 0.5], [0.1, 0.5, 1, 0.5]]:
 
 
 <section class="exercise" id="ex-5-3">
-  <h3>Exercise 5.3 &mdash; Strategy 1 — Random Search</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-3" /></label>Exercise 5.3 &mdash; Strategy 1 — Random Search</h3>
   <div class="question">
     <p>Generate 100 random weight vectors (each weight between -1 and 1). Evaluate each one over 5 episodes. Print the best weights and their score.</p>
 
@@ -958,7 +1006,7 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
 
 <section class="exercise" id="ex-5-4">
-  <h3>Exercise 5.4 &mdash; Strategy 2 — Evolve!</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-4" /></label>Exercise 5.4 &mdash; Strategy 2 — Evolve!</h3>
   <div class="question">
     <p>Random search found a decent solution, but can we do better? Here's an idea:</p>
 
@@ -1097,7 +1145,7 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
 
 <section class="exercise" id="ex-5-5">
-  <h3>Improve Evolution</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-5" /></label>Improve Evolution</h3>
   <div class="question">
     <p>Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas:</p>
 
@@ -1130,8 +1178,8 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
 
 
-<div class="part">
-  <h2>Part 6: Can Gradients Help?</h2>
+<div class="part" data-part-number="6">
+  <h2>Part 6: Can Gradients Help?<span class="time-estimate">~30 min</span></h2>
 
   <p>Genetic algorithms work but feel brute-force. In the Gradient Descent chapter, you learned a more targeted approach: compute the gradient, move in the direction that improves the objective. Can we do that here?</p>
 
@@ -1143,7 +1191,7 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
 
 <section class="exercise" id="ex-6-1">
-  <h3>Exercise 6.1 &mdash; Strategy 3 — Tweak and Observe</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; Strategy 3 — Tweak and Observe</h3>
   <div class="question">
     <p>In the Gradient Descent chapter, you computed gradients by nudging each parameter slightly and measuring how the output changed (finite differences). Can you apply that same trick here?</p>
 
@@ -1223,7 +1271,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-2">
-  <h3>Exercise 6.2 &mdash; Why Didn't That Work Well?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.2 &mdash; Why Didn't That Work Well?</h3>
   <div class="question">
 
     <p>The gradient approach probably gave erratic results — the score jumps around instead of steadily improving. Why?</p>
@@ -1233,12 +1281,14 @@ for step in range(50):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If you play 10 games with the EXACT same weights, do you always get the same score? Why not?
+      <p class="prompt-text">If you play 10 games with the EXACT same weights, do you always get the same score? Why not?</p>
+      <textarea class="answer-input" data-exercise="ex-6-2" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If the score varies by ±30 between runs, and you're trying to detect a difference of 0.01 in one weight, can you reliably measure the gradient?
+      <p class="prompt-text">If the score varies by ±30 between runs, and you're trying to detect a difference of 0.01 in one weight, can you reliably measure the gradient?</p>
+      <textarea class="answer-input" data-exercise="ex-6-2" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1280,7 +1330,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-3">
-  <h3>Exercise 6.3 &mdash; Assigning Credit</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-3" /></label>Exercise 6.3 &mdash; Assigning Credit</h3>
   <div class="question">
 
     <p>You played a game and scored 150 steps. At step 100, you pushed right.</p>
@@ -1290,17 +1340,20 @@ for step in range(50):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Was pushing right at step 100 a good action? How would you know?
+      <p class="prompt-text">Was pushing right at step 100 a good action? How would you know?</p>
+      <textarea class="answer-input" data-exercise="ex-6-3" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Which reward is more relevant to the action at step 100 — the reward at step 101 or the reward at step 150?
+      <p class="prompt-text">Which reward is more relevant to the action at step 100 — the reward at step 101 or the reward at step 150?</p>
+      <textarea class="answer-input" data-exercise="ex-6-3" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If you got a reward of 1 at each step, how would you assign 'credit' to the action at step 100? Should nearby rewards count more than distant ones?
+      <p class="prompt-text">If you got a reward of 1 at each step, how would you assign 'credit' to the action at step 100? Should nearby rewards count more than distant ones?</p>
+      <textarea class="answer-input" data-exercise="ex-6-3" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1335,7 +1388,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-4">
-  <h3>Exercise 6.4 &mdash; Design Your Own Credit System</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-4" /></label>Exercise 6.4 &mdash; Design Your Own Credit System</h3>
   <div class="question">
 
     <p>You agreed that nearby rewards should count more than distant ones. Now design a formula.</p>
@@ -1347,22 +1400,26 @@ for step in range(50):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If you just sum all future rewards equally, what's the credit for step 0? (1+1+1+1+1 = 5). What's the problem with this?
+      <p class="prompt-text">If you just sum all future rewards equally, what's the credit for step 0? (1+1+1+1+1 = 5). What's the problem with this?</p>
+      <textarea class="answer-input" data-exercise="ex-6-4" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What if each future reward was worth a little LESS than the one before it — say 99% as much? Step 0's own reward counts fully (×1), step 1's reward counts ×0.99, step 2's counts ×0.99², etc. What would the credit for step 0 be?
+      <p class="prompt-text">What if each future reward was worth a little LESS than the one before it — say 99% as much? Step 0's own reward counts fully (×1), step 1's reward counts ×0.99, step 2's counts ×0.99², etc. What would the credit for step 0 be?</p>
+      <textarea class="answer-input" data-exercise="ex-6-4" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What should the credit for the LAST step (step 4) be? It has no future rewards.
+      <p class="prompt-text">What should the credit for the LAST step (step 4) be? It has no future rewards.</p>
+      <textarea class="answer-input" data-exercise="ex-6-4" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What would you call that 0.99 multiplier?
+      <p class="prompt-text">What would you call that 0.99 multiplier?</p>
+      <textarea class="answer-input" data-exercise="ex-6-4" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1400,7 +1457,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-5">
-  <h3>Exercise 6.5 &mdash; Code Your Credit System</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-5" /></label>Exercise 6.5 &mdash; Code Your Credit System</h3>
   <div class="question">
     <p>Write <code>compute_discounted_rewards(rewards, gamma=0.99)</code> that implements the credit system you just designed. It takes a list of rewards (one per step) and returns the discounted return for each step.</p>
 
@@ -1473,7 +1530,7 @@ print("Discounted rewards:", result)
 
 
 <section class="exercise" id="ex-6-6">
-  <h3>Exercise 6.6 &mdash; Look at the Raw Numbers</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.6 &mdash; Look at the Raw Numbers</h3>
   <div class="question">
     <p>Play a game, compute discounted rewards, and look at the values. What do you notice?</p>
 
@@ -1529,7 +1586,7 @@ print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
 
 
 <section class="exercise" id="ex-6-7">
-  <h3>Exercise 6.7 &mdash; Fix the All-Positive Problem</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-7" /></label>Exercise 6.7 &mdash; Fix the All-Positive Problem</h3>
   <div class="question">
 
     <p>Every action has positive credit, so the model thinks all actions were good. That's not useful.</p>
@@ -1539,17 +1596,20 @@ print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If the average credit is 30, and action A got credit 45 while action B got credit 15, which was better?
+      <p class="prompt-text">If the average credit is 30, and action A got credit 45 while action B got credit 15, which was better?</p>
+      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What if you subtracted the average from each value? A would become +15 (above average = good!) and B would become -15 (below average = bad). Does this help?
+      <p class="prompt-text">What if you subtracted the average from each value? A would become +15 (above average = good!) and B would become -15 (below average = bad). Does this help?</p>
+      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      After subtracting the mean, some values might be ±50 while others are ±5. Should you also scale them? How?
+      <p class="prompt-text">After subtracting the mean, some values might be ±50 while others are ±5. Should you also scale them? How?</p>
+      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1585,7 +1645,7 @@ print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
 
 
 <section class="exercise" id="ex-6-8">
-  <h3>Exercise 6.8 &mdash; Write normalize()</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8" /></label>Exercise 6.8 &mdash; Write normalize()</h3>
   <div class="question">
     <p>Write a <code>normalize(values)</code> function that subtracts the mean and divides by the standard deviation.</p>
 
@@ -1630,8 +1690,8 @@ print("After:", normalize(test))
 
 
 
-<div class="part">
-  <h2>Part 7: Teaching a Model to Play</h2>
+<div class="part" data-part-number="7">
+  <h2>Part 7: Teaching a Model to Play<span class="time-estimate">~30 min</span></h2>
 
   <p>So far you've been hand-tuning weights or using evolution. But there's something unsatisfying — you're searching OUTSIDE the game. You try weights, play a full game, check the score, try new weights. What if the model could learn FROM each game it plays?</p>
 
@@ -1642,7 +1702,7 @@ print("After:", normalize(test))
 
 
 <section class="exercise" id="ex-7-0">
-  <h3>Exercise 7.0 &mdash; Why Probabilities?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-0" /></label>Exercise 7.0 &mdash; Why Probabilities?</h3>
   <div class="question">
 
     <p>Your current policy is deterministic: if <code>weights @ obs &gt; 0</code>, always go right. Always. Every single time.</p>
@@ -1652,17 +1712,20 @@ print("After:", normalize(test))
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If the policy always makes the same decision in the same state, can it ever discover that the OTHER action might have been better?
+      <p class="prompt-text">If the policy always makes the same decision in the same state, can it ever discover that the OTHER action might have been better?</p>
+      <textarea class="answer-input" data-exercise="ex-7-0" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      What if instead of 'always go right when score &gt; 0', the model said 'go right with 70% probability'? Sometimes it would go left — accidentally. What could you learn from those accidents?
+      <p class="prompt-text">What if instead of 'always go right when score &gt; 0', the model said 'go right with 70% probability'? Sometimes it would go left — accidentally. What could you learn from those accidents?</p>
+      <textarea class="answer-input" data-exercise="ex-7-0" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If an accidental action leads to a HIGHER reward than usual, what should the model do next time?
+      <p class="prompt-text">If an accidental action leads to a HIGHER reward than usual, what should the model do next time?</p>
+      <textarea class="answer-input" data-exercise="ex-7-0" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1698,7 +1761,7 @@ print("After:", normalize(test))
 
 
 <section class="exercise" id="ex-7-1">
-  <h3>Exercise 7.1 &mdash; A Probabilistic Policy</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1" /></label>Exercise 7.1 &mdash; A Probabilistic Policy</h3>
   <div class="question">
     <p>Convert your <code>weighted_policy</code> from a hard yes/no decision into a probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY of going right.</p>
 
@@ -1763,7 +1826,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 
 <section class="exercise" id="ex-7-2a">
-  <h3>Exercise 7.2 &mdash; How Should the Model Learn?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2a" /></label>Exercise 7.2 &mdash; How Should the Model Learn?</h3>
   <div class="question">
 
     <p>Your model outputs a probability and samples an action. After the game, you have discounted rewards telling you which actions were good (positive) and which were bad (negative).</p>
@@ -1773,22 +1836,26 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If action = 'go right' and the discounted reward was POSITIVE (good action), should the model make 'go right' MORE or LESS likely next time?
+      <p class="prompt-text">If action = 'go right' and the discounted reward was POSITIVE (good action), should the model make 'go right' MORE or LESS likely next time?</p>
+      <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen?
+      <p class="prompt-text">If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen?</p>
+      <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?
+      <p class="prompt-text">In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?</p>
+      <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?
+      <p class="prompt-text">To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?</p>
+      <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1830,7 +1897,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 
 <section class="exercise" id="ex-7-2b">
-  <h3>Exercise 7.3 &mdash; Derive the Gradient</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2b" /></label>Exercise 7.3 &mdash; Derive the Gradient</h3>
   <div class="question">
     <p>You just figured out that $\log(p)$ is the right quantity to differentiate. Now work out the gradient.</p>
 
@@ -1888,7 +1955,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 
 <section class="exercise" id="ex-7-3">
-  <h3>Exercise 7.4 &mdash; Play, Record, and Learn</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.4 &mdash; Play, Record, and Learn</h3>
   <div class="question">
     <p>Now put it all together. Write <code>play_episode(env, weights)</code> that:</p>
 
@@ -2001,10 +2068,17 @@ def reinforce_update(env, weights, lr=0.01):
 
 
 
+<p>Here's what a typical REINFORCE training curve looks like. Notice the high variance — scores bounce around wildly because each episode is different and the model is still exploring.</p>
+
+<p><img src="img/reinforce_curve.png" alt="Typical REINFORCE learning curve — noisy but trending upward" /></p>
+
+
+
+
 
 
 <section class="exercise" id="ex-7-4">
-  <h3>Exercise 7.5 &mdash; Train the Agent!</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.5 &mdash; Train the Agent!</h3>
   <div class="question">
     <p>Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?</p>
 
@@ -2098,8 +2172,8 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
 
 
-<div class="part">
-  <h2>Part 8: Predicting Value</h2>
+<div class="part" data-part-number="8">
+  <h2>Part 8: Predicting Value<span class="time-estimate">~25 min</span></h2>
 
   <p>REINFORCE works, but notice something: it has to finish the ENTIRE game before it can learn anything. It plays 200 steps, then looks back and assigns credit. Can we do better?</p>
 
@@ -2110,7 +2184,7 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
 
 <section class="exercise" id="ex-8-1">
-  <h3>Exercise 8.1 &mdash; You Can Already Predict</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-1" /></label>Exercise 8.1 &mdash; You Can Already Predict</h3>
   <div class="question">
 
     <p>Think about two situations mid-game:</p>
@@ -2120,17 +2194,20 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      The pole is nearly vertical, barely moving. How many more steps do you think you'll survive? What's your expected future reward from here?
+      <p class="prompt-text">The pole is nearly vertical, barely moving. How many more steps do you think you'll survive? What's your expected future reward from here?</p>
+      <textarea class="answer-input" data-exercise="ex-8-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      The pole is nearly horizontal, falling fast. Expected future reward?
+      <p class="prompt-text">The pole is nearly horizontal, falling fast. Expected future reward?</p>
+      <textarea class="answer-input" data-exercise="ex-8-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      You just made an intuitive prediction about future reward based on the state. If a MODEL could make this prediction, why would that be useful for learning?
+      <p class="prompt-text">You just made an intuitive prediction about future reward based on the state. If a MODEL could make this prediction, why would that be useful for learning?</p>
+      <textarea class="answer-input" data-exercise="ex-8-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -2166,7 +2243,7 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
 
 <section class="exercise" id="ex-8-2">
-  <h3>Exercise 8.2 &mdash; Build a Value Predictor</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-2" /></label>Exercise 8.2 &mdash; Build a Value Predictor</h3>
   <div class="question">
     <p>Build a simple linear model: given a state (observation), predict the total future reward.</p>
 
@@ -2244,7 +2321,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
 
 <section class="exercise" id="ex-8-3a">
-  <h3>Exercise 8.3 &mdash; The Waiting Problem</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-3a" /></label>Exercise 8.3 &mdash; The Waiting Problem</h3>
   <div class="question">
 
     <p>Your value model works — but it still needs <code>compute_discounted_rewards</code>, which requires the FULL list of rewards from a completed episode.</p>
@@ -2254,17 +2331,20 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Can you think of a way to estimate the discounted return at step t WITHOUT finishing the game?
+      <p class="prompt-text">Can you think of a way to estimate the discounted return at step t WITHOUT finishing the game?</p>
+      <textarea class="answer-input" data-exercise="ex-8-3a" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      You have: the reward at step t, and the value model's prediction for the NEXT state. The discounted return at step t is: reward[t] + gamma × (discounted return at step t+1). But the discounted return at step t+1 is approximately... what?
+      <p class="prompt-text">You have: the reward at step t, and the value model's prediction for the NEXT state. The discounted return at step t is: reward[t] + gamma × (discounted return at step t+1). But the discounted return at step t+1 is approximately... what?</p>
+      <textarea class="answer-input" data-exercise="ex-8-3a" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      So the discounted return at step t is approximately: reward[t] + gamma × V(next_state). Does this require finishing the game?
+      <p class="prompt-text">So the discounted return at step t is approximately: reward[t] + gamma × V(next_state). Does this require finishing the game?</p>
+      <textarea class="answer-input" data-exercise="ex-8-3a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -2300,7 +2380,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
 
 <section class="exercise" id="ex-8-3b">
-  <h3>Exercise 8.4 &mdash; Step-by-Step Value Learning</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-3b" /></label>Exercise 8.4 &mdash; Step-by-Step Value Learning</h3>
   <div class="question">
     <p>Implement the idea you just derived. At each step, compute:</p>
 
@@ -2371,7 +2451,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
 
 <section class="exercise" id="ex-8-4a">
-  <h3>Exercise 8.5 &mdash; What Does the Error Mean?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-4a" /></label>Exercise 8.5 &mdash; What Does the Error Mean?</h3>
   <div class="question">
 
     <p>Look at the error from <code>td_update</code>: <code>error = reward + gamma * V(next_state) - V(current_state)</code>.</p>
@@ -2381,17 +2461,20 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If the error is positive, it means: what you actually got (reward + predicted future) is MORE than what you expected (V(current)). Was the action that got you here good or bad?
+      <p class="prompt-text">If the error is positive, it means: what you actually got (reward + predicted future) is MORE than what you expected (V(current)). Was the action that got you here good or bad?</p>
+      <textarea class="answer-input" data-exercise="ex-8-4a" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      If the error is negative, was the action good or bad?
+      <p class="prompt-text">If the error is negative, was the action good or bad?</p>
+      <textarea class="answer-input" data-exercise="ex-8-4a" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Compare this error to the normalized discounted rewards from REINFORCE. Which is a better signal for telling the actor which actions were good?
+      <p class="prompt-text">Compare this error to the normalized discounted rewards from REINFORCE. Which is a better signal for telling the actor which actions were good?</p>
+      <textarea class="answer-input" data-exercise="ex-8-4a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -2427,7 +2510,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
 
 <section class="exercise" id="ex-8-4b">
-  <h3>Exercise 8.6 &mdash; Compare the Signals</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-4b" /></label>Exercise 8.6 &mdash; Compare the Signals</h3>
   <div class="question">
     <p>Play an episode and compute both: (1) the normalized discounted rewards from REINFORCE, and (2) the TD errors (advantages) from the value model. Compare their standard deviations. Which signal is more stable?</p>
 
@@ -2520,8 +2603,8 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 
 
 
-<div class="part">
-  <h2>Part 9: Best of Both Worlds — Actor-Critic</h2>
+<div class="part" data-part-number="9">
+  <h2>Part 9: Best of Both Worlds — Actor-Critic<span class="time-estimate">~30 min</span></h2>
 
   <p>You now have two models:</p>
 
@@ -2539,7 +2622,7 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 
 
 <section class="exercise" id="ex-9-1">
-  <h3>Exercise 9.1 &mdash; Two Models Working Together</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-1" /></label>Exercise 9.1 &mdash; Two Models Working Together</h3>
   <div class="question">
 
     <p>Think about how to combine the actor and critic:</p>
@@ -2549,17 +2632,20 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      In REINFORCE, you multiplied gradients by normalized discounted rewards. But you now have a better signal — the advantage (TD error). What should you multiply the gradients by instead?
+      <p class="prompt-text">In REINFORCE, you multiplied gradients by normalized discounted rewards. But you now have a better signal — the advantage (TD error). What should you multiply the gradients by instead?</p>
+      <textarea class="answer-input" data-exercise="ex-9-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      Both models learn at the same time. What does the actor learn from? What does the critic learn from?
+      <p class="prompt-text">Both models learn at the same time. What does the actor learn from? What does the critic learn from?</p>
+      <textarea class="answer-input" data-exercise="ex-9-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      REINFORCE waits until the end of the episode. With a critic providing advantages at each step, do you still need to wait?
+      <p class="prompt-text">REINFORCE waits until the end of the episode. With a critic providing advantages at each step, do you still need to wait?</p>
+      <textarea class="answer-input" data-exercise="ex-9-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -2592,10 +2678,17 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 
 
 
+<p>Here's a typical Actor-Critic learning curve. Compare it to the REINFORCE curve — notice how Actor-Critic converges faster and with less variance, because the critic provides a per-step learning signal instead of waiting until the episode ends.</p>
+
+<p><img src="img/actor_critic_curve.png" alt="Typical Actor-Critic learning curve — faster convergence, less variance" /></p>
+
+
+
+
 
 
 <section class="exercise" id="ex-9-2">
-  <h3>Exercise 9.2 &mdash; Build Actor-Critic</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-2" /></label>Exercise 9.2 &mdash; Build Actor-Critic</h3>
   <div class="question">
     <p>Combine the actor and critic into a single training loop. At each step within an episode:</p>
 
@@ -2721,7 +2814,7 @@ plot_scores(scores, title="Actor-Critic Training")
 
 
 <section class="exercise" id="ex-9-3">
-  <h3>Exercise 9.3 &mdash; The Grand Comparison</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-3" /></label>Exercise 9.3 &mdash; The Grand Comparison</h3>
   <div class="question">
     <p>You've built four approaches. Let's see them side by side. Run each one and plot their learning curves together:</p>
 
@@ -2822,7 +2915,7 @@ plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-
 
 
 <section class="exercise" id="ex-9-4">
-  <h3>Go Deeper — Neural Network Actor-Critic</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-4" /></label>Go Deeper — Neural Network Actor-Critic</h3>
   <div class="question">
     <p>Replace the linear models with small neural networks. Use one hidden layer of 32 neurons with ReLU activation. You can use numpy (manual backprop) or PyTorch/TensorFlow.</p>
 
@@ -3024,6 +3117,100 @@ plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
+</div>
+
+
+
+<button class="glossary-toggle" id="glossary-toggle">Glossary</button>
+<div class="glossary-panel" id="glossary-panel">
+  <div class="glossary-header">
+    <h3>Glossary</h3>
+    <button class="glossary-close" id="glossary-close">&times;</button>
+  </div>
+  <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms..." />
+  <dl class="glossary-list">
+
+    <div class="glossary-entry" data-term="environment">
+      <dt>Environment</dt>
+      <dd>The world the agent interacts with — it receives actions and returns observations and rewards.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="observation">
+      <dt>Observation</dt>
+      <dd>The numbers describing the current state of the environment (also called <em>state</em>).</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="action">
+      <dt>Action</dt>
+      <dd>A choice the agent makes at each step (e.g. push left or push right).</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="reward">
+      <dt>Reward</dt>
+      <dd>A scalar signal the environment returns after each action, indicating how good the outcome was.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="policy">
+      <dt>Policy</dt>
+      <dd>A function that maps observations to actions — the agent's strategy.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="episode">
+      <dt>Episode</dt>
+      <dd>One complete run of the game from start to termination.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="discount factor (γ)">
+      <dt>Discount factor (γ)</dt>
+      <dd>A number between 0 and 1 that controls how much future rewards are worth compared to immediate ones.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="discounted return">
+      <dt>Discounted return</dt>
+      <dd>The sum of future rewards, each multiplied by γ raised to the number of steps away.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="genetic algorithm">
+      <dt>Genetic algorithm</dt>
+      <dd>An optimization method inspired by evolution — keep the best, mutate, repeat.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="reinforce">
+      <dt>REINFORCE</dt>
+      <dd>A policy gradient algorithm that updates weights by multiplying the gradient of log-probability by the discounted return.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="value function">
+      <dt>Value function</dt>
+      <dd>A model that predicts the expected total future reward from a given state.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="td error">
+      <dt>TD error</dt>
+      <dd>The difference between the estimated return (reward + γ·V(next)) and the predicted value V(current) — measures surprise.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="advantage">
+      <dt>Advantage</dt>
+      <dd>How much better an action turned out compared to what was expected — the TD error serves as an estimate.</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="actor">
+      <dt>Actor</dt>
+      <dd>The component that picks actions (the policy).</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="critic">
+      <dt>Critic</dt>
+      <dd>The component that evaluates states (the value function).</dd>
+    </div>
+
+    <div class="glossary-entry" data-term="actor-critic">
+      <dt>Actor-Critic</dt>
+      <dd>An architecture combining a policy (actor) and a value function (critic) that learn together.</dd>
+    </div>
+
+  </dl>
 </div>
 
 

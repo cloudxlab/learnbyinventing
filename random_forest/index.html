@@ -22,15 +22,18 @@
 </script>
 
 </head>
-<body>
+<body data-chapter-id="random_forest">
+
+<div class="progress-indicator" id="progress-indicator" data-total="6"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="random_forest.ipynb" download>Notebook</a>
 
-    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/random_forest/random_forest.ipynb" target="_blank">Notebook (Colab)</a>
+    <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/random_forest/random_forest.ipynb" target="_blank">Colab</a>
 
   </span>
 </nav>
@@ -43,10 +46,12 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 
-<div class="part">
+<div class="part" data-part-number="1">
   <h2>Part 1: Impurity for Numbers</h2>
 
   <p>The classification tree asked: "how <em>mixed</em> are the labels in this group?" For numbers the question becomes: "how <em>spread out</em> are the values?"</p>
@@ -67,7 +72,7 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 
 <section class="exercise" id="ex-1-1">
-  <h3>Exercise 1.1 &mdash; Invent a Spread Score</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Invent a Spread Score</h3>
   <div class="question">
     <p>Invent a single number that is <code>0</code> when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on.</p>
 
@@ -125,7 +130,7 @@ assert variance([4]) == 0
 
 
 <section class="exercise" id="ex-1-2">
-  <h3>Exercise 1.2 &mdash; The Value of a Split</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-2" /></label>Exercise 1.2 &mdash; The Value of a Split</h3>
   <div class="question">
     <p>Take this group: <code>values = [10, 9, 11, 8, 10, 1]</code>. It has one troublemaker.</p>
 
@@ -186,7 +191,7 @@ assert total_variance([5], [5]) == 0.0
 
 
 <section class="exercise" id="ex-1-3">
-  <h3>Exercise 1.3 &mdash; Variance Reduction</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-3" /></label>Exercise 1.3 &mdash; Variance Reduction</h3>
   <div class="question">
     <p>A split is good when the children are much purer (lower variance) than the parent. You have the parent's variance and the children's combined (weighted) variance. How would you capture "how much purer did the split make things" in one number?</p>
 
@@ -246,7 +251,7 @@ assert good &gt; bad
 
 
 <section class="exercise mcq" id="mcq-1-1">
-  <h3>Quick Check 1.4 &mdash; Variance vs Impurity</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-1-1" /></label>Quick Check 1.4 &mdash; Variance vs Impurity</h3>
   <div class="question">
     <p>In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?</p>
 
@@ -303,7 +308,7 @@ assert good &gt; bad
 
 
 
-<div class="part">
+<div class="part" data-part-number="2">
   <h2>Part 2: Choosing the Best Split</h2>
 
   <p>Here is a tiny housing dataset. Each row is <code>[size_sqft, bedrooms]</code>; the target is the price.</p>
@@ -358,7 +363,7 @@ assert good &gt; bad
 
 
 <section class="exercise" id="ex-2-1">
-  <h3>Exercise 2.1 &mdash; Compare Two Splits by Hand</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Compare Two Splits by Hand</h3>
   <div class="question">
     <p>Using your <code>variance_reduction</code>, compute the reduction for two candidate splits, and see which feature the tree should ask about first:</p>
 
@@ -417,7 +422,7 @@ bedroom_red = variance_reduction(y, [50, 55], [65, 150, 160, 170])
 
 
 <section class="exercise" id="ex-2-2">
-  <h3>Exercise 2.2 &mdash; Find the Best Split Automatically</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Find the Best Split Automatically</h3>
   <div class="question">
     <p>Trying splits by hand doesn't scale. Write <code>find_best_split(X, y, feature_indices=None)</code> that:</p>
 
@@ -501,7 +506,7 @@ assert find_best_split([[1, 1]], [10]) == (None, None, 0.0)
 
 
 <section class="exercise" id="ex-2-3">
-  <h3>Exercise 2.3 &mdash; When Should the Tree Stop Asking Questions?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; When Should the Tree Stop Asking Questions?</h3>
   <div class="question">
 
     <p>Left alone, the tree splits until every leaf holds a single house --- that's not learning, it's <strong>memorization</strong>: perfect on training data, brittle on anything new. Two brakes prevent it:</p>
@@ -533,7 +538,7 @@ assert find_best_split([[1, 1]], [10]) == (None, None, 0.0)
 
 
 
-<div class="part">
+<div class="part" data-part-number="3">
   <h2>Part 3: Build the Regression Tree</h2>
 
 </div>
@@ -543,7 +548,7 @@ assert find_best_split([[1, 1]], [10]) == (None, None, 0.0)
 
 
 <section class="exercise" id="ex-3-0">
-  <h3>Exercise 3.0 &mdash; The Node --- Provided</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-0" /></label>Exercise 3.0 &mdash; The Node --- Provided</h3>
   <div class="question">
     <p>A tree is made of nodes. A <strong>decision node</strong> holds a question (<code>feature</code>, <code>threshold</code>) and two children; a <strong>leaf</strong> holds only a <code>value</code> (the prediction: the mean of the targets that reached it). Run this as-is.</p>
 
@@ -604,7 +609,7 @@ assert not Node(feature=0, threshold=1200,
 
 
 <section class="exercise" id="ex-3-1">
-  <h3>Exercise 3.1 &mdash; The Tree</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; The Tree</h3>
   <div class="question">
     <p>Now assemble everything into a <code>DecisionTree</code> class:</p>
 
@@ -731,7 +736,7 @@ assert 150 &lt;= p[1] &lt;= 170
 
 
 
-<div class="part">
+<div class="part" data-part-number="4">
   <h2>Part 4: Many Trees Are Better Than One</h2>
 
   <p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized.</p>
@@ -753,7 +758,7 @@ assert 150 &lt;= p[1] &lt;= 170
 
 
 <section class="exercise" id="ex-4-1">
-  <h3>Exercise 4.1 &mdash; Bootstrap Sampling (randomize the *rows*)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Bootstrap Sampling (randomize the *rows*)</h3>
   <div class="question">
     <p>Give each tree its own dataset by sampling <code>n</code> rows from the original <code>n</code> rows <strong>with replacement</strong> --- some rows appear twice, some not at all. This is called a <strong>bootstrap sample</strong>.</p>
 
@@ -826,7 +831,7 @@ def bootstrap_sample(X, y):
 
 
 <section class="exercise" id="ex-4-2">
-  <h3>Exercise 4.2 &mdash; Feature Randomness (randomize the *questions*)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Feature Randomness (randomize the *questions*)</h3>
   <div class="question">
     <p>Bootstrap samples still look similar, so most trees would still put the strongest feature (here: size) at the root --- the crowd stays too agreeable. Second injection of randomness: let each tree see only a <strong>random subset of the features</strong>.</p>
 
@@ -876,7 +881,7 @@ assert set(feats) &lt;= {0, 1, 2, 3}
 
 
 <section class="exercise mcq" id="mcq-4-1">
-  <h3>Quick Check 4.3 &mdash; Why Randomness Helps</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-4-1" /></label>Quick Check 4.3 &mdash; Why Randomness Helps</h3>
   <div class="question">
     <p>In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?</p>
 
@@ -933,7 +938,7 @@ assert set(feats) &lt;= {0, 1, 2, 3}
 
 
 
-<div class="part">
+<div class="part" data-part-number="5">
   <h2>Part 5: The Random Forest</h2>
 
 </div>
@@ -943,7 +948,7 @@ assert set(feats) &lt;= {0, 1, 2, 3}
 
 
 <section class="exercise" id="ex-5-1">
-  <h3>Exercise 5.1 &mdash; Assemble It</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; Assemble It</h3>
   <div class="question">
     <p>Write <code>RandomForestRegressor</code>:</p>
 
@@ -1060,7 +1065,7 @@ assert rf_train &lt; 30 and rf_test &lt; 30
 
 
 <section class="exercise" id="ex-5-2">
-  <h3>Think: When Does the Crowd Win?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Think: When Does the Crowd Win?</h3>
   <div class="question">
     <p>Look at your numbers. The single deep tree hit <strong>0.00 train RMSE</strong> (memorization) --- yet on this tiny, perfectly clean dataset its <em>test</em> error may still beat the forest's. So was all this for nothing?</p>
 
@@ -1117,7 +1122,7 @@ assert rf_train &lt; 30 and rf_test &lt; 30
 
 
 
-<div class="part">
+<div class="part" data-part-number="6">
   <h2>Part 6: Summary --- What Did You Just Build?</h2>
 
 </div>
@@ -1210,6 +1215,8 @@ assert rf_train &lt; 30 and rf_test &lt; 30
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
+
+
 
 
 <script src="../assets/lbi.js"></script>

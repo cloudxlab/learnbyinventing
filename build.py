@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import html
+import json
 import sys
 from pathlib import Path
 
@@ -82,7 +83,18 @@ def create_jinja_env():
 
 def render_html(env, data):
     template = env.get_template("chapter.html.j2")
-    return template.render(chapter=data["chapter"], blocks=data["blocks"])
+    blocks = data["blocks"]
+    total_parts = sum(
+        1 for b in blocks
+        if b["type"] == "part" and b.get("number") is not None
+    )
+    glossary = data["chapter"].get("glossary", [])
+    return template.render(
+        chapter=data["chapter"],
+        blocks=blocks,
+        total_parts=total_parts,
+        glossary=glossary,
+    )
 
 
 def render_slides(env, data):
@@ -104,11 +116,123 @@ def render_slides(env, data):
     return template.render(chapter=data["chapter"], slides=slides)
 
 
+def _nb_cell(cell_type, source):
+    return {
+        "cell_type": cell_type,
+        "metadata": {},
+        "source": source.splitlines(True),
+        **({"outputs": [], "execution_count": None} if cell_type == "code" else {}),
+    }
+
+
+def render_notebook(data, chapter_dir):
+    chapter = data["chapter"]
+    cells = [_nb_cell("markdown", f"# {chapter['title']}\n\n{chapter.get('intro', '')}")]
+
+    for block in data["blocks"]:
+        btype = block["type"]
+
+        if btype == "part":
+            num = block.get("number")
+            prefix = f"Part {num}: " if num is not None else ""
+            cells.append(_nb_cell("markdown", f"## {prefix}{block['title']}"))
+            if block.get("intro"):
+                cells.append(_nb_cell("markdown", block["intro"]))
+
+        elif btype in ("text", "reveal"):
+            cells.append(_nb_cell("markdown", block.get("text", "")))
+
+        elif btype == "table":
+            headers = block.get("headers", [])
+            rows = block.get("rows", [])
+            lines = [f"### {block.get('title', '')}", ""]
+            lines.append("| " + " | ".join(headers) + " |")
+            lines.append("| " + " | ".join("---" for _ in headers) + " |")
+            for row in rows:
+                lines.append("| " + " | ".join(str(c) for c in row) + " |")
+            cells.append(_nb_cell("markdown", "\n".join(lines)))
+
+        elif btype == "exercise":
+            kind = block.get("kind", "coding")
+            title = block.get("title", "")
+            part = block.get("part", "")
+            number = block.get("number", "")
+            desc = block.get("description", "")
+
+            if kind == "mcq":
+                label = f"Quick Check {part}.{number}"
+                lines = [f"### {label} — {title}", "", desc]
+                for opt in block.get("options", []):
+                    lines.append(f"- **{opt['label']}.** {opt['text']}")
+                cells.append(_nb_cell("markdown", "\n".join(lines)))
+            else:
+                label = "Exercise" if kind != "challenge" else ""
+                if label:
+                    label = f"{label} {part}.{number} — "
+                cells.append(_nb_cell("markdown", f"### {label}{title}\n\n{desc}"))
+
+            for pc in block.get("provided_code", []):
+                if isinstance(pc, dict) and pc.get("code"):
+                    cells.append(_nb_cell("code", pc["code"].rstrip()))
+
+            if kind == "conceptual":
+                for prompt in block.get("prompts", []):
+                    cells.append(_nb_cell("markdown", f"**Your answer:** {prompt}"))
+
+            if kind in ("coding", "challenge"):
+                cells.append(_nb_cell("code", "# YOUR CODE HERE\n"))
+
+            hints = block.get("hints", [])
+            if hints:
+                hint_parts = []
+                for i, h in enumerate(hints, 1):
+                    hint_parts.append(f"<details><summary>Hint {i}</summary>\n\n{h}\n</details>")
+                cells.append(_nb_cell("markdown", "\n\n".join(hint_parts)))
+
+            sol = block.get("solution")
+            if sol:
+                sol_parts = ["<details><summary>Solution</summary>\n"]
+                if sol.get("text"):
+                    sol_parts.append(sol["text"])
+                if sol.get("code"):
+                    sol_parts.append(f"```python\n{sol['code']}```")
+                sol_parts.append("\n</details>")
+                cells.append(_nb_cell("markdown", "\n".join(sol_parts)))
+
+    notebook = {
+        "nbformat": 4,
+        "nbformat_minor": 5,
+        "metadata": {
+            "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3",
+            },
+            "language_info": {"name": "python", "version": "3.10.0"},
+        },
+        "cells": cells,
+    }
+    out_path = chapter_dir / f"{chapter['id']}.ipynb"
+    out_path.write_text(json.dumps(notebook, indent=1, ensure_ascii=False))
+    print(f"  wrote {out_path}")
+
+    colab_url = chapter.get("colab_url")
+    if not colab_url:
+        colab_url = (
+            f"https://colab.research.google.com/github/cloudxlab/learnbyinventing"
+            f"/blob/main/{chapter['id']}/{chapter['id']}.ipynb"
+        )
+        chapter["colab_url"] = colab_url
+
+
 def build_chapter(chapter_name, fmt="all", env=None):
     chapter_dir = REPO_ROOT / chapter_name
     data = load_chapter(chapter_dir)
     if env is None:
         env = create_jinja_env()
+
+    if fmt in ("all", "html", "notebook"):
+        render_notebook(data, chapter_dir)
 
     if fmt in ("all", "html"):
         html_out = render_html(env, data)
@@ -148,7 +272,7 @@ def find_chapters():
 def main():
     parser = argparse.ArgumentParser(description="Build LearnByInventing chapters")
     parser.add_argument("chapters", nargs="*", help="Chapter name(s) (builds all if omitted)")
-    parser.add_argument("--format", choices=["all", "html", "slides"], default="all")
+    parser.add_argument("--format", choices=["all", "html", "slides", "notebook"], default="all")
     parser.add_argument("--check", action="store_true", help="Validate content files only")
     args = parser.parse_args()
 

@@ -14,15 +14,18 @@
 {% endif %}
 {% include "blocks/ga.html" %}
 </head>
-<body>
+<body data-chapter-id="{{ chapter.id }}">
+
+<div class="progress-indicator" id="progress-indicator" data-total="{{ total_parts }}"></div>
 
 <nav class="topnav">
   <a href="../index.html">&larr; All chapters</a>
   <span class="topnav-views">
     <strong>Interactive</strong>
     <a href="slides.html">Slides</a>
+    <a href="{{ chapter.id }}.ipynb" download>Notebook</a>
 {% if chapter.colab_url %}
-    <a href="{{ chapter.colab_url }}" target="_blank">Notebook (Colab)</a>
+    <a href="{{ chapter.colab_url }}" target="_blank">Colab</a>
 {% endif %}
   </span>
 </nav>
@@ -35,6 +38,8 @@
 <div class="global-controls">
   <button id="reveal-all">Reveal all hints &amp; solutions</button>
   <button id="hide-all">Hide all</button>
+  <button id="reset-all">Reset progress</button>
+  <button id="show-completed">Show completed only</button>
 </div>
 
 {% for block in blocks %}
@@ -42,6 +47,25 @@
 
 {% endfor %}
 {% include "footer.html.j2" %}
+
+{% if glossary %}
+<button class="glossary-toggle" id="glossary-toggle">Glossary</button>
+<div class="glossary-panel" id="glossary-panel">
+  <div class="glossary-header">
+    <h3>Glossary</h3>
+    <button class="glossary-close" id="glossary-close">&times;</button>
+  </div>
+  <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms..." />
+  <dl class="glossary-list">
+{% for g in glossary %}
+    <div class="glossary-entry" data-term="{{ g.term | lower }}">
+      <dt>{{ g.term }}</dt>
+      <dd>{{ g.definition | md_inline }}</dd>
+    </div>
+{% endfor %}
+  </dl>
+</div>
+{% endif %}
 
 <script src="../assets/lbi.js"></script>
 </body>
