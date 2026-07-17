@@ -41,8 +41,8 @@
 <h1>Inventing Big O Notation</h1>
 
 <p class="chapter-intro">Some programs finish in a blink. Others take hours — or years. In this chapter you'll
-discover <em>why</em> by measuring, counting, and eventually inventing the notation that
-computer scientists use to describe algorithmic speed.</p>
+discover <em>why</em> by measuring, counting, and eventually inventing a notation that
+captures it all.</p>
 
 
 <div class="global-controls">
@@ -64,48 +64,61 @@ happens when the input gets bigger? Let's find out by measuring.</p>
 
 
 
+<p>Here are two functions. <code>sum_list</code> adds up all the numbers in a list (one loop).
+<code>has_pair_with_sum</code> checks whether any two numbers in the list add up to a target
+(a loop inside a loop).</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_list</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">total</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">has_pair_with_sum</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">lst</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+</code></pre>
+</div>
+
+<p>We'll pass a target of <strong>-1</strong> to <code>has_pair_with_sum</code>. Since all our numbers are
+positive, no pair will ever add up to -1 — this forces the function to check
+<strong>every</strong> pair before giving up, so we measure its full workload.</p>
+
+
+
+
 
 
 <section class="exercise" id="ex-1-1">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Time It</h3>
   <div class="question">
-    <p>Here are two functions. <code>sum_list</code> adds up all the numbers in a list (one loop).
-<code>has_pair_with_sum</code> checks whether any two numbers in the list add up to a target
-(a loop inside a loop).</p>
+    <p>Time both functions on lists of size <strong>1,000</strong>, <strong>5,000</strong>, and <strong>10,000</strong>.</p>
 
-<p>Time both on lists of size <strong>1,000</strong>, <strong>10,000</strong>, and <strong>100,000</strong>. When the input
-gets 10× bigger, how much slower does each function get?</p>
+<p>For each size, record how long each function takes. When the input gets 5× bigger
+(1,000 → 5,000), how much slower does each function get?</p>
 
+<p>Use <code>time.time()</code> before and after each call to measure:</p>
 
+<div class="codehilite">
+<pre><span></span><code><span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
 
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; the two functions</div>
-      <pre><code>import time
-import random
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">sum_list</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sum_list:&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
 
-def sum_list(lst):
-    total = 0
-    for x in lst:
-        total += x
-    return total
-
-def has_pair_with_sum(lst, target):
-    for i in range(len(lst)):
-        for j in range(i + 1, len(lst)):
-            if lst[i] + lst[j] == target:
-                return True
-    return False
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">has_pair_with_sum</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;has_pair:&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
 </code></pre>
-    </div>
+</div>
 
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; timing helper</div>
-      <pre><code>def time_it(func, *args):
-    start = time.time()
-    func(*args)
-    return time.time() - start
-</code></pre>
-    </div>
+<p>Try the same for n = 5000 and n = 10000.</p>
 
 
   </div>
@@ -113,24 +126,7 @@ def has_pair_with_sum(lst, target):
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Try this:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">]:</span>
-    <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-    <span class="n">t</span> <span class="o">=</span> <span class="n">time_it</span><span class="p">(</span><span class="n">sum_list</span><span class="p">,</span> <span class="n">lst</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sum_list n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Then do the same for <code>has_pair_with_sum(lst, -1)</code> (using -1 so it always checks
-every pair — the worst case).</p>
-</div>
-  </details>
-
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><p>For <code>sum_list</code>, going from 1,000 to 10,000 should take about 10× longer. For <code>has_pair_with_sum</code>, it should take about <strong>100×</strong> longer. Why 100×? Because it has a loop <em>inside</em> a loop — 10× more items means 10 × 10 = 100× more pairs to check.</p>
+    <div class="hint-body"><p>For <code>sum_list</code>, going from 1,000 to 5,000 should take about 5× longer. For <code>has_pair_with_sum</code>, it should take about <strong>25×</strong> longer. Why 25×? Because it has a loop <em>inside</em> a loop — 5× more items means 5 × 5 = 25× more pairs to check.</p>
 </div>
   </details>
 
@@ -140,18 +136,23 @@ every pair — the worst case).</p>
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p><code>sum_list</code> grows ~10× when n grows 10×. <code>has_pair_with_sum</code> grows ~100×.
-One grows <em>linearly</em> with the input, the other grows with the <em>square</em> of the input.</p>
+      <p><code>sum_list</code> grows ~5× when n grows 5× (from 1,000 to 5,000). <code>has_pair_with_sum</code>
+grows ~25×. One grows proportionally to n, the other proportionally to n².</p>
 
 
 
-      <pre><code>for n in [1000, 10000, 100000]:
+      <pre><code>for n in [1000, 5000, 10000]:
     lst = list(range(n))
 
-    t1 = time_it(sum_list, lst)
-    t2 = time_it(has_pair_with_sum, lst, -1)
+    start = time.time()
+    sum_list(lst)
+    t1 = time.time() - start
 
-    print(f"n={n:&gt;6}  sum_list: {t1:.4f}s  has_pair: {t2:.4f}s")
+    start = time.time()
+    has_pair_with_sum(lst, -1)
+    t2 = time.time() - start
+
+    print(f"n={n}  sum_list: {t1:.4f}s  has_pair: {t2:.4f}s")
 </code></pre>
 
     </div>
@@ -169,8 +170,7 @@ One grows <em>linearly</em> with the input, the other grows with the <em>square<
   <div class="question">
     <p>Plot <strong>time vs input size</strong> for both functions on the same graph.</p>
 
-<p>Use input sizes from 100 to 5,000 (going higher will make <code>has_pair_with_sum</code> too
-slow to wait for). What shape does each curve have?</p>
+<p>Use input sizes from 100 to 5,000. What shape does each curve have?</p>
 
 
 
@@ -188,23 +188,28 @@ sizes = [100, 500, 1000, 2000, 3000, 4000, 5000]
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><div class="codehilite">
+    <div class="hint-body"><p>Loop over <code>sizes</code>, time each function, collect the times in two lists, then plot:</p>
+
+<div class="codehilite">
 <pre><span></span><code><span class="n">times_sum</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">times_pair</span> <span class="o">=</span> <span class="p">[]</span>
-
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
     <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-    <span class="n">times_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time_it</span><span class="p">(</span><span class="n">sum_list</span><span class="p">,</span> <span class="n">lst</span><span class="p">))</span>
-    <span class="n">times_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time_it</span><span class="p">(</span><span class="n">has_pair_with_sum</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">sum_list</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+    <span class="n">times_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">has_pair_with_sum</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">times_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">times_sum</span><span class="p">,</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;sum_list&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">times_pair</span><span class="p">,</span> <span class="s1">&#39;s-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;has_pair_with_sum&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Input size (n)&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Time (seconds)&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;How does time grow with input size?&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
@@ -217,18 +222,21 @@ sizes = [100, 500, 1000, 2000, 3000, 4000, 5000]
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p><code>sum_list</code> is nearly flat — a straight line barely above zero. <code>has_pair_with_sum</code>
-curves upward steeply. One grows linearly, the other quadratically.</p>
+      <p><code>sum_list</code> is nearly flat — barely above zero. <code>has_pair_with_sum</code> curves upward
+steeply. One grows linearly, the other quadratically.</p>
 
 
 
       <pre><code>times_sum = []
 times_pair = []
-
 for n in sizes:
     lst = list(range(n))
-    times_sum.append(time_it(sum_list, lst))
-    times_pair.append(time_it(has_pair_with_sum, lst, -1))
+    start = time.time()
+    sum_list(lst)
+    times_sum.append(time.time() - start)
+    start = time.time()
+    has_pair_with_sum(lst, -1)
+    times_pair.append(time.time() - start)
 
 plt.figure(figsize=(8, 5))
 plt.plot(sizes, times_sum, 'o-', label='sum_list')
@@ -268,7 +276,7 @@ skills in programming.</p>
 
 
 <div class="part" data-part-number="2">
-  <h2>Part 2: Counting Steps<span class="time-estimate">~15 min</span></h2>
+  <h2>Part 2: Counting Steps<span class="time-estimate">~20 min</span></h2>
 
   <p>Timing is noisy — it depends on your computer's speed, what else is running, even
 the room temperature. Can we predict how an algorithm grows <em>without</em> running it?</p>
@@ -283,17 +291,56 @@ the room temperature. Can we predict how an algorithm grows <em>without</em> run
 
 
 <section class="exercise" id="ex-2-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Count the Operations</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-1" /></label>Exercise 2.1 &mdash; Instrument Your Code</h3>
   <div class="question">
-    <p>Modify <code>sum_list</code> and <code>has_pair_with_sum</code> to <strong>count</strong> how many times the inner
-operation runs instead of timing it.</p>
+    <p>Go back to <code>sum_list</code> and <code>has_pair_with_sum</code>. Add a <strong>counter variable</strong> to each
+one that counts how many times the innermost operation runs. Return the count along
+with the result.</p>
 
-<p>Run both on sizes 10, 100, and 1,000. How does the count relate to n?</p>
+<p>Then run your counted versions on sizes 10, 100, and 1,000. Print the counts.</p>
+
+<p>How does the count relate to n in each case?</p>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>For <code>sum_list</code>, add <code>count = 0</code> before the loop and <code>count += 1</code> inside it:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sum_list_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="n">count</span>
+</code></pre>
+</div>
+
+<p>Do the same for <code>has_pair_with_sum</code> — put the counter inside the inner loop.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>For <code>sum_list</code>, count should equal n exactly. For <code>has_pair</code>, try dividing count by n² — you should get roughly 0.5 for every input size.</p>
+</div>
+  </details>
 
 
 
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; counting versions</div>
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>sum_list: count = n exactly. has_pair: count/n² ≈ 0.5 regardless of n. The
+quadratic function does about n²/2 operations.</p>
+
+
+
       <pre><code>def sum_list_counted(lst):
     count = 0
     total = 0
@@ -310,96 +357,65 @@ def has_pair_counted(lst, target):
             if lst[i] + lst[j] == target:
                 return True, count
     return False, count
-</code></pre>
-    </div>
 
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
-    <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]:</span>
-    <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">sum_list_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">has_pair_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">  sum_list: </span><span class="si">{</span><span class="n">c1</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  has_pair: </span><span class="si">{</span><span class="n">c2</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre>
-</div>
-</div>
-  </details>
-
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><p>For sum_list, count = n exactly. For has_pair, count = n×(n-1)/2. When n = 1000, that's 499,500 — close to n²/2.</p>
-</div>
-  </details>
-
-
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-
-      <p>sum_list: count = n. has_pair: count = n(n-1)/2 ≈ n²/2. The ratio count/n²
-stays around 0.5 regardless of n — confirming quadratic growth.</p>
-
-
-
-      <pre><code>for n in [10, 100, 1000]:
+for n in [10, 100, 1000]:
     lst = list(range(n))
     _, c1 = sum_list_counted(lst)
     _, c2 = has_pair_counted(lst, -1)
-    ratio = c2 / n**2 if n &gt; 0 else 0
-    print(f"n={n:&gt;4}  sum_list: {c1:&gt;8}  has_pair: {c2:&gt;8}  (has_pair/n²={ratio:.3f})")
+    print(f"n={n}  sum_list: {c1}  has_pair: {c2}  has_pair/n²: {c2/n**2:.3f}")
 </code></pre>
 
     </div>
   </details>
 
 </section>
+
 
 
 
 
 
 <section class="exercise" id="ex-2-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; The Pattern</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-2" /></label>Exercise 2.2 &mdash; Discover the Pattern</h3>
   <div class="question">
+    <p>Look at the counts from <code>has_pair_counted</code>. Divide each count by n, then by n².</p>
 
-    <p>Look at your operation counts:</p>
+<table>
+<thead>
+<tr>
+  <th>n</th>
+  <th>count</th>
+  <th>count / n</th>
+  <th>count / n²</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>10</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>100</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>1000</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+</tbody>
+</table>
 
-<ol>
-<li>For <code>sum_list</code>, what's the exact formula relating count to n?</li>
-<li>For <code>has_pair</code>, the count is $\frac{n(n-1)}{2}$. Expand this:
-$\frac{n^2 - n}{2} = \frac{1}{2}n^2 - \frac{1}{2}n$</li>
-<li>When $n = 1{,}000{,}000$, the $n^2$ term is $10^{12}$. The $n$ term is $10^6$.
-What fraction of the total does the $n$ term contribute?</li>
-<li>Does the "$\div 2$" change how fast the count grows when n doubles?</li>
-</ol>
+<p>Which ratio stays roughly constant — count/n or count/n²?</p>
 
-
-
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Formula for sum_list count:</p>
-      <textarea class="answer-input" data-exercise="ex-2-2" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">When n = 1,000,000, fraction from the n term:</p>
-      <textarea class="answer-input" data-exercise="ex-2-2" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Does the ÷2 affect the growth rate?</p>
-      <textarea class="answer-input" data-exercise="ex-2-2" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
+<p>When $n = 1{,}000{,}000$, the count will be about $500{,}000{,}000{,}000$
+(500 billion). Does it matter that it's $n^2/2$ instead of $n^2$? Would
+the "÷2" make any practical difference at that scale?</p>
 
 
   </div>
@@ -407,7 +423,13 @@ What fraction of the total does the $n$ term contribute?</li>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>The n term contributes $10^6 / 10^{12} = 0.0001\%$ — it's irrelevant. And the ÷2 just means everything takes half as long, but it still <em>doubles</em> when n doubles by $\sqrt{2}$. The growth <em>shape</em> is the same.</p>
+    <div class="hint-body"><p>count/n grows (4.5, 49.5, 499.5...) but count/n² stays at ~0.5. The growth is proportional to n², not n.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>At n = 1,000,000: n² = 10¹², and n²/2 = 5×10¹¹. The difference is just 2× — the same factor whether n is 10 or a million. The ÷2 doesn't change <em>how fast</em> it grows.</p>
 </div>
   </details>
 
@@ -417,14 +439,13 @@ What fraction of the total does the $n$ term contribute?</li>
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <ol>
-<li>count = n (exactly)</li>
-<li>The $n$ term is 0.0001% of the total when $n = 10^6$ — negligible.</li>
-<li>The ÷2 is a constant multiplier — it doesn't change the <em>rate</em> of growth.
-Whether it's $n^2$ or $n^2/2$ or $7n^2$, the count still quadruples when n doubles.</li>
-</ol>
+      <p><strong>count/n²</strong> stays constant at ~0.5. This tells us the count grows proportionally
+to n².</p>
 
-<p><strong>The shape of growth is what matters, not the exact count.</strong></p>
+<p>The ÷2 is just a constant multiplier — it makes everything exactly half as much
+work, but the growth <em>rate</em> is the same. Whether it's n², n²/2, or 7n², the count
+still quadruples when n doubles. <strong>The shape of growth is what matters, not the
+exact count.</strong></p>
 
 
 
@@ -432,7 +453,6 @@ Whether it's $n^2$ or $n^2/2$ or $7n^2$, the count still quadruples when n doubl
   </details>
 
 </section>
-
 
 
 
@@ -442,10 +462,22 @@ Whether it's $n^2$ or $n^2/2$ or $7n^2$, the count still quadruples when n doubl
 <section class="exercise" id="ex-2-3">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>Exercise 2.3 &mdash; Does the Constant Matter?</h3>
   <div class="question">
-    <p>Here are two functions that both loop through a list, but one does 3× as much work
-per element:</p>
+    <p>Write two functions that both loop through a list once, but one does 3× as much
+work per element. For example, one adds each element once, the other adds it three
+times.</p>
 
-<div class="codehilite">
+<p>Time both on sizes 10,000, 100,000, and 1,000,000. Compute the ratio of their
+times for each size.</p>
+
+<p>Does the ratio stay constant or change as n grows?</p>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">work_n</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
     <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
@@ -461,19 +493,12 @@ per element:</p>
     <span class="k">return</span> <span class="n">s</span>
 </code></pre>
 </div>
+</div>
+  </details>
 
-<p>Time both on sizes 10,000, 100,000, and 1,000,000. Compute the ratio
-<code>time_3n / time_n</code> for each size.</p>
-
-<p>Does the ratio stay constant or change as n grows?</p>
-
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
-    <div class="hint-body"><p>The ratio should be roughly constant (around 2–4×) regardless of n. The 3× constant makes it proportionally slower, but both grow at the same <em>rate</em> — they're in the same growth family.</p>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>The ratio should be roughly the same (around 2–4×) regardless of n. The 3× constant makes it proportionally slower, but both grow at the same <em>rate</em>.</p>
 </div>
   </details>
 
@@ -484,7 +509,7 @@ per element:</p>
     <div class="solution-body">
 
       <p>The ratio stays roughly constant. Both functions are "linear" — they grow at
-the same rate. The constant multiplier is a detail, not the defining characteristic.</p>
+the same rate. The constant multiplier doesn't change the growth family.</p>
 
 
 
@@ -504,9 +529,9 @@ def work_3n(lst):
 
 for n in [10000, 100000, 1000000]:
     lst = list(range(n))
-    t1 = time_it(work_n, lst)
-    t2 = time_it(work_3n, lst)
-    print(f"n={n:&gt;7}  work_n: {t1:.4f}s  work_3n: {t2:.4f}s  ratio: {t2/t1:.1f}x")
+    start = time.time(); work_n(lst); t1 = time.time() - start
+    start = time.time(); work_3n(lst); t2 = time.time() - start
+    print(f"n={n}  work_n: {t1:.4f}s  work_3n: {t2:.4f}s  ratio: {t2/t1:.1f}x")
 </code></pre>
 
     </div>
@@ -522,7 +547,8 @@ for n in [10000, 100000, 1000000]:
 $100n$ — they all grow at the same rate. Whether it's $n^2$, $n^2/2$, or $5n^2 + 3n$
 — they all grow quadratically.</p>
 
-<p>We need a notation that captures the growth family and throws away the constants.</p>
+<p>We need a shorthand that captures the growth family and throws away the constants.
+How would <strong>you</strong> write "this algorithm grows like n²"?</p>
 
 </div>
 
@@ -531,8 +557,8 @@ $100n$ — they all grow at the same rate. Whether it's $n^2$, $n^2/2$, or $5n^2
 <div class="part" data-part-number="3">
   <h2>Part 3: Inventing a Notation<span class="time-estimate">~20 min</span></h2>
 
-  <p>We need a shorthand for "this algorithm's time grows like _____ as the input
-gets large." Let's invent one.</p>
+  <p>You keep saying things like "this grows like n" or "this grows like n squared."
+Let's make that precise.</p>
 
 
 </div>
@@ -541,99 +567,57 @@ gets large." Let's invent one.</p>
 
 
 <section class="exercise" id="ex-3-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; Classify the Growth</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-1" /></label>Exercise 3.1 &mdash; Name the Families</h3>
   <div class="question">
 
-    <p>Five algorithms were tested on different input sizes. Here are their operation counts:</p>
+    <p>You've already seen two growth families: one where count = n (linear) and one where
+count ≈ n² (quadratic). But there are others.</p>
 
-<table>
-<thead>
-<tr>
-  <th>n</th>
-  <th>Algo A</th>
-  <th>Algo B</th>
-  <th>Algo C</th>
-  <th>Algo D</th>
-  <th>Algo E</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>10</td>
-  <td>5</td>
-  <td>10</td>
-  <td>100</td>
-  <td>3</td>
-  <td>33</td>
-</tr>
-<tr>
-  <td>100</td>
-  <td>5</td>
-  <td>100</td>
-  <td>10,000</td>
-  <td>7</td>
-  <td>664</td>
-</tr>
-<tr>
-  <td>1,000</td>
-  <td>5</td>
-  <td>1,000</td>
-  <td>1,000,000</td>
-  <td>10</td>
-  <td>9,966</td>
-</tr>
-<tr>
-  <td>10,000</td>
-  <td>5</td>
-  <td>10,000</td>
-  <td>100,000,000</td>
-  <td>13</td>
-  <td>132,877</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Try this experiment.</strong> Write a function that searches a <strong>sorted</strong> list by
+repeatedly cutting the search range in half:</p>
 
-<p>For each algorithm, describe the growth pattern in one word:</p>
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">halving_search_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">lst</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">count</span>
+        <span class="k">elif</span> <span class="n">lst</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">target</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">count</span>
+</code></pre>
+</div>
 
-<ol>
-<li><strong>Algo A:</strong> count stays at 5 regardless of n → ?</li>
-<li><strong>Algo B:</strong> count equals n → ?</li>
-<li><strong>Algo C:</strong> count equals n² → ?</li>
-<li><strong>Algo D:</strong> count grows very slowly — what operation on n gives 3, 7, 10, 13? → ?</li>
-<li><strong>Algo E:</strong> count grows faster than n but much slower than n² → ?</li>
-</ol>
+<p>Run it on sorted lists of size 10, 100, 1,000, 10,000, and 100,000 (searching
+for -1 so it always fails). How many steps does it take each time?</p>
+
+<p>The count barely grows even as n goes from 10 to 100,000. What mathematical
+function grows this slowly?</p>
 
 
 
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Algo A growth pattern:</p>
+      <p class="prompt-text">Steps for n=10:</p>
       <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Algo B growth pattern:</p>
+      <p class="prompt-text">Steps for n=100,000:</p>
       <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Algo C growth pattern:</p>
+      <p class="prompt-text">What function of n gives these values:</p>
       <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Algo D growth pattern:</p>
-      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Algo E growth pattern:</p>
-      <textarea class="answer-input" data-exercise="ex-3-1" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -643,13 +627,13 @@ gets large." Let's invent one.</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Algo D: $\log_2(10) \approx 3.3$, $\log_2(100) \approx 6.6$, $\log_2(1000) \approx 10$. That's <strong>logarithmic</strong> growth.</p>
+    <div class="hint-body"><p>You should see roughly 4, 7, 10, 14, 17 steps. Each time n gets 10× bigger, the count only increases by about 3.</p>
 </div>
   </details>
 
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
-    <div class="hint-body"><p>Algo E: $10 \times \log_2(10) \approx 33$, $100 \times \log_2(100) \approx 664$. It's $n \times \log(n)$.</p>
+    <div class="hint-body"><p>Think: how many times can you halve a number before it reaches 1? That's $\log_2(n)$. Check: $\log_2(10) \approx 3.3$, $\log_2(100000) \approx 17$. Matches!</p>
 </div>
   </details>
 
@@ -659,15 +643,16 @@ gets large." Let's invent one.</p>
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <ul>
-<li><strong>A:</strong> Constant — always the same regardless of n</li>
-<li><strong>B:</strong> Linear — grows proportionally to n</li>
-<li><strong>C:</strong> Quadratic — grows with n²</li>
-<li><strong>D:</strong> Logarithmic — grows with log(n)</li>
-<li><strong>E:</strong> n·log(n) — between linear and quadratic</li>
-</ul>
+      <p>The count grows as $\log_2(n)$ — <strong>logarithmic</strong> growth. Doubling the input
+adds just one more step. This is spectacularly slow growth.</p>
 
 
+
+      <pre><code>for n in [10, 100, 1000, 10000, 100000]:
+    lst = list(range(n))
+    steps = halving_search_counted(lst, -1)
+    print(f"n={n:&gt;6}  steps: {steps}")
+</code></pre>
 
     </div>
   </details>
@@ -680,56 +665,77 @@ gets large." Let's invent one.</p>
 
 
 <section class="exercise" id="ex-3-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; Drop the Constants</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-2" /></label>Exercise 3.2 &mdash; The Growth Families</h3>
   <div class="question">
 
-    <p>If we only care about the <em>growth family</em>, we can simplify expressions by:</p>
+    <p>You've now discovered three growth families from real code:</p>
 
-<ol>
-<li><strong>Dropping constant multipliers</strong> (3n → n)</li>
-<li><strong>Keeping only the dominant (fastest-growing) term</strong> (n² + 10n → n²)</li>
-</ol>
+<table>
+<thead>
+<tr>
+  <th>What the code does</th>
+  <th>Count grows like</th>
+  <th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Single loop over n items</td>
+  <td>n</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>Loop inside a loop</td>
+  <td>n²</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>Halve the range each step</td>
+  <td>log(n)</td>
+  <td>?</td>
+</tr>
+</tbody>
+</table>
 
-<p>Simplify each of these to just the dominant growth term:</p>
+<p>There are also two more common ones:</p>
 
-<ol>
-<li>$5n + 3$</li>
-<li>$2n^2 + 10n + 7$</li>
-<li>$100$</li>
-<li>$n^3 + 1000n^2$</li>
-<li>$3n \log n + 5n$</li>
-</ol>
+<ul>
+<li>A function that returns <code>lst[0]</code> — always 1 step, regardless of n → ?</li>
+<li>An outer loop of n, where each iteration does a halving search (log n work) → ?</li>
+</ul>
+
+<p>Give each growth family a descriptive one-word name.</p>
 
 
 
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">5n + 3 simplifies to:</p>
+      <p class="prompt-text">Always the same, regardless of n:</p>
       <textarea class="answer-input" data-exercise="ex-3-2" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">2n² + 10n + 7 simplifies to:</p>
+      <p class="prompt-text">Grows like log(n):</p>
       <textarea class="answer-input" data-exercise="ex-3-2" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">100 simplifies to:</p>
+      <p class="prompt-text">Grows like n:</p>
       <textarea class="answer-input" data-exercise="ex-3-2" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">n³ + 1000n² simplifies to:</p>
+      <p class="prompt-text">Grows like n × log(n):</p>
       <textarea class="answer-input" data-exercise="ex-3-2" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">3n·log(n) + 5n simplifies to:</p>
+      <p class="prompt-text">Grows like n²:</p>
       <textarea class="answer-input" data-exercise="ex-3-2" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
@@ -740,7 +746,108 @@ gets large." Let's invent one.</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Drop the constant multiplier, then drop any term that grows slower than the biggest one. $5n + 3$: the dominant term is $5n$; drop the 5 → answer is $n$.</p>
+    <div class="hint-body"><p>Think of adjectives: something that never changes is <em>constant</em>. Something that grows in a straight line is <em>linear</em>. Something involving a square is <em>quadratic</em>.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <ul>
+<li><strong>1 (always the same):</strong> Constant</li>
+<li><strong>log(n):</strong> Logarithmic</li>
+<li><strong>n:</strong> Linear</li>
+<li><strong>n × log(n):</strong> Sometimes called "linearithmic" — between linear and quadratic</li>
+<li><strong>n²:</strong> Quadratic</li>
+</ul>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-3-3">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; Drop the Noise</h3>
+  <div class="question">
+
+    <p>You discovered that $n^2/2$ and $n^2$ and $7n^2$ all grow the same way. The
+constant multiplier doesn't matter. And you discovered that when $n$ is large,
+$n^2 + 10n$ is basically just $n^2$ (the $+10n$ is negligible).</p>
+
+<p>So to describe the growth family, we can simplify any expression by:</p>
+
+<ol>
+<li><strong>Dropping constant multipliers</strong> ($3n$ → $n$)</li>
+<li><strong>Keeping only the fastest-growing term</strong> ($n^2 + 10n$ → $n^2$)</li>
+</ol>
+
+<p>Try it. Simplify each expression to just the growth family:</p>
+
+<ol>
+<li>$5n + 3$</li>
+<li>$2n^2 + 10n + 7$</li>
+<li>$100$ (just the number, no $n$)</li>
+<li>$n^3 + 1000n^2$</li>
+<li>$3n \log n + 5n$</li>
+</ol>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">5n + 3 →</p>
+      <textarea class="answer-input" data-exercise="ex-3-3" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">2n² + 10n + 7 →</p>
+      <textarea class="answer-input" data-exercise="ex-3-3" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">100 →</p>
+      <textarea class="answer-input" data-exercise="ex-3-3" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">n³ + 1000n² →</p>
+      <textarea class="answer-input" data-exercise="ex-3-3" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">3n·log(n) + 5n →</p>
+      <textarea class="answer-input" data-exercise="ex-3-3" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>For each: find the term that grows fastest, drop its constant. $5n + 3$: fastest term is $5n$; drop the 5 → answer is $n$.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>For $n^3 + 1000n^2$: even though 1000 is a big number, $n^3$ still dwarfs $1000n^2$ when n is large. Try n = 10000: $n^3 = 10^{12}$, $1000n^2 = 10^{11}$. The $n^3$ term is 10× bigger.</p>
 </div>
   </details>
 
@@ -751,11 +858,11 @@ gets large." Let's invent one.</p>
     <div class="solution-body">
 
       <ol>
-<li>$5n + 3$ → <strong>n</strong> (drop the 5 and the +3)</li>
-<li>$2n^2 + 10n + 7$ → <strong>n²</strong> (n² dominates 10n and 7)</li>
-<li>$100$ → <strong>1</strong> (it's constant — doesn't grow at all)</li>
-<li>$n^3 + 1000n^2$ → <strong>n³</strong> (even 1000n² is tiny compared to n³ for large n)</li>
-<li>$3n\log n + 5n$ → <strong>n·log(n)</strong> (n·log(n) grows faster than n)</li>
+<li>$5n + 3$ → <strong>n</strong></li>
+<li>$2n^2 + 10n + 7$ → <strong>n²</strong></li>
+<li>$100$ → <strong>1</strong> (constant — doesn't grow)</li>
+<li>$n^3 + 1000n^2$ → <strong>n³</strong></li>
+<li>$3n\log n + 5n$ → <strong>n·log(n)</strong></li>
 </ol>
 
 
@@ -770,22 +877,96 @@ gets large." Let's invent one.</p>
 
 
 
+<section class="exercise" id="ex-3-4">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-4" /></label>Exercise 3.4 &mdash; Invent a Shorthand</h3>
+  <div class="question">
 
-<section class="exercise" id="ex-3-3">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-3" /></label>Exercise 3.3 &mdash; Verify by Plotting</h3>
+    <p>You keep writing "this algorithm grows like n²" or "grows like n·log(n)." That's
+wordy. Invent a shorter way to write it.</p>
+
+<p>Requirements for your shorthand:</p>
+
+<ul>
+<li>It should take a growth family (like $n^2$) and wrap it in some notation</li>
+<li>It should be clear that you mean "grows like ___" and not "equals exactly ___"</li>
+<li>It should work for all families: constant, log(n), n, n·log(n), n², etc.</li>
+</ul>
+
+<p>Write your notation for each family. Any format you like.</p>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Your shorthand for 'grows like 1 (constant)':</p>
+      <textarea class="answer-input" data-exercise="ex-3-4" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Your shorthand for 'grows like n':</p>
+      <textarea class="answer-input" data-exercise="ex-3-4" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Your shorthand for 'grows like n²':</p>
+      <textarea class="answer-input" data-exercise="ex-3-4" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>Most people put the growth term inside some kind of wrapper — parentheses, brackets, a letter followed by the term. There's no wrong answer as long as it's unambiguous.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Any consistent notation works! You might have written <code>~n²</code>, <code>Growth(n²)</code>,
+<code>[n²]</code>, or something else entirely.</p>
+
+<p>The standard notation used by computer scientists is <strong>O(n²)</strong> — the letter O
+followed by the growth term in parentheses. The O stands for "Order of" — as in
+"the order of growth."</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+
+<section class="exercise" id="ex-3-5">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-5" /></label>Exercise 3.5 &mdash; See the Hierarchy</h3>
   <div class="question">
     <p>Plot all five growth families on the same graph for $n$ from 1 to 100:</p>
 
 <ul>
-<li>Constant: $f(n) = 1$</li>
-<li>Logarithmic: $f(n) = \log_2(n)$</li>
-<li>Linear: $f(n) = n$</li>
-<li>n·log(n): $f(n) = n \cdot \log_2(n)$</li>
-<li>Quadratic: $f(n) = n^2$</li>
+<li>O(1): $f(n) = 1$</li>
+<li>O(log n): $f(n) = \log_2(n)$</li>
+<li>O(n): $f(n) = n$</li>
+<li>O(n log n): $f(n) = n \cdot \log_2(n)$</li>
+<li>O(n²): $f(n) = n^2$</li>
 </ul>
 
-<p>Which ones are practically indistinguishable at small n? Which one dominates
-everything at large n?</p>
+<p>Which families look practically the same at small n? Which one towers over
+everything?</p>
 
 
 
@@ -806,16 +987,15 @@ n = np.arange(1, 101)
     <summary>Hint 1</summary>
     <div class="hint-body"><div class="codehilite">
 <pre><span></span><code><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;constant (1)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;log(n)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;n&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;n·log(n)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;n²&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O(1)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O(log n)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O(n)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O(n log n)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O(n²)&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;n&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Operations&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Growth families&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;The Big O Hierarchy&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre>
 </div>
@@ -828,21 +1008,22 @@ n = np.arange(1, 101)
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p>At $n = 100$: constant = 1, log = 7, linear = 100, n·log(n) = 664, quadratic = 10,000.
-The quadratic curve dwarfs everything else. And it only gets worse as n grows.</p>
+      <p>The hierarchy is clear: $O(1) &lt; O(\log n) &lt; O(n) &lt; O(n \log n) &lt; O(n^2)$.
+At n = 100, O(n²) = 10,000 while O(n) = 100 — a 100× difference that only
+gets worse as n grows.</p>
 
 
 
       <pre><code>plt.figure(figsize=(8, 6))
-plt.plot(n, np.ones_like(n), '-', linewidth=2, label='constant (1)')
-plt.plot(n, np.log2(n), '-', linewidth=2, label='log(n)')
-plt.plot(n, n, '-', linewidth=2, label='n')
-plt.plot(n, n * np.log2(n), '-', linewidth=2, label='n·log(n)')
-plt.plot(n, n**2, '-', linewidth=2, label='n²')
-plt.xlabel('n', fontsize=12)
-plt.ylabel('Operations', fontsize=12)
-plt.legend(fontsize=11)
-plt.title('Growth families — the hierarchy', fontsize=13)
+plt.plot(n, np.ones_like(n), '-', linewidth=2, label='O(1)')
+plt.plot(n, np.log2(n), '-', linewidth=2, label='O(log n)')
+plt.plot(n, n, '-', linewidth=2, label='O(n)')
+plt.plot(n, n * np.log2(n), '-', linewidth=2, label='O(n log n)')
+plt.plot(n, n**2, '-', linewidth=2, label='O(n²)')
+plt.xlabel('n')
+plt.ylabel('Operations')
+plt.legend()
+plt.title('The Big O Hierarchy')
 plt.grid(True, alpha=0.3)
 plt.show()
 </code></pre>
@@ -856,17 +1037,18 @@ plt.show()
 
 
 <div class="part">
-  <p>Computer scientists write this hierarchy using <strong>Big O notation</strong>:</p>
+  <p>The notation you just invented is called <strong>Big O notation</strong>. Computer scientists
+write:</p>
 
 <p>$$O(1) &lt; O(\log n) &lt; O(n) &lt; O(n \log n) &lt; O(n^2) &lt; O(n^3) &lt; O(2^n)$$</p>
 
-<p>The $O(\ldots)$ means "grows <strong>at most</strong> as fast as _____." When we say an
-algorithm is $O(n^2)$, we mean: as the input gets large, the time grows no faster
-than some constant times $n^2$.</p>
+<p>$O(f(n))$ means "grows <strong>at most</strong> as fast as $f(n)$." When we say an algorithm is
+$O(n^2)$, we mean: as the input gets large, the time grows no faster than some
+constant times $n^2$.</p>
 
-<p><strong>You just invented it.</strong> The formal notation was introduced by Paul Bachmann in
-1894 and popularised by Edmund Landau — but the idea is exactly what you discovered:
-classify algorithms by their growth family, ignore the constants.</p>
+<p>The formal notation was introduced by Paul Bachmann in 1894 and popularised by
+Edmund Landau — but the idea is exactly what you discovered: classify algorithms
+by their growth family, ignore the constants.</p>
 
 </div>
 
@@ -875,8 +1057,8 @@ classify algorithms by their growth family, ignore the constants.</p>
 <div class="part" data-part-number="4">
   <h2>Part 4: Analysing Real Code<span class="time-estimate">~20 min</span></h2>
 
-  <p>Now that you have the notation, let's use it. Given a piece of code, how do you
-figure out its Big O without running it?</p>
+  <p>Now that you have the notation, let's practise using it. Given a piece of code,
+how do you figure out its Big O without running it?</p>
 
 
 </div>
@@ -885,12 +1067,10 @@ figure out its Big O without running it?</p>
 
 
 <section class="exercise" id="ex-4-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; Read the Loops</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-1" /></label>Exercise 4.1 &mdash; One Loop</h3>
   <div class="question">
 
-    <p>Determine the Big O of each code snippet. The input is a list of length $n$.</p>
-
-<p><strong>Snippet A:</strong></p>
+    <p>What's the Big O of this function? The input is a list of length $n$.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_max</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -902,19 +1082,53 @@ figure out its Big O without running it?</p>
 </code></pre>
 </div>
 
-<p><strong>Snippet B:</strong></p>
+<p>How many times does the comparison <code>x &gt; best</code> run?</p>
 
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_pairs</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
-    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
-            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="n">pairs</span>
-</code></pre>
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Big O:</p>
+      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>The loop runs once for every element in <code>lst</code>. That's n iterations, so n comparisons.</p>
 </div>
+  </details>
 
-<p><strong>Snippet C:</strong></p>
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p><strong>O(n)</strong> — one loop through n items.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-4-2">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Two Separate Loops</h3>
+  <div class="question">
+
+    <p>What about this one?</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">double_scan</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -927,24 +1141,120 @@ figure out its Big O without running it?</p>
 </code></pre>
 </div>
 
-<p><strong>Snippet D:</strong></p>
+<p>The first loop does n operations, the second does another n. What's the total?
+What's the Big O?</p>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Total operations:</p>
+      <textarea class="answer-input" data-exercise="ex-4-2" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Big O:</p>
+      <textarea class="answer-input" data-exercise="ex-4-2" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>$n + n = 2n$. But we drop constants in Big O, so $2n$ simplifies to...</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Total = $2n$. Big O = <strong>O(n)</strong>. Two separate (non-nested) loops are still linear —
+the constant 2 drops away.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-4-3">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Nested Loops</h3>
+  <div class="question">
+
+    <p>And this?</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">halving_search</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">:</span>
-        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="k">if</span> <span class="n">lst</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">mid</span>
-        <span class="k">elif</span> <span class="n">lst</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">target</span><span class="p">:</span>
-            <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_pairs</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lst</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">pairs</span>
 </code></pre>
 </div>
 
-<p><strong>Snippet E:</strong></p>
+<p>For each value of <code>i</code>, how many times does the inner loop run? What's the total
+across all values of <code>i</code>?</p>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Big O:</p>
+      <textarea class="answer-input" data-exercise="ex-4-3" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>When i=0, the inner loop runs n-1 times. When i=1, n-2 times. And so on. Total = (n-1) + (n-2) + ... + 1 = n(n-1)/2 ≈ n²/2. Drop the constant → O(n²).</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p><strong>O(n²)</strong> — a loop inside a loop over n items.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-4-4">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-4" /></label>Exercise 4.4 &mdash; No Loop at All</h3>
+  <div class="question">
+
+    <p>What's the Big O of this?</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_first</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -957,32 +1267,8 @@ figure out its Big O without running it?</p>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Snippet A (find_max):</p>
-      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Snippet B (all_pairs):</p>
-      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Snippet C (double_scan):</p>
-      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Snippet D (halving_search):</p>
-      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Snippet E (get_first):</p>
-      <textarea class="answer-input" data-exercise="ex-4-1" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
+      <p class="prompt-text">Big O:</p>
+      <textarea class="answer-input" data-exercise="ex-4-4" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -992,13 +1278,7 @@ figure out its Big O without running it?</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Count how many times the innermost operation runs. For A: one loop, n iterations → O(n). For B: nested loops → n(n-1)/2 → O(n²).</p>
-</div>
-  </details>
-
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><p>C has two separate loops (not nested): n + n = 2n → O(n). D halves the range each step → O(log n). E does one operation regardless of n → O(1).</p>
+    <div class="hint-body"><p>It does exactly one operation regardless of how big <code>lst</code> is.</p>
 </div>
   </details>
 
@@ -1008,13 +1288,7 @@ figure out its Big O without running it?</p>
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <ul>
-<li><strong>A:</strong> O(n) — single loop through the list</li>
-<li><strong>B:</strong> O(n²) — loop inside a loop</li>
-<li><strong>C:</strong> O(n) — two separate loops: $n + n = 2n$, but constants don't matter</li>
-<li><strong>D:</strong> O(log n) — halves the search range each step</li>
-<li><strong>E:</strong> O(1) — constant time, just one index lookup</li>
-</ul>
+      <p><strong>O(1)</strong> — constant time. One index lookup, no loop.</p>
 
 
 
@@ -1029,23 +1303,54 @@ figure out its Big O without running it?</p>
 
 
 
-<section class="exercise" id="ex-4-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-2" /></label>Exercise 4.2 &mdash; Predict Then Measure</h3>
+<section class="exercise" id="ex-4-5">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-5" /></label>Exercise 4.5 &mdash; Predict Then Measure</h3>
   <div class="question">
-    <p>For snippets A through D above, you predicted the Big O. Now <strong>verify</strong> your
-predictions by adding an operation counter and running on sizes 100, 1000, and 10000.</p>
+    <p>You just predicted the Big O of four functions: <code>find_max</code> (O(n)),
+<code>double_scan</code> (O(n)), <code>all_pairs</code> (O(n²)), and <code>get_first</code> (O(1)).</p>
 
-<p>For each snippet, compute the ratio <code>count / f(n)</code> where <code>f(n)</code> is your predicted
-growth function ($n$, $n^2$, or $\log_2 n$). If your prediction is correct, the
-ratio should stay roughly constant as n grows.</p>
+<p>Now <strong>verify</strong> your predictions. For each function, add an operation counter
+(like you did in Part 2). Run on sizes 100, 1,000, and 10,000. Divide the count
+by your predicted growth function ($n$ or $n^2$ or $1$). If your prediction is
+correct, the ratio should stay roughly constant as n grows.</p>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>For <code>find_max</code>: add <code>count += 1</code> inside the loop. Then check:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]:</span>
+    <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">find_max_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">  count=</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">  count/n=</span><span class="si">{</span><span class="n">count</span><span class="o">/</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>If count/n stays constant, it's confirmed O(n).</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>For <code>all_pairs</code>, check count/n². For <code>double_scan</code>, check count/n. For <code>get_first</code>, the count is always 1.</p>
+</div>
+  </details>
 
 
 
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; counted versions</div>
-      <pre><code>import math
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
 
-def find_max_counted(lst):
+      <p>max/n stays at 1.00. pairs/n² stays at ~0.50. Predictions confirmed.</p>
+
+
+
+      <pre><code>def find_max_counted(lst):
     count = 0
     best = lst[0]
     for x in lst:
@@ -1061,73 +1366,12 @@ def all_pairs_counted(lst):
             count += 1
     return count
 
-def double_scan_counted(lst):
-    count = 0
-    for x in lst:
-        count += 1
-    for x in lst:
-        count += 1
-    return count
-
-def halving_search_counted(lst, target):
-    count = 0
-    lo, hi = 0, len(lst) - 1
-    while lo &lt;= hi:
-        count += 1
-        mid = (lo + hi) // 2
-        if lst[mid] == target:
-            return count
-        elif lst[mid] &lt; target:
-            lo = mid + 1
-        else:
-            hi = mid - 1
-    return count
-</code></pre>
-    </div>
-
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
-    <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]:</span>
-    <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">c_max</span> <span class="o">=</span> <span class="n">find_max_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-    <span class="n">c_pairs</span> <span class="o">=</span> <span class="n">all_pairs_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-    <span class="n">c_scan</span> <span class="o">=</span> <span class="n">double_scan_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-    <span class="n">c_halve</span> <span class="o">=</span> <span class="n">halving_search_counted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;5</span><span class="si">}</span><span class="s2">  max/n=</span><span class="si">{</span><span class="n">c_max</span><span class="o">/</span><span class="n">n</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  pairs/n²=</span><span class="si">{</span><span class="n">c_pairs</span><span class="o">/</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
-          <span class="sa">f</span><span class="s2">&quot;  scan/n=</span><span class="si">{</span><span class="n">c_scan</span><span class="o">/</span><span class="n">n</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  halve/log₂n=</span><span class="si">{</span><span class="n">c_halve</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>All ratios should stay roughly constant — that confirms your Big O predictions.</p>
-</div>
-  </details>
-
-
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-
-      <p>Every ratio stays roughly constant — max/n ≈ 1, pairs/n² ≈ 0.5, scan/n ≈ 2,
-halve/log₂n ≈ 1. This confirms the predictions: O(n), O(n²), O(n), O(log n).</p>
-
-
-
-      <pre><code>for n in [100, 1000, 10000]:
+import math
+for n in [100, 1000, 10000]:
     lst = list(range(n))
     _, c_max = find_max_counted(lst)
     c_pairs = all_pairs_counted(lst)
-    c_scan = double_scan_counted(lst)
-    c_halve = halving_search_counted(lst, -1)
-
-    print(f"n={n:&gt;5}  max/n={c_max/n:.2f}  pairs/n²={c_pairs/n**2:.4f}"
-          f"  scan/n={c_scan/n:.2f}  halve/log₂n={c_halve/math.log2(n):.2f}")
+    print(f"n={n}  max/n={c_max/n:.2f}  pairs/n²={c_pairs/n**2:.4f}")
 </code></pre>
 
     </div>
@@ -1139,16 +1383,16 @@ halve/log₂n ≈ 1. This confirms the predictions: O(n), O(n²), O(n), O(log n)
 
 
 
-<section class="exercise" id="ex-4-3">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-3" /></label>Exercise 4.3 &mdash; Best, Worst, and Average</h3>
+<section class="exercise" id="ex-4-6">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-4-6" /></label>Exercise 4.6 &mdash; Best, Worst, and Average</h3>
   <div class="question">
 
     <p>Consider linear search — scanning a list from left to right looking for a target:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linear_search</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">i</span>
     <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
 </code></pre>
@@ -1161,34 +1405,34 @@ halve/log₂n ≈ 1. This confirms the predictions: O(n), O(n²), O(n), O(log n)
 comparisons on average?</li>
 </ol>
 
-<p>When someone says "linear search is O(n)" without qualification, which case do they
-usually mean?</p>
+<p>When someone says "linear search is O(n)" without further explanation, which case
+do they usually mean?</p>
 
 
 
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Best case — how many comparisons:</p>
-      <textarea class="answer-input" data-exercise="ex-4-3" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+      <p class="prompt-text">Best case — comparisons:</p>
+      <textarea class="answer-input" data-exercise="ex-4-6" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Worst case — how many comparisons:</p>
-      <textarea class="answer-input" data-exercise="ex-4-3" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+      <p class="prompt-text">Worst case — comparisons:</p>
+      <textarea class="answer-input" data-exercise="ex-4-6" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Average case — how many comparisons:</p>
-      <textarea class="answer-input" data-exercise="ex-4-3" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+      <p class="prompt-text">Average case — comparisons:</p>
+      <textarea class="answer-input" data-exercise="ex-4-6" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
       <p class="prompt-text">O(n) usually refers to:</p>
-      <textarea class="answer-input" data-exercise="ex-4-3" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
+      <textarea class="answer-input" data-exercise="ex-4-6" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1198,7 +1442,13 @@ usually mean?</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Best: target is the first element → 1 comparison. Worst: target is last or not present → n comparisons. Average: n/2 comparisons (but n/2 is still O(n) since we drop constants).</p>
+    <div class="hint-body"><p>Best: target is the first element → 1 comparison. Worst: target is last or not in the list → n comparisons. Average: about n/2 comparisons.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>n/2 is still O(n) since we drop the ½. So both worst and average case are O(n).</p>
 </div>
   </details>
 
@@ -1267,8 +1517,6 @@ time, no matter what input you give it.</p>
 </tbody>
 </table>
 
-<p>These patterns will help you evaluate every algorithm in the chapters ahead.</p>
-
 </div>
 
 
@@ -1287,11 +1535,12 @@ Big O notation works — instead of asking "how does time grow?" we ask "how muc
 
 
 <section class="exercise" id="ex-5-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; How Much Space?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-1" /></label>Exercise 5.1 &mdash; How Much Extra Space?</h3>
   <div class="question">
 
-    <p>For each function, determine how much <strong>extra</strong> memory it uses (beyond the input
-itself) as a function of n:</p>
+    <p>For each function, figure out how much <strong>extra</strong> memory it creates (beyond the
+input itself). Don't count the input list — just the new things the function
+allocates.</p>
 
 <p><strong>Function A:</strong></p>
 
@@ -1327,44 +1576,27 @@ itself) as a function of n:</p>
 </code></pre>
 </div>
 
-<p><strong>Function D:</strong></p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_min_max</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
-    <span class="n">lo</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">hi</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">:</span> <span class="n">lo</span> <span class="o">=</span> <span class="n">x</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">x</span>
-    <span class="k">return</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span>
-</code></pre>
-</div>
+<p>For each: how many new items does it create? How does that depend on n?</p>
 
 
 
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Function A extra space:</p>
+      <p class="prompt-text">Function A — new items created:</p>
       <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Function B extra space:</p>
+      <p class="prompt-text">Function B — new items created:</p>
       <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Function C extra space:</p>
+      <p class="prompt-text">Function C — new items created:</p>
       <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">Function D extra space:</p>
-      <textarea class="answer-input" data-exercise="ex-5-1" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
 
@@ -1374,7 +1606,7 @@ itself) as a function of n:</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Count the new data structures created. A: just one variable <code>total</code> → O(1). B: a new list of n items → O(n). C: n rows of n items each → O(n²). D: two variables → O(1).</p>
+    <div class="hint-body"><p>A: creates one variable <code>total</code> — that's it. Doesn't depend on n. B: creates a new list with n items — grows with n. C: creates n rows of n items each — that's n × n items.</p>
 </div>
   </details>
 
@@ -1385,10 +1617,9 @@ itself) as a function of n:</p>
     <div class="solution-body">
 
       <ul>
-<li><strong>A:</strong> O(1) — just one variable, regardless of n</li>
-<li><strong>B:</strong> O(n) — creates a new list with n items</li>
-<li><strong>C:</strong> O(n²) — creates n × n items</li>
-<li><strong>D:</strong> O(1) — just two variables, regardless of n</li>
+<li><strong>A:</strong> 1 variable → <strong>O(1)</strong> space — constant, regardless of n</li>
+<li><strong>B:</strong> n items → <strong>O(n)</strong> space — grows linearly</li>
+<li><strong>C:</strong> n × n items → <strong>O(n²)</strong> space — grows quadratically</li>
 </ul>
 
 
@@ -1405,32 +1636,13 @@ itself) as a function of n:</p>
 
 
 <section class="exercise" id="ex-5-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; Measure Memory</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-2" /></label>Exercise 5.2 &mdash; See the Space Grow</h3>
   <div class="question">
-    <p>Create lists of size 100, 1,000, and 10,000. Check their memory usage using
-<code>sys.getsizeof</code>. Does memory grow linearly with size?</p>
+    <p>Create lists of increasing size and n×n matrices of increasing size. Count the
+number of elements in each to verify the growth pattern.</p>
 
-<p>Then create $n \times n$ matrices (lists of lists) for $n$ = 10, 100, and 300.
-How does memory grow?</p>
-
-
-
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; setup</div>
-      <pre><code>import sys
-
-def list_memory(n):
-    lst = list(range(n))
-    return sys.getsizeof(lst) + sum(sys.getsizeof(x) for x in lst)
-
-def matrix_memory(n):
-    mat = [[0] * n for _ in range(n)]
-    total = sys.getsizeof(mat)
-    for row in mat:
-        total += sys.getsizeof(row)
-    return total
-</code></pre>
-    </div>
+<p>For lists: how does the element count grow with n?
+For matrices: how does the element count grow with n?</p>
 
 
   </div>
@@ -1439,15 +1651,16 @@ def matrix_memory(n):
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
     <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;List memory:&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]:</span>
-    <span class="n">mem</span> <span class="o">=</span> <span class="n">list_memory</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;5</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">mem</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> bytes  (bytes/n = </span><span class="si">{</span><span class="n">mem</span><span class="o">/</span><span class="n">n</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;List (n items):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]:</span>
+    <span class="n">lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;5</span><span class="si">}</span><span class="s2">  elements: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  elements/n: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span><span class="o">/</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Matrix memory:&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">]:</span>
-    <span class="n">mem</span> <span class="o">=</span> <span class="n">matrix_memory</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">mem</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> bytes  (bytes/n² = </span><span class="si">{</span><span class="n">mem</span><span class="o">/</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Matrix (n×n items):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">]:</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="n">total_items</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">  elements: </span><span class="si">{</span><span class="n">total_items</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  elements/n²: </span><span class="si">{</span><span class="n">total_items</span><span class="o">/</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre>
 </div>
 </div>
@@ -1459,20 +1672,21 @@ def matrix_memory(n):
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p>The bytes/n ratio stays roughly constant for lists → O(n) space. The bytes/n²
-ratio stays roughly constant for matrices → O(n²) space.</p>
+      <p>elements/n stays at 1.0 for lists → O(n) space. elements/n² stays at 1.0 for
+matrices → O(n²) space. Same Big O idea, applied to memory instead of time.</p>
 
 
 
-      <pre><code>print("List memory:")
-for n in [100, 1000, 10000]:
-    mem = list_memory(n)
-    print(f"  n={n:&gt;5}: {mem:&gt;10} bytes  (bytes/n = {mem/n:.0f})")
+      <pre><code>print("List (n items):")
+for n in [10, 100, 1000, 10000]:
+    lst = list(range(n))
+    print(f"  n={n:&gt;5}  elements: {len(lst):&gt;10}  elements/n: {len(lst)/n}")
 
-print("\nMatrix memory:")
-for n in [10, 100, 300]:
-    mem = matrix_memory(n)
-    print(f"  n={n:&gt;3}: {mem:&gt;10} bytes  (bytes/n² = {mem/n**2:.1f})")
+print("\nMatrix (n*n items):")
+for n in [10, 50, 100, 200]:
+    mat = [[0] * n for _ in range(n)]
+    total_items = sum(len(row) for row in mat)
+    print(f"  n={n:&gt;3}  elements: {total_items:&gt;10}  elements/n^2: {total_items/n**2}")
 </code></pre>
 
     </div>
@@ -1516,8 +1730,8 @@ for n in [10, 100, 300]:
 </div>
 
 <ol>
-<li>What's the time complexity of each?</li>
-<li>What's the space complexity of each?</li>
+<li>What's the time complexity of each? (Think about the loop structure.)</li>
+<li>What's the space complexity of each? (How much extra memory does each create?)</li>
 <li>Which is "better"?</li>
 </ol>
 
@@ -1549,7 +1763,7 @@ for n in [10, 100, 300]:
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Approach 1: O(n²) time, O(1) space. Approach 2: O(n) time, O(n) space. Faster but uses more memory.</p>
+    <div class="hint-body"><p>Approach 1: nested loops → O(n²) time, but it creates nothing new → O(1) space. Approach 2: single loop → O(n) time, but the set can grow up to n items → O(n) space.</p>
 </div>
   </details>
 
@@ -1583,11 +1797,11 @@ for n in [10, 100, 300]:
 
 <p>Which is "better"? <strong>It depends.</strong> If you have a billion items and limited
 RAM, the O(1) space approach might be your only option (even though it's slow).
-If speed matters and you have memory to spare, the set wins.</p>
+If speed matters and you have memory to spare, the set wins easily.</p>
 
 <p>This is the <strong>time–space tradeoff</strong> — one of the most fundamental tensions in
 computer science. Faster algorithms often use more memory, and memory-efficient
-ones are often slower.</p>
+ones are often slower. There's rarely a free lunch.</p>
 
 
 
@@ -1601,24 +1815,17 @@ ones are often slower.</p>
 
 
 <div class="part">
-  <p>Time and space complexity are two sides of the same coin. Knowing both helps you
-choose the right algorithm for your constraints:</p>
-
-<ul>
-<li><strong>Hash tables</strong> trade O(n) space for O(1) lookups</li>
-<li><strong>Merge sort</strong> uses O(n) extra memory but guarantees O(n log n) time</li>
-<li><strong>In-place sorting</strong> (like insertion sort) uses O(1) space but takes O(n²) time</li>
-</ul>
-
-<p>Every algorithm in the chapters ahead will have both a time and space complexity.
-Now you know how to read and evaluate them.</p>
+  <p>Every algorithm has both a time complexity and a space complexity. Now you know
+how to read and evaluate both. As you work through the chapters ahead, you'll see
+this tradeoff again and again — fast algorithms that use extra memory vs slow
+algorithms that work in-place.</p>
 
 </div>
 
 
 
 <div class="part" data-part-number="6">
-  <h2>Part 6: The Complete Hierarchy<span class="time-estimate">~10 min</span></h2>
+  <h2>Part 6: Why It Matters<span class="time-estimate">~10 min</span></h2>
 
   <p>Let's see the full picture. How long does each complexity class take on real-world
 input sizes?</p>
@@ -1633,11 +1840,61 @@ input sizes?</p>
 <section class="exercise" id="ex-6-1">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; The Race</h3>
   <div class="question">
-    <p>Assume each operation takes 1 microsecond (one millionth of a second). Compute
-how long each complexity class takes for $n$ = 10, 100, 1,000, $10^6$, and $10^9$.</p>
+    <p>Assume each operation takes 1 microsecond (one millionth of a second). For each
+complexity class, compute how many operations it takes at different input sizes,
+then convert to human-readable time.</p>
 
-<p>Fill in the table by computing the number of operations and converting to human
-readable time.</p>
+<p>Fill in this table for $n$ = 10, 1000, $10^6$, and $10^9$:</p>
+
+<table>
+<thead>
+<tr>
+  <th>n</th>
+  <th>O(1)</th>
+  <th>O(log n)</th>
+  <th>O(n)</th>
+  <th>O(n log n)</th>
+  <th>O(n²)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>10</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>1,000</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>1,000,000</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+<tr>
+  <td>1,000,000,000</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+  <td>?</td>
+</tr>
+</tbody>
+</table>
+
+<p>Which complexity classes are still practical at $n = 10^9$? Which ones are
+hopeless?</p>
 
 
 
@@ -1647,7 +1904,7 @@ readable time.</p>
 
 def human_time(microseconds):
     if microseconds &lt; 1000:
-        return f"{microseconds:.0f} μs"
+        return f"{microseconds:.0f} us"
     elif microseconds &lt; 1_000_000:
         return f"{microseconds/1000:.1f} ms"
     elif microseconds &lt; 60_000_000:
@@ -1669,28 +1926,19 @@ def human_time(microseconds):
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
-    <span class="n">ops</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;O(1)&#39;</span><span class="p">:</span>      <span class="mi">1</span><span class="p">,</span>
-        <span class="s1">&#39;O(log n)&#39;</span><span class="p">:</span>  <span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-        <span class="s1">&#39;O(n)&#39;</span><span class="p">:</span>      <span class="n">n</span><span class="p">,</span>
-        <span class="s1">&#39;O(n log n)&#39;</span><span class="p">:</span> <span class="n">n</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-        <span class="s1">&#39;O(n²)&#39;</span><span class="p">:</span>     <span class="n">n</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="n">row</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">ops</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">row</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="n">count</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <div class="hint-body"><p>For each n, compute the number of operations for each class, then pass to <code>human_time</code>:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  O(1):      </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  O(log n):  </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  O(n):      </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  O(n lg n): </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  O(n^2):    </span><span class="si">{</span><span class="n">human_time</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
 </code></pre>
 </div>
-</div>
-  </details>
-
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><p>For $n = 10^9$: O(n²) = $10^{18}$ microseconds = about <strong>31,710 years</strong>. That's why quadratic algorithms don't scale.</p>
 </div>
   </details>
 
@@ -1700,26 +1948,21 @@ def human_time(microseconds):
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p>At $n = 10^6$: O(n) takes 1 second, O(n²) takes <strong>11.6 days</strong>. At $n = 10^9$:
-O(n) takes 17 minutes, O(n²) takes <strong>31,710 years</strong>. This is why Big O matters —
-it's the difference between "runs on my laptop" and "outlives the sun."</p>
+      <p>At $n = 10^9$: O(n) takes about 17 minutes. O(n²) takes <strong>31,710 years</strong>.</p>
+
+<p>O(1), O(log n), and O(n) are practical at any scale. O(n log n) is fine for
+billions. O(n²) is only viable for thousands. This is why Big O matters — it's
+the difference between "runs on my laptop" and "outlives the sun."</p>
 
 
 
-      <pre><code>sizes = [10, 100, 1000, 10**6, 10**9]
-families = ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'O(n²)']
-
-print(f"{'n':&gt;12}", end="")
-for f in families:
-    print(f"  {f:&gt;14}", end="")
-print()
-print("-" * 85)
-
-for n in sizes:
-    ops = [1, math.log2(n), n, n * math.log2(n), n ** 2]
-    print(f"{n:&gt;12}", end="")
-    for o in ops:
-        print(f"  {human_time(o):&gt;14}", end="")
+      <pre><code>for n in [10, 1000, 10**6, 10**9]:
+    print(f"n = {n:,}")
+    print(f"  O(1)      = {human_time(1)}")
+    print(f"  O(log n)  = {human_time(math.log2(n))}")
+    print(f"  O(n)      = {human_time(n)}")
+    print(f"  O(n lg n) = {human_time(n * math.log2(n))}")
+    print(f"  O(n^2)    = {human_time(n ** 2)}")
     print()
 </code></pre>
 
@@ -1779,7 +2022,17 @@ for n in sizes:
 
         <td>3.1–3.2</td>
 
-        <td>Classified growth families, simplified expressions</td>
+        <td>Discovered logarithmic growth, named the families</td>
+
+        <td>Growth families</td>
+
+      </tr>
+
+      <tr>
+
+        <td>3.3–3.4</td>
+
+        <td>Simplified expressions, invented a shorthand</td>
 
         <td>Big O notation</td>
 
@@ -1787,9 +2040,9 @@ for n in sizes:
 
       <tr>
 
-        <td>3.3</td>
+        <td>3.5</td>
 
-        <td>Plotted the hierarchy of growth rates</td>
+        <td>Plotted the hierarchy</td>
 
         <td>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</td>
 
@@ -1797,17 +2050,17 @@ for n in sizes:
 
       <tr>
 
-        <td>4.1–4.2</td>
+        <td>4.1–4.5</td>
 
         <td>Analysed code snippets, predicted and verified Big O</td>
 
-        <td>Static code analysis</td>
+        <td>Static analysis + verification</td>
 
       </tr>
 
       <tr>
 
-        <td>4.3</td>
+        <td>4.6</td>
 
         <td>Explored best, worst, and average case</td>
 
@@ -1819,7 +2072,7 @@ for n in sizes:
 
         <td>5.1–5.3</td>
 
-        <td>Measured memory, discovered the time–space tradeoff</td>
+        <td>Counted extra memory, discovered the time–space tradeoff</td>
 
         <td>Space complexity</td>
 
@@ -1829,7 +2082,7 @@ for n in sizes:
 
         <td>6.1</td>
 
-        <td>Computed running times for real-world input sizes</td>
+        <td>Computed real-world running times</td>
 
         <td>Why Big O matters in practice</td>
 
@@ -1848,16 +2101,13 @@ for n in sizes:
 <ul>
 <li><strong>O(2ⁿ) — exponential:</strong> The number of subsets of a set with n items. Algorithms
 that try every subset are O(2ⁿ) — feasible for n ≤ 20, impossible for n = 100.</li>
-<li><strong>O(n!) — factorial:</strong> The number of permutations. Even worse than exponential.
-Brute-force travelling salesman is O(n!).</li>
+<li><strong>O(n!) — factorial:</strong> The number of permutations. Even worse than exponential.</li>
 <li><strong>Amortized analysis:</strong> Some operations are usually fast but occasionally slow
 (like appending to a Python list that needs to resize). Amortized analysis averages
 the cost over many operations.</li>
-<li><strong>The O(n log n) barrier:</strong> No comparison-based sorting algorithm can do better
-than O(n log n) in the worst case. This is a proven mathematical lower bound.</li>
 <li><strong>P vs NP:</strong> The biggest open question in computer science — are there problems
-where checking a solution is easy (polynomial time) but <em>finding</em> one is
-fundamentally hard? A million-dollar prize awaits the answer.</li>
+where checking a solution is easy but <em>finding</em> one is fundamentally hard? A
+million-dollar prize awaits the answer.</li>
 </ul>
 
 </div>
@@ -1868,7 +2118,7 @@ fundamentally hard? A million-dollar prize awaits the answer.</li>
 
   <p><em>You started by timing two functions and ended by inventing Big O notation — the
 universal language for describing algorithmic efficiency. Every chapter that follows
-will use it. When someone says "merge sort is O(n log n)," you now know exactly
+will use it. When someone says "this algorithm is O(n log n)," you now know exactly
 what that means and <em>why</em> it matters.</em></p>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
@@ -1923,7 +2173,7 @@ what that means and <em>why</em> it matters.</em></p>
 
     <div class="glossary-entry" data-term="o(n log n) — linearithmic">
       <dt>O(n log n) — linearithmic</dt>
-      <dd>Slightly above linear. Example: efficient sorting algorithms like merge sort.</dd>
+      <dd>Slightly above linear. Example: efficient sorting algorithms.</dd>
     </div>
 
     <div class="glossary-entry" data-term="constant factor">
