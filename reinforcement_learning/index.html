@@ -1776,17 +1776,10 @@ print("Discounted rewards:", result)
 
 
 <section class="exercise" id="ex-6-6">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.7 &mdash; Inspect and Fix the Credit Signal</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.7 &mdash; Inspect the Credit Signal</h3>
   <div class="question">
     <p>Play a game, compute discounted rewards, and look at the values. Run the code
 below. What do you notice about the numbers — are any of them negative?</p>
-
-<p>If ALL the credits are positive, every action looks "good." But some were
-clearly better than others. How would you fix this so that above-average actions
-get positive credit and below-average actions get negative credit?</p>
-
-<p>Write a <code>normalize(values)</code> function that does this, and apply it to the
-discounted rewards.</p>
 
 
 
@@ -1820,15 +1813,58 @@ print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
 </div>
   </details>
 
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Every value is positive. The model can't tell which actions were good and which
+were bad — they all look "good." We need to fix that.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-6-6b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6b" /></label>Exercise 6.8 &mdash; Fix the Credit Signal</h3>
+  <div class="question">
+    <p>All the credits are positive, so every action looks good. But some were clearly
+better than others.</p>
+
+<p>How would you fix this so that above-average actions get POSITIVE credit and
+below-average actions get NEGATIVE credit? Write a function that does this and
+apply it to the discounted rewards.</p>
+
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>If the average credit is 30, and action A got credit 45 while action B got credit 15: subtract the average. A becomes +15 (above average = good!), B becomes -15 (below average = bad).</p>
+</div>
+  </details>
+
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
-    <div class="hint-body"><p>If the average credit is 30, and action A got credit 45 while action B got credit 15: subtract the average. A becomes +15 (above average = good!), B becomes -15 (below average = bad). To keep the scale consistent, also divide by the standard deviation.</p>
+    <div class="hint-body"><p>Try it: <code>centered = np.array(disc) - np.mean(disc)</code>. Now play two games of DIFFERENT lengths. Compare the centered values — is the scale consistent between games?</p>
 </div>
   </details>
 
   <details class="hint" data-level="3">
     <summary>Hint 3</summary>
-    <div class="hint-body"><p>Use numpy: <code>np.mean(values)</code> and <code>np.std(values)</code>. Add a tiny number (1e-8) to the standard deviation to prevent division by zero.</p>
+    <div class="hint-body"><p>The scale varies because longer games have higher discounted returns. Dividing by the standard deviation puts everything on the same scale: <code>(values - mean) / std</code>. Add a tiny <code>1e-8</code> to std to prevent division by zero. Call this function <code>normalize</code>.</p>
 </div>
   </details>
 
@@ -1940,19 +1976,88 @@ page) — it has one-line definitions of every term in this chapter.</p>
 
 
 
-
-<section class="exercise" id="ex-7-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1" /></label>Exercise 7.1 &mdash; A Probabilistic Policy</h3>
+<section class="exercise" id="ex-7-1a">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1a" /></label>Exercise 7.1 &mdash; Squashing to a Probability</h3>
   <div class="question">
-    <p>Convert your <code>weighted_policy</code> from a hard yes/no decision into a probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY of going right.</p>
 
-<p>You need a function that takes any number and squashes it to a value between 0 and 1. What function does that?</p>
+    <p>You want to convert your <code>weighted_policy</code> from a hard yes/no decision into a
+probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY
+of going right — a number between 0 and 1.</p>
 
-<p>The <strong>sigmoid</strong> function: $\sigma(z) = \frac{1}{1 + e^{-z}}$</p>
+<p>Your current policy computes <code>z = weights @ obs</code>, which can be any number
+(positive, negative, large, small). You need a function that takes <code>z</code> and
+outputs a value between 0 and 1.</p>
 
-<p>When $z$ is large and positive, sigmoid $\to$ 1 (almost certainly right). When
-large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
-0.5 (coin flip).</p>
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">When z is large and positive (strong signal for 'right'), the probability should be close to what?</p>
+      <textarea class="answer-input" data-exercise="ex-7-1a" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">When z is large and negative (strong signal for 'left'), the probability should be close to what?</p>
+      <textarea class="answer-input" data-exercise="ex-7-1a" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">When z = 0 (no signal either way), the probability should be what?</p>
+      <textarea class="answer-input" data-exercise="ex-7-1a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Can you think of a formula that maps any number to the range (0, 1) with these properties? Hint: think about what happens to $\frac{1}{1 + \text{something}}$ when that 'something' is very large vs. very small.</p>
+      <textarea class="answer-input" data-exercise="ex-7-1a" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>You need: big z → near 1, small z → near 0, z=0 → 0.5. Consider $\frac{1}{1 + e^{-z}}$. When z is large positive, $e^{-z} \approx 0$, so the result is $\frac{1}{1+0} = 1$. When z is large negative, $e^{-z}$ is huge, so the result approaches 0. When z=0, $e^0 = 1$, so the result is $\frac{1}{2} = 0.5$.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>The function $\sigma(z) = \frac{1}{1 + e^{-z}}$ does exactly what we need. It's called the <strong>sigmoid</strong> function. Large positive z → near 1, large negative z → near 0, z = 0 → exactly 0.5. It smoothly maps any real number into (0, 1) — a perfect probability.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+
+<section class="exercise" id="ex-7-1b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-1b" /></label>Exercise 7.2 &mdash; A Probabilistic Policy</h3>
+  <div class="question">
+    <p>Now use the sigmoid to build a probabilistic policy. Write:</p>
+
+<ul>
+<li><code>prob_right(obs, weights)</code> — returns <code>sigmoid(weights @ obs)</code></li>
+<li><code>sample_action(obs, weights)</code> — samples an action from the probability</li>
+</ul>
+
+<p>Test with <code>weights = np.zeros(4)</code>. What probability do you get? Why?</p>
 
 
 
@@ -1970,7 +2075,7 @@ large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p><code>sigmoid(np.dot(weights, obs))</code> gives a probability between 0 and 1.</p>
+    <div class="hint-body"><p><code>sigmoid(np.dot(weights, obs))</code> gives a probability between 0 and 1. With all-zero weights, the dot product is 0, so sigmoid gives 0.5 — a coin flip.</p>
 </div>
   </details>
 
@@ -2013,7 +2118,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 
 <section class="exercise" id="ex-7-2a">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2a" /></label>Exercise 7.2 &mdash; How Should the Model Learn?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2a" /></label>Exercise 7.3 &mdash; How Should the Model Learn?</h3>
   <div class="question">
 
     <p>Your model outputs a probability and samples an action. After the game, you have discounted rewards telling you which actions were good (positive) and which were bad (negative).</p>
@@ -2099,7 +2204,7 @@ it's the same information as $p$, just in a form that doesn't explode or vanish.
 
 
 <section class="exercise" id="ex-7-2b">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2b" /></label>Exercise 7.3 &mdash; Discover the Gradient</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2b" /></label>Exercise 7.4 &mdash; Discover the Gradient</h3>
   <div class="question">
     <p>You need the gradient — the direction to push the weights to make the chosen action
 more likely. Instead of deriving it with calculus, let's <strong>measure</strong> it using finite
@@ -2243,24 +2348,20 @@ differences and give the same answer).</p>
 
 
 <section class="exercise" id="ex-7-3">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.4 &mdash; Play, Record, and Learn</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3" /></label>Exercise 7.5 &mdash; Record an Episode</h3>
   <div class="question">
-    <p>Now put it all together. Write <code>play_episode(env, weights)</code> that:</p>
+    <p>Write <code>play_episode(env, weights)</code> that plays one full game using the
+probabilistic policy and records everything that happens:</p>
 
 <ol>
-<li>Plays one full game using the probabilistic policy</li>
-<li>At each step, records: observation, action, reward, and the gradient</li>
+<li>At each step, compute the probability with <code>prob_right</code></li>
+<li>Sample an action from the probability</li>
+<li>Compute the gradient for that action</li>
+<li>Record: observation, action, reward, and gradient</li>
 </ol>
 
-<p>Then write <code>reinforce_update(env, weights, lr)</code> that:</p>
-
-<ol>
-<li>Plays an episode</li>
-<li>Computes discounted rewards and normalizes them</li>
-<li>Multiplies each step's gradient by its normalized reward</li>
-<li>Sums all the weighted gradients</li>
-<li>Updates: <code>weights += lr * total_gradient</code> (gradient ASCENT!)</li>
-</ol>
+<p>Return all four lists. Test it — play one episode and print the number of
+steps and the total reward.</p>
 
 
 
@@ -2270,7 +2371,7 @@ differences and give the same answer).</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>For play_episode: at each step, compute <code>p = prob_right(obs, weights)</code>, sample an action, then compute the gradient: <code>(1-p)*obs</code> if action=1, <code>(-p)*obs</code> if action=0. Store everything in lists.</p>
+    <div class="hint-body"><p>At each step: <code>p = prob_right(obs, weights)</code>, sample action, gradient is <code>(1-p)*obs</code> if action=1, <code>(-p)*obs</code> if action=0. Append everything to lists.</p>
 </div>
   </details>
 
@@ -2292,23 +2393,6 @@ differences and give the same answer).</p>
         <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
         <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
     <span class="k">return</span> <span class="n">observations</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span>
-</code></pre>
-</div>
-</div>
-  </details>
-
-  <details class="hint" data-level="3">
-    <summary>Hint 3</summary>
-    <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reinforce_update</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span> <span class="o">=</span> <span class="n">play_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
-    <span class="n">disc_rewards</span> <span class="o">=</span> <span class="n">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
-    <span class="n">norm_rewards</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">disc_rewards</span><span class="p">)</span>
-    <span class="n">total_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">norm_rewards</span><span class="p">):</span>
-        <span class="n">total_gradient</span> <span class="o">+=</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">r</span>
-    <span class="n">weights</span> <span class="o">+=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">total_gradient</span>
-    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
 </code></pre>
 </div>
 </div>
@@ -2337,7 +2421,76 @@ differences and give the same answer).</p>
         done = terminated or truncated
     return observations, actions, rewards, gradients
 
-def reinforce_update(env, weights, lr=0.01):
+# Test
+weights = np.zeros(4)
+obs_list, act_list, rew_list, grad_list = play_episode(env, weights)
+print(f"Episode length: {len(rew_list)}, Total reward: {sum(rew_list)}")
+</code></pre>
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
+<section class="exercise" id="ex-7-3b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-3b" /></label>Exercise 7.6 &mdash; The Learning Rule</h3>
+  <div class="question">
+    <p>Now write <code>reinforce_update(env, weights, lr=0.01)</code> that uses
+<code>play_episode</code> to learn from one game:</p>
+
+<ol>
+<li>Play an episode and get the recorded gradients and rewards</li>
+<li>Compute discounted rewards (your <code>compute_discounted_rewards</code>)</li>
+<li>Normalize them (your <code>normalize</code> function)</li>
+<li>Multiply each step's gradient by its normalized reward</li>
+<li>Sum all the weighted gradients</li>
+<li>Update: <code>weights += lr * total_gradient</code> (gradient ASCENT!)</li>
+</ol>
+
+<p>Return <code>(weights, total_score)</code>.</p>
+
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>Call <code>play_episode</code> to get the data. Then it's just: discount → normalize → multiply each gradient by its reward → sum → update weights.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reinforce_update</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span> <span class="o">=</span> <span class="n">play_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">disc_rewards</span> <span class="o">=</span> <span class="n">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+    <span class="n">norm_rewards</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">disc_rewards</span><span class="p">)</span>
+    <span class="n">total_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">norm_rewards</span><span class="p">):</span>
+        <span class="n">total_gradient</span> <span class="o">+=</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">r</span>
+    <span class="n">weights</span> <span class="o">+=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">total_gradient</span>
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+</code></pre>
+</div>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+
+      <pre><code>def reinforce_update(env, weights, lr=0.01):
     _, _, rewards, gradients = play_episode(env, weights)
     disc_rewards = compute_discounted_rewards(rewards)
     norm_rewards = normalize(disc_rewards)
@@ -2366,7 +2519,7 @@ def reinforce_update(env, weights, lr=0.01):
 
 
 <section class="exercise" id="ex-7-4">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.5 &mdash; Train the Agent!</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-4" /></label>Exercise 7.7 &mdash; Train the Agent!</h3>
   <div class="question">
     <p>Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?</p>
 
@@ -2466,6 +2619,15 @@ print(f"Trained policy: {trained_score:.1f}  vs  Random: {random_score:.1f}")
 
 
 
+<p><strong>Expect noise.</strong> RL training is inherently noisy — your scores will bounce
+around, and sometimes the agent's performance dips before recovering. If your
+scores collapse and stay low, try re-running the training cell (a different random
+seed can make a big difference). This instability is normal and is one of the main
+reasons researchers developed the improvements in Parts 8 and 9.</p>
+
+
+
+
 <div class="part" data-part-number="8">
   <h2>Part 8: Predicting Value<span class="time-estimate">~25 min</span></h2>
 
@@ -2473,6 +2635,73 @@ print(f"Trained policy: {trained_score:.1f}  vs  Random: {random_score:.1f}")
 
 
 </div>
+
+
+
+<p><strong>If you restarted your notebook</strong> since Part 7, run this cell to restore the
+functions and trained weights you'll need:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">gymnasium</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gym</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&quot;CartPole-v1&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">obs</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.99</span><span class="p">):</span>
+    <span class="n">discounted</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+    <span class="n">running</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rewards</span><span class="p">))):</span>
+        <span class="n">running</span> <span class="o">=</span> <span class="n">rewards</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">running</span>
+        <span class="n">discounted</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">running</span>
+    <span class="k">return</span> <span class="n">discounted</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">play_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="n">observations</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">obs</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="n">p</span> <span class="o">*</span> <span class="n">obs</span>
+        <span class="n">observations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">gradients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
+    <span class="k">return</span> <span class="n">observations</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">reinforce_update</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">gradients</span> <span class="o">=</span> <span class="n">play_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">disc_rewards</span> <span class="o">=</span> <span class="n">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+    <span class="n">norm_rewards</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">disc_rewards</span><span class="p">)</span>
+    <span class="n">total_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">norm_rewards</span><span class="p">):</span>
+        <span class="n">total_gradient</span> <span class="o">+=</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">r</span>
+    <span class="n">weights</span> <span class="o">+=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">total_gradient</span>
+    <span class="k">return</span> <span class="n">weights</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+
+<span class="c1"># Re-train REINFORCE (takes ~10 seconds)</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="n">weights</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">reinforce_update</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;REINFORCE weights restored: </span><span class="si">{</span><span class="n">weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>If your kernel is still running from Part 7, skip this cell.</p>
+
 
 
 
@@ -2949,6 +3178,24 @@ is what you built here.</p>
 
 
 
+<p><strong>If you restarted your notebook</strong> since Part 8, run the Part 8 checkpoint cell
+first, then also define:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">value_weights</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_action</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">else</span> <span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>If your kernel is still running from Part 8, skip this cell.</p>
+
+
+
+
 
 <section class="exercise" id="ex-9-1">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-1" /></label>Exercise 9.1 &mdash; Two Models Working Together</h3>
@@ -3128,18 +3375,18 @@ print(f"Updated critic weights: {critic_weights}")
 <section class="exercise" id="ex-9-2">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-2" /></label>Exercise 9.3 &mdash; Build Actor-Critic</h3>
   <div class="question">
-    <p>Combine the actor and critic into a single training loop. At each step within an episode:</p>
+    <p>Wrap the logic from Ex 9.2 into a reusable function:</p>
+
+<p>Write <code>actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99)</code> that:</p>
 
 <ol>
-<li>Actor picks action (probabilistic, using sigmoid)</li>
-<li>Observe reward and next state</li>
-<li>Critic computes advantage (TD error)</li>
-<li>Update actor weights using advantage × gradient</li>
-<li>Update critic weights using TD error</li>
+<li>Initializes actor and critic weights to zeros</li>
+<li>For each episode, runs the combined update at each step</li>
+<li>Records the score each episode</li>
+<li>Returns <code>(actor_weights, critic_weights, scores)</code></li>
 </ol>
 
-<p>Train for 2000 episodes. Plot the scores. After training, evaluate the final
-actor policy over 100 fresh episodes and compare to random.</p>
+<p>Train for 2000 episodes, plot the scores, and evaluate the final policy.</p>
 
 
 
@@ -3149,7 +3396,7 @@ actor policy over 100 fresh episodes and compare to random.</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>You already have all the pieces. The actor is <code>prob_right</code> + <code>sample_action</code> from Part 7. The critic is <code>predict_value</code> + TD error from Part 8. The new part is doing both updates at each step.</p>
+    <div class="hint-body"><p>You already have all the pieces. The actor is <code>prob_right</code> from Part 7. The critic is <code>predict_value</code> from Part 8. The new part is doing both updates at each step — exactly what you traced in Ex 9.2.</p>
 </div>
   </details>
 
@@ -3162,37 +3409,29 @@ actor policy over 100 fresh episodes and compare to random.</p>
   <details class="hint" data-level="3">
     <summary>Hint 3</summary>
     <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="n">actor_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">critic_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">actor_lr</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">critic_lr</span> <span class="o">=</span> <span class="mf">0.005</span>
-<span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.99</span>
-<span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
-    <span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-    <span class="n">total_reward</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">actor_weights</span><span class="p">)</span>
-        <span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">obs</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="n">p</span> <span class="o">*</span> <span class="n">obs</span>
-
-        <span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
-        <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
-        <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span>
-
-        <span class="n">v_current</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
-        <span class="n">v_next</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">done</span> <span class="k">else</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">next_obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
-        <span class="n">td_error</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">v_next</span> <span class="o">-</span> <span class="n">v_current</span>
-
-        <span class="n">actor_weights</span> <span class="o">+=</span> <span class="n">actor_lr</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">grad</span>
-        <span class="n">critic_weights</span> <span class="o">+=</span> <span class="n">critic_lr</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">obs</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="n">next_obs</span>
-
-    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_reward</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">episode</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">200</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode </span><span class="si">{</span><span class="n">episode</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: avg = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">200</span><span class="p">:])</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">actor_critic_train</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">n_episodes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">actor_lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">critic_lr</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.99</span><span class="p">):</span>
+    <span class="n">actor_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">critic_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_episodes</span><span class="p">):</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">total_reward</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">actor_weights</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">obs</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="n">p</span> <span class="o">*</span> <span class="n">obs</span>
+            <span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
+            <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+            <span class="n">v_current</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
+            <span class="n">v_next</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">done</span> <span class="k">else</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">next_obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
+            <span class="n">td_error</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">v_next</span> <span class="o">-</span> <span class="n">v_current</span>
+            <span class="n">actor_weights</span> <span class="o">+=</span> <span class="n">actor_lr</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">grad</span>
+            <span class="n">critic_weights</span> <span class="o">+=</span> <span class="n">critic_lr</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">obs</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">next_obs</span>
+        <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_reward</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">actor_weights</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">,</span> <span class="n">scores</span>
 </code></pre>
 </div>
 </div>
@@ -3205,41 +3444,34 @@ actor policy over 100 fresh episodes and compare to random.</p>
     <div class="solution-body">
 
 
-      <pre><code>actor_weights = np.zeros(4)
-critic_weights = np.zeros(4)
-actor_lr = 0.01
-critic_lr = 0.005
-gamma = 0.99
-scores = []
+      <pre><code>def actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99):
+    actor_weights = np.zeros(4)
+    critic_weights = np.zeros(4)
+    scores = []
+    for episode in range(n_episodes):
+        obs, _ = env.reset()
+        total_reward = 0
+        done = False
+        while not done:
+            p = prob_right(obs, actor_weights)
+            action = 1 if np.random.random() &lt; p else 0
+            grad = (1 - p) * obs if action == 1 else -p * obs
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            total_reward += reward
+            v_current = predict_value(obs, critic_weights)
+            v_next = 0.0 if done else predict_value(next_obs, critic_weights)
+            td_error = reward + gamma * v_next - v_current
+            actor_weights += actor_lr * td_error * grad
+            critic_weights += critic_lr * td_error * obs
+            obs = next_obs
+        scores.append(total_reward)
+        if (episode + 1) % 200 == 0:
+            print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
+    return actor_weights, critic_weights, scores
 
-for episode in range(2000):
-    obs, _ = env.reset()
-    total_reward = 0
-    done = False
-
-    while not done:
-        p = prob_right(obs, actor_weights)
-        action = 1 if np.random.random() &lt; p else 0
-        grad = (1 - p) * obs if action == 1 else -p * obs
-
-        next_obs, reward, terminated, truncated, _ = env.step(action)
-        done = terminated or truncated
-        total_reward += reward
-
-        v_current = predict_value(obs, critic_weights)
-        v_next = 0.0 if done else predict_value(next_obs, critic_weights)
-        td_error = reward + gamma * v_next - v_current
-
-        actor_weights += actor_lr * td_error * grad
-        critic_weights += critic_lr * td_error * obs
-
-        obs = next_obs
-
-    scores.append(total_reward)
-    if (episode + 1) % 200 == 0:
-        print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
-
-plot_scores(scores, title="Actor-Critic Training")
+actor_weights, critic_weights, ac_scores = actor_critic_train(env)
+plot_scores(ac_scores, title="Actor-Critic Training")
 
 # Final evaluation
 ac_policy = lambda obs, w=actor_weights: 1 if np.random.random() &lt; prob_right(obs, w) else 0
@@ -3294,7 +3526,7 @@ that produce a score each episode, so we can plot learning curves:</p>
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>For the genetic algorithm, you'll need to adapt it to record a score per 'episode' — you can record the best score each generation, or evaluate the current best weights each episode.</p>
+    <div class="hint-body"><p>You already have <code>reinforce_update</code> (Part 7) and <code>actor_critic_train</code> (Ex 9.3). Use them! For random, just loop <code>play_game</code> 1000 times.</p>
 </div>
   </details>
 
@@ -3312,9 +3544,7 @@ that produce a score each episode, so we can plot learning curves:</p>
 
 
       <pre><code># Random baseline
-random_scores = []
-for _ in range(1000):
-    random_scores.append(play_game(lambda obs: np.random.choice([0, 1]), env))
+random_scores = [play_game(lambda obs: np.random.choice([0, 1]), env) for _ in range(1000)]
 
 # REINFORCE
 w_reinforce = np.zeros(4)
@@ -3323,28 +3553,8 @@ for _ in range(1000):
     w_reinforce, score = reinforce_update(env, w_reinforce, lr=0.01)
     reinforce_scores.append(score)
 
-# Actor-Critic
-aw = np.zeros(4)
-cw = np.zeros(4)
-ac_scores = []
-for _ in range(1000):
-    obs, _ = env.reset()
-    total = 0
-    done = False
-    while not done:
-        p = prob_right(obs, aw)
-        action = 1 if np.random.random() &lt; p else 0
-        grad = (1 - p) * obs if action == 1 else -p * obs
-        next_obs, reward, terminated, truncated, _ = env.step(action)
-        done = terminated or truncated
-        total += reward
-        v_cur = predict_value(obs, cw)
-        v_nxt = 0.0 if done else predict_value(next_obs, cw)
-        td_err = reward + 0.99 * v_nxt - v_cur
-        aw += 0.01 * td_err * grad
-        cw += 0.005 * td_err * obs
-        obs = next_obs
-    ac_scores.append(total)
+# Actor-Critic (reuse the function from Ex 9.3)
+_, _, ac_scores = actor_critic_train(env, n_episodes=1000)
 
 plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-Critic': ac_scores})
 </code></pre>

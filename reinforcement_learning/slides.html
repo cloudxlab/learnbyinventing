@@ -768,18 +768,28 @@ the gradient from one of your steps.</p>
 
 
         <section>
-          <h3>Inspect and Fix the Credit Signal</h3>
+          <h3>Inspect the Credit Signal</h3>
           <div class="slide-content">
 
           <p>Play a game, compute discounted rewards, and look at the values. Run the code
 below. What do you notice about the numbers — are any of them negative?</p>
 
-<p>If ALL the credits are positive, every action looks "good." But some were
-clearly better than others. How would you fix this so that above-average actions
-get positive credit and below-average actions get negative credit?</p>
 
-<p>Write a <code>normalize(values)</code> function that does this, and apply it to the
-discounted rewards.</p>
+          </div>
+        </section>
+
+
+
+        <section>
+          <h3>Fix the Credit Signal</h3>
+          <div class="slide-content">
+
+          <p>All the credits are positive, so every action looks good. But some were clearly
+better than others.</p>
+
+<p>How would you fix this so that above-average actions get POSITIVE credit and
+below-average actions get NEGATIVE credit? Write a function that does this and
+apply it to the discounted rewards.</p>
 
 
           </div>
@@ -828,18 +838,48 @@ discounted rewards.</p>
 
 
         <section>
+          <h3>Squashing to a Probability</h3>
+          <div class="slide-content">
+
+
+          <p>You want to convert your <code>weighted_policy</code> from a hard yes/no decision into a
+probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY
+of going right — a number between 0 and 1.</p>
+
+<p>Your current policy computes <code>z = weights @ obs</code>, which can be any number
+(positive, negative, large, small). You need a function that takes <code>z</code> and
+outputs a value between 0 and 1.</p>
+
+
+
+
+          <p>When z is large and positive (strong signal for 'right'), the probability should be close to what?</p>
+
+          <p>When z is large and negative (strong signal for 'left'), the probability should be close to what?</p>
+
+          <p>When z = 0 (no signal either way), the probability should be what?</p>
+
+          <p>Can you think of a formula that maps any number to the range (0, 1) with these properties? Hint: think about what happens to $\frac{1}{1 + \text{something}}$ when that 'something' is very large vs. very small.</p>
+
+
+
+          </div>
+        </section>
+
+
+
+        <section>
           <h3>A Probabilistic Policy</h3>
           <div class="slide-content">
 
-          <p>Convert your <code>weighted_policy</code> from a hard yes/no decision into a probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY of going right.</p>
+          <p>Now use the sigmoid to build a probabilistic policy. Write:</p>
 
-<p>You need a function that takes any number and squashes it to a value between 0 and 1. What function does that?</p>
+<ul>
+<li><code>prob_right(obs, weights)</code> — returns <code>sigmoid(weights @ obs)</code></li>
+<li><code>sample_action(obs, weights)</code> — samples an action from the probability</li>
+</ul>
 
-<p>The <strong>sigmoid</strong> function: $\sigma(z) = \frac{1}{1 + e^{-z}}$</p>
-
-<p>When $z$ is large and positive, sigmoid $\to$ 1 (almost certainly right). When
-large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
-0.5 (coin flip).</p>
+<p>Test with <code>weights = np.zeros(4)</code>. What probability do you get? Why?</p>
 
 
           </div>
@@ -925,25 +965,45 @@ differences and give the same answer).</p>
 
 
         <section>
-          <h3>Play, Record, and Learn</h3>
+          <h3>Record an Episode</h3>
           <div class="slide-content">
 
-          <p>Now put it all together. Write <code>play_episode(env, weights)</code> that:</p>
+          <p>Write <code>play_episode(env, weights)</code> that plays one full game using the
+probabilistic policy and records everything that happens:</p>
 
 <ol>
-<li>Plays one full game using the probabilistic policy</li>
-<li>At each step, records: observation, action, reward, and the gradient</li>
+<li>At each step, compute the probability with <code>prob_right</code></li>
+<li>Sample an action from the probability</li>
+<li>Compute the gradient for that action</li>
+<li>Record: observation, action, reward, and gradient</li>
 </ol>
 
-<p>Then write <code>reinforce_update(env, weights, lr)</code> that:</p>
+<p>Return all four lists. Test it — play one episode and print the number of
+steps and the total reward.</p>
+
+
+          </div>
+        </section>
+
+
+
+        <section>
+          <h3>The Learning Rule</h3>
+          <div class="slide-content">
+
+          <p>Now write <code>reinforce_update(env, weights, lr=0.01)</code> that uses
+<code>play_episode</code> to learn from one game:</p>
 
 <ol>
-<li>Plays an episode</li>
-<li>Computes discounted rewards and normalizes them</li>
-<li>Multiplies each step's gradient by its normalized reward</li>
-<li>Sums all the weighted gradients</li>
-<li>Updates: <code>weights += lr * total_gradient</code> (gradient ASCENT!)</li>
+<li>Play an episode and get the recorded gradients and rewards</li>
+<li>Compute discounted rewards (your <code>compute_discounted_rewards</code>)</li>
+<li>Normalize them (your <code>normalize</code> function)</li>
+<li>Multiply each step's gradient by its normalized reward</li>
+<li>Sum all the weighted gradients</li>
+<li>Update: <code>weights += lr * total_gradient</code> (gradient ASCENT!)</li>
 </ol>
+
+<p>Return <code>(weights, total_score)</code>.</p>
 
 
           </div>
@@ -983,6 +1043,8 @@ differences and give the same answer).</p>
         </section>
 
 
+
+
       </section>
 
 
@@ -996,6 +1058,8 @@ differences and give the same answer).</p>
 </div>
 
         </section>
+
+
 
 
 
@@ -1175,6 +1239,8 @@ is what you built here.</p>
 
 
 
+
+
         <section>
           <h3>Two Models Working Together</h3>
           <div class="slide-content">
@@ -1228,18 +1294,18 @@ compute and print each piece:</p>
           <h3>Build Actor-Critic</h3>
           <div class="slide-content">
 
-          <p>Combine the actor and critic into a single training loop. At each step within an episode:</p>
+          <p>Wrap the logic from Ex 9.2 into a reusable function:</p>
+
+<p>Write <code>actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99)</code> that:</p>
 
 <ol>
-<li>Actor picks action (probabilistic, using sigmoid)</li>
-<li>Observe reward and next state</li>
-<li>Critic computes advantage (TD error)</li>
-<li>Update actor weights using advantage × gradient</li>
-<li>Update critic weights using TD error</li>
+<li>Initializes actor and critic weights to zeros</li>
+<li>For each episode, runs the combined update at each step</li>
+<li>Records the score each episode</li>
+<li>Returns <code>(actor_weights, critic_weights, scores)</code></li>
 </ol>
 
-<p>Train for 2000 episodes. Plot the scores. After training, evaluate the final
-actor policy over 100 fresh episodes and compare to random.</p>
+<p>Train for 2000 episodes, plot the scores, and evaluate the final policy.</p>
 
 
           </div>

@@ -969,17 +969,10 @@ blocks:
     id: ex-6-6
     part: 6
     number: 7
-    title: "Inspect and Fix the Credit Signal"
+    title: "Inspect the Credit Signal"
     description: |
       Play a game, compute discounted rewards, and look at the values. Run the code
       below. What do you notice about the numbers — are any of them negative?
-
-      If ALL the credits are positive, every action looks "good." But some were
-      clearly better than others. How would you fix this so that above-average actions
-      get positive credit and below-average actions get negative credit?
-
-      Write a `normalize(values)` function that does this, and apply it to the
-      discounted rewards.
     provided_code:
       - label: "inspect"
         code: |
@@ -1000,8 +993,30 @@ blocks:
           print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
     hints:
       - "All values are positive (ranging from 1 to ~50+). The first step's credit is large because it includes all future rewards. The last step is just 1.0. If everything is positive, the model thinks every action was good — that's not useful."
-      - "If the average credit is 30, and action A got credit 45 while action B got credit 15: subtract the average. A becomes +15 (above average = good!), B becomes -15 (below average = bad). To keep the scale consistent, also divide by the standard deviation."
-      - "Use numpy: `np.mean(values)` and `np.std(values)`. Add a tiny number (1e-8) to the standard deviation to prevent division by zero."
+    solution:
+      code: null
+      text: |
+        Every value is positive. The model can't tell which actions were good and which
+        were bad — they all look "good." We need to fix that.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-6b
+    part: 6
+    number: 8
+    title: "Fix the Credit Signal"
+    description: |
+      All the credits are positive, so every action looks good. But some were clearly
+      better than others.
+
+      How would you fix this so that above-average actions get POSITIVE credit and
+      below-average actions get NEGATIVE credit? Write a function that does this and
+      apply it to the discounted rewards.
+    provided_code: []
+    hints:
+      - "If the average credit is 30, and action A got credit 45 while action B got credit 15: subtract the average. A becomes +15 (above average = good!), B becomes -15 (below average = bad)."
+      - "Try it: `centered = np.array(disc) - np.mean(disc)`. Now play two games of DIFFERENT lengths. Compare the centered values — is the scale consistent between games?"
+      - "The scale varies because longer games have higher discounted returns. Dividing by the standard deviation puts everything on the same scale: `(values - mean) / std`. Add a tiny `1e-8` to std to prevent division by zero. Call this function `normalize`."
     solution:
       code: |
         def normalize(values):
@@ -1056,21 +1071,44 @@ blocks:
         A deterministic policy is stuck — it can't discover better actions. A probabilistic policy explores by sometimes taking random actions. When an accident leads to high reward, increase its probability. When it leads to low reward, decrease it. Exploration drives learning.
 
   - type: exercise
-    kind: coding
-    id: ex-7-1
+    kind: conceptual
+    id: ex-7-1a
     part: 7
     number: 1
+    title: "Squashing to a Probability"
+    description: |
+      You want to convert your `weighted_policy` from a hard yes/no decision into a
+      probability. Instead of "go right if `weights @ obs > 0`", output a PROBABILITY
+      of going right — a number between 0 and 1.
+
+      Your current policy computes `z = weights @ obs`, which can be any number
+      (positive, negative, large, small). You need a function that takes `z` and
+      outputs a value between 0 and 1.
+    prompts:
+      - "When z is large and positive (strong signal for 'right'), the probability should be close to what?"
+      - "When z is large and negative (strong signal for 'left'), the probability should be close to what?"
+      - "When z = 0 (no signal either way), the probability should be what?"
+      - "Can you think of a formula that maps any number to the range (0, 1) with these properties? Hint: think about what happens to $\\frac{1}{1 + \\text{something}}$ when that 'something' is very large vs. very small."
+    hints:
+      - "You need: big z → near 1, small z → near 0, z=0 → 0.5. Consider $\\frac{1}{1 + e^{-z}}$. When z is large positive, $e^{-z} \\approx 0$, so the result is $\\frac{1}{1+0} = 1$. When z is large negative, $e^{-z}$ is huge, so the result approaches 0. When z=0, $e^0 = 1$, so the result is $\\frac{1}{2} = 0.5$."
+    solution:
+      code: null
+      text: |
+        The function $\sigma(z) = \frac{1}{1 + e^{-z}}$ does exactly what we need. It's called the **sigmoid** function. Large positive z → near 1, large negative z → near 0, z = 0 → exactly 0.5. It smoothly maps any real number into (0, 1) — a perfect probability.
+
+  - type: exercise
+    kind: coding
+    id: ex-7-1b
+    part: 7
+    number: 2
     title: "A Probabilistic Policy"
     description: |
-      Convert your `weighted_policy` from a hard yes/no decision into a probability. Instead of "go right if `weights @ obs > 0`", output a PROBABILITY of going right.
+      Now use the sigmoid to build a probabilistic policy. Write:
 
-      You need a function that takes any number and squashes it to a value between 0 and 1. What function does that?
+      - `prob_right(obs, weights)` — returns `sigmoid(weights @ obs)`
+      - `sample_action(obs, weights)` — samples an action from the probability
 
-      The **sigmoid** function: $\sigma(z) = \frac{1}{1 + e^{-z}}$
-
-      When $z$ is large and positive, sigmoid $\to$ 1 (almost certainly right). When
-      large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
-      0.5 (coin flip).
+      Test with `weights = np.zeros(4)`. What probability do you get? Why?
     provided_code:
       - label: "sigmoid"
         code: |
@@ -1078,7 +1116,7 @@ blocks:
               z = np.clip(z, -500, 500)
               return 1.0 / (1.0 + np.exp(-z))
     hints:
-      - "`sigmoid(np.dot(weights, obs))` gives a probability between 0 and 1."
+      - "`sigmoid(np.dot(weights, obs))` gives a probability between 0 and 1. With all-zero weights, the dot product is 0, so sigmoid gives 0.5 — a coin flip."
       - "To sample an action from the probability: generate a random number between 0 and 1. If it's less than the probability, go right (1). Otherwise go left (0)."
     solution:
       code: |
@@ -1102,7 +1140,7 @@ blocks:
     kind: conceptual
     id: ex-7-2a
     part: 7
-    number: 2
+    number: 3
     title: "How Should the Model Learn?"
     description: |
       Your model outputs a probability and samples an action. After the game, you have discounted rewards telling you which actions were good (positive) and which were bad (negative).
@@ -1137,7 +1175,7 @@ blocks:
     kind: coding
     id: ex-7-2b
     part: 7
-    number: 3
+    number: 4
     title: "Discover the Gradient"
     description: |
       You need the gradient — the direction to push the weights to make the chosen action
@@ -1238,24 +1276,22 @@ blocks:
     kind: coding
     id: ex-7-3
     part: 7
-    number: 4
-    title: "Play, Record, and Learn"
+    number: 5
+    title: "Record an Episode"
     description: |
-      Now put it all together. Write `play_episode(env, weights)` that:
+      Write `play_episode(env, weights)` that plays one full game using the
+      probabilistic policy and records everything that happens:
 
-      1. Plays one full game using the probabilistic policy
-      2. At each step, records: observation, action, reward, and the gradient
+      1. At each step, compute the probability with `prob_right`
+      2. Sample an action from the probability
+      3. Compute the gradient for that action
+      4. Record: observation, action, reward, and gradient
 
-      Then write `reinforce_update(env, weights, lr)` that:
-
-      1. Plays an episode
-      2. Computes discounted rewards and normalizes them
-      3. Multiplies each step's gradient by its normalized reward
-      4. Sums all the weighted gradients
-      5. Updates: `weights += lr * total_gradient` (gradient ASCENT!)
+      Return all four lists. Test it — play one episode and print the number of
+      steps and the total reward.
     provided_code: []
     hints:
-      - "For play_episode: at each step, compute `p = prob_right(obs, weights)`, sample an action, then compute the gradient: `(1-p)*obs` if action=1, `(-p)*obs` if action=0. Store everything in lists."
+      - "At each step: `p = prob_right(obs, weights)`, sample action, gradient is `(1-p)*obs` if action=1, `(-p)*obs` if action=0. Append everything to lists."
       - |
         ```python
         def play_episode(env, weights):
@@ -1273,18 +1309,6 @@ blocks:
                 rewards.append(reward)
                 done = terminated or truncated
             return observations, actions, rewards, gradients
-        ```
-      - |
-        ```python
-        def reinforce_update(env, weights, lr=0.01):
-            _, _, rewards, gradients = play_episode(env, weights)
-            disc_rewards = compute_discounted_rewards(rewards)
-            norm_rewards = normalize(disc_rewards)
-            total_gradient = np.zeros(4)
-            for grad, r in zip(gradients, norm_rewards):
-                total_gradient += grad * r
-            weights += lr * total_gradient
-            return weights, sum(rewards)
         ```
     solution:
       code: |
@@ -1304,6 +1328,47 @@ blocks:
                 done = terminated or truncated
             return observations, actions, rewards, gradients
 
+        # Test
+        weights = np.zeros(4)
+        obs_list, act_list, rew_list, grad_list = play_episode(env, weights)
+        print(f"Episode length: {len(rew_list)}, Total reward: {sum(rew_list)}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-7-3b
+    part: 7
+    number: 6
+    title: "The Learning Rule"
+    description: |
+      Now write `reinforce_update(env, weights, lr=0.01)` that uses
+      `play_episode` to learn from one game:
+
+      1. Play an episode and get the recorded gradients and rewards
+      2. Compute discounted rewards (your `compute_discounted_rewards`)
+      3. Normalize them (your `normalize` function)
+      4. Multiply each step's gradient by its normalized reward
+      5. Sum all the weighted gradients
+      6. Update: `weights += lr * total_gradient` (gradient ASCENT!)
+
+      Return `(weights, total_score)`.
+    provided_code: []
+    hints:
+      - "Call `play_episode` to get the data. Then it's just: discount → normalize → multiply each gradient by its reward → sum → update weights."
+      - |
+        ```python
+        def reinforce_update(env, weights, lr=0.01):
+            _, _, rewards, gradients = play_episode(env, weights)
+            disc_rewards = compute_discounted_rewards(rewards)
+            norm_rewards = normalize(disc_rewards)
+            total_gradient = np.zeros(4)
+            for grad, r in zip(gradients, norm_rewards):
+                total_gradient += grad * r
+            weights += lr * total_gradient
+            return weights, sum(rewards)
+        ```
+    solution:
+      code: |
         def reinforce_update(env, weights, lr=0.01):
             _, _, rewards, gradients = play_episode(env, weights)
             disc_rewards = compute_discounted_rewards(rewards)
@@ -1325,7 +1390,7 @@ blocks:
     kind: coding
     id: ex-7-4
     part: 7
-    number: 5
+    number: 7
     title: "Train the Agent!"
     description: |
       Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?
@@ -1390,6 +1455,14 @@ blocks:
 
       No one told the model the rules of physics. It learned entirely from its own experience — just like you did in Part 1, but automatically.
 
+  - type: text
+    text: |
+      **Expect noise.** RL training is inherently noisy — your scores will bounce
+      around, and sometimes the agent's performance dips before recovering. If your
+      scores collapse and stay low, try re-running the training cell (a different random
+      seed can make a big difference). This instability is normal and is one of the main
+      reasons researchers developed the improvements in Parts 8 and 9.
+
   # ═══════════════════════════════════════════════════
   # PART 8: Predicting Value
   # ═══════════════════════════════════════════════════
@@ -1400,6 +1473,71 @@ blocks:
     estimated_time: "~25 min"
     intro: |
       REINFORCE works, but notice something: it has to finish the ENTIRE game before it can learn anything. It plays 200 steps, then looks back and assigns credit. Can we do better?
+
+  - type: text
+    text: |
+      **If you restarted your notebook** since Part 7, run this cell to restore the
+      functions and trained weights you'll need:
+
+      ```python
+      import gymnasium as gym
+      import numpy as np
+
+      env = gym.make("CartPole-v1")
+
+      def sigmoid(z):
+          z = np.clip(z, -500, 500)
+          return 1.0 / (1.0 + np.exp(-z))
+
+      def prob_right(obs, weights):
+          return sigmoid(np.dot(weights, obs))
+
+      def compute_discounted_rewards(rewards, gamma=0.99):
+          discounted = [0.0] * len(rewards)
+          running = 0.0
+          for t in reversed(range(len(rewards))):
+              running = rewards[t] + gamma * running
+              discounted[t] = running
+          return discounted
+
+      def normalize(values):
+          values = np.array(values)
+          return (values - np.mean(values)) / (np.std(values) + 1e-8)
+
+      def play_episode(env, weights):
+          obs, _ = env.reset()
+          observations, actions, rewards, gradients = [], [], [], []
+          done = False
+          while not done:
+              p = prob_right(obs, weights)
+              action = 1 if np.random.random() < p else 0
+              grad = (1 - p) * obs if action == 1 else -p * obs
+              observations.append(obs)
+              actions.append(action)
+              gradients.append(grad)
+              obs, reward, terminated, truncated, _ = env.step(action)
+              rewards.append(reward)
+              done = terminated or truncated
+          return observations, actions, rewards, gradients
+
+      def reinforce_update(env, weights, lr=0.01):
+          _, _, rewards, gradients = play_episode(env, weights)
+          disc_rewards = compute_discounted_rewards(rewards)
+          norm_rewards = normalize(disc_rewards)
+          total_gradient = np.zeros(4)
+          for grad, r in zip(gradients, norm_rewards):
+              total_gradient += grad * r
+          weights += lr * total_gradient
+          return weights, sum(rewards)
+
+      # Re-train REINFORCE (takes ~10 seconds)
+      weights = np.zeros(4)
+      for _ in range(1000):
+          weights, _ = reinforce_update(env, weights)
+      print(f"REINFORCE weights restored: {weights}")
+      ```
+
+      If your kernel is still running from Part 7, skip this cell.
 
   - type: exercise
     kind: conceptual
@@ -1660,6 +1798,22 @@ blocks:
 
       What if you used BOTH together? The critic tells the actor how good its actions are (via advantages), and the actor uses that feedback to improve. The critic learns alongside the actor, getting better at evaluating states as the actor gets better at playing.
 
+  - type: text
+    text: |
+      **If you restarted your notebook** since Part 8, run the Part 8 checkpoint cell
+      first, then also define:
+
+      ```python
+      def predict_value(obs, value_weights):
+          return np.dot(value_weights, obs)
+
+      def sample_action(obs, weights):
+          p = prob_right(obs, weights)
+          return 1 if np.random.random() < p else 0
+      ```
+
+      If your kernel is still running from Part 8, skip this cell.
+
   - type: exercise
     kind: conceptual
     id: ex-9-1
@@ -1773,91 +1927,76 @@ blocks:
     number: 3
     title: "Build Actor-Critic"
     description: |
-      Combine the actor and critic into a single training loop. At each step within an episode:
+      Wrap the logic from Ex 9.2 into a reusable function:
 
-      1. Actor picks action (probabilistic, using sigmoid)
-      2. Observe reward and next state
-      3. Critic computes advantage (TD error)
-      4. Update actor weights using advantage × gradient
-      5. Update critic weights using TD error
+      Write `actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99)` that:
 
-      Train for 2000 episodes. Plot the scores. After training, evaluate the final
-      actor policy over 100 fresh episodes and compare to random.
+      1. Initializes actor and critic weights to zeros
+      2. For each episode, runs the combined update at each step
+      3. Records the score each episode
+      4. Returns `(actor_weights, critic_weights, scores)`
+
+      Train for 2000 episodes, plot the scores, and evaluate the final policy.
     provided_code: []
     hints:
-      - "You already have all the pieces. The actor is `prob_right` + `sample_action` from Part 7. The critic is `predict_value` + TD error from Part 8. The new part is doing both updates at each step."
+      - "You already have all the pieces. The actor is `prob_right` from Part 7. The critic is `predict_value` from Part 8. The new part is doing both updates at each step — exactly what you traced in Ex 9.2."
       - "Actor gradient: `(1-p)*obs` if action=1, `(-p)*obs` if action=0. Actor update: `actor_weights += actor_lr * td_error * grad`. Critic update: `critic_weights += critic_lr * td_error * obs`."
       - |
         ```python
-        actor_weights = np.zeros(4)
-        critic_weights = np.zeros(4)
-        actor_lr = 0.01
-        critic_lr = 0.005
-        gamma = 0.99
-        scores = []
-
-        for episode in range(2000):
-            obs, _ = env.reset()
-            total_reward = 0
-            done = False
-            while not done:
-                p = prob_right(obs, actor_weights)
-                action = 1 if np.random.random() < p else 0
-                grad = (1 - p) * obs if action == 1 else -p * obs
-
-                next_obs, reward, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-                total_reward += reward
-
-                v_current = predict_value(obs, critic_weights)
-                v_next = 0 if done else predict_value(next_obs, critic_weights)
-                td_error = reward + gamma * v_next - v_current
-
-                actor_weights += actor_lr * td_error * grad
-                critic_weights += critic_lr * td_error * obs
-                obs = next_obs
-
-            scores.append(total_reward)
-            if (episode + 1) % 200 == 0:
-                print(f"Episode {episode+1}: avg = {np.mean(scores[-200:]):.1f}")
+        def actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99):
+            actor_weights = np.zeros(4)
+            critic_weights = np.zeros(4)
+            scores = []
+            for episode in range(n_episodes):
+                obs, _ = env.reset()
+                total_reward = 0
+                done = False
+                while not done:
+                    p = prob_right(obs, actor_weights)
+                    action = 1 if np.random.random() < p else 0
+                    grad = (1 - p) * obs if action == 1 else -p * obs
+                    next_obs, reward, terminated, truncated, _ = env.step(action)
+                    done = terminated or truncated
+                    total_reward += reward
+                    v_current = predict_value(obs, critic_weights)
+                    v_next = 0.0 if done else predict_value(next_obs, critic_weights)
+                    td_error = reward + gamma * v_next - v_current
+                    actor_weights += actor_lr * td_error * grad
+                    critic_weights += critic_lr * td_error * obs
+                    obs = next_obs
+                scores.append(total_reward)
+            return actor_weights, critic_weights, scores
         ```
     solution:
       code: |
-        actor_weights = np.zeros(4)
-        critic_weights = np.zeros(4)
-        actor_lr = 0.01
-        critic_lr = 0.005
-        gamma = 0.99
-        scores = []
+        def actor_critic_train(env, n_episodes=2000, actor_lr=0.01, critic_lr=0.005, gamma=0.99):
+            actor_weights = np.zeros(4)
+            critic_weights = np.zeros(4)
+            scores = []
+            for episode in range(n_episodes):
+                obs, _ = env.reset()
+                total_reward = 0
+                done = False
+                while not done:
+                    p = prob_right(obs, actor_weights)
+                    action = 1 if np.random.random() < p else 0
+                    grad = (1 - p) * obs if action == 1 else -p * obs
+                    next_obs, reward, terminated, truncated, _ = env.step(action)
+                    done = terminated or truncated
+                    total_reward += reward
+                    v_current = predict_value(obs, critic_weights)
+                    v_next = 0.0 if done else predict_value(next_obs, critic_weights)
+                    td_error = reward + gamma * v_next - v_current
+                    actor_weights += actor_lr * td_error * grad
+                    critic_weights += critic_lr * td_error * obs
+                    obs = next_obs
+                scores.append(total_reward)
+                if (episode + 1) % 200 == 0:
+                    print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
+            return actor_weights, critic_weights, scores
 
-        for episode in range(2000):
-            obs, _ = env.reset()
-            total_reward = 0
-            done = False
-
-            while not done:
-                p = prob_right(obs, actor_weights)
-                action = 1 if np.random.random() < p else 0
-                grad = (1 - p) * obs if action == 1 else -p * obs
-
-                next_obs, reward, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-                total_reward += reward
-
-                v_current = predict_value(obs, critic_weights)
-                v_next = 0.0 if done else predict_value(next_obs, critic_weights)
-                td_error = reward + gamma * v_next - v_current
-
-                actor_weights += actor_lr * td_error * grad
-                critic_weights += critic_lr * td_error * obs
-
-                obs = next_obs
-
-            scores.append(total_reward)
-            if (episode + 1) % 200 == 0:
-                print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
-
-        plot_scores(scores, title="Actor-Critic Training")
+        actor_weights, critic_weights, ac_scores = actor_critic_train(env)
+        plot_scores(ac_scores, title="Actor-Critic Training")
 
         # Final evaluation
         ac_policy = lambda obs, w=actor_weights: 1 if np.random.random() < prob_right(obs, w) else 0
@@ -1894,14 +2033,12 @@ blocks:
               plt.legend()
               plt.show()
     hints:
-      - "For the genetic algorithm, you'll need to adapt it to record a score per 'episode' — you can record the best score each generation, or evaluate the current best weights each episode."
+      - "You already have `reinforce_update` (Part 7) and `actor_critic_train` (Ex 9.3). Use them! For random, just loop `play_game` 1000 times."
       - "Collect scores as `{'Random': [...], 'REINFORCE': [...], 'Actor-Critic': [...]}` and pass to `plot_comparison`."
     solution:
       code: |
         # Random baseline
-        random_scores = []
-        for _ in range(1000):
-            random_scores.append(play_game(lambda obs: np.random.choice([0, 1]), env))
+        random_scores = [play_game(lambda obs: np.random.choice([0, 1]), env) for _ in range(1000)]
 
         # REINFORCE
         w_reinforce = np.zeros(4)
@@ -1910,28 +2047,8 @@ blocks:
             w_reinforce, score = reinforce_update(env, w_reinforce, lr=0.01)
             reinforce_scores.append(score)
 
-        # Actor-Critic
-        aw = np.zeros(4)
-        cw = np.zeros(4)
-        ac_scores = []
-        for _ in range(1000):
-            obs, _ = env.reset()
-            total = 0
-            done = False
-            while not done:
-                p = prob_right(obs, aw)
-                action = 1 if np.random.random() < p else 0
-                grad = (1 - p) * obs if action == 1 else -p * obs
-                next_obs, reward, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-                total += reward
-                v_cur = predict_value(obs, cw)
-                v_nxt = 0.0 if done else predict_value(next_obs, cw)
-                td_err = reward + 0.99 * v_nxt - v_cur
-                aw += 0.01 * td_err * grad
-                cw += 0.005 * td_err * obs
-                obs = next_obs
-            ac_scores.append(total)
+        # Actor-Critic (reuse the function from Ex 9.3)
+        _, _, ac_scores = actor_critic_train(env, n_episodes=1000)
 
         plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-Critic': ac_scores})
       text: null
