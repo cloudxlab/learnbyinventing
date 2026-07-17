@@ -91,21 +91,32 @@
 
 
 
+<p>This chapter uses the <code>gymnasium</code> library (the game engine). Install it before
+starting:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="c1"># In a notebook cell or your terminal:</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">gymnasium</span>
+</code></pre>
+</div>
+
+<p>On a local VS Code setup, run <code>pip install gymnasium</code> in your terminal.</p>
+
+
+
+
 
 
 <section class="exercise" id="ex-1-1">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-1-1" /></label>Exercise 1.1 &mdash; Set Up the Game</h3>
   <div class="question">
-    <p>First, install the game environment and create a CartPole game. Run <code>env.reset()</code> — it gives you back 4 numbers. Print them. What do you think they mean?</p>
+    <p>First, create a CartPole game. Run <code>env.reset()</code> — it gives you back 4 numbers. Print them. What do you think they mean?</p>
 
 
 
     <div class="provided-code">
       <div class="provided-code-label">Provided &mdash; setup</div>
-      <pre><code># Run this first (only needed once)
-# !pip install gymnasium
-
-import gymnasium as gym
+      <pre><code>import gymnasium as gym
 import numpy as np
 
 env = gym.make("CartPole-v1")
@@ -380,16 +391,59 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
 
 
 <section class="exercise" id="ex-2-0">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-0" /></label>Exercise 2.0 &mdash; Helper Functions</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-0" /></label>Exercise 2.0 &mdash; Write a Game Runner</h3>
   <div class="question">
-    <p>Run these helper functions first. They'll save you from rewriting the game loop every time.</p>
+    <p>In Exercise 1.3 you wrote a game loop. You'll be testing many different strategies
+in this chapter, so let's turn that loop into a reusable function.</p>
+
+<p>Write <code>play_game(policy_fn, env)</code> that plays one full episode using <code>policy_fn</code>
+(a function that takes an observation and returns an action) and returns the total
+reward.</p>
+
+<p>Then write <code>evaluate(policy_fn, env, n=100)</code> that plays <code>n</code> games and returns the
+average score.</p>
+
+<p>Test them with a random policy: <code>evaluate(lambda obs: np.random.choice([0, 1]), env)</code>.</p>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p><code>play_game</code> is your loop from Exercise 1.3, but instead of <code>np.random.choice</code>,
+call <code>policy_fn(obs)</code> to pick the action:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">play_game</span><span class="p">(</span><span class="n">policy_fn</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="n">total_reward</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">policy_fn</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
+    <span class="k">return</span> <span class="n">total_reward</span>
+</code></pre>
+</div>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p><code>evaluate</code> just calls <code>play_game</code> in a loop: <code>np.mean([play_game(policy_fn, env) for _ in range(n)])</code></p>
+</div>
+  </details>
 
 
 
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; helpers</div>
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+
       <pre><code>def play_game(policy_fn, env):
-    """Play one episode using policy_fn and return total reward."""
     obs, info = env.reset()
     total_reward = 0
     done = False
@@ -401,20 +455,11 @@ print(f"\nAverage score: {np.mean(scores):.1f}")
     return total_reward
 
 def evaluate(policy_fn, env, n=100):
-    """Average score over n episodes."""
     scores = [play_game(policy_fn, env) for _ in range(n)]
     return np.mean(scores)
+
+print(f"Random policy: {evaluate(lambda obs: np.random.choice([0, 1]), env):.1f}")
 </code></pre>
-    </div>
-
-
-  </div>
-
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-
 
     </div>
   </details>
@@ -524,7 +569,9 @@ print(f"Average score: {avg:.1f}")
 <section class="exercise" id="ex-2-3">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-2-3" /></label>The Best You Can Do By Hand</h3>
   <div class="question">
-    <p>Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores.</p>
+    <p><em>Optional stretch — skip this if you want to move on. You won't miss anything later.</em></p>
+
+<p>Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores.</p>
 
 <p>Some ideas to explore:</p>
 
@@ -550,6 +597,33 @@ print(f"Average score: {avg:.1f}")
 
 
 
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Typical scores: angle only ~40–60, angle + angular velocity ~60–200,
+all 4 observations ~200–500 (depending on the multipliers you chose).
+If you got above 200, you're doing great. Notice how tedious the
+hand-tuning is — that's the motivation for automating the search.</p>
+
+
+
+      <pre><code># Heuristic 1: angle only
+h1 = lambda obs: 1 if obs[2] &gt; 0 else 0
+
+# Heuristic 2: angle + angular velocity
+h2 = lambda obs: 1 if obs[2] + 0.5 * obs[3] &gt; 0 else 0
+
+# Heuristic 3: all 4 observations
+h3 = lambda obs: 1 if 0.1*obs[0] + 0.5*obs[1] + 1.0*obs[2] + 0.5*obs[3] &gt; 0 else 0
+
+for name, h in [("angle only", h1), ("angle+velocity", h2), ("all 4", h3)]:
+    print(f"{name}: avg = {evaluate(h, env):.1f}")
+</code></pre>
+
+    </div>
+  </details>
+
 </section>
 
 
@@ -563,8 +637,87 @@ print(f"Average score: {avg:.1f}")
 
 
 
+
+<section class="exercise" id="ex-3-0">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-3-0" /></label>Exercise 3.0 &mdash; Name the Pieces</h3>
+  <div class="question">
+
+    <p>You just played a game, wrote a strategy function, tested it, tweaked it, and
+repeated. Before we go further, give each piece a short name:</p>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">The game itself (CartPole) — what would you call the 'world' the player interacts with?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">The 4 numbers you receive each step — what are they?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Push left / push right — what is this?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">The number of steps survived (your score) — what is this?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">Your function (my_policy) — what would you call it?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="4" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">The process of playing → seeing the score → tweaking your function → replaying — what is this?</p>
+      <textarea class="answer-input" data-exercise="ex-3-0" data-prompt="5" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>Think in general terms. The game is the 'world' or 'environment.' The numbers describe the current 'state.' Push left/right is a 'choice' or 'action.' The score is your 'reward.' Your function is your 'strategy.' And the whole loop of try → learn → improve is... learning from experience.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>There's no single right answer. Most people arrive at something like: "the world,"
+"the state," "an action," "the reward," "a strategy," and "learning by trial and
+error." The standard terms are below.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
 <div class="part">
-  <p>Let's put names on what you just did:</p>
+  <p>Here are the names computer scientists settled on:</p>
 
 <table>
 <thead>
@@ -693,6 +846,22 @@ print(f"Average score: {avg:.1f}")
 
 
 
+<p><strong>A note about <code>lambda</code> in loops.</strong> In the exercises ahead, you'll see code like:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">policy</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">w1</span><span class="o">=</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="o">=</span><span class="n">w2</span><span class="p">:</span> <span class="n">two_weight_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>The <code>w1=w1, w2=w2</code> part is important. Without it, all the lambdas in a loop would
+share the <em>same</em> variables and use whatever value they have at the <em>end</em> of the loop
+— not the value when the lambda was created. The <code>w1=w1</code> trick captures the current
+value. This is a common Python gotcha with closures; you'll see it in several
+exercises from here on.</p>
+
+
+
+
 
 
 <section class="exercise" id="ex-4-1">
@@ -761,7 +930,7 @@ for w1, w2 in [(1,0), (1,1), (1,0.5), (0.5,1)]:
 
 <p><code>weights[0]*obs[0] + weights[1]*obs[1] + weights[2]*obs[2] + weights[3]*obs[3]</code></p>
 
-<p>Go right if positive, left otherwise. This is a <strong>dot product</strong> — <code>weights @ obs</code> in numpy.</p>
+<p>Go right if positive, left otherwise. This is a <strong>dot product</strong> — <code>np.dot(weights, obs)</code> in numpy.</p>
 
 <p>Try weights = <code>[0, 0, 1, 0.5]</code> (ignoring cart position and velocity). Then try <code>[0.1, 0.5, 1, 0.5]</code>.</p>
 
@@ -1147,7 +1316,9 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 <section class="exercise" id="ex-5-5">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-5-5" /></label>Improve Evolution</h3>
   <div class="question">
-    <p>Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas:</p>
+    <p><em>Optional stretch — skip this if you want to move on. You won't miss anything later.</em></p>
+
+<p>Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas:</p>
 
 <ul>
 <li><strong>Crossover:</strong> instead of just mutating one parent, combine two parents (e.g., take weights 0-1 from parent A and weights 2-3 from parent B)</li>
@@ -1181,7 +1352,9 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 <div class="part" data-part-number="6">
   <h2>Part 6: Can Gradients Help?<span class="time-estimate">~30 min</span></h2>
 
-  <p>Genetic algorithms work but feel brute-force. In the Gradient Descent chapter, you learned a more targeted approach: compute the gradient, move in the direction that improves the objective. Can we do that here?</p>
+  <p>Genetic algorithms work but feel brute-force. You might remember a more targeted
+approach: compute the gradient, move in the direction that improves the objective.
+Can we do that here?</p>
 
 
 </div>
@@ -1193,9 +1366,16 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 <section class="exercise" id="ex-6-1">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1" /></label>Exercise 6.1 &mdash; Strategy 3 — Tweak and Observe</h3>
   <div class="question">
-    <p>In the Gradient Descent chapter, you computed gradients by nudging each parameter slightly and measuring how the output changed (finite differences). Can you apply that same trick here?</p>
+    <p>Here's the idea: for each weight, nudge it slightly (+0.01), play a few games,
+nudge it the other way (-0.01), play again. The difference in scores tells you
+which direction improves that weight.</p>
 
-<p>Take your best weights from the genetic algorithm. Estimate the gradient of the average score with respect to each weight, update the weights in the uphill direction, and repeat 50 times. Does this converge to a good solution?</p>
+<p>This is called <strong>finite differences</strong> — estimating the gradient by measuring
+the effect of small changes.</p>
+
+<p>Take your best weights from the genetic algorithm (or start with
+<code>[0, 0, 1, 0.5]</code>). Estimate the gradient and update for 20 steps. Does the
+score improve?</p>
 
 
 
@@ -1205,18 +1385,20 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>For each weight i: add a small epsilon (e.g. 0.01), play 10 games and record the average score. Subtract epsilon, play 10 games. The gradient for that weight ≈ (score_plus - score_minus) / (2 × epsilon). Then update: <code>weights += learning_rate * gradient</code>.</p>
+    <div class="hint-body"><p>For each weight $i$: add epsilon, evaluate, subtract epsilon, evaluate. The gradient
+for that weight $\approx$ (score_plus - score_minus) / (2 × epsilon). Then update:
+<code>weights += learning_rate * gradient</code>.</p>
 </div>
   </details>
 
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
     <div class="hint-body"><div class="codehilite">
-<pre><span></span><code><span class="n">weights</span> <span class="o">=</span> <span class="n">best_weights</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># from genetic algorithm</span>
+<pre><span></span><code><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
 <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.01</span>
 
-<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
     <span class="n">gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
         <span class="n">w_plus</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1227,8 +1409,9 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
         <span class="n">score_minus</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w_minus</span><span class="p">:</span> <span class="n">weighted_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">env</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
         <span class="n">gradient</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">score_plus</span> <span class="o">-</span> <span class="n">score_minus</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
     <span class="n">weights</span> <span class="o">+=</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">gradient</span>
-    <span class="n">score</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weights</span><span class="p">:</span> <span class="n">weighted_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">env</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step </span><span class="si">{</span><span class="n">step</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: score = </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">weights</span><span class="p">:</span> <span class="n">weighted_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">env</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step </span><span class="si">{</span><span class="n">step</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: score = </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre>
 </div>
 </div>
@@ -1245,7 +1428,7 @@ print(f"Verified over 100 episodes: {evaluate(policy, env, n=100):.1f}")
 lr = 0.01
 eps = 0.01
 
-for step in range(50):
+for step in range(20):
     gradient = np.zeros(4)
     for i in range(4):
         w_plus = weights.copy()
@@ -1256,8 +1439,8 @@ for step in range(50):
         score_minus = evaluate(lambda obs, w=w_minus: weighted_policy(obs, w), env, n=10)
         gradient[i] = (score_plus - score_minus) / (2 * eps)
     weights += lr * gradient
-    score = evaluate(lambda obs, w=weights: weighted_policy(obs, w), env, n=10)
-    if (step + 1) % 10 == 0:
+    if (step + 1) % 5 == 0:
+        score = evaluate(lambda obs, w=weights: weighted_policy(obs, w), env, n=10)
         print(f"Step {step+1}: score = {score:.1f}, weights = {weights}")
 </code></pre>
 
@@ -1270,8 +1453,67 @@ for step in range(50):
 
 
 
+<section class="exercise" id="ex-6-1b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-1b" /></label>Exercise 6.2 &mdash; Reading the Gradient</h3>
+  <div class="question">
+
+    <p>Before moving on, make sure you understand what you just computed. Look at
+the gradient from one of your steps.</p>
+
+
+
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">The gradient is a vector of 4 numbers — one per weight. If gradient[2] is large and positive, what does that tell you about weight 2?</p>
+      <textarea class="answer-input" data-exercise="ex-6-1b" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">If gradient[0] is close to zero, what does that mean?</p>
+      <textarea class="answer-input" data-exercise="ex-6-1b" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+    <div class="answer-prompt">
+      <strong>Your answer:</strong>
+      <p class="prompt-text">In plain English, what is the gradient telling you? (No calculus needed — think about what you measured.)</p>
+      <textarea class="answer-input" data-exercise="ex-6-1b" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
+    </div>
+
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>gradient[2] large and positive means: increasing weight 2 would increase the score. gradient[0] near zero means: weight 0 barely affects the score right now. The gradient is a compass — it points in the direction that would improve the score the most.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>The gradient tells you which direction to push each weight to improve the score. Large positive = increase this weight. Large negative = decrease it. Near zero = this weight doesn't matter much right now. It's a compass pointing toward better parameters.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
 <section class="exercise" id="ex-6-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.2 &mdash; Why Didn't That Work Well?</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-2" /></label>Exercise 6.3 &mdash; Why Didn't That Work Well?</h3>
   <div class="question">
 
     <p>The gradient approach probably gave erratic results — the score jumps around instead of steadily improving. Why?</p>
@@ -1322,7 +1564,11 @@ for step in range(50):
 
 
 <div class="part">
-  <p>There's an even deeper problem. When you push right at step 5, was it the right move? You won't know until the game ends — maybe at step 200. The total score doesn't tell you WHICH of your 200 individual actions were good and which were bad. This is called the <strong>credit assignment problem</strong>: how do you assign credit (or blame) to each action?</p>
+  <p>So the noise kills the gradient signal. But there's an even deeper problem.</p>
+
+<p>When you push right at step 5, was it the right move? You won't know until the game ends — maybe at step 200. The total score doesn't tell you WHICH of your 200 individual actions were good and which were bad. This is called the <strong>credit assignment problem</strong>: how do you assign credit (or blame) to each action?</p>
+
+<p>Let's tackle this problem step by step.</p>
 
 </div>
 
@@ -1330,7 +1576,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-3">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-3" /></label>Exercise 6.3 &mdash; Assigning Credit</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-3" /></label>Exercise 6.4 &mdash; Assigning Credit</h3>
   <div class="question">
 
     <p>You played a game and scored 150 steps. At step 100, you pushed right.</p>
@@ -1388,7 +1634,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-4">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-4" /></label>Exercise 6.4 &mdash; Design Your Own Credit System</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-4" /></label>Exercise 6.5 &mdash; Design Your Own Credit System</h3>
   <div class="question">
 
     <p>You agreed that nearby rewards should count more than distant ones. Now design a formula.</p>
@@ -1457,7 +1703,7 @@ for step in range(50):
 
 
 <section class="exercise" id="ex-6-5">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-5" /></label>Exercise 6.5 &mdash; Code Your Credit System</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-5" /></label>Exercise 6.6 &mdash; Code Your Credit System</h3>
   <div class="question">
     <p>Write <code>compute_discounted_rewards(rewards, gamma=0.99)</code> that implements the credit system you just designed. It takes a list of rewards (one per step) and returns the discounted return for each step.</p>
 
@@ -1530,9 +1776,17 @@ print("Discounted rewards:", result)
 
 
 <section class="exercise" id="ex-6-6">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.6 &mdash; Look at the Raw Numbers</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.7 &mdash; Inspect and Fix the Credit Signal</h3>
   <div class="question">
-    <p>Play a game, compute discounted rewards, and look at the values. What do you notice?</p>
+    <p>Play a game, compute discounted rewards, and look at the values. Run the code
+below. What do you notice about the numbers — are any of them negative?</p>
+
+<p>If ALL the credits are positive, every action looks "good." But some were
+clearly better than others. How would you fix this so that above-average actions
+get positive credit and below-average actions get negative credit?</p>
+
+<p>Write a <code>normalize(values)</code> function that does this, and apply it to the
+discounted rewards.</p>
 
 
 
@@ -1562,110 +1816,18 @@ print(f"Range: {min(disc):.1f} to {max(disc):.1f}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>The first step's credit is a large number (like 40–60) because it includes all future rewards. The last step is just 1.0. All values are positive — can you see a problem? If ALL actions get positive credit, the model can't tell which ones were GOOD vs. just OK.</p>
+    <div class="hint-body"><p>All values are positive (ranging from 1 to ~50+). The first step's credit is large because it includes all future rewards. The last step is just 1.0. If everything is positive, the model thinks every action was good — that's not useful.</p>
 </div>
   </details>
 
-
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-
-      <p>All the discounted rewards are positive (ranging from 1 to ~50+). That means every action looks "good." But some were clearly better than others — we need a way to separate above-average actions from below-average ones.</p>
-
-
-
-    </div>
-  </details>
-
-</section>
-
-
-
-
-
-<section class="exercise" id="ex-6-7">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-7" /></label>Exercise 6.7 &mdash; Fix the All-Positive Problem</h3>
-  <div class="question">
-
-    <p>Every action has positive credit, so the model thinks all actions were good. That's not useful.</p>
-
-
-
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">If the average credit is 30, and action A got credit 45 while action B got credit 15, which was better?</p>
-      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="0" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">What if you subtracted the average from each value? A would become +15 (above average = good!) and B would become -15 (below average = bad). Does this help?</p>
-      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="1" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-    <div class="answer-prompt">
-      <strong>Your answer:</strong>
-      <p class="prompt-text">After subtracting the mean, some values might be ±50 while others are ±5. Should you also scale them? How?</p>
-      <textarea class="answer-input" data-exercise="ex-6-7" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
-    </div>
-
-
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
-    <div class="hint-body"><p>Subtract the mean so that above-average actions are positive and below-average are negative. Divide by the standard deviation to keep the scale consistent. This is just standard normalization!</p>
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>If the average credit is 30, and action A got credit 45 while action B got credit 15: subtract the average. A becomes +15 (above average = good!), B becomes -15 (below average = bad). To keep the scale consistent, also divide by the standard deviation.</p>
 </div>
   </details>
 
-
-
-  <details class="solution">
-    <summary>Solution</summary>
-    <div class="solution-body">
-
-      <p>Subtract the mean and divide by the standard deviation. Now roughly half the actions have positive values (better than average) and half have negative (worse than average). This gives a clean signal for learning.</p>
-
-
-
-    </div>
-  </details>
-
-</section>
-
-
-
-
-
-
-
-<section class="exercise" id="ex-6-8">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8" /></label>Exercise 6.8 &mdash; Write normalize()</h3>
-  <div class="question">
-    <p>Write a <code>normalize(values)</code> function that subtracts the mean and divides by the standard deviation.</p>
-
-
-
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; test</div>
-      <pre><code>test = [40, 35, 30, 20, 10, 1]
-print("Before:", test)
-print("After:", normalize(test))
-# After normalization: positive = above average, negative = below average
-</code></pre>
-    </div>
-
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
     <div class="hint-body"><p>Use numpy: <code>np.mean(values)</code> and <code>np.std(values)</code>. Add a tiny number (1e-8) to the standard deviation to prevent division by zero.</p>
 </div>
   </details>
@@ -1676,10 +1838,21 @@ print("After:", normalize(test))
     <summary>Solution</summary>
     <div class="solution-body">
 
+      <p>After normalization, roughly half the actions have positive credit (better than
+average) and half have negative (worse than average). Now the model has a clear
+signal: reinforce the positive ones, suppress the negative ones.</p>
+
+
 
       <pre><code>def normalize(values):
     values = np.array(values)
     return (values - np.mean(values)) / (np.std(values) + 1e-8)
+
+norm_disc = normalize(disc)
+print(f"Before: all positive, range {min(disc):.1f} to {max(disc):.1f}")
+print(f"After:  range {min(norm_disc):.2f} to {max(norm_disc):.2f}")
+print(f"Positive (above avg): {sum(1 for x in norm_disc if x &gt; 0)}")
+print(f"Negative (below avg): {sum(1 for x in norm_disc if x &lt; 0)}")
 </code></pre>
 
     </div>
@@ -1697,6 +1870,14 @@ print("After:", normalize(test))
 
 
 </div>
+
+
+
+<p><strong>New vocabulary ahead.</strong> Parts 7–9 introduce several new terms (REINFORCE, value
+function, TD error, advantage, actor, critic). Each is defined inline when it first
+appears. If you ever need a quick refresher, open the <strong>Glossary</strong> panel (top of the
+page) — it has one-line definitions of every term in this chapter.</p>
+
 
 
 
@@ -1765,7 +1946,13 @@ print("After:", normalize(test))
   <div class="question">
     <p>Convert your <code>weighted_policy</code> from a hard yes/no decision into a probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY of going right.</p>
 
-<p>You need a function that takes any number and squashes it to a value between 0 and 1. You've seen this before — what function does that?</p>
+<p>You need a function that takes any number and squashes it to a value between 0 and 1. What function does that?</p>
+
+<p>The <strong>sigmoid</strong> function: $\sigma(z) = \frac{1}{1 + e^{-z}}$</p>
+
+<p>When $z$ is large and positive, sigmoid $\to$ 1 (almost certainly right). When
+large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
+0.5 (coin flip).</p>
 
 
 
@@ -1783,7 +1970,7 @@ print("After:", normalize(test))
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>The sigmoid function! <code>sigmoid(weights @ obs)</code> gives a probability between 0 and 1. When <code>weights @ obs</code> is large and positive, sigmoid → 1 (almost certainly go right). When large and negative, sigmoid → 0 (almost certainly go left). When 0, sigmoid → 0.5 (coin flip).</p>
+    <div class="hint-body"><p><code>sigmoid(np.dot(weights, obs))</code> gives a probability between 0 and 1.</p>
 </div>
   </details>
 
@@ -1848,13 +2035,13 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?</p>
+      <p class="prompt-text">You want to INCREASE reward. If you had a gradient (the direction that increases probability of the chosen action), what should you do — move WITH the gradient or AGAINST it?</p>
       <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?</p>
+      <p class="prompt-text">To compute a gradient, you need a single number that measures how likely the chosen action was. The probability $p$ does that. But across many steps, probabilities multiply ($p_1 \times p_2 \times ...$), which is awkward for optimization. What mathematical function turns products into sums?</p>
       <textarea class="answer-input" data-exercise="ex-7-2a" data-prompt="3" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
@@ -1865,13 +2052,13 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Good action → make it more likely (increase probability). Bad action → make it less likely (decrease probability). To increase reward instead of decreasing loss, move in the gradient direction (ascent) instead of against it (descent). Gradient ASCENT.</p>
+    <div class="hint-body"><p>Good action → make it more likely (increase probability). Bad action → make it less likely (decrease probability). To increase reward, move WITH the gradient (gradient ASCENT instead of gradient descent).</p>
 </div>
   </details>
 
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
-    <div class="hint-body"><p>The function is log! log(a × b) = log(a) + log(b). And log is smooth and differentiable. So you want the gradient of log(probability of chosen action) — that's your learning signal.</p>
+    <div class="hint-body"><p>The function is <strong>log</strong>! $\log(a \times b) = \log(a) + \log(b)$. So instead of working with the probability $p$ directly, we'll work with $\log(p)$ — it turns the messy product into a clean sum, and it's smooth and easy to differentiate.</p>
 </div>
   </details>
 
@@ -1881,7 +2068,9 @@ print(f"Sampled action: {sample_action(obs, weights)}")
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <p>Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses. Use log(p) as the quantity to differentiate — it turns products into sums and has clean gradients.</p>
+      <p>Good actions → increase their probability. Bad actions → decrease their probability. Use gradient ASCENT (move with the gradient) instead of gradient descent (move against it). Multiply the gradient by the reward: positive reward amplifies, negative reward reverses.</p>
+
+<p>Use $\log(p)$ instead of $p$ — the log turns products into sums, making the math cleaner across many steps.</p>
 
 
 
@@ -1890,6 +2079,19 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 </section>
 
+
+
+
+
+<p><strong>Why $\log(p)$ and not just $p$?</strong> Quick recap before we dive into gradients.</p>
+
+<p>Across a 200-step game, the total probability of your sequence of actions is
+$p_1 \times p_2 \times \ldots \times p_{200}$ — a product of 200 numbers between
+0 and 1. This product quickly becomes astronomically small (like $10^{-60}$),
+causing numerical problems. Taking the log turns this into a sum:
+$\log(p_1) + \log(p_2) + \ldots + \log(p_{200})$ — a sensible number that your
+computer can work with. You'll use $\log(p)$ in the next exercise — just remember:
+it's the same information as $p$, just in a form that doesn't explode or vanish.</p>
 
 
 
@@ -1897,15 +2099,42 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 
 <section class="exercise" id="ex-7-2b">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2b" /></label>Exercise 7.3 &mdash; Derive the Gradient</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-7-2b" /></label>Exercise 7.3 &mdash; Discover the Gradient</h3>
   <div class="question">
-    <p>You just figured out that $\log(p)$ is the right quantity to differentiate. Now work out the gradient.</p>
+    <p>You need the gradient — the direction to push the weights to make the chosen action
+more likely. Instead of deriving it with calculus, let's <strong>measure</strong> it using finite
+differences (the same trick from Exercise 6.1).</p>
 
-<p>You already know from the Gradient Descent chapter that the derivative of sigmoid is $\text{sigmoid}(z) \cdot (1 - \text{sigmoid}(z))$, and that $\log'(x) = 1/x$.</p>
+<p>Write a function <code>estimate_log_prob_gradient(obs, action, weights, eps=0.001)</code> that:</p>
 
-<p>Using the chain rule, work out: what is the gradient of $\log(\text{sigmoid}(\mathbf{w} \cdot \mathbf{obs}))$ with respect to $\mathbf{w}$?</p>
+<ol>
+<li>For each weight $i$, nudge it by $+\epsilon$ and $-\epsilon$</li>
+<li>Compute $\log(p)$ each time (where $p$ is the probability of the chosen action)</li>
+<li>Gradient$[i] \approx (\log p_{+} - \log p_{-}) / (2\epsilon)$</li>
+</ol>
+
+<p>Then compare your numerical gradient to this formula (which comes from calculus):</p>
+
+<ul>
+<li>If action = 1 (went right): gradient $= (1-p) \times \text{obs}$</li>
+<li>If action = 0 (went left): gradient $= -p \times \text{obs}$</li>
+</ul>
+
+<p>Do the numbers match?</p>
 
 
+
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; log probability</div>
+      <pre><code>def log_prob(obs, action, weights):
+    """Log-probability of the chosen action."""
+    p = prob_right(obs, weights)
+    if action == 1:
+        return np.log(p + 1e-8)
+    else:
+        return np.log(1 - p + 1e-8)
+</code></pre>
+    </div>
 
 
   </div>
@@ -1913,19 +2142,41 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Chain rule: $\frac{d}{dw} \log(\sigma(w \cdot obs))$ = $\frac{1}{\sigma} \cdot \sigma(1-\sigma) \cdot obs$ = $(1-\sigma) \cdot obs$ = $(1-p) \cdot obs$. The sigmoid derivative and the 1/sigmoid cancel beautifully!</p>
+    <div class="hint-body"><p>The finite-difference gradient for one weight:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">estimate_log_prob_gradient</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)):</span>
+        <span class="n">w_plus</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">w_plus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">eps</span>
+        <span class="n">w_minus</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">w_minus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">eps</span>
+        <span class="n">grad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_prob</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">w_plus</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_prob</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">w_minus</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grad</span>
+</code></pre>
+</div>
 </div>
   </details>
 
   <details class="hint" data-level="2">
     <summary>Hint 2</summary>
-    <div class="hint-body"><p>That's the gradient when you went right (action=1). When you went left (action=0), you need $\log(1-p)$ instead. By similar math: gradient = $-p \cdot obs$.</p>
-</div>
-  </details>
+    <div class="hint-body"><p>To verify against the formula:</p>
 
-  <details class="hint" data-level="3">
-    <summary>Hint 3</summary>
-    <div class="hint-body"><p>Summary: action=1 (right) → gradient = $(1-p) \cdot obs$. Action=0 (left) → gradient = $-p \cdot obs$.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+<span class="n">action</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># went right</span>
+
+<span class="n">numerical</span> <span class="o">=</span> <span class="n">estimate_log_prob_gradient</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+<span class="n">analytical</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">obs</span>  <span class="c1"># formula for action=1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Numerical: &quot;</span><span class="p">,</span> <span class="n">numerical</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analytical:&quot;</span><span class="p">,</span> <span class="n">analytical</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Match?&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">numerical</span><span class="p">,</span> <span class="n">analytical</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">))</span>
+</code></pre>
+</div>
 </div>
   </details>
 
@@ -1935,20 +2186,57 @@ print(f"Sampled action: {sample_action(obs, weights)}")
     <summary>Solution</summary>
     <div class="solution-body">
 
-      <ul>
-<li>Action = 1 (went right): gradient = $(1-p) \cdot \text{obs}$</li>
-<li>Action = 0 (went left): gradient = $-p \cdot \text{obs}$</li>
-</ul>
 
-<p>This tells you which direction to push the weights to make the chosen action more likely.</p>
+      <pre><code>def estimate_log_prob_gradient(obs, action, weights, eps=0.001):
+    grad = np.zeros(len(weights))
+    for i in range(len(weights)):
+        w_plus = weights.copy()
+        w_plus[i] += eps
+        w_minus = weights.copy()
+        w_minus[i] -= eps
+        grad[i] = (log_prob(obs, action, w_plus) - log_prob(obs, action, w_minus)) / (2 * eps)
+    return grad
 
+obs, _ = env.reset(seed=42)
+weights = np.array([0.1, 0.2, 0.3, 0.4])
 
+for action in [0, 1]:
+    numerical = estimate_log_prob_gradient(obs, action, weights)
+    p = prob_right(obs, weights)
+    if action == 1:
+        analytical = (1 - p) * obs
+    else:
+        analytical = -p * obs
+    print(f"\nAction={action}:")
+    print(f"  Numerical:  {numerical}")
+    print(f"  Analytical: {analytical}")
+    print(f"  Match: {np.allclose(numerical, analytical, atol=1e-4)}")
+</code></pre>
 
     </div>
   </details>
 
 </section>
 
+
+
+
+<div class="part">
+  <p>The gradient formulas are:</p>
+
+<ul>
+<li>Action = 1 (went right): gradient $= (1-p) \times \text{obs}$</li>
+<li>Action = 0 (went left): gradient $= -p \times \text{obs}$</li>
+</ul>
+
+<p>You verified these numerically — they tell you which direction to push the weights
+to make the chosen action more likely. Multiply by the reward signal and you have a
+learning rule: reinforce good actions, suppress bad ones.</p>
+
+<p>From here on we'll use the analytical formulas (they're faster than finite
+differences and give the same answer).</p>
+
+</div>
 
 
 
@@ -1961,7 +2249,7 @@ print(f"Sampled action: {sample_action(obs, weights)}")
 
 <ol>
 <li>Plays one full game using the probabilistic policy</li>
-<li>At each step, records: observation, action, reward, and the gradient you derived above</li>
+<li>At each step, records: observation, action, reward, and the gradient</li>
 </ol>
 
 <p>Then write <code>reinforce_update(env, weights, lr)</code> that:</p>
@@ -2082,6 +2370,8 @@ def reinforce_update(env, weights, lr=0.01):
   <div class="question">
     <p>Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?</p>
 
+<p>After training, evaluate the final policy over 100 fresh episodes with <code>evaluate()</code> and compare to the random baseline (~20).</p>
+
 
 
     <div class="provided-code">
@@ -2144,7 +2434,11 @@ for episode in range(1000):
 
 plot_scores(scores, title="REINFORCE Training")
 print(f"\nFinal weights: {weights}")
-print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
+
+# Final evaluation: how good is the trained policy?
+trained_score = evaluate(lambda obs, w=weights: 1 if np.random.random() &lt; prob_right(obs, w) else 0, env)
+random_score = evaluate(lambda obs: np.random.choice([0, 1]), env)
+print(f"Trained policy: {trained_score:.1f}  vs  Random: {random_score:.1f}")
 </code></pre>
 
     </div>
@@ -2249,7 +2543,13 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
 <p>$$V(\text{obs}) = \mathbf{v} \cdot \text{obs}$$</p>
 
-<p>To train it, you need data: play episodes using your REINFORCE policy, compute actual discounted rewards at each step (you already have <code>compute_discounted_rewards</code>!), and train the model to predict those rewards using the MSE loss from the Gradient Descent chapter.</p>
+<p>This is linear regression — input = observation (4 numbers), target = actual
+discounted return at that step, loss = $(V(\text{obs}) - \text{target})^2$.</p>
+
+<p>To train it: play 200 episodes using your trained REINFORCE policy (the <code>weights</code>
+from Exercise 7.5), compute actual discounted rewards with
+<code>compute_discounted_rewards</code>, and update the value weights to reduce the squared
+error.</p>
 
 
 
@@ -2259,7 +2559,7 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>This is linear regression from the Gradient Descent chapter! Input = observation (4 numbers). Target = actual discounted return at that step. Loss = $(V(obs) - target)^2$. Gradient = $2 \cdot (V(obs) - target) \cdot obs$.</p>
+    <div class="hint-body"><p>The gradient of $(V(    ext{obs}) -     ext{target})^2$ with respect to weights is $2 \cdot (V( ext{obs}) - \text{target}) \cdot \text{obs}$. Update: <code>value_weights -= lr * 2 * error * obs</code>.</p>
 </div>
   </details>
 
@@ -2270,6 +2570,13 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
 <span class="k">def</span><span class="w"> </span><span class="nf">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">value_weights</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_value</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">disc_rewards</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">obs</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">disc_rewards</span><span class="p">):</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">pred</span> <span class="o">-</span> <span class="n">target</span>
+        <span class="n">value_weights</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">error</span> <span class="o">*</span> <span class="n">obs</span>
+    <span class="k">return</span> <span class="n">value_weights</span>
 </code></pre>
 </div>
 </div>
@@ -2277,15 +2584,15 @@ print(f"Final 100-episode average: {np.mean(scores[-100:]):.1f}")
 
   <details class="hint" data-level="3">
     <summary>Hint 3</summary>
-    <div class="hint-body"><p>Train it by playing episodes and fitting to discounted returns:</p>
+    <div class="hint-body"><p>Train on 200 episodes using the REINFORCE policy from Part 7:</p>
 
 <div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">train_value</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">disc_rewards</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">obs</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">disc_rewards</span><span class="p">):</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">)</span>
-        <span class="n">error</span> <span class="o">=</span> <span class="n">pred</span> <span class="o">-</span> <span class="n">target</span>
-        <span class="n">value_weights</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">error</span> <span class="o">*</span> <span class="n">obs</span>
-    <span class="k">return</span> <span class="n">value_weights</span>
+<pre><span></span><code><span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">obs_list</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">play_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">disc</span> <span class="o">=</span> <span class="n">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+    <span class="n">value_weights</span> <span class="o">=</span> <span class="n">train_value</span><span class="p">(</span><span class="n">obs_list</span><span class="p">,</span> <span class="n">disc</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ep</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trained </span><span class="si">{</span><span class="n">ep</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> episodes&quot;</span><span class="p">)</span>
 </code></pre>
 </div>
 </div>
@@ -2309,6 +2616,14 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
         error = pred - target
         value_weights -= lr * 2 * error * obs
     return value_weights
+
+# Train on 200 episodes using the REINFORCE policy from Part 7
+for ep in range(200):
+    obs_list, _, rewards, _ = play_episode(env, weights)
+    disc = compute_discounted_rewards(rewards)
+    value_weights = train_value(obs_list, disc, value_weights)
+    if (ep + 1) % 50 == 0:
+        print(f"Trained {ep+1} episodes")
 </code></pre>
 
     </div>
@@ -2473,7 +2788,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
     <div class="answer-prompt">
       <strong>Your answer:</strong>
-      <p class="prompt-text">Compare this error to the normalized discounted rewards from REINFORCE. Which is a better signal for telling the actor which actions were good?</p>
+      <p class="prompt-text">Compare this error to the normalized discounted rewards from REINFORCE. Which gives a more specific signal about whether an action was good?</p>
       <textarea class="answer-input" data-exercise="ex-8-4a" data-prompt="2" placeholder="Type your answer here..." rows="3"></textarea>
     </div>
 
@@ -2484,7 +2799,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Positive error = action was BETTER than expected. Negative = WORSE than expected. This 'better or worse than expected' signal is much less noisy than raw rewards, because it's relative to a learned baseline (the value model's prediction), not just the episode average.</p>
+    <div class="hint-body"><p>Positive error = action was BETTER than expected. Negative = WORSE than expected. This 'better or worse than expected' signal is much less noisy than raw rewards, because it's relative to a learned prediction for the current state, not just the episode average.</p>
 </div>
   </details>
 
@@ -2512,7 +2827,18 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 <section class="exercise" id="ex-8-4b">
   <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-8-4b" /></label>Exercise 8.6 &mdash; Compare the Signals</h3>
   <div class="question">
-    <p>Play an episode and compute both: (1) the normalized discounted rewards from REINFORCE, and (2) the TD errors (advantages) from the value model. Compare their standard deviations. Which signal is more stable?</p>
+    <p>You trained the value model on 200 episodes in Exercise 8.2. Now let's see how
+its advantage signal compares to the normalized discounted rewards from REINFORCE.</p>
+
+<p>Play an episode using your REINFORCE policy (<code>weights</code> from Exercise 7.5) and
+compute both:</p>
+
+<ol>
+<li>The normalized discounted rewards (REINFORCE's signal)</li>
+<li>The TD errors from your trained value model (advantages)</li>
+</ol>
+
+<p>Print the standard deviation of each. Which is more stable?</p>
 
 
 
@@ -2522,19 +2848,16 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
 
   <details class="hint" data-level="1">
     <summary>Hint 1</summary>
-    <div class="hint-body"><p>Play an episode with <code>play_episode</code>. Get discounted rewards and normalize them. Then replay the same states computing TD errors. Print the std of each.</p>
-</div>
-  </details>
+    <div class="hint-body"><p>Use <code>weights</code> (your trained REINFORCE policy) and <code>value_weights</code> (your
+trained value model):</p>
 
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><div class="codehilite">
+<div class="codehilite">
 <pre><span></span><code><span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 <span class="n">advantages</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">rewards_list</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
-    <span class="n">action</span> <span class="o">=</span> <span class="n">sample_action</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">sample_action</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>  <span class="c1"># REINFORCE policy from Part 7</span>
     <span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
     <span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
     <span class="n">v_current</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">value_weights</span><span class="p">)</span>
@@ -2545,7 +2868,7 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
     <span class="n">obs</span> <span class="o">=</span> <span class="n">next_obs</span>
 
 <span class="n">norm_disc</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">compute_discounted_rewards</span><span class="p">(</span><span class="n">rewards_list</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Advantage std: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">advantages</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Advantage std:              </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">advantages</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Norm discounted reward std: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">norm_disc</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre>
 </div>
@@ -2559,7 +2882,9 @@ def train_value(observations, disc_rewards, value_weights, lr=0.001):
     <div class="solution-body">
 
 
-      <pre><code>obs, _ = env.reset()
+      <pre><code># weights = your REINFORCE policy from Exercise 7.5
+# value_weights = your trained value model from Exercise 8.2
+obs, _ = env.reset()
 advantages = []
 rewards_list = []
 done = False
@@ -2575,7 +2900,7 @@ while not done:
     obs = next_obs
 
 norm_disc = normalize(compute_discounted_rewards(rewards_list))
-print(f"Advantage std: {np.std(advantages):.4f}")
+print(f"Advantage std:              {np.std(advantages):.4f}")
 print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 </code></pre>
 
@@ -2594,10 +2919,14 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 <li>A model that predicts future reward from a state = the <strong>value function</strong> (or <strong>critic</strong>)</li>
 <li>Training it step-by-step using <code>reward + gamma × V(next_state)</code> = <strong>Temporal Difference (TD) learning</strong></li>
 <li>The error <code>reward + gamma × V(next) - V(current)</code> = the <strong>advantage</strong> (or <strong>TD error</strong>)</li>
-<li>With a neural network instead of linear weights = <strong>Deep Q-Network (DQN)</strong></li>
 </ul>
 
-<p>The value model doesn't pick actions — it just evaluates states. That's why it's called the <strong>critic</strong>: it watches the policy play and judges how well it's doing.</p>
+<p>The value model doesn't pick actions — it just evaluates states. That's why it's
+called the <strong>critic</strong>: it watches the policy play and judges how well it's doing.</p>
+
+<p>A related approach called <strong>DQN</strong> (Deep Q-Network) uses a neural network to predict
+the value of each <em>action</em> rather than each state — but the core idea of TD learning
+is what you built here.</p>
 
 </div>
 
@@ -2687,8 +3016,117 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 
 
 
+<section class="exercise" id="ex-9-1b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-1b" /></label>Exercise 9.2 &mdash; One Step of Actor-Critic</h3>
+  <div class="question">
+    <p>Before writing the full training loop, let's trace through ONE step of the
+combined update by hand. Use the code below to set up a single step, then
+compute and print each piece:</p>
+
+<ol>
+<li>The actor's probability and sampled action</li>
+<li>The critic's predicted value for the current AND next state</li>
+<li>The TD error (advantage)</li>
+<li>The actor's gradient</li>
+<li>The updated actor weights and critic weights</li>
+</ol>
+
+<p>This is the same math from Parts 7 and 8 — you're just combining them.</p>
+
+
+
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; setup</div>
+      <pre><code>actor_weights = np.zeros(4)
+critic_weights = np.zeros(4)
+
+obs, _ = env.reset(seed=42)
+print("Observation:", obs)
+</code></pre>
+    </div>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><div class="codehilite">
+<pre><span></span><code><span class="c1"># 1. Actor picks action</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">prob_right</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">actor_weights</span><span class="p">)</span>
+<span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">else</span> <span class="mi">0</span>
+<span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">obs</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="n">p</span> <span class="o">*</span> <span class="n">obs</span>
+
+<span class="c1"># 2. Take step</span>
+<span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+<span class="n">done</span> <span class="o">=</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span>
+
+<span class="c1"># 3. Critic evaluates</span>
+<span class="n">v_current</span> <span class="o">=</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
+<span class="n">v_next</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">done</span> <span class="k">else</span> <span class="n">predict_value</span><span class="p">(</span><span class="n">next_obs</span><span class="p">,</span> <span class="n">critic_weights</span><span class="p">)</span>
+<span class="n">td_error</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">+</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="n">v_next</span> <span class="o">-</span> <span class="n">v_current</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Action: </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">, p(right): </span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;V(current): </span><span class="si">{</span><span class="n">v_current</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, V(next): </span><span class="si">{</span><span class="n">v_next</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TD error (advantage): </span><span class="si">{</span><span class="n">td_error</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 4. Updates</span>
+<span class="n">actor_weights</span> <span class="o">+=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">grad</span>
+<span class="n">critic_weights</span> <span class="o">+=</span> <span class="mf">0.005</span> <span class="o">*</span> <span class="n">td_error</span> <span class="o">*</span> <span class="n">obs</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated actor weights:  </span><span class="si">{</span><span class="n">actor_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated critic weights: </span><span class="si">{</span><span class="n">critic_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre>
+</div>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Notice what happened: the TD error was positive (reward=1 plus predicted future minus predicted current), so both models nudged their weights slightly. One step. The actor learned a tiny bit about which action is better, and the critic learned a tiny bit about the value of this state. Now repeat for every step of every episode.</p>
+
+
+
+      <pre><code># 1. Actor picks action
+p = prob_right(obs, actor_weights)
+action = 1 if np.random.random() &lt; p else 0
+grad = (1 - p) * obs if action == 1 else -p * obs
+
+# 2. Take step
+next_obs, reward, terminated, truncated, _ = env.step(action)
+done = terminated or truncated
+
+# 3. Critic evaluates
+v_current = predict_value(obs, critic_weights)
+v_next = 0.0 if done else predict_value(next_obs, critic_weights)
+td_error = reward + 0.99 * v_next - v_current
+
+print(f"Action: {action}, p(right): {p:.3f}")
+print(f"V(current): {v_current:.3f}, V(next): {v_next:.3f}")
+print(f"TD error (advantage): {td_error:.3f}")
+
+# 4. Updates
+actor_weights += 0.01 * td_error * grad
+critic_weights += 0.005 * td_error * obs
+print(f"Updated actor weights:  {actor_weights}")
+print(f"Updated critic weights: {critic_weights}")
+</code></pre>
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
 <section class="exercise" id="ex-9-2">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-2" /></label>Exercise 9.2 &mdash; Build Actor-Critic</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-2" /></label>Exercise 9.3 &mdash; Build Actor-Critic</h3>
   <div class="question">
     <p>Combine the actor and critic into a single training loop. At each step within an episode:</p>
 
@@ -2700,7 +3138,8 @@ print(f"Norm discounted reward std: {np.std(norm_disc):.4f}")
 <li>Update critic weights using TD error</li>
 </ol>
 
-<p>Train for 2000 episodes. Plot the scores.</p>
+<p>Train for 2000 episodes. Plot the scores. After training, evaluate the final
+actor policy over 100 fresh episodes and compare to random.</p>
 
 
 
@@ -2801,6 +3240,11 @@ for episode in range(2000):
         print(f"Episode {episode+1}: avg last 200 = {np.mean(scores[-200:]):.1f}")
 
 plot_scores(scores, title="Actor-Critic Training")
+
+# Final evaluation
+ac_policy = lambda obs, w=actor_weights: 1 if np.random.random() &lt; prob_right(obs, w) else 0
+print(f"\nActor-Critic final score: {evaluate(ac_policy, env):.1f}")
+print(f"Random baseline:          {evaluate(lambda obs: np.random.choice([0, 1]), env):.1f}")
 </code></pre>
 
     </div>
@@ -2814,18 +3258,18 @@ plot_scores(scores, title="Actor-Critic Training")
 
 
 <section class="exercise" id="ex-9-3">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-3" /></label>Exercise 9.3 &mdash; The Grand Comparison</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-3" /></label>Exercise 9.4 &mdash; The Grand Comparison</h3>
   <div class="question">
-    <p>You've built four approaches. Let's see them side by side. Run each one and plot their learning curves together:</p>
+    <p>You've built several approaches. Let's see three of them side by side — the ones
+that produce a score each episode, so we can plot learning curves:</p>
 
 <ol>
-<li><strong>Random</strong> — baseline (random actions)</li>
-<li><strong>Genetic Algorithm</strong> — 10 generations of evolution</li>
+<li><strong>Random</strong> — baseline (random actions, no learning)</li>
 <li><strong>REINFORCE</strong> — 1000 episodes of policy gradient</li>
-<li><strong>Actor-Critic</strong> — 2000 episodes of combined learning</li>
+<li><strong>Actor-Critic</strong> — 1000 episodes of combined learning</li>
 </ol>
 
-<p>Which learns fastest? Which achieves the highest score?</p>
+<p>Plot them together. Which learns fastest? Which achieves the highest score?</p>
 
 
 
@@ -2909,59 +3353,6 @@ plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-
   </details>
 
 </section>
-
-
-
-
-
-<section class="exercise" id="ex-9-4">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-9-4" /></label>Go Deeper — Neural Network Actor-Critic</h3>
-  <div class="question">
-    <p>Replace the linear models with small neural networks. Use one hidden layer of 32 neurons with ReLU activation. You can use numpy (manual backprop) or PyTorch/TensorFlow.</p>
-
-<p>Does a deeper model learn faster or achieve a higher score than the linear version?</p>
-
-
-
-    <div class="provided-code">
-      <div class="provided-code-label">Provided &mdash; numpy neural net skeleton</div>
-      <pre><code>class SimpleNN:
-    def __init__(self, input_size, hidden_size, output_size):
-        self.w1 = np.random.randn(input_size, hidden_size) * 0.1
-        self.b1 = np.zeros(hidden_size)
-        self.w2 = np.random.randn(hidden_size, output_size) * 0.1
-        self.b2 = np.zeros(output_size)
-
-    def forward(self, x):
-        self.z1 = x @ self.w1 + self.b1
-        self.h = np.maximum(0, self.z1)  # ReLU
-        self.z2 = self.h @ self.w2 + self.b2
-        return self.z2
-
-    # You'll need to implement backprop for this!
-</code></pre>
-    </div>
-
-
-  </div>
-
-
-  <details class="hint" data-level="1">
-    <summary>Hint 1</summary>
-    <div class="hint-body"><p>If using PyTorch, this becomes much simpler — <code>nn.Linear(4, 32)</code>, <code>nn.ReLU()</code>, <code>nn.Linear(32, 1)</code>, and <code>loss.backward()</code> handles all the gradient computation.</p>
-</div>
-  </details>
-
-  <details class="hint" data-level="2">
-    <summary>Hint 2</summary>
-    <div class="hint-body"><p>With numpy, you'll need the ReLU derivative: <code>d_relu = (self.z1 &gt; 0).astype(float)</code>. Chain rule for w2: <code>d_w2 = self.h.T @ d_output</code>. For w1: <code>d_w1 = x.T @ (d_output @ self.w2.T * d_relu)</code>.</p>
-</div>
-  </details>
-
-
-
-</section>
-
 
 
 
@@ -3096,14 +3487,6 @@ plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-
 
       </tr>
 
-      <tr>
-
-        <td>Neural net instead of linear</td>
-
-        <td>Deep RL (DQN, A2C, PPO)</td>
-
-      </tr>
-
     </table>
 
   </div>
@@ -3113,7 +3496,26 @@ plot_comparison({'Random': random_scores, 'REINFORCE': reinforce_scores, 'Actor-
 
 <div class="chapter-footer">
 
-  <p><em>You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.</em></p>
+  <p><em><p>You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.</p>
+
+<p><strong>Going further:</strong></p>
+
+<ul>
+<li><strong>Deep Actor-Critic:</strong> Replace the linear models with small neural networks
+(one hidden layer of 32 neurons with ReLU). If you know PyTorch, use
+<code>nn.Linear(4, 32)</code> → <code>nn.ReLU()</code> → <code>nn.Linear(32, 1)</code> and let
+<code>loss.backward()</code> handle all gradient computation. Compare learning speed
+to the linear version.</li>
+<li><strong>PPO (Proximal Policy Optimization):</strong> REINFORCE and Actor-Critic can make
+dangerously large updates. PPO clips the gradient so the policy can't change
+too much in one step — stabler training, used by ChatGPT's RLHF.</li>
+<li><strong>Multi-step returns:</strong> Instead of 1-step TD ($r + \gamma V(s')$), use 2 or 3
+steps of actual rewards before bootstrapping. A middle ground between REINFORCE
+(all actual) and TD (all estimated).</li>
+<li><strong>Different games:</strong> Try <code>LunarLander-v3</code>, <code>MountainCar-v0</code>, or <code>Acrobot-v1</code> with
+<code>gymnasium</code>. Each has different observation and action spaces — your algorithms
+transfer directly.</li>
+</ul></em></p>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>

@@ -84,11 +84,13 @@
 
 
 
+
+
         <section>
           <h3>Set Up the Game</h3>
           <div class="slide-content">
 
-          <p>First, install the game environment and create a CartPole game. Run <code>env.reset()</code> — it gives you back 4 numbers. Print them. What do you think they mean?</p>
+          <p>First, create a CartPole game. Run <code>env.reset()</code> — it gives you back 4 numbers. Print them. What do you think they mean?</p>
 
 
           </div>
@@ -200,10 +202,20 @@
 
 
         <section>
-          <h3>Helper Functions</h3>
+          <h3>Write a Game Runner</h3>
           <div class="slide-content">
 
-          <p>Run these helper functions first. They'll save you from rewriting the game loop every time.</p>
+          <p>In Exercise 1.3 you wrote a game loop. You'll be testing many different strategies
+in this chapter, so let's turn that loop into a reusable function.</p>
+
+<p>Write <code>play_game(policy_fn, env)</code> that plays one full episode using <code>policy_fn</code>
+(a function that takes an observation and returns an action) and returns the total
+reward.</p>
+
+<p>Then write <code>evaluate(policy_fn, env, n=100)</code> that plays <code>n</code> games and returns the
+average score.</p>
+
+<p>Test them with a random policy: <code>evaluate(lambda obs: np.random.choice([0, 1]), env)</code>.</p>
 
 
           </div>
@@ -245,7 +257,9 @@
           <h3>The Best You Can Do By Hand</h3>
           <div class="slide-content">
 
-          <p>Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores.</p>
+          <p><em>Optional stretch — skip this if you want to move on. You won't miss anything later.</em></p>
+
+<p>Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores.</p>
 
 <p>Some ideas to explore:</p>
 
@@ -276,7 +290,37 @@
 
 
         <section>
-          <div class="slide-content"><p>Let's put names on what you just did:</p>
+          <h3>Name the Pieces</h3>
+          <div class="slide-content">
+
+
+          <p>You just played a game, wrote a strategy function, tested it, tweaked it, and
+repeated. Before we go further, give each piece a short name:</p>
+
+
+
+
+          <p>The game itself (CartPole) — what would you call the 'world' the player interacts with?</p>
+
+          <p>The 4 numbers you receive each step — what are they?</p>
+
+          <p>Push left / push right — what is this?</p>
+
+          <p>The number of steps survived (your score) — what is this?</p>
+
+          <p>Your function (my_policy) — what would you call it?</p>
+
+          <p>The process of playing → seeing the score → tweaking your function → replaying — what is this?</p>
+
+
+
+          </div>
+        </section>
+
+
+
+        <section>
+          <div class="slide-content"><p>Here are the names computer scientists settled on:</p>
 
 <table>
 <thead>
@@ -361,6 +405,8 @@
 
 
 
+
+
         <section>
           <h3>Two-Weight Policy</h3>
           <div class="slide-content">
@@ -390,7 +436,7 @@
 
 <p><code>weights[0]*obs[0] + weights[1]*obs[1] + weights[2]*obs[2] + weights[3]*obs[3]</code></p>
 
-<p>Go right if positive, left otherwise. This is a <strong>dot product</strong> — <code>weights @ obs</code> in numpy.</p>
+<p>Go right if positive, left otherwise. This is a <strong>dot product</strong> — <code>np.dot(weights, obs)</code> in numpy.</p>
 
 <p>Try weights = <code>[0, 0, 1, 0.5]</code> (ignoring cart position and velocity). Then try <code>[0.1, 0.5, 1, 0.5]</code>.</p>
 
@@ -546,7 +592,9 @@
           <h3>Improve Evolution</h3>
           <div class="slide-content">
 
-          <p>Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas:</p>
+          <p><em>Optional stretch — skip this if you want to move on. You won't miss anything later.</em></p>
+
+<p>Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas:</p>
 
 <ul>
 <li><strong>Crossover:</strong> instead of just mutating one parent, combine two parents (e.g., take weights 0-1 from parent A and weights 2-3 from parent B)</li>
@@ -571,7 +619,9 @@
         <section>
           <h2>Part 6: Can Gradients Help?</h2>
 
-          <div class="slide-content"><p>Genetic algorithms work but feel brute-force. In the Gradient Descent chapter, you learned a more targeted approach: compute the gradient, move in the direction that improves the objective. Can we do that here?</p>
+          <div class="slide-content"><p>Genetic algorithms work but feel brute-force. You might remember a more targeted
+approach: compute the gradient, move in the direction that improves the objective.
+Can we do that here?</p>
 </div>
 
         </section>
@@ -582,9 +632,40 @@
           <h3>Strategy 3 — Tweak and Observe</h3>
           <div class="slide-content">
 
-          <p>In the Gradient Descent chapter, you computed gradients by nudging each parameter slightly and measuring how the output changed (finite differences). Can you apply that same trick here?</p>
+          <p>Here's the idea: for each weight, nudge it slightly (+0.01), play a few games,
+nudge it the other way (-0.01), play again. The difference in scores tells you
+which direction improves that weight.</p>
 
-<p>Take your best weights from the genetic algorithm. Estimate the gradient of the average score with respect to each weight, update the weights in the uphill direction, and repeat 50 times. Does this converge to a good solution?</p>
+<p>This is called <strong>finite differences</strong> — estimating the gradient by measuring
+the effect of small changes.</p>
+
+<p>Take your best weights from the genetic algorithm (or start with
+<code>[0, 0, 1, 0.5]</code>). Estimate the gradient and update for 20 steps. Does the
+score improve?</p>
+
+
+          </div>
+        </section>
+
+
+
+        <section>
+          <h3>Reading the Gradient</h3>
+          <div class="slide-content">
+
+
+          <p>Before moving on, make sure you understand what you just computed. Look at
+the gradient from one of your steps.</p>
+
+
+
+
+          <p>The gradient is a vector of 4 numbers — one per weight. If gradient[2] is large and positive, what does that tell you about weight 2?</p>
+
+          <p>If gradient[0] is close to zero, what does that mean?</p>
+
+          <p>In plain English, what is the gradient telling you? (No calculus needed — think about what you measured.)</p>
+
 
 
           </div>
@@ -614,7 +695,11 @@
 
 
         <section>
-          <div class="slide-content"><p>There's an even deeper problem. When you push right at step 5, was it the right move? You won't know until the game ends — maybe at step 200. The total score doesn't tell you WHICH of your 200 individual actions were good and which were bad. This is called the <strong>credit assignment problem</strong>: how do you assign credit (or blame) to each action?</p>
+          <div class="slide-content"><p>So the noise kills the gradient signal. But there's an even deeper problem.</p>
+
+<p>When you push right at step 5, was it the right move? You won't know until the game ends — maybe at step 200. The total score doesn't tell you WHICH of your 200 individual actions were good and which were bad. This is called the <strong>credit assignment problem</strong>: how do you assign credit (or blame) to each action?</p>
+
+<p>Let's tackle this problem step by step.</p>
 </div>
         </section>
 
@@ -683,45 +768,18 @@
 
 
         <section>
-          <h3>Look at the Raw Numbers</h3>
+          <h3>Inspect and Fix the Credit Signal</h3>
           <div class="slide-content">
 
-          <p>Play a game, compute discounted rewards, and look at the values. What do you notice?</p>
+          <p>Play a game, compute discounted rewards, and look at the values. Run the code
+below. What do you notice about the numbers — are any of them negative?</p>
 
+<p>If ALL the credits are positive, every action looks "good." But some were
+clearly better than others. How would you fix this so that above-average actions
+get positive credit and below-average actions get negative credit?</p>
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Fix the All-Positive Problem</h3>
-          <div class="slide-content">
-
-
-          <p>Every action has positive credit, so the model thinks all actions were good. That's not useful.</p>
-
-
-
-
-          <p>If the average credit is 30, and action A got credit 45 while action B got credit 15, which was better?</p>
-
-          <p>What if you subtracted the average from each value? A would become +15 (above average = good!) and B would become -15 (below average = bad). Does this help?</p>
-
-          <p>After subtracting the mean, some values might be ±50 while others are ±5. Should you also scale them? How?</p>
-
-
-
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Write normalize()</h3>
-          <div class="slide-content">
-
-          <p>Write a <code>normalize(values)</code> function that subtracts the mean and divides by the standard deviation.</p>
+<p>Write a <code>normalize(values)</code> function that does this, and apply it to the
+discounted rewards.</p>
 
 
           </div>
@@ -741,6 +799,8 @@
 </div>
 
         </section>
+
+
 
 
 
@@ -773,7 +833,13 @@
 
           <p>Convert your <code>weighted_policy</code> from a hard yes/no decision into a probability. Instead of "go right if <code>weights @ obs &gt; 0</code>", output a PROBABILITY of going right.</p>
 
-<p>You need a function that takes any number and squashes it to a value between 0 and 1. You've seen this before — what function does that?</p>
+<p>You need a function that takes any number and squashes it to a value between 0 and 1. What function does that?</p>
+
+<p>The <strong>sigmoid</strong> function: $\sigma(z) = \frac{1}{1 + e^{-z}}$</p>
+
+<p>When $z$ is large and positive, sigmoid $\to$ 1 (almost certainly right). When
+large and negative, sigmoid $\to$ 0 (almost certainly left). When 0, sigmoid =
+0.5 (coin flip).</p>
 
 
           </div>
@@ -795,9 +861,9 @@
 
           <p>If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen?</p>
 
-          <p>In gradient descent, you computed gradients and moved weights to DECREASE loss. Here you want to INCREASE reward. What direction should you move the weights?</p>
+          <p>You want to INCREASE reward. If you had a gradient (the direction that increases probability of the chosen action), what should you do — move WITH the gradient or AGAINST it?</p>
 
-          <p>To compute a gradient, you need a single number that measures 'how likely was the action I chose.' The probability p does that — but probabilities multiply across steps, which is awkward for calculus. What mathematical function turns products into sums and is easy to differentiate?</p>
+          <p>To compute a gradient, you need a single number that measures how likely the chosen action was. The probability $p$ does that. But across many steps, probabilities multiply ($p_1 \times p_2 \times ...$), which is awkward for optimization. What mathematical function turns products into sums?</p>
 
 
 
@@ -806,18 +872,54 @@
 
 
 
+
+
         <section>
-          <h3>Derive the Gradient</h3>
+          <h3>Discover the Gradient</h3>
           <div class="slide-content">
 
-          <p>You just figured out that $\log(p)$ is the right quantity to differentiate. Now work out the gradient.</p>
+          <p>You need the gradient — the direction to push the weights to make the chosen action
+more likely. Instead of deriving it with calculus, let's <strong>measure</strong> it using finite
+differences (the same trick from Exercise 6.1).</p>
 
-<p>You already know from the Gradient Descent chapter that the derivative of sigmoid is $\text{sigmoid}(z) \cdot (1 - \text{sigmoid}(z))$, and that $\log'(x) = 1/x$.</p>
+<p>Write a function <code>estimate_log_prob_gradient(obs, action, weights, eps=0.001)</code> that:</p>
 
-<p>Using the chain rule, work out: what is the gradient of $\log(\text{sigmoid}(\mathbf{w} \cdot \mathbf{obs}))$ with respect to $\mathbf{w}$?</p>
+<ol>
+<li>For each weight $i$, nudge it by $+\epsilon$ and $-\epsilon$</li>
+<li>Compute $\log(p)$ each time (where $p$ is the probability of the chosen action)</li>
+<li>Gradient$[i] \approx (\log p_{+} - \log p_{-}) / (2\epsilon)$</li>
+</ol>
+
+<p>Then compare your numerical gradient to this formula (which comes from calculus):</p>
+
+<ul>
+<li>If action = 1 (went right): gradient $= (1-p) \times \text{obs}$</li>
+<li>If action = 0 (went left): gradient $= -p \times \text{obs}$</li>
+</ul>
+
+<p>Do the numbers match?</p>
 
 
           </div>
+        </section>
+
+
+
+        <section>
+          <div class="slide-content"><p>The gradient formulas are:</p>
+
+<ul>
+<li>Action = 1 (went right): gradient $= (1-p) \times \text{obs}$</li>
+<li>Action = 0 (went left): gradient $= -p \times \text{obs}$</li>
+</ul>
+
+<p>You verified these numerically — they tell you which direction to push the weights
+to make the chosen action more likely. Multiply by the reward signal and you have a
+learning rule: reinforce good actions, suppress bad ones.</p>
+
+<p>From here on we'll use the analytical formulas (they're faster than finite
+differences and give the same answer).</p>
+</div>
         </section>
 
 
@@ -830,7 +932,7 @@
 
 <ol>
 <li>Plays one full game using the probabilistic policy</li>
-<li>At each step, records: observation, action, reward, and the gradient you derived above</li>
+<li>At each step, records: observation, action, reward, and the gradient</li>
 </ol>
 
 <p>Then write <code>reinforce_update(env, weights, lr)</code> that:</p>
@@ -856,6 +958,8 @@
           <div class="slide-content">
 
           <p>Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole?</p>
+
+<p>After training, evaluate the final policy over 100 fresh episodes with <code>evaluate()</code> and compare to the random baseline (~20).</p>
 
 
           </div>
@@ -926,7 +1030,13 @@
 
 <p>$$V(\text{obs}) = \mathbf{v} \cdot \text{obs}$$</p>
 
-<p>To train it, you need data: play episodes using your REINFORCE policy, compute actual discounted rewards at each step (you already have <code>compute_discounted_rewards</code>!), and train the model to predict those rewards using the MSE loss from the Gradient Descent chapter.</p>
+<p>This is linear regression — input = observation (4 numbers), target = actual
+discounted return at that step, loss = $(V(\text{obs}) - \text{target})^2$.</p>
+
+<p>To train it: play 200 episodes using your trained REINFORCE policy (the <code>weights</code>
+from Exercise 7.5), compute actual discounted rewards with
+<code>compute_discounted_rewards</code>, and update the value weights to reduce the squared
+error.</p>
 
 
           </div>
@@ -991,7 +1101,7 @@
 
           <p>If the error is negative, was the action good or bad?</p>
 
-          <p>Compare this error to the normalized discounted rewards from REINFORCE. Which is a better signal for telling the actor which actions were good?</p>
+          <p>Compare this error to the normalized discounted rewards from REINFORCE. Which gives a more specific signal about whether an action was good?</p>
 
 
 
@@ -1004,7 +1114,18 @@
           <h3>Compare the Signals</h3>
           <div class="slide-content">
 
-          <p>Play an episode and compute both: (1) the normalized discounted rewards from REINFORCE, and (2) the TD errors (advantages) from the value model. Compare their standard deviations. Which signal is more stable?</p>
+          <p>You trained the value model on 200 episodes in Exercise 8.2. Now let's see how
+its advantage signal compares to the normalized discounted rewards from REINFORCE.</p>
+
+<p>Play an episode using your REINFORCE policy (<code>weights</code> from Exercise 7.5) and
+compute both:</p>
+
+<ol>
+<li>The normalized discounted rewards (REINFORCE's signal)</li>
+<li>The TD errors from your trained value model (advantages)</li>
+</ol>
+
+<p>Print the standard deviation of each. Which is more stable?</p>
 
 
           </div>
@@ -1019,10 +1140,14 @@
 <li>A model that predicts future reward from a state = the <strong>value function</strong> (or <strong>critic</strong>)</li>
 <li>Training it step-by-step using <code>reward + gamma × V(next_state)</code> = <strong>Temporal Difference (TD) learning</strong></li>
 <li>The error <code>reward + gamma × V(next) - V(current)</code> = the <strong>advantage</strong> (or <strong>TD error</strong>)</li>
-<li>With a neural network instead of linear weights = <strong>Deep Q-Network (DQN)</strong></li>
 </ul>
 
-<p>The value model doesn't pick actions — it just evaluates states. That's why it's called the <strong>critic</strong>: it watches the policy play and judges how well it's doing.</p>
+<p>The value model doesn't pick actions — it just evaluates states. That's why it's
+called the <strong>critic</strong>: it watches the policy play and judges how well it's doing.</p>
+
+<p>A related approach called <strong>DQN</strong> (Deep Q-Network) uses a neural network to predict
+the value of each <em>action</em> rather than each state — but the core idea of TD learning
+is what you built here.</p>
 </div>
         </section>
 
@@ -1076,6 +1201,30 @@
 
 
         <section>
+          <h3>One Step of Actor-Critic</h3>
+          <div class="slide-content">
+
+          <p>Before writing the full training loop, let's trace through ONE step of the
+combined update by hand. Use the code below to set up a single step, then
+compute and print each piece:</p>
+
+<ol>
+<li>The actor's probability and sampled action</li>
+<li>The critic's predicted value for the current AND next state</li>
+<li>The TD error (advantage)</li>
+<li>The actor's gradient</li>
+<li>The updated actor weights and critic weights</li>
+</ol>
+
+<p>This is the same math from Parts 7 and 8 — you're just combining them.</p>
+
+
+          </div>
+        </section>
+
+
+
+        <section>
           <h3>Build Actor-Critic</h3>
           <div class="slide-content">
 
@@ -1089,7 +1238,8 @@
 <li>Update critic weights using TD error</li>
 </ol>
 
-<p>Train for 2000 episodes. Plot the scores.</p>
+<p>Train for 2000 episodes. Plot the scores. After training, evaluate the final
+actor policy over 100 fresh episodes and compare to random.</p>
 
 
           </div>
@@ -1101,30 +1251,16 @@
           <h3>The Grand Comparison</h3>
           <div class="slide-content">
 
-          <p>You've built four approaches. Let's see them side by side. Run each one and plot their learning curves together:</p>
+          <p>You've built several approaches. Let's see three of them side by side — the ones
+that produce a score each episode, so we can plot learning curves:</p>
 
 <ol>
-<li><strong>Random</strong> — baseline (random actions)</li>
-<li><strong>Genetic Algorithm</strong> — 10 generations of evolution</li>
+<li><strong>Random</strong> — baseline (random actions, no learning)</li>
 <li><strong>REINFORCE</strong> — 1000 episodes of policy gradient</li>
-<li><strong>Actor-Critic</strong> — 2000 episodes of combined learning</li>
+<li><strong>Actor-Critic</strong> — 1000 episodes of combined learning</li>
 </ol>
 
-<p>Which learns fastest? Which achieves the highest score?</p>
-
-
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Go Deeper — Neural Network Actor-Critic</h3>
-          <div class="slide-content">
-
-          <p>Replace the linear models with small neural networks. Use one hidden layer of 32 neurons with ReLU activation. You can use numpy (manual backprop) or PyTorch/TensorFlow.</p>
-
-<p>Does a deeper model learn faster or achieve a higher score than the linear version?</p>
+<p>Plot them together. Which learns fastest? Which achieves the highest score?</p>
 
 
           </div>
@@ -1266,14 +1402,6 @@
 
             </tr>
 
-            <tr>
-
-              <td>Neural net instead of linear</td>
-
-              <td>Deep RL (DQN, A2C, PPO)</td>
-
-            </tr>
-
           </table>
           </div>
         </section>
@@ -1297,7 +1425,26 @@
   </script>
 <div class="chapter-footer">
 
-  <p><em>You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.</em></p>
+  <p><em><p>You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.</p>
+
+<p><strong>Going further:</strong></p>
+
+<ul>
+<li><strong>Deep Actor-Critic:</strong> Replace the linear models with small neural networks
+(one hidden layer of 32 neurons with ReLU). If you know PyTorch, use
+<code>nn.Linear(4, 32)</code> → <code>nn.ReLU()</code> → <code>nn.Linear(32, 1)</code> and let
+<code>loss.backward()</code> handle all gradient computation. Compare learning speed
+to the linear version.</li>
+<li><strong>PPO (Proximal Policy Optimization):</strong> REINFORCE and Actor-Critic can make
+dangerously large updates. PPO clips the gradient so the policy can't change
+too much in one step — stabler training, used by ChatGPT's RLHF.</li>
+<li><strong>Multi-step returns:</strong> Instead of 1-step TD ($r + \gamma V(s')$), use 2 or 3
+steps of actual rewards before bootstrapping. A middle ground between REINFORCE
+(all actual) and TD (all estimated).</li>
+<li><strong>Different games:</strong> Try <code>LunarLander-v3</code>, <code>MountainCar-v0</code>, or <code>Acrobot-v1</code> with
+<code>gymnasium</code>. Each has different observation and action spaces — your algorithms
+transfer directly.</li>
+</ul></em></p>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
