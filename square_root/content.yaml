@@ -1,0 +1,552 @@
+chapter:
+  id: square_root
+  title: "Finding Square Roots"
+  intro: |
+    You're going to find the square root of any number — without using any built-in
+    function. All you need is multiplication, a bit of guessing, and a clever trick
+    that cuts your search in half every time.
+
+    Along the way, you'll pick up Python basics: expressions, variables, if-else,
+    loops, and functions — all by solving one real problem.
+  mathjax: false
+  footer: |
+    You started by typing `2 * 2` into Python. You ended with a function that
+    computes square roots to arbitrary precision using binary search. Every step was
+    something you could reason about — no magic, no memorization.
+
+    **Going further:**
+
+    - **Cube roots:** The same halving trick works — just check `guess * guess * guess`
+      instead of `guess * guess`. Try writing `mycuberoot(num, lo, hi, iterations)`.
+    - **More precision:** Instead of a fixed number of iterations, stop when
+      `abs(guess * guess - num)` is smaller than some tiny number like `0.0000001`.
+    - **The full Binary Search chapter** on this site applies the same idea to nth roots,
+      logarithms, and searching sorted arrays.
+
+blocks:
+  # ═══════════════════════════════════════════════════
+  # PART 1: Squares and Square Roots
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Squares and Square Roots"
+    estimated_time: "~10 min"
+    intro: |
+      Open a Jupyter notebook or [Google Colab](https://colab.research.google.com/).
+      You can type a math expression into a cell and press **Shift+Enter** to run
+      it — Python will be your calculator.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "What Is a Square?"
+    description: |
+      The **square** of a number is the number multiplied by itself.
+
+      What is the square of 2? Type `2 * 2` into a cell and press Shift+Enter.
+    provided_code:
+      - label: "try it"
+        code: |
+          2 * 2
+    hints:
+      - "You should see `4`. The square of 2 is 4."
+    solution:
+      code: null
+      text: |
+        2 × 2 = 4. The square of 2 is 4.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "More Squares"
+    description: |
+      What is the square of 3? Of 4? Of 5? Compute each one in Python.
+    provided_code: []
+    hints:
+      - |
+        ```python
+        print(3 * 3)
+        print(4 * 4)
+        print(5 * 5)
+        ```
+    solution:
+      code: |
+        print(3 * 3)   # 9
+        print(4 * 4)   # 16
+        print(5 * 5)   # 25
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Going Backwards — Square Roots"
+    description: |
+      The **square root** is the reverse question: what number, multiplied by
+      itself, gives you the target?
+
+      What is the square root of 16? Of 25? Of 9?
+
+      Check each answer by squaring it in Python.
+    provided_code: []
+    hints:
+      - "sqrt(16) = 4, because 4 × 4 = 16. Check it: type `4 * 4` and verify you get 16."
+      - "sqrt(25) = 5, sqrt(9) = 3. These are called *perfect squares* — their square roots are whole numbers."
+    solution:
+      code: |
+        print(4 * 4)   # 16 ✓ → sqrt(16) = 4
+        print(5 * 5)   # 25 ✓ → sqrt(25) = 5
+        print(3 * 3)   #  9 ✓ → sqrt(9) = 3
+      text: null
+
+  - type: exercise
+    kind: conceptual
+    id: ex-1-4
+    part: 1
+    number: 4
+    title: "A Harder Question"
+    description: |
+      What is the square root of 5?
+
+      It's not a whole number. But you know something about it already.
+    prompts:
+      - "Is the square root of 5 between 2 and 3? How do you know?"
+      - "Can you take a guess? Don't overthink it — just pick a number between 2 and 3."
+    hints:
+      - "2 × 2 = 4 (too small) and 3 × 3 = 9 (too big). So sqrt(5) must be somewhere between 2 and 3."
+    solution:
+      code: null
+      text: |
+        Since 2² = 4 < 5 and 3² = 9 > 5, the square root of 5 is between 2 and 3.
+
+  # ═══════════════════════════════════════════════════
+  # PART 2: The Guessing Game
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "The Guessing Game"
+    estimated_time: "~15 min"
+    intro: |
+      You know sqrt(5) is between 2 and 3. Let's find it by guessing, checking,
+      and narrowing down.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "Check Your Guess"
+    description: |
+      Pick a number between 2 and 3 as your guess for sqrt(5). Square it in
+      Python. Was it too high or too low?
+    provided_code:
+      - label: "check your guess"
+        code: |
+          guess = 2.5        # <-- change this to your guess
+          print(guess * guess)
+    hints:
+      - "If you guessed 2.5: 2.5 × 2.5 = 6.25. That's bigger than 5 — too high! So the answer must be between 2 and 2.5."
+      - "If you guessed 2.2: 2.2 × 2.2 = 4.84. That's less than 5 — too low! So the answer is between 2.2 and 3."
+    solution:
+      code: null
+      text: |
+        Whatever you guessed, squaring it tells you whether to go higher or lower.
+        Each guess eliminates half the range.
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Take a Better Guess"
+    description: |
+      Based on your first guess, you now have a narrower range. Take a new guess
+      inside that range and check again. Is your new guess too high or too low?
+
+      Repeat this one more time — three guesses total.
+    provided_code: []
+    hints:
+      - "If your range is [2, 2.5], try the middle: 2.25. Check: 2.25 × 2.25 = 5.0625. Too high! New range: [2, 2.25]."
+      - "Next middle: (2 + 2.25) / 2 = 2.125. Check: 2.125 × 2.125 = 4.515625. Too low! New range: [2.125, 2.25]."
+    solution:
+      code: |
+        # Guess 1
+        guess = 2.5
+        print(f"{guess} * {guess} = {guess * guess}")    # 6.25, too high
+
+        # Guess 2 — between 2 and 2.5
+        guess = 2.25
+        print(f"{guess} * {guess} = {guess * guess}")    # 5.0625, too high
+
+        # Guess 3 — between 2 and 2.25
+        guess = 2.125
+        print(f"{guess} * {guess} = {guess * guess}")    # 4.515625, too low
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "Use Variables to Track the Range"
+    description: |
+      Instead of keeping track of the range in your head, use two variables:
+      `lo` (the lower bound) and `hi` (the upper bound). Compute your guess as
+      the midpoint: `guess = (lo + hi) / 2`.
+
+      Run the code below, then update `lo` or `hi` by hand and run it again.
+    provided_code:
+      - label: "track the range"
+        code: |
+          lo = 2
+          hi = 3
+
+          guess = (lo + hi) / 2
+          print(f"Guess: {guess}")
+          print(f"Guess squared: {guess * guess}")
+          print(f"Target: 5")
+    hints:
+      - "If `guess * guess` was bigger than 5 (too high), set `hi = guess`. If it was smaller (too low), set `lo = guess`. Then run the cell again — the new midpoint is a better guess."
+    solution:
+      code: |
+        lo = 2
+        hi = 3
+
+        guess = (lo + hi) / 2
+        print(f"Guess: {guess}, squared: {guess * guess}")
+        # 2.5² = 6.25 > 5, so too high:
+        hi = guess
+
+        guess = (lo + hi) / 2
+        print(f"Guess: {guess}, squared: {guess * guess}")
+        # 2.25² = 5.0625 > 5, so too high:
+        hi = guess
+
+        guess = (lo + hi) / 2
+        print(f"Guess: {guess}, squared: {guess * guess}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-4
+    part: 2
+    number: 4
+    title: "Let Python Decide"
+    description: |
+      You've been deciding manually: "too high → update hi, too low → update lo."
+      Python can make this decision for you using `if` and `else`.
+
+      Run the code below. Then run the block from `guess = ...` to the last
+      `print(...)` a few more times. Watch `lo` and `hi` get closer together!
+    provided_code:
+      - label: "if-else logic"
+        code: |
+          lo = 2
+          hi = 3
+          num = 5
+
+          guess = (lo + hi) / 2
+          print(f"Guess: {guess}, squared: {guess * guess}")
+
+          if guess * guess > num:
+              hi = guess       # guess was too high — search lower half
+          else:
+              lo = guess       # guess was too low — search upper half
+
+          print(f"New range: [{lo}, {hi}]")
+    hints:
+      - "Copy the block starting from `guess = (lo + hi) / 2` down to `print(f\"New range...\")` and paste it below itself. Run the whole cell — you'll see two rounds of guessing happen automatically."
+    solution:
+      code: |
+        lo = 2
+        hi = 3
+        num = 5
+
+        # Round 1
+        guess = (lo + hi) / 2
+        if guess * guess > num:
+            hi = guess
+        else:
+            lo = guess
+        print(f"Round 1: guess = {guess:.6f}, range = [{lo}, {hi}]")
+
+        # Round 2
+        guess = (lo + hi) / 2
+        if guess * guess > num:
+            hi = guess
+        else:
+            lo = guess
+        print(f"Round 2: guess = {guess:.6f}, range = [{lo}, {hi}]")
+
+        # Round 3
+        guess = (lo + hi) / 2
+        if guess * guess > num:
+            hi = guess
+        else:
+            lo = guess
+        print(f"Round 3: guess = {guess:.6f}, range = [{lo}, {hi}]")
+      text: null
+
+  - type: reveal
+    text: |
+      Each guess cuts your search range in half. After the first guess, you have
+      half the range. After the second, a quarter. After ten guesses, you've
+      narrowed it down to $\frac{1}{1024}$ of the original range.
+
+      This "halving" strategy is called **binary search** — "binary" because you
+      split the range in two each time.
+
+  # ═══════════════════════════════════════════════════
+  # PART 3: Let the Loop Do the Work
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "Let the Loop Do the Work"
+    estimated_time: "~15 min"
+    intro: |
+      Copying and pasting the same block over and over is tedious. Python's
+      `for` loop can repeat it for you — as many times as you want.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "20 Guesses in One Go"
+    description: |
+      Put your guess-and-update logic inside a `for` loop that runs 20 times.
+      Does your guess get closer to the real answer?
+    provided_code:
+      - label: "skeleton"
+        code: |
+          lo = 2
+          hi = 3
+          num = 5
+
+          for i in range(20):
+              guess = (lo + hi) / 2
+              # Use if-else to update lo or hi (same logic as Exercise 2.4)
+
+          print(f"Final answer: sqrt({num}) ≈ {guess}")
+          print(f"guess squared: {guess * guess}")
+    hints:
+      - "The body of the loop is the same if-else block you wrote in Exercise 2.4 — just put it inside the `for`."
+      - |
+        ```python
+        for i in range(20):
+            guess = (lo + hi) / 2
+            if guess * guess > num:
+                hi = guess
+            else:
+                lo = guess
+        ```
+    solution:
+      code: null
+      text: |
+        After 20 rounds, `guess * guess` is extremely close to 5. The range
+        `[lo, hi]` has shrunk to an interval smaller than 0.000001.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "Check Your Answer!"
+    description: |
+      Python has a built-in square root function. Let's see if your answer matches.
+    provided_code:
+      - label: "verify"
+        code: |
+          import math
+
+          print(f"Your answer:   {guess}")
+          print(f"math.sqrt(5):  {math.sqrt(5)}")
+          print(f"Difference:    {abs(guess - math.sqrt(5))}")
+    hints:
+      - "The difference should be tiny — on the order of 0.000001 or smaller. Your simple guessing loop matches Python's built-in function!"
+    solution:
+      code: null
+      text: |
+        Your answer and `math.sqrt(5)` should match to many decimal places.
+        Congratulations — you just computed a square root from scratch!
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "Try Another Number"
+    description: |
+      Now find the square root of 10 using the same approach.
+
+      What should `lo` and `hi` start at?
+    provided_code: []
+    hints:
+      - "3² = 9 (too small) and 4² = 16 (too big). So `lo = 3` and `hi = 4`."
+      - |
+        ```python
+        lo = 3
+        hi = 4
+        num = 10
+
+        for i in range(20):
+            guess = (lo + hi) / 2
+            if guess * guess > num:
+                hi = guess
+            else:
+                lo = guess
+
+        print(f"sqrt(10) ≈ {guess}")
+        print(f"math.sqrt(10) = {math.sqrt(10)}")
+        ```
+    solution:
+      code: |
+        lo = 3
+        hi = 4
+        num = 10
+
+        for i in range(20):
+            guess = (lo + hi) / 2
+            if guess * guess > num:
+                hi = guess
+            else:
+                lo = guess
+
+        import math
+        print(f"sqrt(10) ≈ {guess}")
+        print(f"math.sqrt(10) = {math.sqrt(10)}")
+      text: null
+
+  # ═══════════════════════════════════════════════════
+  # PART 4: Build Your Own Square Root Function
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "Build Your Own Square Root Function"
+    estimated_time: "~10 min"
+    intro: |
+      You've found sqrt(5) and sqrt(10) by repeating the same code with different
+      numbers. What if you want sqrt(15)? Or sqrt(1000)? Copying the code each
+      time is messy.
+
+      A **function** lets you package code so you can call it with any input.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Write mysqrt"
+    description: |
+      Fill in the two missing lines. When the guess is too high, which bound
+      should change? When it's too low?
+    provided_code:
+      - label: "function template"
+        code: |
+          def mysqrt(num, lo, hi, iterations):
+              for i in range(iterations):
+                  guess = (lo + hi) / 2
+                  if guess * guess > num:
+                      pass   # Your code here
+                  else:
+                      pass   # Your code here
+              return guess
+    hints:
+      - "When `guess * guess > num`, the guess is too high. Which bound do you need to bring down — `lo` or `hi`?"
+      - "Too high → `hi = guess` (bring the upper bound down). Too low → `lo = guess` (bring the lower bound up). Same logic you've been doing all along!"
+    solution:
+      code: |
+        def mysqrt(num, lo, hi, iterations):
+            for i in range(iterations):
+                guess = (lo + hi) / 2
+                if guess * guess > num:
+                    hi = guess
+                else:
+                    lo = guess
+            return guess
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Test Your Function"
+    description: |
+      Test `mysqrt` with several numbers and compare with `math.sqrt`.
+
+      Try `mysqrt(15, 3, 4, 20)` first — does it match?
+    provided_code:
+      - label: "tests"
+        code: |
+          import math
+
+          result = mysqrt(15, 3, 4, 20)
+          print(f"mysqrt(15):     {result}")
+          print(f"math.sqrt(15):  {math.sqrt(15)}")
+          print()
+
+          for num, lo, hi in [(5, 2, 3), (10, 3, 4), (2, 1, 2), (100, 9, 11)]:
+              mine = mysqrt(num, lo, hi, 30)
+              real = math.sqrt(num)
+              print(f"sqrt({num:>3}): mysqrt = {mine:.8f}, math = {real:.8f}, diff = {abs(mine - real):.2e}")
+    hints:
+      - "All differences should be tiny — well under 0.0001. Your function works!"
+    solution:
+      code: null
+      text: |
+        Your `mysqrt` matches `math.sqrt` to many decimal places for every test case.
+        You built a working square root function from scratch.
+
+  - type: reveal
+    text: |
+      **Congratulations!** In one sitting you learned:
+
+      - **Python as a calculator** — expressions like `2 * 2`
+      - **Variables** — `lo`, `hi`, `guess` to track your state
+      - **Conditional logic** — `if` / `else` to make decisions
+      - **Loops** — `for` to repeat work automatically
+      - **Functions** — `def` to package reusable logic
+      - **Binary search** — the algorithm that finds answers by halving the
+        search space
+
+      This "halving" strategy doesn't just work for square roots. It works for
+      cube roots, logarithms, and searching through sorted lists. It's one of the
+      most important algorithms in computer science — and you just invented it.
+
+  # ═══════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: null
+    title: "Summary"
+    intro: null
+
+  - type: table
+    id: summary
+    title: null
+    description: |
+      Here's what you built, step by step:
+    headers: ["Step", "What you did", "Python concept learned"]
+    rows:
+      - ["1", "Computed squares (2×2, 3×3, ...)", "Expressions"]
+      - ["2", "Reversed the question (sqrt of 16, 25, 9)", "Thinking backwards"]
+      - ["3", "Guessed sqrt(5), checked by squaring", "Variables (guess)"]
+      - ["4", "Tracked the range with lo and hi", "Variables (lo, hi)"]
+      - ["5", "Automated the high/low decision", "if / else"]
+      - ["6", "Repeated the guessing 20 times", "for loop"]
+      - ["7", "Packaged it as mysqrt(num, lo, hi, iterations)", "Functions (def)"]
+    after: |
+      The algorithm you built — **binary search** — finds any answer in about 20
+      steps regardless of how precise you need to be. It works because each guess
+      eliminates exactly half of the remaining possibilities.
