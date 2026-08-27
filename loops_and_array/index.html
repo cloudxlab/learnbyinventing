@@ -493,65 +493,6 @@ plot_stats([10, 12, 12, 13, 12, 11, 90], "Outlier example")
 
 
 
-
-<section class="exercise mcq" id="mcq-1-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-1-1" /></label>Quick Check 1.9 &mdash; When to Normalize</h3>
-  <div class="question">
-    <p>A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?</p>
-
-  </div>
-  <div class="mcq-options" data-correct="B">
-
-    <label class="mcq-option">
-      <input type="radio" name="mcq-1-1" value="A" />
-      <span><strong>A.</strong> The algorithm won't run — Python will throw an error</span>
-    </label>
-
-    <label class="mcq-option">
-      <input type="radio" name="mcq-1-1" value="B" />
-      <span><strong>B.</strong> Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant</span>
-    </label>
-
-    <label class="mcq-option">
-      <input type="radio" name="mcq-1-1" value="C" />
-      <span><strong>C.</strong> Age will dominate because it has a smaller range</span>
-    </label>
-
-    <label class="mcq-option">
-      <input type="radio" name="mcq-1-1" value="D" />
-      <span><strong>D.</strong> It makes no difference — Euclidean distance handles different scales automatically</span>
-    </label>
-
-  </div>
-  <button class="mcq-check">Check Answer</button>
-  <div class="mcq-feedback"></div>
-
-
-  <details class="hint">
-    <summary>Hint</summary>
-    <div class="hint-body"><p>If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?</p>
-</div>
-  </details>
-
-
-
-  <details class="solution">
-    <summary>Reasoning</summary>
-    <div class="solution-body">
-
-      <p>Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates.</p>
-
-
-
-    </div>
-  </details>
-
-</section>
-
-
-
-
-
 <div class="part" data-part-number="2">
   <h2>Part 2: Error Metrics</h2>
 
@@ -1126,6 +1067,65 @@ def find_nearest_neighbour(target, points, distance_func):
   </details>
 
 </section>
+
+
+
+
+
+<section class="exercise mcq" id="mcq-3-1">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-3-1" /></label>Quick Check 3.7 &mdash; When to Normalize</h3>
+  <div class="question">
+    <p>A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?</p>
+
+  </div>
+  <div class="mcq-options" data-correct="B">
+
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="A" />
+      <span><strong>A.</strong> The algorithm won't run — Python will throw an error</span>
+    </label>
+
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="B" />
+      <span><strong>B.</strong> Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant</span>
+    </label>
+
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="C" />
+      <span><strong>C.</strong> Age will dominate because it has a smaller range</span>
+    </label>
+
+    <label class="mcq-option">
+      <input type="radio" name="mcq-3-1" value="D" />
+      <span><strong>D.</strong> It makes no difference — Euclidean distance handles different scales automatically</span>
+    </label>
+
+  </div>
+  <button class="mcq-check">Check Answer</button>
+  <div class="mcq-feedback"></div>
+
+
+  <details class="hint">
+    <summary>Hint</summary>
+    <div class="hint-body"><p>If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Reasoning</summary>
+    <div class="solution-body">
+
+      <p>Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates.</p>
+
+
+
+    </div>
+  </details>
+
+</section>
+
 
 
 
@@ -1820,8 +1820,112 @@ normalize_to_probabilities([3, 3, 4])  # [0.3, 0.3, 0.4]
 
 
 
+<section class="exercise" id="ex-6-5b">
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-5b" /></label>Exercise 6.6 &mdash; Amplify Before Normalizing</h3>
+  <div class="question">
+    <p>Take the array <code>[1, 2, 5, 10]</code>. After normalizing to probabilities,
+the value <code>10</code> gets about 55% of the total — but you want the big
+values to stand out even more and the small values to shrink further.</p>
+
+<p>Come up with as many ideas as you can to <strong>amplify the differences</strong>
+before normalizing. Test each one:</p>
+
+<ol>
+<li>Multiply every value by 10. Normalize. Did the probabilities change?</li>
+<li>Square every value. Normalize. Did the probabilities change?</li>
+<li>Cube every value. Normalize. What about now?</li>
+<li>Can you think of any other transformation?</li>
+</ol>
+
+<p>For each idea, print the resulting probabilities and explain whether
+(and why) it worked.</p>
+
+
+
+    <div class="provided-code">
+      <div class="provided-code-label">Provided &mdash; starter</div>
+      <pre><code>values = [1, 2, 5, 10]
+
+print("Original probabilities:", normalize_to_probabilities(values))
+</code></pre>
+    </div>
+
+
+  </div>
+
+
+  <details class="hint" data-level="1">
+    <summary>Hint 1</summary>
+    <div class="hint-body"><p>Try multiplying by 10:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="n">scaled</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;×10:&quot;</span><span class="p">,</span> <span class="n">normalize_to_probabilities</span><span class="p">(</span><span class="n">scaled</span><span class="p">))</span>
+</code></pre>
+</div>
+
+<p>Compare with the original — are the probabilities different?</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="2">
+    <summary>Hint 2</summary>
+    <div class="hint-body"><p>Multiplying every value by the same constant does NOT change the probabilities — the constant cancels when you divide by the sum. Squaring DOES change them: <code>[1, 4, 25, 100]</code> gives <code>[0.0077, 0.031, 0.192, 0.769]</code> — the big value now gets 77% instead of 55%.</p>
+</div>
+  </details>
+
+  <details class="hint" data-level="3">
+    <summary>Hint 3</summary>
+    <div class="hint-body"><p>Cubing amplifies even more: <code>[1, 8, 125, 1000]</code>. Try <code>math.exp(x)</code> too — it grows faster than any power. Each of these makes big values bigger and small values relatively smaller.</p>
+</div>
+  </details>
+
+
+
+  <details class="solution">
+    <summary>Solution</summary>
+    <div class="solution-body">
+
+      <p>Multiplying by a constant has no effect — it cancels out when you divide
+by the sum. But squaring, cubing, or taking <code>exp(x)</code> all amplify the
+differences. The next exercise uses <code>exp(x)</code> — it has a special name.</p>
+
+
+
+      <pre><code>values = [1, 2, 5, 10]
+
+print("Original:  ", normalize_to_probabilities(values))
+
+# Idea 1: multiply by 10
+print("× 10:      ", normalize_to_probabilities([x * 10 for x in values]))
+# Same! Multiplying by a constant cancels out in normalization.
+
+# Idea 2: square
+print("Squared:   ", normalize_to_probabilities([x ** 2 for x in values]))
+# Different! Big values get bigger share.
+
+# Idea 3: cube
+print("Cubed:     ", normalize_to_probabilities([x ** 3 for x in values]))
+# Even more extreme — 10 dominates.
+
+# Idea 4: exponential
+import math
+print("exp(x):    ", normalize_to_probabilities([math.exp(x) for x in values]))
+# Most extreme — exp grows faster than any power.
+</code></pre>
+
+    </div>
+  </details>
+
+</section>
+
+
+
+
+
+
 <section class="exercise" id="ex-6-6">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.6 &mdash; Softmax</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-6" /></label>Exercise 6.7 &mdash; Softmax</h3>
   <div class="question">
     <p>You built <code>normalize</code>, but it fails when values are negative — negative "probabilities" make no sense.</p>
 
@@ -1872,7 +1976,7 @@ def softmax(values):
 
 
 <section class="exercise" id="ex-6-7">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-7" /></label>Exercise 6.7 &mdash; Softmax (Numerically Stable)</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-7" /></label>Exercise 6.8 &mdash; Softmax (Numerically Stable)</h3>
   <div class="question">
     <p><strong>Problem:</strong> <code>math.exp(1000)</code> raises <code>OverflowError</code>.</p>
 
@@ -1920,7 +2024,7 @@ def softmax(values):
 
 
 <section class="exercise" id="ex-6-8">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8" /></label>Exercise 6.8 &mdash; Softmax with Temperature</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8" /></label>Exercise 6.9 &mdash; Softmax with Temperature</h3>
   <div class="question">
     <p><strong>Experiment:</strong> What happens to the softmax output if you divide all values by 2 before applying softmax? Try it. Then try dividing by 0.5. What pattern do you see?</p>
 
@@ -1972,7 +2076,7 @@ softmax_with_temperature([1, 2, 3], 2)    # flatter
 
 
 <section class="exercise" id="ex-6-8-plot">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8-plot" /></label>Exercise 6.9 &mdash; Plotting helper — run as-is</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-8-plot" /></label>Exercise 6.10 &mdash; Plotting helper — run as-is</h3>
   <div class="question">
     <p>Run this cell to visualise softmax at different temperatures.</p>
 
@@ -2020,7 +2124,7 @@ plot_softmax_temps([1, 2, 3], [0.5, 1.0, 2.0])
 
 
 <section class="exercise" id="ex-6-9">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-9" /></label>Exercise 6.10 &mdash; Weighted Choice with Temperature</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="ex-6-9" /></label>Exercise 6.11 &mdash; Weighted Choice with Temperature</h3>
   <div class="question">
     <p>Combine what you have built: given weights and temperature $T$, sample an index with probability proportional to <code>weight^(1/T)</code>.</p>
 
@@ -2082,7 +2186,7 @@ plot_softmax_temps([1, 2, 3], [0.5, 1.0, 2.0])
 
 
 <section class="exercise mcq" id="mcq-6-1">
-  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-6-1" /></label>Quick Check 6.11 &mdash; Softmax Temperature</h3>
+  <h3><label class="completion-check-label"><input type="checkbox" class="completion-check" data-exercise="mcq-6-1" /></label>Quick Check 6.12 &mdash; Softmax Temperature</h3>
   <div class="question">
     <p>In softmax with temperature, what happens as the temperature T approaches 0?</p>
 

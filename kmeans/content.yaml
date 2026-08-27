@@ -1,0 +1,821 @@
+chapter:
+  id: kmeans
+  title: "Inventing K-Means Clustering"
+  intro: |
+    All the algorithms you've built so far have had **labels** — you knew the right
+    answer and trained a model to predict it. But what if you just have a pile of
+    data with no labels at all? Can you still find structure in it?
+
+    You're about to find out — by grouping points that "belong together," using
+    nothing but distances and averages.
+  mathjax: true
+  footer: |
+    You started by measuring distances and making groups. You ended with a
+    general-purpose clustering algorithm that works in any number of dimensions.
+    K-Means is used everywhere — customer segmentation, image compression, document
+    grouping, and as a building block inside larger ML systems.
+
+    **Going further:**
+
+    - **K-Means++:** Instead of picking the first K points as centers, choose
+      initial centers that are spread far apart. This avoids bad starting positions
+      and almost always converges faster.
+    - **Mini-batch K-Means:** On huge datasets (millions of points), update centers
+      using a random sample of points each iteration instead of all of them.
+    - **DBSCAN:** A clustering algorithm that doesn't need you to pick K — it finds
+      clusters of arbitrary shape by looking at density.
+    - **Silhouette score:** Another way to evaluate clusters — measures how similar
+      each point is to its own cluster vs. the nearest other cluster.
+  glossary:
+    - term: Cluster
+      definition: "A group of points that are close to each other and far from points in other groups."
+    - term: Center (centroid)
+      definition: "The average position of all points in a cluster — the point that represents the group."
+    - term: Assignment step
+      definition: "Assigning each point to the nearest center."
+    - term: Update step
+      definition: "Recomputing each center as the average of its assigned points."
+    - term: Convergence
+      definition: "When the centers stop changing between iterations — the algorithm has found stable groups."
+    - term: Inertia
+      definition: "The total distance from every point to its assigned center — measures how tight the clusters are."
+    - term: Elbow method
+      definition: "Plotting inertia vs. number of clusters and looking for the 'bend' where adding more clusters stops helping much."
+    - term: Unsupervised learning
+      definition: "Learning from data that has no labels — finding structure without being told what to look for."
+
+blocks:
+  # ═══════════════════════════════════════════════════
+  # PART 1: Grouping Points by Distance
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 1
+    title: "Grouping Points by Distance"
+    estimated_time: "~20 min"
+    intro: |
+      Here's a bunch of points scattered on a 2D plane. Your goal: split them
+      into two groups so that points in the same group are close together.
+
+      How would you start? You need some notion of a "center" for each group.
+      The simplest idea: just pick two points and call them the centers. Then
+      assign every point to whichever center is closer.
+
+  - type: exercise
+    kind: coding
+    id: ex-1-1
+    part: 1
+    number: 1
+    title: "Distance Between Two Points"
+    description: |
+      Before you can group anything, you need to measure how far apart two
+      points are.
+
+      If you completed the Expressions & Functions chapter, you already wrote
+      this in Exercise 3.3 — "Distance Between Two Points (2D)." You can
+      reuse that function here.
+
+      Write `distance(p1, p2)` that computes the straight-line (Euclidean)
+      distance between two 2D points.
+
+      Recall: the distance between $(x_1, y_1)$ and $(x_2, y_2)$ is
+      $\sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}$.
+    provided_code:
+      - label: "test"
+        code: |
+          assert abs(distance([0, 0], [3, 4]) - 5.0) < 0.001
+          assert abs(distance([1, 1], [1, 1]) - 0.0) < 0.001
+          assert abs(distance([0, 0], [1, 1]) - 1.4142) < 0.01
+          print("distance: OK")
+    hints:
+      - "`(p1[0] - p2[0])**2 + (p1[1] - p2[1])**2` gives the squared distance. Take the square root with `** 0.5`."
+    solution:
+      code: |
+        def distance(p1, p2):
+            return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2) ** 0.5
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-2
+    part: 1
+    number: 2
+    title: "Assign Points to Nearest Center"
+    description: |
+      You have 10 points and 2 centers. For each point, figure out which
+      center is closer, and put that point in that center's group.
+
+      Write `assign_to_groups(points, centers)` that returns a list of groups —
+      one group per center. Each group is a list of points assigned to that
+      center.
+    provided_code:
+      - label: "data"
+        code: |
+          points = [
+              [1, 2], [8, 8], [1.5, 1.8], [9, 7.5],
+              [2, 1], [8.5, 9], [1, 1.5], [9, 8],
+              [2, 2.5], [8, 7]
+          ]
+
+          # Use the first two points as initial centers
+          centers = [points[0], points[1]]
+          print("Center 0:", centers[0])
+          print("Center 1:", centers[1])
+      - label: "test"
+        code: |
+          groups = assign_to_groups(points, centers)
+          print(f"Group 0 ({len(groups[0])} points): {groups[0]}")
+          print(f"Group 1 ({len(groups[1])} points): {groups[1]}")
+          assert len(groups) == 2
+          assert len(groups[0]) + len(groups[1]) == len(points)
+          print("assign_to_groups: OK")
+    hints:
+      - "For each point, compute `distance(point, centers[0])` and `distance(point, centers[1])`. If the first distance is smaller, put the point in group 0. Otherwise, group 1."
+      - |
+        ```python
+        def assign_to_groups(points, centers):
+            groups = [[] for _ in centers]
+            for point in points:
+                closest = 0
+                closest_dist = distance(point, centers[0])
+                for i in range(1, len(centers)):
+                    d = distance(point, centers[i])
+                    if d < closest_dist:
+                        closest = i
+                        closest_dist = d
+                groups[closest].append(point)
+            return groups
+        ```
+    solution:
+      code: |
+        def assign_to_groups(points, centers):
+            groups = [[] for _ in centers]
+            for point in points:
+                closest = 0
+                closest_dist = distance(point, centers[0])
+                for i in range(1, len(centers)):
+                    d = distance(point, centers[i])
+                    if d < closest_dist:
+                        closest = i
+                        closest_dist = d
+                groups[closest].append(point)
+            return groups
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-1-3
+    part: 1
+    number: 3
+    title: "Find New Centers"
+    description: |
+      You have two groups. The centers you started with were arbitrary — just the
+      first two points. Now that you have groups, can you find **better** centers?
+
+      What single point best represents a group of points?
+
+      Write `compute_centers(groups)` that returns a new list of centers — one
+      per group.
+    provided_code:
+      - label: "test"
+        code: |
+          test_groups = [
+              [[1, 2], [3, 4]],
+              [[10, 10], [12, 12]]
+          ]
+          new_centers = compute_centers(test_groups)
+          print("New centers:", new_centers)
+          assert abs(new_centers[0][0] - 2.0) < 0.001   # avg of 1 and 3
+          assert abs(new_centers[0][1] - 3.0) < 0.001   # avg of 2 and 4
+          assert abs(new_centers[1][0] - 11.0) < 0.001  # avg of 10 and 12
+          assert abs(new_centers[1][1] - 11.0) < 0.001  # avg of 10 and 12
+          print("compute_centers: OK")
+    hints:
+      - "The best representative of a group is the **average** (mean) of all its points. Average each coordinate separately."
+      - |
+        For a group like `[[1, 2], [3, 4], [5, 6]]`:
+        - x-center = (1 + 3 + 5) / 3 = 3
+        - y-center = (2 + 4 + 6) / 3 = 4
+        - New center = [3, 4]
+    solution:
+      code: |
+        def compute_centers(groups):
+            centers = []
+            for group in groups:
+                n = len(group)
+                cx = sum(p[0] for p in group) / n
+                cy = sum(p[1] for p in group) / n
+                centers.append([cx, cy])
+            return centers
+      text: null
+
+  # ═══════════════════════════════════════════════════
+  # PART 2: Iterate Until Done
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 2
+    title: "Iterate Until Done"
+    estimated_time: "~20 min"
+    intro: |
+      You can now assign points to centers and compute better centers from the
+      groups. What happens if you keep doing this — assign, recompute, assign,
+      recompute?
+
+  - type: exercise
+    kind: coding
+    id: ex-2-1
+    part: 2
+    number: 1
+    title: "One Full Cycle"
+    description: |
+      Starting from your initial centers (`[1, 2]` and `[8, 8]`):
+
+      1. Assign all points to groups using `assign_to_groups`
+      2. Compute new centers using `compute_centers`
+      3. Print the old and new centers
+
+      Did the centers move?
+    provided_code: []
+    hints:
+      - |
+        ```python
+        centers = [[1, 2], [8, 8]]
+        print("Old centers:", centers)
+
+        groups = assign_to_groups(points, centers)
+        centers = compute_centers(groups)
+        print("New centers:", centers)
+        ```
+    solution:
+      code: |
+        centers = [[1, 2], [8, 8]]
+        print("Old centers:", centers)
+
+        groups = assign_to_groups(points, centers)
+        centers = compute_centers(groups)
+        print("New centers:", centers)
+        print(f"Group sizes: {len(groups[0])}, {len(groups[1])}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-2
+    part: 2
+    number: 2
+    title: "Repeat Until Stable"
+    description: |
+      Run the assign → recompute cycle multiple times. Print the centers after
+      each round.
+
+      When should you stop? Look at the centers each round — what do you notice?
+
+      Write a loop that repeats the cycle and stops when the centers don't change
+      (or change by less than a tiny amount like 0.0001).
+    provided_code: []
+    hints:
+      - "Keep the old centers before each round. After computing new centers, check if they moved: `distance(old[i], new[i]) < 0.0001` for all i. If so, stop."
+      - |
+        ```python
+        centers = [[1, 2], [8, 8]]
+
+        for step in range(20):
+            groups = assign_to_groups(points, centers)
+            new_centers = compute_centers(groups)
+
+            # Check if centers moved
+            moved = max(distance(centers[i], new_centers[i]) for i in range(len(centers)))
+            print(f"Step {step+1}: centers = {new_centers}, moved = {moved:.6f}")
+
+            if moved < 0.0001:
+                print(f"Converged after {step+1} steps!")
+                break
+            centers = new_centers
+        ```
+    solution:
+      code: |
+        centers = [[1, 2], [8, 8]]
+
+        for step in range(20):
+            groups = assign_to_groups(points, centers)
+            new_centers = compute_centers(groups)
+            moved = max(distance(centers[i], new_centers[i]) for i in range(len(centers)))
+            print(f"Step {step+1}: centers = {[f'({c[0]:.2f}, {c[1]:.2f})' for c in new_centers]}, moved = {moved:.6f}")
+
+            if moved < 0.0001:
+                print(f"Converged after {step+1} steps!")
+                break
+            centers = new_centers
+
+        print(f"\nFinal groups:")
+        for i, group in enumerate(groups):
+            print(f"  Group {i}: {group}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-2-3
+    part: 2
+    number: 3
+    title: "See Your Clusters"
+    description: |
+      Run the plotting helper below to visualize the groups your algorithm found.
+      The centers are shown as large X markers.
+
+      Don't worry about understanding the plotting code — just run it and look
+      at the result.
+    provided_code:
+      - label: "plotting helper"
+        code: |
+          import matplotlib.pyplot as plt
+
+          def plot_clusters(groups, centers, title="Clusters"):
+              colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c']
+              plt.figure(figsize=(7, 5))
+              for i, group in enumerate(groups):
+                  xs = [p[0] for p in group]
+                  ys = [p[1] for p in group]
+                  c = colors[i % len(colors)]
+                  plt.scatter(xs, ys, color=c, s=60, label=f"Group {i}")
+                  plt.scatter(centers[i][0], centers[i][1], color=c,
+                              marker='X', s=200, edgecolors='black', linewidths=1.5)
+              plt.xlabel("x")
+              plt.ylabel("y")
+              plt.title(title)
+              plt.legend()
+              plt.grid(True, alpha=0.3)
+              plt.show()
+
+          plot_clusters(groups, centers, title="Your clusters")
+    hints:
+      - "You should see two clear groups — one in the lower-left and one in the upper-right, with an X marking the center of each."
+    solution:
+      code: null
+      text: null
+
+  - type: reveal
+    text: |
+      **Congratulations!** You just invented one of the most widely used
+      algorithms in machine learning: **K-Means clustering**.
+
+      Here's what you built:
+
+      | Your step | The algorithm calls it |
+      |-----------|----------------------|
+      | Pick 2 starting points as centers | **Initialization** |
+      | Assign each point to the nearest center | **Assignment step** |
+      | Compute new centers as the group average | **Update step** |
+      | Repeat until centers stop moving | **Convergence** |
+
+      K-Means is an **unsupervised learning** algorithm — it finds structure in
+      data without any labels. No one told the algorithm which points belong
+      together. It figured it out on its own, using nothing but distances and
+      averages.
+
+  # ═══════════════════════════════════════════════════
+  # PART 3: The General Algorithm
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 3
+    title: "The General Algorithm"
+    estimated_time: "~25 min"
+    intro: |
+      Your code works for 2 groups in 2D. But what if you have 3D data? Or want
+      5 groups? Let's make it general.
+
+  - type: exercise
+    kind: coding
+    id: ex-3-1
+    part: 3
+    number: 1
+    title: "N-Dimensional Distance"
+    description: |
+      Your `distance` function only works for 2D points. Rewrite it to work
+      with points of any number of dimensions.
+
+      The Euclidean distance in N dimensions is:
+      $\sqrt{(a_0 - b_0)^2 + (a_1 - b_1)^2 + \ldots + (a_{n-1} - b_{n-1})^2}$
+    provided_code:
+      - label: "test"
+        code: |
+          assert abs(distance([0, 0], [3, 4]) - 5.0) < 0.001
+          assert abs(distance([0, 0, 0], [1, 1, 1]) - 1.7320) < 0.01
+          assert abs(distance([1, 2, 3, 4], [5, 6, 7, 8]) - 8.0) < 0.01
+          print("distance (N-dim): OK")
+    hints:
+      - "`sum((a - b)**2 for a, b in zip(p1, p2)) ** 0.5` — `zip` pairs up the coordinates regardless of how many there are."
+    solution:
+      code: |
+        def distance(p1, p2):
+            return sum((a - b)**2 for a, b in zip(p1, p2)) ** 0.5
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-2
+    part: 3
+    number: 2
+    title: "N-Dimensional Centers"
+    description: |
+      Your `compute_centers` function only averages x and y. Rewrite it to
+      work with points of any number of dimensions.
+    provided_code:
+      - label: "test"
+        code: |
+          test_groups_3d = [
+              [[1, 2, 3], [3, 4, 5]],
+              [[10, 10, 10], [12, 12, 12]]
+          ]
+          c = compute_centers(test_groups_3d)
+          assert c[0] == [2.0, 3.0, 4.0]
+          assert c[1] == [11.0, 11.0, 11.0]
+          print("compute_centers (N-dim): OK")
+    hints:
+      - "For each coordinate index `j`, average `group[i][j]` across all points in the group. Use `len(group[0])` to get the number of dimensions."
+      - |
+        ```python
+        def compute_centers(groups):
+            centers = []
+            for group in groups:
+                n = len(group)
+                dims = len(group[0])
+                center = [sum(p[d] for p in group) / n for d in range(dims)]
+                centers.append(center)
+            return centers
+        ```
+    solution:
+      code: |
+        def compute_centers(groups):
+            centers = []
+            for group in groups:
+                n = len(group)
+                dims = len(group[0])
+                center = [sum(p[d] for p in group) / n for d in range(dims)]
+                centers.append(center)
+            return centers
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-3
+    part: 3
+    number: 3
+    title: "The Complete K-Means Function"
+    description: |
+      Now combine everything into a single function that works for any number
+      of groups (K) and any number of dimensions.
+
+      Write:
+
+      ```
+      def kmeans(points, k, max_iterations=100):
+          """
+          Args:
+              points: list of points (each point is a list of numbers)
+              k: number of groups to create
+              max_iterations: stop after this many iterations even if not converged
+          Returns:
+              (centers, groups) — final centers and the list of groups
+          """
+      ```
+
+      Use the first K points as the initial centers.
+    provided_code:
+      - label: "test with 2D data, k=2"
+        code: |
+          centers, groups = kmeans(points, k=2)
+          print(f"Found {len(groups)} groups")
+          for i, (c, g) in enumerate(zip(centers, groups)):
+              print(f"  Group {i}: center = ({c[0]:.2f}, {c[1]:.2f}), {len(g)} points")
+      - label: "test with 3D data, k=3"
+        code: |
+          points_3d = [
+              [1, 1, 1], [1.5, 1, 1.5], [1, 2, 1],
+              [8, 8, 8], [9, 8, 7], [8, 9, 8],
+              [5, 5, 0], [4.5, 5, 0.5], [5, 4, 0]
+          ]
+          centers, groups = kmeans(points_3d, k=3)
+          print(f"Found {len(groups)} groups")
+          for i, (c, g) in enumerate(zip(centers, groups)):
+              print(f"  Group {i}: center = {[f'{x:.1f}' for x in c]}, {len(g)} points")
+    hints:
+      - "Initialize `centers = [points[i] for i in range(k)]`. Then loop: assign → compute new centers → check convergence."
+      - |
+        ```python
+        def kmeans(points, k, max_iterations=100):
+            centers = [list(points[i]) for i in range(k)]
+            for step in range(max_iterations):
+                groups = assign_to_groups(points, centers)
+                new_centers = compute_centers(groups)
+                moved = max(distance(centers[i], new_centers[i]) for i in range(k))
+                centers = new_centers
+                if moved < 0.0001:
+                    break
+            return centers, groups
+        ```
+    solution:
+      code: |
+        def kmeans(points, k, max_iterations=100):
+            centers = [list(points[i]) for i in range(k)]
+            for step in range(max_iterations):
+                groups = assign_to_groups(points, centers)
+                new_centers = compute_centers(groups)
+                moved = max(distance(centers[i], new_centers[i]) for i in range(k))
+                centers = new_centers
+                if moved < 0.0001:
+                    break
+            return centers, groups
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-3-4
+    part: 3
+    number: 4
+    title: "Custom Distance Function"
+    description: |
+      Different problems call for different notions of "distance." For example,
+      **Manhattan distance** (sum of absolute differences) is better when your
+      coordinates represent things like city blocks.
+
+      Modify your `kmeans` function to accept a distance function as an argument:
+
+      ```
+      def kmeans(points, k, distance_fn=distance, max_iterations=100):
+      ```
+
+      Also update `assign_to_groups` to accept `distance_fn`.
+
+      Test it with both Euclidean and Manhattan distance.
+    provided_code:
+      - label: "Manhattan distance"
+        code: |
+          def manhattan_distance(p1, p2):
+              return sum(abs(a - b) for a, b in zip(p1, p2))
+      - label: "test"
+        code: |
+          c_euc, g_euc = kmeans(points, k=2, distance_fn=distance)
+          c_man, g_man = kmeans(points, k=2, distance_fn=manhattan_distance)
+          print("Euclidean centers:", [(f'{c[0]:.2f}', f'{c[1]:.2f}') for c in c_euc])
+          print("Manhattan centers:", [(f'{c[0]:.2f}', f'{c[1]:.2f}') for c in c_man])
+    hints:
+      - "Pass `distance_fn` into `assign_to_groups` and use it instead of the hard-coded `distance` call when computing closest center."
+      - |
+        ```python
+        def assign_to_groups(points, centers, distance_fn=distance):
+            groups = [[] for _ in centers]
+            for point in points:
+                closest = 0
+                closest_dist = distance_fn(point, centers[0])
+                for i in range(1, len(centers)):
+                    d = distance_fn(point, centers[i])
+                    if d < closest_dist:
+                        closest = i
+                        closest_dist = d
+                groups[closest].append(point)
+            return groups
+
+        def kmeans(points, k, distance_fn=distance, max_iterations=100):
+            centers = [list(points[i]) for i in range(k)]
+            for step in range(max_iterations):
+                groups = assign_to_groups(points, centers, distance_fn)
+                new_centers = compute_centers(groups)
+                moved = max(distance_fn(centers[i], new_centers[i]) for i in range(k))
+                centers = new_centers
+                if moved < 0.0001:
+                    break
+            return centers, groups
+        ```
+    solution:
+      code: |
+        def assign_to_groups(points, centers, distance_fn=distance):
+            groups = [[] for _ in centers]
+            for point in points:
+                closest = 0
+                closest_dist = distance_fn(point, centers[0])
+                for i in range(1, len(centers)):
+                    d = distance_fn(point, centers[i])
+                    if d < closest_dist:
+                        closest = i
+                        closest_dist = d
+                groups[closest].append(point)
+            return groups
+
+        def kmeans(points, k, distance_fn=distance, max_iterations=100):
+            centers = [list(points[i]) for i in range(k)]
+            for step in range(max_iterations):
+                groups = assign_to_groups(points, centers, distance_fn)
+                new_centers = compute_centers(groups)
+                moved = max(distance_fn(centers[i], new_centers[i]) for i in range(k))
+                centers = new_centers
+                if moved < 0.0001:
+                    break
+            return centers, groups
+      text: null
+
+  # ═══════════════════════════════════════════════════
+  # PART 4: How Many Groups?
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: 4
+    title: "How Many Groups?"
+    estimated_time: "~20 min"
+    intro: |
+      K-Means needs you to choose K — the number of groups. But how do you
+      know the right K? What if you pick too many? Too few?
+
+      Let's find out by measuring how "good" each grouping is.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-1
+    part: 4
+    number: 1
+    title: "Measuring Cluster Quality"
+    description: |
+      How tight are your clusters? One measure: for each point, compute its
+      distance to its center. Sum up all these distances. A lower total means
+      tighter clusters.
+
+      Write `compute_inertia(centers, groups, distance_fn=distance)` that
+      returns this total.
+    provided_code:
+      - label: "test"
+        code: |
+          c, g = kmeans(points, k=2)
+          inertia = compute_inertia(c, g)
+          print(f"Inertia with k=2: {inertia:.2f}")
+    hints:
+      - "For each group and its center, sum `distance(point, center)` for every point in the group. Then sum across all groups."
+      - |
+        ```python
+        def compute_inertia(centers, groups, distance_fn=distance):
+            total = 0
+            for center, group in zip(centers, groups):
+                for point in group:
+                    total += distance_fn(point, center)
+            return total
+        ```
+    solution:
+      code: |
+        def compute_inertia(centers, groups, distance_fn=distance):
+            total = 0
+            for center, group in zip(centers, groups):
+                for point in group:
+                    total += distance_fn(point, center)
+            return total
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-2
+    part: 4
+    number: 2
+    title: "Try Different Values of K"
+    description: |
+      Run K-Means on the dataset below with k = 2, 3, 4, 5, and 6. Compute the
+      inertia for each. What happens to the inertia as K increases?
+    provided_code:
+      - label: "larger dataset with 3 natural clusters"
+        code: |
+          import random
+          random.seed(42)
+
+          bigger_points = []
+          # Cluster near (2, 2)
+          for _ in range(15):
+              bigger_points.append([2 + random.gauss(0, 0.8), 2 + random.gauss(0, 0.8)])
+          # Cluster near (8, 3)
+          for _ in range(15):
+              bigger_points.append([8 + random.gauss(0, 0.8), 3 + random.gauss(0, 0.8)])
+          # Cluster near (5, 8)
+          for _ in range(15):
+              bigger_points.append([5 + random.gauss(0, 0.8), 8 + random.gauss(0, 0.8)])
+
+          print(f"{len(bigger_points)} points generated")
+    hints:
+      - |
+        ```python
+        for k in range(2, 7):
+            c, g = kmeans(bigger_points, k)
+            inertia = compute_inertia(c, g)
+            print(f"k={k}: inertia = {inertia:.2f}")
+        ```
+      - "Inertia always decreases as K increases (more groups = each point is closer to some center). But at some point, adding more groups barely helps."
+    solution:
+      code: |
+        results = {}
+        for k in range(2, 7):
+            c, g = kmeans(bigger_points, k)
+            inertia = compute_inertia(c, g)
+            results[k] = inertia
+            print(f"k={k}: inertia = {inertia:.2f}, group sizes = {[len(grp) for grp in g]}")
+      text: null
+
+  - type: exercise
+    kind: coding
+    id: ex-4-3
+    part: 4
+    number: 3
+    title: "The Elbow Method"
+    description: |
+      Plot inertia vs. K. The curve always goes down, but at some point the
+      drop slows dramatically — like the bend of an elbow. That bend is your
+      best K.
+
+      Where is the elbow for the dataset above? Does it match the number of
+      clusters we generated (3)?
+    provided_code:
+      - label: "plot"
+        code: |
+          ks = list(range(2, 7))
+          inertias = []
+          for k in ks:
+              c, g = kmeans(bigger_points, k)
+              inertias.append(compute_inertia(c, g))
+
+          plt.figure(figsize=(7, 4))
+          plt.plot(ks, inertias, 'bo-', markersize=8)
+          plt.xlabel("Number of groups (K)")
+          plt.ylabel("Inertia (total distance to centers)")
+          plt.title("Elbow Method — Finding the Best K")
+          plt.xticks(ks)
+          plt.grid(True, alpha=0.3)
+          plt.show()
+    hints:
+      - "You should see a sharp drop from k=2 to k=3, then a much smaller drop after that. The elbow is at k=3 — matching the 3 natural clusters in the data."
+    solution:
+      code: null
+      text: |
+        The elbow is at k=3. After that, adding more groups gives diminishing
+        returns — the inertia barely decreases. This matches the 3 natural
+        clusters we generated. The elbow method won't always be this clean with
+        real data, but it's a useful starting point.
+
+  - type: exercise
+    kind: coding
+    id: ex-4-4
+    part: 4
+    number: 4
+    title: "Visualize Different K Values"
+    description: |
+      See what the clusters look like for different values of K. Run the code
+      below to plot k=2, k=3, and k=5 side by side.
+
+      Which one looks most natural?
+    provided_code:
+      - label: "side-by-side comparison"
+        code: |
+          fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+          colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c']
+
+          for ax, k in zip(axes, [2, 3, 5]):
+              c, g = kmeans(bigger_points, k)
+              for i, (center, group) in enumerate(zip(c, g)):
+                  xs = [p[0] for p in group]
+                  ys = [p[1] for p in group]
+                  col = colors[i % len(colors)]
+                  ax.scatter(xs, ys, color=col, s=40)
+                  ax.scatter(center[0], center[1], color=col,
+                             marker='X', s=200, edgecolors='black', linewidths=1.5)
+              ax.set_title(f"K = {k}")
+              ax.grid(True, alpha=0.3)
+
+          plt.suptitle("K-Means with different K values")
+          plt.tight_layout()
+          plt.show()
+    hints:
+      - "k=2 merges two clusters into one. k=3 matches the natural structure. k=5 splits natural clusters unnecessarily. The right K preserves the real structure without over-splitting."
+    solution:
+      code: null
+      text: null
+
+  # ═══════════════════════════════════════════════════
+  # Summary
+  # ═══════════════════════════════════════════════════
+
+  - type: part
+    number: null
+    title: "Summary"
+    intro: null
+
+  - type: table
+    id: summary
+    title: null
+    description: |
+      Here's what you built, step by step:
+    headers: ["What you did", "What the field calls it"]
+    rows:
+      - ["Measured how far apart two points are", "Euclidean distance"]
+      - ["Assigned each point to the nearest center", "Assignment step"]
+      - ["Computed the average of each group", "Update step (centroid computation)"]
+      - ["Repeated assign → update until stable", "K-Means convergence"]
+      - ["Summed distances from points to centers", "Inertia"]
+      - ["Plotted inertia vs. K to find the best K", "Elbow method"]
+    after: |
+      Everything you built — from the first distance function to the elbow
+      method — is used in production systems today. K-Means is often the
+      first algorithm data scientists reach for when they need to find
+      groups in unlabeled data.

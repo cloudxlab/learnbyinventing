@@ -278,29 +278,6 @@ blocks:
             return [(x - mu) / sigma for x in data]
       text: null
 
-  - type: exercise
-    kind: mcq
-    id: mcq-1-1
-    part: 1
-    number: 9
-    title: "When to Normalize"
-    question: |
-      A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?
-    options:
-      - label: A
-        text: "The algorithm won't run — Python will throw an error"
-      - label: B
-        text: "Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant"
-        correct: true
-      - label: C
-        text: "Age will dominate because it has a smaller range"
-      - label: D
-        text: "It makes no difference — Euclidean distance handles different scales automatically"
-    hints:
-      - "If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?"
-    solution:
-      text: "Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates."
-
   # ═══════════════════════════════════════════════════════
   # PART 2: Error Metrics
   # ═══════════════════════════════════════════════════════
@@ -663,6 +640,29 @@ blocks:
                     best_dist = d
             return best
       text: null
+
+  - type: exercise
+    kind: mcq
+    id: mcq-3-1
+    part: 3
+    number: 7
+    title: "When to Normalize"
+    question: |
+      A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?
+    options:
+      - label: A
+        text: "The algorithm won't run — Python will throw an error"
+      - label: B
+        text: "Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant"
+        correct: true
+      - label: C
+        text: "Age will dominate because it has a smaller range"
+      - label: D
+        text: "It makes no difference — Euclidean distance handles different scales automatically"
+    hints:
+      - "If age differs by 10 and salary differs by 50,000, which difference contributes more to the Euclidean distance?"
+    solution:
+      text: "Euclidean distance sums squared differences. A salary difference of 50,000 squared is 2,500,000,000, while an age difference of 10 squared is just 100. Salary completely overwhelms age in the distance calculation, even though a 10-year age gap might be very meaningful. Normalization (like min-max or z-score) puts both features on comparable scales so neither dominates."
 
   # ═══════════════════════════════════════════════════════
   # PART 4: Polynomials
@@ -1083,9 +1083,73 @@ blocks:
 
   - type: exercise
     kind: coding
-    id: ex-6-6
+    id: ex-6-5b
     part: 6
     number: 6
+    title: "Amplify Before Normalizing"
+    description: |
+      Take the array `[1, 2, 5, 10]`. After normalizing to probabilities,
+      the value `10` gets about 55% of the total — but you want the big
+      values to stand out even more and the small values to shrink further.
+
+      Come up with as many ideas as you can to **amplify the differences**
+      before normalizing. Test each one:
+
+      1. Multiply every value by 10. Normalize. Did the probabilities change?
+      2. Square every value. Normalize. Did the probabilities change?
+      3. Cube every value. Normalize. What about now?
+      4. Can you think of any other transformation?
+
+      For each idea, print the resulting probabilities and explain whether
+      (and why) it worked.
+    provided_code:
+      - label: "starter"
+        code: |
+          values = [1, 2, 5, 10]
+
+          print("Original probabilities:", normalize_to_probabilities(values))
+    hints:
+      - |
+        Try multiplying by 10:
+        ```python
+        scaled = [x * 10 for x in values]
+        print("×10:", normalize_to_probabilities(scaled))
+        ```
+        Compare with the original — are the probabilities different?
+      - "Multiplying every value by the same constant does NOT change the probabilities — the constant cancels when you divide by the sum. Squaring DOES change them: `[1, 4, 25, 100]` gives `[0.0077, 0.031, 0.192, 0.769]` — the big value now gets 77% instead of 55%."
+      - "Cubing amplifies even more: `[1, 8, 125, 1000]`. Try `math.exp(x)` too — it grows faster than any power. Each of these makes big values bigger and small values relatively smaller."
+    solution:
+      code: |
+        values = [1, 2, 5, 10]
+
+        print("Original:  ", normalize_to_probabilities(values))
+
+        # Idea 1: multiply by 10
+        print("× 10:      ", normalize_to_probabilities([x * 10 for x in values]))
+        # Same! Multiplying by a constant cancels out in normalization.
+
+        # Idea 2: square
+        print("Squared:   ", normalize_to_probabilities([x ** 2 for x in values]))
+        # Different! Big values get bigger share.
+
+        # Idea 3: cube
+        print("Cubed:     ", normalize_to_probabilities([x ** 3 for x in values]))
+        # Even more extreme — 10 dominates.
+
+        # Idea 4: exponential
+        import math
+        print("exp(x):    ", normalize_to_probabilities([math.exp(x) for x in values]))
+        # Most extreme — exp grows faster than any power.
+      text: |
+        Multiplying by a constant has no effect — it cancels out when you divide
+        by the sum. But squaring, cubing, or taking `exp(x)` all amplify the
+        differences. The next exercise uses `exp(x)` — it has a special name.
+
+  - type: exercise
+    kind: coding
+    id: ex-6-6
+    part: 6
+    number: 7
     title: "Softmax"
     description: |
       You built `normalize`, but it fails when values are negative — negative "probabilities" make no sense.
@@ -1117,7 +1181,7 @@ blocks:
     kind: coding
     id: ex-6-7
     part: 6
-    number: 7
+    number: 8
     title: "Softmax (Numerically Stable)"
     description: |
       **Problem:** `math.exp(1000)` raises `OverflowError`.
@@ -1146,7 +1210,7 @@ blocks:
     kind: coding
     id: ex-6-8
     part: 6
-    number: 8
+    number: 9
     title: "Softmax with Temperature"
     description: |
       **Experiment:** What happens to the softmax output if you divide all values by 2 before applying softmax? Try it. Then try dividing by 0.5. What pattern do you see?
@@ -1177,7 +1241,7 @@ blocks:
     kind: coding
     id: ex-6-8-plot
     part: 6
-    number: 9
+    number: 10
     title: "Plotting helper — run as-is"
     description: |
       Run this cell to visualise softmax at different temperatures.
@@ -1210,7 +1274,7 @@ blocks:
     kind: coding
     id: ex-6-9
     part: 6
-    number: 10
+    number: 11
     title: "Weighted Choice with Temperature"
     description: |
       Combine what you have built: given weights and temperature $T$, sample an index with probability proportional to `weight^(1/T)`.
@@ -1249,7 +1313,7 @@ blocks:
     kind: mcq
     id: mcq-6-1
     part: 6
-    number: 11
+    number: 12
     title: "Softmax Temperature"
     question: |
       In softmax with temperature, what happens as the temperature T approaches 0?
