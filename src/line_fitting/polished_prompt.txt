@@ -1,0 +1,391 @@
+LINE FITTING & CURVE FITTING — Slide Deck Specification
+========================================================
+
+This document fully specifies a reveal.js slide presentation for the "Line
+Fitting & Curve Fitting" chapter of Learn By Inventing. The presentation is
+authored as a content.yaml file and rendered via build.py into slides.html
+(reveal.js) and index.html (interactive view). An LLM can recreate the
+entire slide deck from this prompt alone.
+
+
+FORMAT & RENDERING CONTEXT
+--------------------------
+- The file is `line_fitting/content.yaml` using the content.yaml schema:
+  chapter metadata (id, title, intro, mathjax, footer, glossary) followed by
+  a `blocks:` array of typed blocks (part, text, exercise, reveal, table).
+- Each `text` block becomes one slide in slides.html (via slides.html.j2).
+- The slides template wraps each text block's HTML in:
+    <section><div class="slide-content">{{ block.text | md }}</div></section>
+  and the base CSS sets `.reveal .slide-content { font-size: 0.55em; }`.
+- Because of the 0.55em shrinkage, most slides use an inner container with
+  `font-size: 1.5em` or `1.6em` to bring text back to readable size.
+- reveal.js fragment classes used:
+    `fragment`               — hidden, appears on click
+    `fragment fade-out`      — starts visible, fades out on its index
+    `fragment fade-in-then-out` — appears on its index, disappears on next
+  `data-fragment-index="N"` synchronizes multiple elements at the same step.
+- The same HTML is also rendered in the interactive (non-slides) view where
+  fragments have no effect. A CSS rule in lbi.css hides ?-placeholders:
+    `td .fragment.fade-out { display: none; }`
+
+
+CHAPTER METADATA
+----------------
+- id: line_fitting
+- title: "Line Fitting & Curve Fitting"
+- mathjax: true
+- intro: "Given a few data points, can you predict what comes next? You'll
+  start with a simple question, discover the formula hiding in the data,
+  and build your way to fitting lines and curves to anything."
+- footer: recap of the journey (two data points → lines → curves → regression
+  foundation) with "Going further" pointers to multiple linear regression,
+  gradient descent, and overfitting.
+- glossary: Slope, Intercept, Linear function, Residual, MSE, Polynomial,
+  Overfitting — each with a one-sentence definition.
+
+
+PART 1: "The Prediction Problem" (~15 min)
+==========================================
+
+There is one `part` block:
+  - type: part, number: 1, title: "The Prediction Problem"
+
+Then 9 `text` blocks, each becoming one slide.
+
+
+SLIDE 1 — Mystery Box Progressive Reveal
+-----------------------------------------
+PURPOSE: Hook the learner. Present a mystery function as a black box, then
+progressively ask prediction questions. The learner discovers y = 4x − 1.
+
+STRUCTURE: Two-phase layout using absolute positioning scoped to `.reveal`:
+  Phase 1 (big intro): visible initially, fades out on fragment-index 0.
+  Phase 2 (interactive Q&A): hidden initially, appears on fragment-index 0.
+
+CSS (in a <style> tag at the top of the text block, scoped to .reveal):
+  .reveal .phase-container { position: relative; min-height: 18em; }
+  .reveal .phase-intro, .reveal .phase-qa {
+    position: absolute; top: 0; left: 0; right: 0; font-size: 1.6em;
+  }
+  .reveal .qa-stack { position: relative; min-height: 5em; }
+  .reveal .qa-step  { position: absolute; top: 0; left: 0; right: 0; }
+
+Phase 1 (class="phase-intro fragment fade-out" data-fragment-index="0"):
+  - Large centered SVG block diagram (viewBox 300×100, max-width 500px):
+    x → [arrow] → [rounded rect with "?" inside] → [arrow] → y
+  - Text: "There's a mystery box. You feed it a number x and it gives back
+    a number y. You tried it twice:"
+  - Table: x=1,y=3 and x=2,y=7
+
+Phase 2 (class="phase-qa fragment" data-fragment-index="0"):
+  Two-column flex layout (gap 2em, centered):
+
+  LEFT COLUMN:
+  - Smaller SVG block diagram (same design, max-width 280px)
+  - Table that grows progressively. Initial rows: x=1→3, x=2→7.
+    Then rows added via fragments:
+      Row x=3:   always visible, y cell has ?→11 swap at index 1
+      Row x=2.5: appears at index 1, y cell has ?→9 swap at index 2
+      Row x=2.1: appears at index 2, y cell has ?→7.4 swap at index 3
+      Row x=0:   appears at index 3, y cell has ?→−1 swap at index 4
+      Row x=0.5: appears at index 4, y cell has ?→1 swap at index 5
+      Row x=x₁:  appears at index 5, y cell has ?→4x₁−1 swap at index 6
+
+    Each y-cell "?→value" swap uses this pattern:
+      <td>
+        <span class="fragment fade-out" data-fragment-index="N">?</span>
+        <span class="fragment" data-fragment-index="N">VALUE</span>
+      </td>
+
+  RIGHT COLUMN (text-align:left, flex:1, min-width:0):
+  - A qa-stack div containing stacked Q&A steps using absolute positioning.
+    Each step replaces the previous one in the same visual space.
+
+    Step 0 (fragment fade-out, index 1):
+      "How much will y be when x = 3?"
+
+    Step 1 (fragment fade-in-then-out, index 1):
+      "✓ y = 11! When x goes up by 1, y goes up by 4."
+      "How much when x = 2.5?"
+
+    Step 2 (fragment fade-in-then-out, index 2):
+      "✓ y = 9! Half a step in x → half the increase."
+      "What about x = 2.1?"
+
+    Step 3 (fragment fade-in-then-out, index 3):
+      "✓ y = 7.4! Just 0.1 past x = 2, so 7 + 0.4."
+      "Now try x = 0."
+
+    Step 4 (fragment fade-in-then-out, index 4):
+      "✓ y = −1! Going back from x = 1 subtracts 4."
+      "What about x = 0.5?"
+
+    Step 5 (fragment fade-in-then-out, index 5):
+      "✓ y = 1! Halfway between −1 and 3."
+      "For any x₁, can you write y = ?"
+
+    Step 6 (fragment, index 6 — final, stays visible):
+      Large styled text: "y = 4x − 1"
+      "You just discovered a linear function!"
+
+BEHAVIOR: Each click simultaneously reveals the answer in the table (? fades
+out, value fades in) and swaps the Q&A text (previous fades out, new fades in).
+The table accumulates rows while questions replace each other in-place.
+
+
+SLIDE 2 — Write the Python Function
+------------------------------------
+PURPOSE: Translate the discovered formula into Python code.
+
+STRUCTURE: Two-column flex layout.
+
+LEFT COLUMN:
+  - SVG block diagram (same shape as slide 1 but with "4x − 1" inside the
+    box instead of "?"). Max-width 360px.
+
+RIGHT COLUMN (font-size 1.6em):
+  - Text: "Now write a Python function with name f that takes x as argument
+    and returns y."
+
+  - Code stack (absolute positioning, same pattern as qa-stack):
+    Step 0 (fragment fade-out, index 1): skeleton code
+      def f(x):
+          y = # write your code
+          return y
+
+    Step 1 (fragment, index 1): replaces skeleton with full solution
+      "✓ That's right! The code looks like this:"
+      def f(x):
+          y = 4 * x - 1
+          return y
+
+  - Fragment at index 2:
+    "Now, test by calling f(2), f(3), f(0)."
+
+  - Fragment at index 3:
+    "Now, try different values of x and check if the value of y is correct
+    as per the table!"
+
+CSS (in <style> block):
+  .reveal .code-stack { position: relative; min-height: 8em; }
+  .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+
+
+SLIDE 3 — ML Phases: Training & Inference
+------------------------------------------
+PURPOSE: Introduce the ML concepts of training and inference by reflecting
+on what the learner just did. Draw analogy to ChatGPT/LLMs.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "Let's look back and embrace what we have done."
+  "We had data (two points) and we came up with a model (a line), and with
+  this model we are able to answer unseen questions."
+
+- Fragment at index 0:
+  "In machine learning, coming up with the model is called training and
+  using the model to give output is called inference."
+
+- Fragment at index 1: A 3×3 grid (CSS grid) comparing "Our Line Model"
+  and "ChatGPT" across Training and Inference phases.
+  Grid layout: grid-template-columns: auto 1fr 1fr
+
+  Column headers: [blank] | "Our Line Model" | "ChatGPT" (ChatGPT header
+  appears at fragment index 2)
+
+  Row "Training":
+    Our Model: SVG pipeline →
+      [Data box: "(1,3), (2,7)"] → [Training box] → [Model box: "y = 4x − 1"]
+    ChatGPT (fragment index 2): SVG pipeline →
+      [Data box: "Internet text"] → [Training box] → [Model box: "LLM"]
+
+  Row "Inference":
+    Our Model: SVG pipeline →
+      [x (new)] → [y = 4x − 1] → [y]
+    ChatGPT (fragment index 2): SVG pipeline →
+      [Question] → [ChatGPT] → [Answer]
+
+  Each SVG uses viewBox 350×55, rounded rectangles with colored fills:
+    - Data boxes: #e3f2fd fill, #64b5f6 stroke (blue)
+    - Training boxes: #fff3e0 fill, #ffb74d stroke (orange)
+    - Model/output boxes: #e8f5e9 fill, #66bb6a stroke (green)
+    - Arrows: #888 lines with polygon arrowheads
+
+
+SLIDE 4 — Quick Questions on Generalization
+--------------------------------------------
+PURPOSE: Reinforce the idea that models generalize to unseen inputs.
+
+STRUCTURE: Single column, font-size 1.5em. Simple progressive reveal.
+
+- Text: "Quick Question: can your equation of line give the output for a
+  value that it has not seen before, say x = −100?"
+- Fragment index 0: "Yes, of course." (green)
+- Fragment index 1: "Similarly, can ChatGPT or LLM answer questions that
+  it has not seen before?"
+- Fragment index 2: "Yes, of course." (green)
+
+
+SLIDE 5 — Linear Relationship y = ax + b
+-----------------------------------------
+PURPOSE: Generalize from y = 4x − 1 to the general form y = ax + b.
+Transition to a new problem.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Centered SVG block diagram (max-width 320px): x → [y = ax + b] → y
+  (same visual style as slide 1, but formula in the box)
+- Text: "The other way to look at this is — it is a linear relationship
+  between input and output: y = a × x + b. Let's solve another problem to
+  get a grasp of it."
+
+
+SLIDE 6 — Electronic Thermometer Problem
+-----------------------------------------
+PURPOSE: Apply the linear model to a real-world problem (temperature from
+current). Set up two simultaneous equations.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "Do you know how an electronic thermometer works?"
+  "When a metal is heated, its resistance changes and that changes the
+  electric current through it. We can measure the current and estimate the
+  temperature from it."
+
+- Fragment at index 0:
+  "We have the following data points:"
+  Table: Current (I) | Temperature (T)
+         1 mA        | 10 °F
+         1.2 mA      | 50 °F
+  "Find the equation: T = a × I + b. What are a and b?"
+
+- Fragment at index 1:
+  "Put the two values in the equation. You get two equations:"
+  Monospace: 10 = a × 1   + b   … (1)
+             50 = a × 1.2 + b   … (2)
+
+
+SLIDE 7 — Solve the Equations
+------------------------------
+PURPOSE: Walk through solving the two equations.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "Now solve them."
+
+- Fragment at index 0: Solution steps in monospace:
+  (2) − (1): 40 = 0.2a  →  a = 200
+  From (1): b = 10 − 200  →  b = −190
+
+- Fragment at index 1:
+  "So, the final equation is:"
+  Large centered styled text: T = 200 × I − 190
+
+
+SLIDE 8 — Multiple Inputs
+--------------------------
+PURPOSE: Extend to two-input linear models. Ask how many data points are
+needed to solve for three unknowns.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "There could be more inputs like x₁, x₂:"
+  Centered formula: y = a × x₁ + b × x₂ + c
+
+- Centered SVG block diagram (viewBox 340×130, max-width 360px):
+  Two inputs on the left: x₁ and x₂, each with an arrow converging into
+  a single rounded rectangle containing "ax₁+bx₂+c", arrow out to y.
+  x₁ arrow goes from top-left to middle of box.
+  x₂ arrow goes from bottom-left to middle of box.
+
+- Fragment at index 0:
+  "Quick question: to find a, b and c, how many pairs of (x₁, x₂, y)
+  are needed?"
+
+- Fragment at index 1:
+  "✓ That's right! To solve for a, b and c we need at least three
+  equations. Hence, three instances minimum." (green checkmark)
+
+
+SLIDE 9 — Complex Relationships & LLMs
+---------------------------------------
+PURPOSE: Show that models can have quadratic and polynomial terms, and that
+LLMs are the same idea scaled to billions of parameters.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "There could be a complex relationship between inputs and outputs:"
+  Centered formula: y = a × x² + b × x + c
+
+- Centered SVG block diagram (viewBox 300×100, max-width 320px):
+  x → [ax²+bx+c] → y (same visual style as other diagrams)
+
+- Fragment at index 0:
+  "Or there could be a much more complex relationship:"
+  Centered formula: y = ax₁² + bx₂² + cx₁ + dx₂ + ex₁x₂ + f
+  "Here we have a, b, c, d, e and f — six parameters."
+
+- Fragment at index 1:
+  "In case of LLMs, there are 100s of billions of such parameters and the
+  equation is much more complex!"
+
+
+SVG BLOCK DIAGRAM DESIGN SYSTEM
+================================
+All block diagrams share a consistent visual language:
+
+- viewBox dimensions: 300×100 for single-input, 340×130 for two-input
+- Box: <rect> with rx="8", fill="#f5f3ef", stroke="#c8a96e", stroke-width="2"
+- Labels inside boxes: Georgia serif, fill="#7a6b3a", text-anchor="middle"
+- Input/output labels: Georgia serif, font-size="22", fill="#333"
+- Arrows: <line> stroke="#888" stroke-width="2" with <polygon> arrowheads
+- Arrow polygon pattern: points="X,Y-5 X+10,Y X,Y+5" fill="#888"
+- For the training/inference comparison grid, boxes use colored fills:
+    Data: fill="#e3f2fd" stroke="#64b5f6" (blue tones)
+    Training: fill="#fff3e0" stroke="#ffb74d" (orange tones)
+    Model: fill="#e8f5e9" stroke="#66bb6a" (green tones)
+  with smaller font-size (11px labels, 9px sub-labels)
+
+
+KEY DESIGN PATTERNS
+====================
+
+1. Phase swap (Slide 1): Two absolutely-positioned divs; one has
+   "fragment fade-out" and the other has "fragment" — both on the same
+   data-fragment-index so they swap atomically on click.
+
+2. Table cell ?→value swap: A <td> with two <span>s — one "fragment
+   fade-out" with "?", one "fragment" with the value — sharing the same
+   data-fragment-index.
+
+3. Q&A text replacement: Stacked divs with absolute positioning. Each uses
+   "fragment fade-in-then-out" (appears then disappears on next click) except
+   the last which uses plain "fragment" (stays visible). This shows one Q&A
+   at a time in the same physical space.
+
+4. Code skeleton→solution swap: Same as phase swap but for code blocks.
+   Skeleton has "fragment fade-out", solution has "fragment", same index.
+
+5. Interactive view compatibility: The same HTML works in the non-reveal
+   interactive view where all fragments are visible. The CSS rule
+   `td .fragment.fade-out { display: none; }` in lbi.css hides the "?"
+   placeholders so only values show in the table. Q&A stacking CSS is
+   scoped to `.reveal` so in interactive view all Q&A steps just stack
+   vertically (all visible, natural flow).
+
+
+NARRATIVE ARC
+=============
+1. Hook with mystery → learner predicts → discovers y = 4x − 1
+2. Translate discovery to code (Python function)
+3. Reflect: "you just did ML" — introduce training vs inference terminology
+4. Draw parallel to ChatGPT — same two phases, different scale
+5. Confirm generalization works for both simple models and LLMs
+6. Generalize formula to y = ax + b
+7. Apply to real-world problem (electronic thermometer)
+8. Solve the system of equations
+9. Extend to multiple inputs (two unknowns → three unknowns)
+10. Scale up: quadratic → polynomial → LLMs with billions of parameters
+
+The deck takes the learner from "guess the next number" to "LLMs are just
+this idea scaled up" in 9 slides, building every step on the previous one.
