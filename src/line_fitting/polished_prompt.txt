@@ -282,7 +282,122 @@ STRUCTURE: Single column, font-size 1.5em.
   Large centered styled text: T = 200 × I − 190
 
 
-SLIDE 8 — Multiple Inputs
+SLIDE 8 — Generalize to Code: predict() and fit()
+---------------------------------------------------
+PURPOSE: Codify the by-hand solving into reusable Python functions. The
+learner recognizes the pattern and writes general-purpose fit/predict.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "You solved two problems by hand. Both times:"
+  "Two data points → two equations → solve for a and b."
+  "Can you write general Python functions for this?"
+
+- Fragment at index 0: Derivation + code:
+  "From y₁ = a × x₁ + b and y₂ = a × x₂ + b, we get:"
+  <pre><code> block showing fit() and predict() functions:
+    def fit(x1, y1, x2, y2):
+        a = (y2 - y1) / (x2 - x1)
+        b = y1 - a * x1
+        return a, b
+
+    def predict(a, b, x):
+        return a * x + b
+
+- Fragment at index 1: Verification with both earlier problems:
+  fit(1, 3, 2, 7) → (4, −1)   predict(4, −1, 3) → 11 ✓
+  fit(1, 10, 1.2, 50) → (200, −190)   predict(200, −190, 1.5) → 110 ✓
+
+
+SLIDE 9 — What About More Than Two Points?
+--------------------------------------------
+PURPOSE: Introduce the real fitting problem — real data has >2 points and
+no single line passes through all of them. Motivate error measurement.
+
+STRUCTURE: Two-column flex (table left, scatter plot SVG right), font-size
+1.5em, with text fragments below.
+
+- Text: "In the real world, you usually have more than two data points."
+- Left: Table with 3 data points: (1,2), (2,5), (3,7)
+- Right: SVG scatter plot (viewBox 200×160, max-width 180px) showing:
+  Axes (x, y) with 3 blue dots at approximate positions.
+  No line drawn (just the points).
+
+- Fragment at index 0:
+  "Fitting with the first two points:"
+  fit(1, 2, 2, 5) → a = 3, b = −1 → y = 3x − 1
+
+- Fragment at index 1:
+  "Does this line work for the third point?"
+  At x = 3: predicted = 3×3 − 1 = 8 but actual = 7 — off by 1!
+
+- Fragment at index 2:
+  "Try different pairs of points and you get different lines. We need a
+  way to measure which line is best."
+
+
+SLIDE 10 — Residuals & Mean Squared Error
+------------------------------------------
+PURPOSE: Invent the concept of residual and MSE. Pose the question "how
+do we combine errors?" and guide the learner to discover squaring.
+
+STRUCTURE: Single column, font-size 1.5em.
+
+- Text: "For line y = 3x − 1, the residual at each point is the difference
+  between actual and predicted:"
+- Table: x | Actual | Predicted | Residual
+         1 |   2    |     2     |   0
+         2 |   5    |     5     |   0
+         3 |   7    |     8     |  −1
+- "How do we combine these into a single number?"
+
+- Fragment at index 0:
+  "If we just sum them, positive and negative errors would cancel out!
+  What if we squared them first?"
+
+- Fragment at index 1:
+  "(0² + 0² + (−1)²) / 3 = 0.33"
+  "This is the Mean Squared Error (MSE)."
+
+- Fragment at index 2:
+  "The best fit line is the one with the lowest MSE. Finding it
+  efficiently is what gradient descent does."
+
+
+SLIDE 11 — What If the Pattern Is Curved?
+-------------------------------------------
+PURPOSE: Show that some data requires curves, not lines. Introduce
+polynomials and the overfitting concept.
+
+STRUCTURE: Two-column flex (table left, scatter plot SVG right), font-size
+1.5em, with text fragments below.
+
+- Text: "Not all patterns are linear. Consider this data:"
+- Left: Table with 4 data points: (0,0), (1,1), (2,4), (3,9)
+- Right: SVG scatter plot (viewBox 270×195, max-width 240px) showing:
+  Axes (x, y), 4 blue data points.
+  Red dashed line (best linear fit y=3x−1) — clearly misses the points.
+  Green solid cubic bezier curve (y=x²) — passes through all 4 points.
+  The visual contrast between dashed-line and green-curve is immediate.
+
+  SVG coordinates:
+  - Data points at (40,170), (100,154), (160,106), (220,26)
+  - Dashed line from (60,170) to (238,28)
+  - Curve: <path d="M 40,170 C 100,170 160,122 220,26"> (cubic bezier
+    approximation of y=x² — passes exactly through all 4 data points)
+
+- Fragment at index 0:
+  "No straight line fits this well (dashed). But y = x² fits perfectly
+  (green curve)!"
+  "This is a polynomial: y = ax² + bx + c"
+
+- Fragment at index 1:
+  "More parameters → more flexibility. But too many and the model
+  memorizes data instead of learning the pattern. This is called
+  overfitting."
+
+
+SLIDE 12 — Multiple Inputs
 --------------------------
 PURPOSE: Extend to two-input linear models. Ask how many data points are
 needed to solve for three unknowns.
@@ -307,7 +422,7 @@ STRUCTURE: Single column, font-size 1.5em.
   equations. Hence, three instances minimum." (green checkmark)
 
 
-SLIDE 9 — Complex Relationships & LLMs
+SLIDE 13 — Complex Relationships & LLMs
 ---------------------------------------
 PURPOSE: Show that models can have quadratic and polynomial terms, and that
 LLMs are the same idea scaled to billions of parameters.
@@ -384,8 +499,14 @@ NARRATIVE ARC
 6. Generalize formula to y = ax + b
 7. Apply to real-world problem (electronic thermometer)
 8. Solve the system of equations
-9. Extend to multiple inputs (two unknowns → three unknowns)
-10. Scale up: quadratic → polynomial → LLMs with billions of parameters
+9. Generalize to code: predict() and fit() functions
+10. Real data has >2 points — fitting is imperfect
+11. Invent residuals and MSE — measuring fit quality
+12. Curved data needs polynomials — but beware overfitting
+13. Extend to multiple inputs (two unknowns → three unknowns)
+14. Scale up: quadratic → polynomial → LLMs with billions of parameters
 
-The deck takes the learner from "guess the next number" to "LLMs are just
-this idea scaled up" in 9 slides, building every step on the previous one.
+The deck takes the learner from "guess the next number" through coding
+predict/fit, inventing MSE, and understanding curve fitting, all the way
+to "LLMs are just this idea scaled up" — in 13 slides, each building on
+the previous one.

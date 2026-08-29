@@ -341,6 +341,197 @@ build your way to fitting lines and curves to anything.</p>
 
 
 
+<div style="font-size:1.5em;">
+  <p>You solved two problems by hand. Both times:</p>
+  <p style="margin-left:1.5em;">Two data points &rarr; two equations &rarr; solve for <strong>a</strong> and <strong>b</strong>.</p>
+  <p>Can you write general Python functions for this?</p>
+<pre><code>def fit(x1, y1, x2, y2):
+    # return a, b
+
+def predict(a, b, x):
+    # return y</code></pre>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>From y<sub>1</sub> = a &times; x<sub>1</sub> + b &nbsp;and&nbsp; y<sub>2</sub> = a &times; x<sub>2</sub> + b, we get:</p>
+<pre><code>def fit(x1, y1, x2, y2):
+    a = (y2 - y1) / (x2 - x1)
+    b = y1 - a * x1
+    return a, b
+
+def predict(a, b, x):
+    return a * x + b</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Verify with both problems:</p>
+    <p style="font-family:monospace; margin-left:2em; font-size:0.85em;">fit(1, 3, 2, 7) &rarr; (4, &minus;1) &nbsp; predict(4, &minus;1, 3) &rarr; 11 &#10003;<br/>fit(1, 10, 1.2, 50) &rarr; (200, &minus;190) &nbsp; predict(200, &minus;190, 1.5) &rarr; 110 &#10003;</p>
+  </div>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>In the real world, you usually have more than two data points.</p>
+  <div style="display:flex; align-items:flex-start; gap:2em; justify-content:center;">
+    <table style="margin:0.5em 0;">
+      <tr><th>x</th><th>y</th></tr>
+      <tr><td>1</td><td>2</td></tr>
+      <tr><td>2</td><td>5</td></tr>
+      <tr><td>3</td><td>7</td></tr>
+    </table>
+    <div>
+      <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="max-width:180px; width:100%;">
+        <line x1="30" y1="140" x2="185" y2="140" stroke="#999" stroke-width="1"/>
+        <line x1="30" y1="140" x2="30" y2="10" stroke="#999" stroke-width="1"/>
+        <text x="185" y="155" font-size="11" fill="#666" text-anchor="end">x</text>
+        <text x="18" y="15" font-size="11" fill="#666" text-anchor="end">y</text>
+        <circle cx="70" cy="108" r="5" fill="#1565c0"/>
+        <circle cx="110" cy="60" r="5" fill="#1565c0"/>
+        <circle cx="150" cy="28" r="5" fill="#1565c0"/>
+      </svg>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Fitting with the first two points:</p>
+    <p style="font-family:monospace; margin-left:2em;">fit(1, 2, 2, 5) &rarr; a&nbsp;=&nbsp;3, b&nbsp;=&nbsp;&minus;1 &nbsp;&rarr;&nbsp; <strong>y = 3x &minus; 1</strong></p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Does this line work for the third point?</p>
+    <p style="font-family:monospace; margin-left:2em;">At x&nbsp;=&nbsp;3: &nbsp;predicted&nbsp;=&nbsp;3&times;3&nbsp;&minus;&nbsp;1&nbsp;=&nbsp;<strong>8</strong> &nbsp;but actual&nbsp;=&nbsp;<strong>7</strong> &mdash; off by 1!</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>Try different pairs of points and you get different lines. We need a way to measure which line is <em>best</em>.</p>
+  </div>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>For line y&nbsp;=&nbsp;3x&nbsp;&minus;&nbsp;1, the <strong>residual</strong> at each point is the difference between actual and predicted:</p>
+  <table style="margin:0.5em auto;">
+    <tr><th>x</th><th>Actual</th><th>Predicted</th><th>Residual</th></tr>
+    <tr><td>1</td><td>2</td><td>2</td><td>0</td></tr>
+    <tr><td>2</td><td>5</td><td>5</td><td>0</td></tr>
+    <tr><td>3</td><td>7</td><td>8</td><td>&minus;1</td></tr>
+  </table>
+  <p>How do we combine these into a single number?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>If we just sum them, positive and negative errors would cancel out! What if we <strong>squared them first</strong>?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="text-align:center; font-family:monospace;">(0&sup2; + 0&sup2; + (&minus;1)&sup2;) / 3 = 0.33</p>
+    <p>This is the <strong>Mean Squared Error (MSE)</strong>.</p>
+  </div>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>The <strong>best fit</strong> line is the one with the <strong>lowest MSE</strong>. Finding it efficiently is what <em>gradient descent</em> does.</p>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>Not all patterns are linear. Consider this data:</p>
+  <div style="display:flex; align-items:flex-start; gap:2em; justify-content:center;">
+    <table style="margin:0.5em 0;">
+      <tr><th>x</th><th>y</th></tr>
+      <tr><td>0</td><td>0</td></tr>
+      <tr><td>1</td><td>1</td></tr>
+      <tr><td>2</td><td>4</td></tr>
+      <tr><td>3</td><td>9</td></tr>
+    </table>
+    <div style="flex:1; min-width:0; text-align:center;">
+      <svg viewBox="0 0 270 195" xmlns="http://www.w3.org/2000/svg" style="max-width:240px; width:100%;">
+        <line x1="40" y1="170" x2="250" y2="170" stroke="#999" stroke-width="1"/>
+        <line x1="40" y1="170" x2="40" y2="10" stroke="#999" stroke-width="1"/>
+        <text x="250" y="185" font-size="11" fill="#666" text-anchor="end">x</text>
+        <text x="28" y="15" font-size="11" fill="#666" text-anchor="end">y</text>
+        <line x1="60" y1="170" x2="238" y2="28" stroke="#d32f2f" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+        <path d="M 40,170 C 100,170 160,122 220,26" stroke="#2e7d32" stroke-width="2" fill="none"/>
+        <circle cx="40" cy="170" r="5" fill="#1565c0"/>
+        <circle cx="100" cy="154" r="5" fill="#1565c0"/>
+        <circle cx="160" cy="106" r="5" fill="#1565c0"/>
+        <circle cx="220" cy="26" r="5" fill="#1565c0"/>
+      </svg>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>No straight line fits this well (<span style="color:#d32f2f;">dashed</span>). But <strong>y&nbsp;=&nbsp;x&sup2;</strong> fits perfectly (<span style="color:#2e7d32;">green curve</span>)!</p>
+    <p>This is a <strong>polynomial</strong>: y&nbsp;=&nbsp;ax&sup2;&nbsp;+&nbsp;bx&nbsp;+&nbsp;c</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>More parameters &rarr; more flexibility. But too many and the model <strong>memorizes</strong> data instead of learning the pattern. This is called <strong>overfitting</strong>.</p>
+  </div>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>There could be more inputs like x<sub>1</sub>, x<sub>2</sub>:</p>
+  <p style="text-align:center; font-size:1.1em; color:#7a6b3a;"><strong>y = a &times; x<sub>1</sub> + b &times; x<sub>2</sub> + c</strong></p>
+  <div style="text-align:center; margin:0.5em 0;">
+    <svg viewBox="0 0 340 130" xmlns="http://www.w3.org/2000/svg" style="max-width:360px; width:100%;">
+      <text x="5" y="40" font-size="18" font-family="Georgia,serif" fill="#333">x&#x2081;</text>
+      <line x1="35" y1="35" x2="85" y2="55" stroke="#888" stroke-width="2"/>
+      <polygon points="82,50 92,55 82,60" fill="#888"/>
+      <text x="5" y="100" font-size="18" font-family="Georgia,serif" fill="#333">x&#x2082;</text>
+      <line x1="35" y1="95" x2="85" y2="75" stroke="#888" stroke-width="2"/>
+      <polygon points="82,70 92,75 82,80" fill="#888"/>
+      <rect x="92" y="30" width="130" height="70" rx="8" fill="#f5f3ef" stroke="#c8a96e" stroke-width="2"/>
+      <text x="157" y="72" font-size="14" font-family="Georgia,serif" fill="#7a6b3a" text-anchor="middle">ax&#x2081;+bx&#x2082;+c</text>
+      <line x1="222" y1="65" x2="275" y2="65" stroke="#888" stroke-width="2"/>
+      <polygon points="275,60 285,65 275,70" fill="#888"/>
+      <text x="295" y="72" font-size="18" font-family="Georgia,serif" fill="#333">y</text>
+    </svg>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Quick question:</strong> to find a, b and c, how many pairs of (x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;y) are needed?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="color:#2a7a2a;">&#10003; That's right! To solve for a, b and c we need at least <strong>three equations</strong>. Hence, three instances minimum.</p>
+  </div>
+</div>
+
+
+
+
+<div style="font-size:1.5em;">
+  <p>There could be a complex relationship between inputs and outputs:</p>
+  <p style="text-align:center; font-size:1.1em; color:#7a6b3a;"><strong>y = a &times; x&sup2; + b &times; x + c</strong></p>
+  <div style="text-align:center; margin:0.5em 0;">
+    <svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg" style="max-width:320px; width:100%;">
+      <text x="15" y="58" font-size="22" font-family="Georgia,serif" fill="#333">x</text>
+      <line x1="40" y1="50" x2="85" y2="50" stroke="#888" stroke-width="2"/>
+      <polygon points="85,45 95,50 85,55" fill="#888"/>
+      <rect x="95" y="20" width="110" height="60" rx="8" fill="#f5f3ef" stroke="#c8a96e" stroke-width="2"/>
+      <text x="150" y="55" font-size="14" font-family="Georgia,serif" fill="#7a6b3a" text-anchor="middle">ax&sup2;+bx+c</text>
+      <line x1="205" y1="50" x2="250" y2="50" stroke="#888" stroke-width="2"/>
+      <polygon points="250,45 260,50 250,55" fill="#888"/>
+      <text x="270" y="58" font-size="22" font-family="Georgia,serif" fill="#333">y</text>
+    </svg>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Or there could be a much more complex relationship:</p>
+    <p style="text-align:center; color:#7a6b3a;"><strong>y = ax<sub>1</sub>&sup2; + bx<sub>2</sub>&sup2; + cx<sub>1</sub> + dx<sub>2</sub> + ex<sub>1</sub>x<sub>2</sub> + f</strong></p>
+    <p>Here we have a, b, c, d, e and f &mdash; <strong>six parameters</strong>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>In case of LLMs, there are <strong>100s of billions</strong> of such parameters and the equation is much more complex!</p>
+  </div>
+</div>
+
+
+
+
 <div class="chapter-footer">
 
   <p><em><p>You started with two data points and a guess. You ended with functions
