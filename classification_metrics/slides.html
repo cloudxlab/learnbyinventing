@@ -315,6 +315,29 @@ models using ROC curves and AUC.</div>
 
 
         <section>
+          <div class="slide-content"><div style="font-size:1.4em;">
+  <p>Accuracy looks great at 0.80. But consider this:</p>
+  <p>A hospital tests <strong>1000 patients</strong> for a rare disease.
+  Only <strong>10</strong> actually have it.</p>
+  <p>A lazy model says: <em>&ldquo;Nobody is sick.&rdquo;</em></p>
+  <p>What is its accuracy?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="font-size:0.95em;"><strong>Accuracy = 990 / 1000 = 99%!</strong></p>
+    <p>But what are precision, recall, and F1?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="font-size:0.9em;">TP&nbsp;=&nbsp;0, FN&nbsp;=&nbsp;10 &rarr; <strong>Recall&nbsp;=&nbsp;0%</strong> &mdash;
+    the model missed every sick patient.</p>
+    <p>Accuracy is misleading when classes are imbalanced.<br/>
+    <strong>That&rsquo;s why we need precision and recall.</strong></p>
+  </div>
+</div>
+</div>
+        </section>
+
+
+
+        <section>
           <div class="slide-content"><div style="font-size:1.3em;">
   <p>Write functions for each metric:</p>
 <pre><code>def precision(tp, fp):
@@ -452,13 +475,9 @@ def false_positive_rate(fp, tn):
 
         <section>
           <div class="slide-content"><div style="font-size:1.3em;">
-  <p>For threshold <strong>t&nbsp;=&nbsp;0.5</strong>, what is the recall?</p>
-  <p style="font-family:monospace; font-size:0.85em;">
-    outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35]<br/>
-    actual &nbsp;= [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]
-  </p>
+  <p>Now do the same for <strong>recall</strong>. For <strong>t&nbsp;=&nbsp;0.5</strong>, what is the recall?</p>
   <div class="fragment" data-fragment-index="0">
-    <p style="font-size:0.9em;">apply_threshold &rarr; [1,0,0,1,0,1,1,0,1,0] &rarr; TP=4, FN=1 &rarr;
+    <p style="font-size:0.9em;">Same predictions: TP=4, FN=1 &rarr;
     <strong>Recall&nbsp;=&nbsp;0.80</strong></p>
     <p>Write a similar function for recall:</p>
 <pre><code>def recall_at_threshold(actual, outputs, t):
@@ -538,24 +557,38 @@ def false_positive_rate(fp, tn):
 
 
         <section>
+          <div class="slide-content"><div style="font-size:1.4em;">
+  <p>Which metric would you optimize?</p>
+  <p><strong>Scenario 1:</strong> You&rsquo;re screening patients for cancer.<br/>
+  Missing a sick patient (FN) could be fatal.<br/>
+  &rarr; Optimize ___?</p>
+  <p><strong>Scenario 2:</strong> You&rsquo;re filtering spam emails.<br/>
+  Blocking a real email (FP) is very annoying.<br/>
+  &rarr; Optimize ___?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>1. Recall</strong> &mdash; catch every positive, even if some healthy patients get extra tests.</p>
+    <p><strong>2. Precision</strong> &mdash; only block when sure, even if some spam slips through.</p>
+    <p style="font-size:0.85em;">The right metric depends on the <em>cost</em> of each type of error.</p>
+  </div>
+</div>
+</div>
+        </section>
+
+
+
+        <section>
           <div class="slide-content"><div style="font-size:1.3em;">
   <p>Plot Precision, Recall, and F1 vs Threshold to visualize the tradeoff:</p>
 <pre><code>def plot_metrics_vs_threshold(actual, outputs, thresholds):
-    # For each threshold:
-    #   apply_threshold -> confusion_matrix -> metrics
+    # Reuse your _at_threshold functions!
     # Plot precision, recall, F1 vs threshold</code></pre>
   <div class="fragment" data-fragment-index="0">
 <pre><code>import matplotlib.pyplot as plt
 
 def plot_metrics_vs_threshold(actual, outputs, thresholds):
-    precs, recs, f1s = [], [], []
-    for t in thresholds:
-        pred = apply_threshold(outputs, t)
-        tp, tn, fp, fn = confusion_matrix(actual, pred)
-        p = precision(tp, fp) if (tp + fp) > 0 else 0
-        r = recall(tp, fn) if (tp + fn) > 0 else 0
-        f = f1_score(p, r) if (p + r) > 0 else 0
-        precs.append(p); recs.append(r); f1s.append(f)
+    precs = [precision_at_threshold(actual, outputs, t) for t in thresholds]
+    recs  = [recall_at_threshold(actual, outputs, t) for t in thresholds]
+    f1s   = [f1_at_threshold(actual, outputs, t) for t in thresholds]
     plt.plot(thresholds, precs, label='Precision')
     plt.plot(thresholds, recs, label='Recall')
     plt.plot(thresholds, f1s, label='F1')
@@ -614,7 +647,7 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
 
 
         <section>
-          <div class="slide-content"><div style="font-size:1.3em;">
+          <div class="slide-content"><div style="font-size:1.4em;">
   <div style="display:flex; align-items:flex-start; gap:1.5em; justify-content:center;">
     <div style="flex:1; min-width:0;">
       <p>The <strong>ROC curve</strong> plots TPR (recall) vs FPR at various thresholds.</p>
@@ -633,12 +666,22 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
     </svg>
   </div>
   <div class="fragment" data-fragment-index="0">
-    <p>Write a function to compute and plot the ROC curve:</p>
+    <p style="font-size:0.9em;">As threshold decreases: both TPR and FPR increase (more positives predicted).
+    The ROC curve captures this tradeoff at every possible threshold.</p>
+  </div>
+</div>
+</div>
+        </section>
+
+
+
+        <section>
+          <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Write a function to compute and plot the ROC curve:</p>
 <pre><code>def plot_roc(actual, outputs, thresholds):
     # For each threshold: compute TPR, FPR
     # Plot TPR vs FPR + diagonal</code></pre>
-  </div>
-  <div class="fragment" data-fragment-index="1">
+  <div class="fragment" data-fragment-index="0">
 <pre><code>def plot_roc(actual, outputs, thresholds):
     tprs, fprs = [], []
     for t in thresholds:
@@ -713,6 +756,34 @@ print("AUC Model 1:", compute_auc(fprs1, tprs1))
 fprs2, tprs2 = plot_roc(actual, outputs2, thresholds)
 print("AUC Model 2:", compute_auc(fprs2, tprs2))</code></pre>
     <p style="font-size:0.9em;">The model with the higher AUC is the better classifier!</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="font-size:0.9em; color:#666;">Expected: Logistic Regression AUC &asymp; 0.99 &nbsp;&bull;&nbsp;
+    Decision Stump AUC &asymp; 0.85</p>
+  </div>
+</div>
+</div>
+        </section>
+
+
+
+        <section>
+          <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You just built from scratch what sklearn provides:</p>
+<pre><code>from sklearn.metrics import (
+    confusion_matrix, precision_score, recall_score,
+    f1_score, roc_auc_score
+)
+
+y_pred = apply_threshold(outputs1, 0.5)
+
+print("Precision:", precision_score(actual, y_pred))
+print("Recall:   ", recall_score(actual, y_pred))
+print("F1:       ", f1_score(actual, y_pred))
+print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Compare with your implementations &mdash; the numbers should match!</p>
+    <p style="font-size:0.9em;">Now you know exactly what these functions do under the hood.</p>
   </div>
 </div>
 </div>
