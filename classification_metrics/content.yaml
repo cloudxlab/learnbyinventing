@@ -355,10 +355,10 @@ blocks:
         </div>
       </div>
 
-  # ── Slide 10: Precision vs threshold ─────────────
+  # ── Slide 10a: Precision — hand calculate + write code ──
   - type: text
     text: |
-      <div style="font-size:1.2em;">
+      <div style="font-size:1.3em;">
         <p>For threshold <strong>t&nbsp;=&nbsp;0.5</strong>, what is the precision?</p>
         <p style="font-family:monospace; font-size:0.85em;">
           outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35]<br/>
@@ -376,11 +376,17 @@ blocks:
           pred = apply_threshold(outputs, t)
           tp, tn, fp, fn = confusion_matrix(actual, pred)
           return precision(tp, fp) if (tp + fp) > 0 else 0</code></pre>
-          <p>Run it for each threshold:</p>
+        </div>
+      </div>
+
+  # ── Slide 10b: Precision — run for all thresholds ──
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p>Run <code>precision_at_threshold</code> for each threshold:</p>
       <pre><code>for t in [0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9]:
           print(f"t={t}: {precision_at_threshold(actual, outputs, t):.2f}")</code></pre>
-        </div>
-        <div class="fragment" data-fragment-index="2">
+        <div class="fragment" data-fragment-index="0">
           <table style="margin:0.4em auto; text-align:center; font-size:0.9em;">
             <tr><th>Threshold</th><td>0.2</td><td>0.3</td><td>0.4</td><td>0.5</td><td>0.6</td><td>0.8</td><td>0.9</td></tr>
             <tr><th>Precision</th><td>0.56</td><td>0.63</td><td>0.83</td><td>0.80</td><td><strong>1.00</strong></td><td><strong>1.00</strong></td><td><strong>1.00</strong></td></tr>
@@ -390,10 +396,10 @@ blocks:
         </div>
       </div>
 
-  # ── Slide 11: Recall vs threshold ────────────────
+  # ── Slide 11a: Recall — hand calculate + write code ──
   - type: text
     text: |
-      <div style="font-size:1.2em;">
+      <div style="font-size:1.3em;">
         <p>For threshold <strong>t&nbsp;=&nbsp;0.5</strong>, what is the recall?</p>
         <p style="font-family:monospace; font-size:0.85em;">
           outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35]<br/>
@@ -411,11 +417,17 @@ blocks:
           pred = apply_threshold(outputs, t)
           tp, tn, fp, fn = confusion_matrix(actual, pred)
           return recall(tp, fn) if (tp + fn) > 0 else 0</code></pre>
-          <p>Run it for each threshold:</p>
+        </div>
+      </div>
+
+  # ── Slide 11b: Recall — run for all thresholds ──
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p>Run <code>recall_at_threshold</code> for each threshold:</p>
       <pre><code>for t in [0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9]:
           print(f"t={t}: {recall_at_threshold(actual, outputs, t):.2f}")</code></pre>
-        </div>
-        <div class="fragment" data-fragment-index="2">
+        <div class="fragment" data-fragment-index="0">
           <table style="margin:0.4em auto; text-align:center; font-size:0.9em;">
             <tr><th>Threshold</th><td>0.2</td><td>0.3</td><td>0.4</td><td>0.5</td><td>0.6</td><td>0.8</td><td>0.9</td></tr>
             <tr><th>Recall</th><td><strong>1.00</strong></td><td><strong>1.00</strong></td><td><strong>1.00</strong></td><td>0.80</td><td>0.80</td><td>0.60</td><td>0.20</td></tr>
@@ -425,10 +437,10 @@ blocks:
         </div>
       </div>
 
-  # ── Slide 12: F1 vs threshold ────────────────────
+  # ── Slide 12a: F1 — hand calculate + write code ──
   - type: text
     text: |
-      <div style="font-size:1.2em;">
+      <div style="font-size:1.3em;">
         <p>For threshold <strong>t&nbsp;=&nbsp;0.5</strong>, what is the F1 Score?</p>
         <p style="font-size:0.9em;">You already know: Precision&nbsp;=&nbsp;0.80, Recall&nbsp;=&nbsp;0.80</p>
         <div class="fragment" data-fragment-index="0">
@@ -442,11 +454,17 @@ blocks:
           p = precision_at_threshold(actual, outputs, t)
           r = recall_at_threshold(actual, outputs, t)
           return f1_score(p, r) if (p + r) > 0 else 0</code></pre>
-          <p>Run it for each threshold:</p>
+        </div>
+      </div>
+
+  # ── Slide 12b: F1 — run for all thresholds ──
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p>Run <code>f1_at_threshold</code> for each threshold:</p>
       <pre><code>for t in [0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9]:
           print(f"t={t}: {f1_at_threshold(actual, outputs, t):.2f}")</code></pre>
-        </div>
-        <div class="fragment" data-fragment-index="2">
+        <div class="fragment" data-fragment-index="0">
           <table style="margin:0.4em auto; text-align:center; font-size:0.9em;">
             <tr><th>Threshold</th><td>0.2</td><td>0.3</td><td>0.4</td><td>0.5</td><td>0.6</td><td>0.8</td><td>0.9</td></tr>
             <tr><th>F1</th><td>0.71</td><td>0.77</td><td><strong>0.91</strong></td><td>0.80</td><td>0.89</td><td>0.75</td><td>0.33</td></tr>
