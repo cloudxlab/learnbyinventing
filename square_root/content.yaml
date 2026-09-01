@@ -2,26 +2,37 @@ chapter:
   id: square_root
   title: "Finding Square Roots"
   intro: |
-    You're going to find the square root of any number — without using any built-in
-    function. All you need is multiplication, a bit of guessing, and a clever trick
-    that cuts your search in half every time.
+    You're going to find the square root of any number &mdash; without using
+    any built-in function. All you need is multiplication, a bit of guessing,
+    and a clever trick that cuts your search in half every time.
 
-    Along the way, you'll pick up Python basics: expressions, variables, if-else,
-    loops, and functions — all by solving one real problem.
+    Along the way, you'll pick up Python basics: expressions, variables,
+    if-else, loops, and functions &mdash; all by solving one real problem.
   mathjax: false
   footer: |
-    You started by typing `2 * 2` into Python. You ended with a function that
-    computes square roots to arbitrary precision using binary search. Every step was
-    something you could reason about — no magic, no memorization.
+    You started by typing <code>2 * 2</code> into Python. You ended with a function
+    that computes square roots to arbitrary precision using binary search.
+    Every step was something you could reason about &mdash; no magic.
 
     **Going further:**
 
-    - **Cube roots:** The same halving trick works — just check `guess * guess * guess`
-      instead of `guess * guess`. Try writing `mycuberoot(num, lo, hi, iterations)`.
+    - **Cube roots:** The same halving trick works &mdash; just check
+      <code>guess * guess * guess</code>. Try writing
+      <code>mycuberoot(num, lo, hi, iterations)</code>.
     - **More precision:** Instead of a fixed number of iterations, stop when
-      `abs(guess * guess - num)` is smaller than some tiny number like `0.0000001`.
-    - **The full Binary Search chapter** on this site applies the same idea to nth roots,
-      logarithms, and searching sorted arrays.
+      <code>abs(guess * guess - num)</code> is smaller than some tiny number
+      like <code>0.0000001</code>.
+    - **The full Binary Search chapter** on this site applies the same idea
+      to nth roots, logarithms, and searching sorted arrays.
+  glossary:
+    - term: Square
+      definition: "A number multiplied by itself: 3&sup2; = 3 &times; 3 = 9."
+    - term: Square Root
+      definition: "The reverse of squaring: sqrt(9) = 3, because 3 &times; 3 = 9."
+    - term: Binary Search
+      definition: "Finding an answer by repeatedly halving the search range &mdash; guess the middle, eliminate the wrong half, repeat."
+    - term: Variable
+      definition: "A named box that stores a value: lo = 2, hi = 3, guess = 2.5."
 
 blocks:
   # ═══════════════════════════════════════════════════
@@ -31,99 +42,71 @@ blocks:
   - type: part
     number: 1
     title: "Squares and Square Roots"
-    estimated_time: "~10 min"
+    estimated_time: "~5 min"
     intro: |
-      Open a Jupyter notebook or [Google Colab](https://colab.research.google.com/).
-      You can type a math expression into a cell and press **Shift+Enter** to run
-      it — Python will be your calculator.
+      Open a [Jupyter notebook](https://jupyter.org/try) or
+      [Google Colab](https://colab.research.google.com/).
+      Use Python as a calculator for every step below &mdash;
+      type an expression into a cell and press **Shift+Enter** to run it.
 
-  - type: exercise
-    kind: coding
-    id: ex-1-1
-    part: 1
-    number: 1
-    title: "What Is a Square?"
-    description: |
-      The **square** of a number is the number multiplied by itself.
+  # ── Slide 1: Python as a calculator ──────────────
+  - type: text
+    text: |
+      <div style="font-size:1.5em;">
+        <p>Type an expression into a cell and press <strong>Shift+Enter</strong>:</p>
+      <pre><code>3 * 4</code></pre>
+        <div class="fragment" data-fragment-index="0">
+          <p style="font-family:monospace; font-size:0.9em; color:#2e7d32;">12</p>
+          <p>Python is your calculator. Now &mdash;</p>
+          <p><strong>What is the square of 2?</strong></p>
+          <p style="font-size:0.85em;">(The square of a number is the number
+          multiplied by itself.)</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+      <pre><code>2 * 2</code></pre>
+          <p style="font-family:monospace; font-size:0.9em; color:#2e7d32;">4</p>
+        </div>
+      </div>
 
-      What is the square of 2? Type `2 * 2` into a cell and press Shift+Enter.
-    provided_code:
-      - label: "try it"
-        code: |
-          2 * 2
-    hints:
-      - "You should see `4`. The square of 2 is 4."
-    solution:
-      code: null
-      text: |
-        2 × 2 = 4. The square of 2 is 4.
+  # ── Slide 2: More squares, then reverse ──────────
+  - type: text
+    text: |
+      <div style="font-size:1.5em;">
+        <p><strong>What is the square of 3? Of 4? Of 5?</strong></p>
+        <div class="fragment" data-fragment-index="0">
+          <table style="margin:0.5em auto; font-size:0.9em;">
+            <tr><td style="padding:0.2em 0.8em;">3 &times; 3</td><td>=</td><td><strong>9</strong></td></tr>
+            <tr><td style="padding:0.2em 0.8em;">4 &times; 4</td><td>=</td><td><strong>16</strong></td></tr>
+            <tr><td style="padding:0.2em 0.8em;">5 &times; 5</td><td>=</td><td><strong>25</strong></td></tr>
+          </table>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p>Now <strong>reverse the question</strong>:</p>
+          <p><strong>What is the square root of 16? Of 25? Of 9?</strong></p>
+          <p style="font-size:0.85em;">Check your answer by squaring your guess in Python.</p>
+        </div>
+        <div class="fragment" data-fragment-index="2">
+          <p style="font-size:0.9em;">sqrt(16) = <strong>4</strong>,
+          &nbsp;sqrt(25) = <strong>5</strong>,
+          &nbsp;sqrt(9) = <strong>3</strong></p>
+        </div>
+      </div>
 
-  - type: exercise
-    kind: coding
-    id: ex-1-2
-    part: 1
-    number: 2
-    title: "More Squares"
-    description: |
-      What is the square of 3? Of 4? Of 5? Compute each one in Python.
-    provided_code: []
-    hints:
-      - |
-        ```python
-        print(3 * 3)
-        print(4 * 4)
-        print(5 * 5)
-        ```
-    solution:
-      code: |
-        print(3 * 3)   # 9
-        print(4 * 4)   # 16
-        print(5 * 5)   # 25
-      text: null
-
-  - type: exercise
-    kind: coding
-    id: ex-1-3
-    part: 1
-    number: 3
-    title: "Going Backwards — Square Roots"
-    description: |
-      The **square root** is the reverse question: what number, multiplied by
-      itself, gives you the target?
-
-      What is the square root of 16? Of 25? Of 9?
-
-      Check each answer by squaring it in Python.
-    provided_code: []
-    hints:
-      - "sqrt(16) = 4, because 4 × 4 = 16. Check it: type `4 * 4` and verify you get 16."
-      - "sqrt(25) = 5, sqrt(9) = 3. These are called *perfect squares* — their square roots are whole numbers."
-    solution:
-      code: |
-        print(4 * 4)   # 16 ✓ → sqrt(16) = 4
-        print(5 * 5)   # 25 ✓ → sqrt(25) = 5
-        print(3 * 3)   #  9 ✓ → sqrt(9) = 3
-      text: null
-
-  - type: exercise
-    kind: conceptual
-    id: ex-1-4
-    part: 1
-    number: 4
-    title: "A Harder Question"
-    description: |
-      What is the square root of 5?
-
-      It's not a whole number. But you know something about it already.
-    prompts:
-      - "Is the square root of 5 between 2 and 3? How do you know?"
-      - "Can you take a guess? Don't overthink it — just pick a number between 2 and 3."
-    hints:
-      - "2 × 2 = 4 (too small) and 3 × 3 = 9 (too big). So sqrt(5) must be somewhere between 2 and 3."
-    solution:
-      code: null
-      text: |
-        Since 2² = 4 < 5 and 3² = 9 > 5, the square root of 5 is between 2 and 3.
+  # ── Slide 3: sqrt(5) — not a whole number ───────
+  - type: text
+    text: |
+      <div style="font-size:1.5em;">
+        <p><strong>What is the square root of 5?</strong></p>
+        <p>It&rsquo;s not a whole number. But you already know something about it.</p>
+        <div class="fragment" data-fragment-index="0">
+          <table style="margin:0.5em auto; font-size:0.9em;">
+            <tr><td style="padding:0.2em 0.8em;">2 &times; 2 = 4</td><td>&rarr; too <strong>small</strong></td></tr>
+            <tr><td style="padding:0.2em 0.8em;">3 &times; 3 = 9</td><td>&rarr; too <strong>big</strong></td></tr>
+          </table>
+          <p>So the square root of 5 is <strong>between 2 and 3</strong>.</p>
+          <p>Just take a guess!</p>
+        </div>
+      </div>
 
   # ═══════════════════════════════════════════════════
   # PART 2: The Guessing Game
@@ -132,176 +115,130 @@ blocks:
   - type: part
     number: 2
     title: "The Guessing Game"
-    estimated_time: "~15 min"
+    estimated_time: "~10 min"
     intro: |
-      You know sqrt(5) is between 2 and 3. Let's find it by guessing, checking,
-      and narrowing down.
+      You know sqrt(5) is between 2 and 3. Let's find it by guessing,
+      checking, and narrowing down.
 
-  - type: exercise
-    kind: coding
-    id: ex-2-1
-    part: 2
-    number: 1
-    title: "Check Your Guess"
-    description: |
-      Pick a number between 2 and 3 as your guess for sqrt(5). Square it in
-      Python. Was it too high or too low?
-    provided_code:
-      - label: "check your guess"
-        code: |
-          guess = 2.5        # <-- change this to your guess
-          print(guess * guess)
-    hints:
-      - "If you guessed 2.5: 2.5 × 2.5 = 6.25. That's bigger than 5 — too high! So the answer must be between 2 and 2.5."
-      - "If you guessed 2.2: 2.2 × 2.2 = 4.84. That's less than 5 — too low! So the answer is between 2.2 and 3."
-    solution:
-      code: null
-      text: |
-        Whatever you guessed, squaring it tells you whether to go higher or lower.
-        Each guess eliminates half the range.
-
-  - type: exercise
-    kind: coding
-    id: ex-2-2
-    part: 2
-    number: 2
-    title: "Take a Better Guess"
-    description: |
-      Based on your first guess, you now have a narrower range. Take a new guess
-      inside that range and check again. Is your new guess too high or too low?
-
-      Repeat this one more time — three guesses total.
-    provided_code: []
-    hints:
-      - "If your range is [2, 2.5], try the middle: 2.25. Check: 2.25 × 2.25 = 5.0625. Too high! New range: [2, 2.25]."
-      - "Next middle: (2 + 2.25) / 2 = 2.125. Check: 2.125 × 2.125 = 4.515625. Too low! New range: [2.125, 2.25]."
-    solution:
-      code: |
-        # Guess 1
-        guess = 2.5
-        print(f"{guess} * {guess} = {guess * guess}")    # 6.25, too high
-
-        # Guess 2 — between 2 and 2.5
-        guess = 2.25
-        print(f"{guess} * {guess} = {guess * guess}")    # 5.0625, too high
-
-        # Guess 3 — between 2 and 2.25
-        guess = 2.125
-        print(f"{guess} * {guess} = {guess * guess}")    # 4.515625, too low
-      text: null
-
-  - type: exercise
-    kind: coding
-    id: ex-2-3
-    part: 2
-    number: 3
-    title: "Use Variables to Track the Range"
-    description: |
-      Instead of keeping track of the range in your head, use two variables:
-      `lo` (the lower bound) and `hi` (the upper bound). Compute your guess as
-      the midpoint: `guess = (lo + hi) / 2`.
-
-      Run the code below, then update `lo` or `hi` by hand and run it again.
-    provided_code:
-      - label: "track the range"
-        code: |
-          lo = 2
-          hi = 3
-
-          guess = (lo + hi) / 2
-          print(f"Guess: {guess}")
-          print(f"Guess squared: {guess * guess}")
-          print(f"Target: 5")
-    hints:
-      - "If `guess * guess` was bigger than 5 (too high), set `hi = guess`. If it was smaller (too low), set `lo = guess`. Then run the cell again — the new midpoint is a better guess."
-    solution:
-      code: |
-        lo = 2
-        hi = 3
-
-        guess = (lo + hi) / 2
-        print(f"Guess: {guess}, squared: {guess * guess}")
-        # 2.5² = 6.25 > 5, so too high:
-        hi = guess
-
-        guess = (lo + hi) / 2
-        print(f"Guess: {guess}, squared: {guess * guess}")
-        # 2.25² = 5.0625 > 5, so too high:
-        hi = guess
-
-        guess = (lo + hi) / 2
-        print(f"Guess: {guess}, squared: {guess * guess}")
-      text: null
-
-  - type: exercise
-    kind: coding
-    id: ex-2-4
-    part: 2
-    number: 4
-    title: "Let Python Decide"
-    description: |
-      You've been deciding manually: "too high → update hi, too low → update lo."
-      Python can make this decision for you using `if` and `else`.
-
-      Run the code below. Then run the block from `guess = ...` to the last
-      `print(...)` a few more times. Watch `lo` and `hi` get closer together!
-    provided_code:
-      - label: "if-else logic"
-        code: |
-          lo = 2
-          hi = 3
-          num = 5
-
-          guess = (lo + hi) / 2
-          print(f"Guess: {guess}, squared: {guess * guess}")
-
-          if guess * guess > num:
-              hi = guess       # guess was too high — search lower half
-          else:
-              lo = guess       # guess was too low — search upper half
-
-          print(f"New range: [{lo}, {hi}]")
-    hints:
-      - "Copy the block starting from `guess = (lo + hi) / 2` down to `print(f\"New range...\")` and paste it below itself. Run the whole cell — you'll see two rounds of guessing happen automatically."
-    solution:
-      code: |
-        lo = 2
-        hi = 3
-        num = 5
-
-        # Round 1
-        guess = (lo + hi) / 2
-        if guess * guess > num:
-            hi = guess
-        else:
-            lo = guess
-        print(f"Round 1: guess = {guess:.6f}, range = [{lo}, {hi}]")
-
-        # Round 2
-        guess = (lo + hi) / 2
-        if guess * guess > num:
-            hi = guess
-        else:
-            lo = guess
-        print(f"Round 2: guess = {guess:.6f}, range = [{lo}, {hi}]")
-
-        # Round 3
-        guess = (lo + hi) / 2
-        if guess * guess > num:
-            hi = guess
-        else:
-            lo = guess
-        print(f"Round 3: guess = {guess:.6f}, range = [{lo}, {hi}]")
-      text: null
-
-  - type: reveal
+  # ── Slide 4: Check your guess ────────────────────
+  - type: text
     text: |
-      Each guess cuts your search range in half. After the first guess, you have
-      half the range. After the second, a quarter. After ten guesses, you've
-      narrowed it down to $\frac{1}{1024}$ of the original range.
+      <div style="font-size:1.4em;">
+        <p><strong>Check your guess:</strong> square it in Python.</p>
+      <pre><code>guess = 2.5
+      print(guess * guess)</code></pre>
+        <div class="fragment" data-fragment-index="0">
+          <p style="font-family:monospace; font-size:0.9em; color:#2e7d32;">6.25</p>
+          <p>6.25 is <strong>bigger</strong> than 5.
+          Your guess was <strong>too high</strong>!</p>
+          <p>So the answer is between 2 and 2.5.
+          <strong>Take a better guess!</strong></p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+      <pre><code>guess = 2.25
+      print(guess * guess)</code></pre>
+          <p style="font-family:monospace; font-size:0.9em; color:#2e7d32;">5.0625</p>
+          <p>Still too high! Answer is between 2 and 2.25.</p>
+        </div>
+        <div class="fragment" data-fragment-index="2">
+      <pre><code>guess = 2.125
+      print(guess * guess)</code></pre>
+          <p style="font-family:monospace; font-size:0.9em; color:#2e7d32;">4.515625</p>
+          <p>Too <strong>low</strong>! Answer is between 2.125 and 2.25.</p>
+        </div>
+      </div>
 
-      This "halving" strategy is called **binary search** — "binary" because you
-      split the range in two each time.
+  # ── Slide 5: Variables — lo and hi ───────────────
+  - type: text
+    text: |
+      <div style="font-size:1.4em;">
+        <p>Your next guess will be between which two numbers?</p>
+        <p>Call them <code>lo</code> and <code>hi</code>, then calculate
+        the midpoint:</p>
+      <pre><code>lo = 2
+      hi = 3
+
+      guess = (lo + hi) / 2
+      print(f"Guess: {guess}")
+      print(f"Guess squared: {guess * guess}")</code></pre>
+        <div class="fragment" data-fragment-index="0">
+          <p style="font-family:monospace; font-size:0.85em; color:#2e7d32;">
+            Guess: 2.5<br/>
+            Guess squared: 6.25
+          </p>
+          <p>Too high! So the answer is between <code>lo</code> and <code>guess</code>.</p>
+          <p><strong>Update <code>hi = guess</code></strong> and compute
+          a new midpoint.</p>
+        </div>
+      </div>
+
+  # ── Slide 6: if-else ─────────────────────────────
+  - type: text
+    text: |
+      <style>
+        .reveal .code-stack { position: relative; }
+        .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+      </style>
+      <div style="font-size:1.3em;">
+        <p>Can you automatically change <code>lo</code> or <code>hi</code>
+        depending on whether your guess squared was higher or lower than 5?</p>
+        <p>This is Python&rsquo;s <code>if</code>-<code>else</code>:</p>
+        <div class="code-stack" style="min-height:13em;">
+          <div class="code-step fragment fade-out" data-fragment-index="0">
+      <pre><code>lo = 2
+      hi = 3
+      num = 5
+
+      guess = (lo + hi) / 2
+
+      if guess * guess > num:
+          # guess was too high — which bound should change?
+      else:
+          # guess was too low — which bound should change?
+
+      print(f"New range: [{lo}, {hi}]")</code></pre>
+          </div>
+          <div class="code-step fragment" data-fragment-index="0">
+      <pre><code>lo = 2
+      hi = 3
+      num = 5
+
+      guess = (lo + hi) / 2
+
+      if guess * guess > num:
+          hi = guess       # too high — bring ceiling down
+      else:
+          lo = guess       # too low — raise the floor
+
+      print(f"New range: [{lo}, {hi}]")</code></pre>
+          </div>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p style="font-family:monospace; font-size:0.85em; color:#2e7d32;">
+            New range: [2, 2.5]</p>
+        </div>
+      </div>
+
+  # ── Slide 7: Run again — getting closer ──────────
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p><strong>Run the logic again and again.</strong>
+        Do you see your guess getting closer?</p>
+        <table style="margin:0.5em auto; font-size:0.85em;">
+          <tr><th style="padding:0.2em 0.5em;">Round</th><th style="padding:0.2em 0.5em;">lo</th><th style="padding:0.2em 0.5em;">hi</th><th style="padding:0.2em 0.5em;">guess</th><th style="padding:0.2em 0.5em;">guess&sup2;</th><th style="padding:0.2em 0.5em;">&nbsp;</th></tr>
+          <tr><td>1</td><td>2</td><td>3</td><td>2.5</td><td>6.25</td><td>&darr; too high</td></tr>
+          <tr class="fragment" data-fragment-index="0"><td>2</td><td>2</td><td>2.5</td><td>2.25</td><td>5.0625</td><td>&darr; too high</td></tr>
+          <tr class="fragment" data-fragment-index="0"><td>3</td><td>2</td><td>2.25</td><td>2.125</td><td>4.5156</td><td>&uarr; too low</td></tr>
+          <tr class="fragment" data-fragment-index="0"><td>4</td><td>2.125</td><td>2.25</td><td>2.1875</td><td>4.7852</td><td>&uarr; too low</td></tr>
+          <tr class="fragment" data-fragment-index="0"><td>5</td><td>2.1875</td><td>2.25</td><td>2.2188</td><td>4.9231</td><td>&uarr; too low</td></tr>
+        </table>
+        <div class="fragment" data-fragment-index="1">
+          <p>Each guess <strong>cuts the range in half</strong>.
+          After 20 rounds, the range is smaller than 0.000001.</p>
+          <p>But copying this block 20 times is tedious&hellip;</p>
+        </div>
+      </div>
 
   # ═══════════════════════════════════════════════════
   # PART 3: Let the Loop Do the Work
@@ -310,243 +247,199 @@ blocks:
   - type: part
     number: 3
     title: "Let the Loop Do the Work"
-    estimated_time: "~15 min"
+    estimated_time: "~10 min"
     intro: |
-      Copying and pasting the same block over and over is tedious. Python's
-      `for` loop can repeat it for you — as many times as you want.
+      Copying and pasting the same block over and over is tedious.
+      Python's <code>for</code> loop can repeat it for you &mdash;
+      as many times as you want.
 
-  - type: exercise
-    kind: coding
-    id: ex-3-1
-    part: 3
-    number: 1
-    title: "20 Guesses in One Go"
-    description: |
-      Put your guess-and-update logic inside a `for` loop that runs 20 times.
-      Does your guess get closer to the real answer?
-    provided_code:
-      - label: "skeleton"
-        code: |
-          lo = 2
-          hi = 3
-          num = 5
+  # ── Slide 8: for loop ────────────────────────────
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p>Run your logic <strong>20 times</strong> using a <code>for</code> loop:</p>
+        <div class="code-stack" style="min-height:13em;">
+          <div class="code-step fragment fade-out" data-fragment-index="0">
+      <pre><code>lo = 2
+      hi = 3
+      num = 5
 
-          for i in range(20):
-              guess = (lo + hi) / 2
-              # Use if-else to update lo or hi (same logic as Exercise 2.4)
+      for i in range(20):
+          guess = (lo + hi) / 2
+          # Use your if-else logic here to update lo or hi
 
-          print(f"Final answer: sqrt({num}) ≈ {guess}")
-          print(f"guess squared: {guess * guess}")
-    hints:
-      - "The body of the loop is the same if-else block you wrote in Exercise 2.4 — just put it inside the `for`."
-      - |
-        ```python
-        for i in range(20):
-            guess = (lo + hi) / 2
-            if guess * guess > num:
-                hi = guess
-            else:
-                lo = guess
-        ```
-    solution:
-      code: null
-      text: |
-        After 20 rounds, `guess * guess` is extremely close to 5. The range
-        `[lo, hi]` has shrunk to an interval smaller than 0.000001.
+      print(f"sqrt({num}) = {guess}")
+      print(f"guess squared = {guess * guess}")</code></pre>
+          </div>
+          <div class="code-step fragment" data-fragment-index="0">
+      <pre><code>lo = 2
+      hi = 3
+      num = 5
 
-  - type: exercise
-    kind: coding
-    id: ex-3-2
-    part: 3
-    number: 2
-    title: "Check Your Answer!"
-    description: |
-      Python has a built-in square root function. Let's see if your answer matches.
-    provided_code:
-      - label: "verify"
-        code: |
-          import math
+      for i in range(20):
+          guess = (lo + hi) / 2
+          if guess * guess > num:
+              hi = guess
+          else:
+              lo = guess
 
-          print(f"Your answer:   {guess}")
-          print(f"math.sqrt(5):  {math.sqrt(5)}")
-          print(f"Difference:    {abs(guess - math.sqrt(5))}")
-    hints:
-      - "The difference should be tiny — on the order of 0.000001 or smaller. Your simple guessing loop matches Python's built-in function!"
-    solution:
-      code: null
-      text: |
-        Your answer and `math.sqrt(5)` should match to many decimal places.
-        Congratulations — you just computed a square root from scratch!
+      print(f"sqrt({num}) = {guess}")
+      print(f"guess squared = {guess * guess}")</code></pre>
+          </div>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p style="font-family:monospace; font-size:0.85em; color:#2e7d32;">
+            sqrt(5) = 2.2360679774961853<br/>
+            guess squared = 5.000000000000002
+          </p>
+        </div>
+      </div>
 
-  - type: exercise
-    kind: coding
-    id: ex-3-3
-    part: 3
-    number: 3
-    title: "Try Another Number"
-    description: |
-      Now find the square root of 10 using the same approach.
+  # ── Slide 9: Check with math.sqrt ────────────────
+  - type: text
+    text: |
+      <div style="font-size:1.4em;">
+        <p>Did your guess squared get close to 5?
+        Let&rsquo;s compare with Python&rsquo;s built-in:</p>
+      <pre><code>import math
+      print(f"Your answer:  {guess}")
+      print(f"math.sqrt(5): {math.sqrt(5)}")</code></pre>
+        <div class="fragment" data-fragment-index="0">
+          <p style="font-family:monospace; font-size:0.85em; color:#2e7d32;">
+            Your answer: &nbsp;2.2360679774961853<br/>
+            math.sqrt(5): 2.23606797749979
+          </p>
+          <p><strong>They match!</strong>
+          Your simple guessing loop matches the built-in function.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p>Now repeat the process for <strong>square root of 10</strong>.</p>
+          <p style="font-size:0.9em;">What should <code>lo</code> and
+          <code>hi</code> start at?</p>
+        </div>
+        <div class="fragment" data-fragment-index="2">
+          <p style="font-size:0.9em;">3&sup2; = 9 (too small),
+          4&sup2; = 16 (too big) &rarr;
+          <code>lo = 3, hi = 4</code></p>
+          <p style="font-size:0.9em;">Run the same loop &mdash; it works!</p>
+        </div>
+      </div>
 
-      What should `lo` and `hi` start at?
-    provided_code: []
-    hints:
-      - "3² = 9 (too small) and 4² = 16 (too big). So `lo = 3` and `hi = 4`."
-      - |
-        ```python
-        lo = 3
-        hi = 4
-        num = 10
-
-        for i in range(20):
-            guess = (lo + hi) / 2
-            if guess * guess > num:
-                hi = guess
-            else:
-                lo = guess
-
-        print(f"sqrt(10) ≈ {guess}")
-        print(f"math.sqrt(10) = {math.sqrt(10)}")
-        ```
-    solution:
-      code: |
-        lo = 3
-        hi = 4
-        num = 10
-
-        for i in range(20):
-            guess = (lo + hi) / 2
-            if guess * guess > num:
-                hi = guess
-            else:
-                lo = guess
-
-        import math
-        print(f"sqrt(10) ≈ {guess}")
-        print(f"math.sqrt(10) = {math.sqrt(10)}")
-      text: null
+  # ── Slide 10: This is binary search ──────────────
+  - type: text
+    text: |
+      <div style="font-size:1.4em;">
+        <p>Every guess <strong>eliminates half</strong> of the remaining range.</p>
+        <table style="margin:0.5em auto; font-size:0.85em;">
+          <tr><td style="padding:0.2em 0.8em;">After 1 guess:</td><td>half the range left</td></tr>
+          <tr><td style="padding:0.2em 0.8em;">After 5 guesses:</td><td>1/32 of the range</td></tr>
+          <tr><td style="padding:0.2em 0.8em;">After 10 guesses:</td><td>1/1024 of the range</td></tr>
+          <tr><td style="padding:0.2em 0.8em;">After 20 guesses:</td><td>1/1,048,576 of the range</td></tr>
+        </table>
+        <div class="fragment" data-fragment-index="0">
+          <p>This &ldquo;halving&rdquo; strategy is called
+          <strong>binary search</strong> &mdash; &ldquo;binary&rdquo; because
+          you split the range in <strong>two</strong> each time.</p>
+          <p style="font-size:0.9em;">It is one of the most important algorithms
+          in computer science &mdash; and you just invented it.</p>
+        </div>
+      </div>
 
   # ═══════════════════════════════════════════════════
-  # PART 4: Build Your Own Square Root Function
+  # PART 4: Build Your Own Function
   # ═══════════════════════════════════════════════════
 
   - type: part
     number: 4
-    title: "Build Your Own Square Root Function"
-    estimated_time: "~10 min"
+    title: "Build Your Own Function"
+    estimated_time: "~5 min"
     intro: |
-      You've found sqrt(5) and sqrt(10) by repeating the same code with different
-      numbers. What if you want sqrt(15)? Or sqrt(1000)? Copying the code each
-      time is messy.
+      You've found sqrt(5) and sqrt(10) by repeating the same code with
+      different numbers. Copying code is messy &mdash; a <strong>function</strong>
+      packages it so you can call it with any input.
 
-      A **function** lets you package code so you can call it with any input.
-
-  - type: exercise
-    kind: coding
-    id: ex-4-1
-    part: 4
-    number: 1
-    title: "Write mysqrt"
-    description: |
-      Fill in the two missing lines. When the guess is too high, which bound
-      should change? When it's too low?
-    provided_code:
-      - label: "function template"
-        code: |
-          def mysqrt(num, lo, hi, iterations):
-              for i in range(iterations):
-                  guess = (lo + hi) / 2
-                  if guess * guess > num:
-                      pass   # Your code here
-                  else:
-                      pass   # Your code here
-              return guess
-    hints:
-      - "When `guess * guess > num`, the guess is too high. Which bound do you need to bring down — `lo` or `hi`?"
-      - "Too high → `hi = guess` (bring the upper bound down). Too low → `lo = guess` (bring the lower bound up). Same logic you've been doing all along!"
-    solution:
-      code: |
-        def mysqrt(num, lo, hi, iterations):
-            for i in range(iterations):
-                guess = (lo + hi) / 2
-                if guess * guess > num:
-                    hi = guess
-                else:
-                    lo = guess
-            return guess
-      text: null
-
-  - type: exercise
-    kind: coding
-    id: ex-4-2
-    part: 4
-    number: 2
-    title: "Test Your Function"
-    description: |
-      Test `mysqrt` with several numbers and compare with `math.sqrt`.
-
-      Try `mysqrt(15, 3, 4, 20)` first — does it match?
-    provided_code:
-      - label: "tests"
-        code: |
-          import math
-
-          result = mysqrt(15, 3, 4, 20)
-          print(f"mysqrt(15):     {result}")
-          print(f"math.sqrt(15):  {math.sqrt(15)}")
-          print()
-
-          for num, lo, hi in [(5, 2, 3), (10, 3, 4), (2, 1, 2), (100, 9, 11)]:
-              mine = mysqrt(num, lo, hi, 30)
-              real = math.sqrt(num)
-              print(f"sqrt({num:>3}): mysqrt = {mine:.8f}, math = {real:.8f}, diff = {abs(mine - real):.2e}")
-    hints:
-      - "All differences should be tiny — well under 0.0001. Your function works!"
-    solution:
-      code: null
-      text: |
-        Your `mysqrt` matches `math.sqrt` to many decimal places for every test case.
-        You built a working square root function from scratch.
-
-  - type: reveal
+  # ── Slide 11: Write mysqrt ───────────────────────
+  - type: text
     text: |
-      **Congratulations!** In one sitting you learned:
+      <div style="font-size:1.3em;">
+        <p>Consolidate your for-loop and if-else into one function.
+        <strong>Fill in the two missing lines:</strong></p>
+        <div class="code-stack" style="min-height:13em;">
+          <div class="code-step fragment fade-out" data-fragment-index="0">
+      <pre><code>def mysqrt(num, lo, hi, iterations):
+          for i in range(iterations):
+              guess = (lo + hi) / 2
+              if guess * guess > num:
+                  pass   # Your code goes here
+              else:
+                  pass   # Your code goes here
+          return guess</code></pre>
+          </div>
+          <div class="code-step fragment" data-fragment-index="0">
+      <pre><code>def mysqrt(num, lo, hi, iterations):
+          for i in range(iterations):
+              guess = (lo + hi) / 2
+              if guess * guess > num:
+                  hi = guess
+              else:
+                  lo = guess
+          return guess</code></pre>
+          </div>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p>When <code>guess * guess > num</code> (too high),
+          bring the ceiling down: <code>hi = guess</code>.</p>
+          <p>When too low, raise the floor: <code>lo = guess</code>.</p>
+          <p style="font-size:0.9em;">Same logic you&rsquo;ve been doing all along
+          &mdash; now packaged as a reusable function.</p>
+        </div>
+      </div>
 
-      - **Python as a calculator** — expressions like `2 * 2`
-      - **Variables** — `lo`, `hi`, `guess` to track your state
-      - **Conditional logic** — `if` / `else` to make decisions
-      - **Loops** — `for` to repeat work automatically
-      - **Functions** — `def` to package reusable logic
-      - **Binary search** — the algorithm that finds answers by halving the
-        search space
+  # ── Slide 12: Test mysqrt ────────────────────────
+  - type: text
+    text: |
+      <div style="font-size:1.4em;">
+        <p><strong>Test it:</strong></p>
+      <pre><code>import math
 
-      This "halving" strategy doesn't just work for square roots. It works for
-      cube roots, logarithms, and searching through sorted lists. It's one of the
-      most important algorithms in computer science — and you just invented it.
+      result = mysqrt(15, 3, 4, 20)
+      print(f"mysqrt(15):    {result}")
+      print(f"math.sqrt(15): {math.sqrt(15)}")</code></pre>
+        <div class="fragment" data-fragment-index="0">
+          <p style="font-family:monospace; font-size:0.85em; color:#2e7d32;">
+            mysqrt(15): &nbsp;&nbsp; 3.872983346207417<br/>
+            math.sqrt(15): 3.872983346207417
+          </p>
+          <p><strong>They match!</strong></p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p style="font-size:0.9em;">Try more:</p>
+      <pre><code>print(mysqrt(5,  2, 3, 20))   # 2.2360679...
+      print(mysqrt(10, 3, 4, 20))   # 3.1622776...
+      print(mysqrt(2,  1, 2, 20))   # 1.4142135...</code></pre>
+        </div>
+      </div>
 
-  # ═══════════════════════════════════════════════════
-  # Summary
-  # ═══════════════════════════════════════════════════
-
-  - type: part
-    number: null
-    title: "Summary"
-    intro: null
-
-  - type: table
-    id: summary
-    title: null
-    description: |
-      Here's what you built, step by step:
-    headers: ["Step", "What you did", "Python concept learned"]
-    rows:
-      - ["1", "Computed squares (2×2, 3×3, ...)", "Expressions"]
-      - ["2", "Reversed the question (sqrt of 16, 25, 9)", "Thinking backwards"]
-      - ["3", "Guessed sqrt(5), checked by squaring", "Variables (guess)"]
-      - ["4", "Tracked the range with lo and hi", "Variables (lo, hi)"]
-      - ["5", "Automated the high/low decision", "if / else"]
-      - ["6", "Repeated the guessing 20 times", "for loop"]
-      - ["7", "Packaged it as mysqrt(num, lo, hi, iterations)", "Functions (def)"]
-    after: |
-      The algorithm you built — **binary search** — finds any answer in about 20
-      steps regardless of how precise you need to be. It works because each guess
-      eliminates exactly half of the remaining possibilities.
+  # ── Slide 13: What you learned ───────────────────
+  - type: text
+    text: |
+      <div style="font-size:1.3em;">
+        <p><strong>Congratulations!</strong> In one sitting you learned:</p>
+        <table style="margin:0.5em auto; font-size:0.85em; text-align:left;">
+          <tr><th style="padding:0.2em 0.6em;">Step</th><th style="padding:0.2em 0.6em;">What you did</th><th style="padding:0.2em 0.6em;">Python concept</th></tr>
+          <tr><td>1</td><td>Computed squares (2&times;2, 3&times;3)</td><td><strong>Expressions</strong></td></tr>
+          <tr><td>2</td><td>Reversed the question (sqrt of 16, 25)</td><td>Thinking backwards</td></tr>
+          <tr><td>3</td><td>Guessed sqrt(5), checked by squaring</td><td><strong>Variables</strong></td></tr>
+          <tr><td>4</td><td>Tracked the range with lo and hi</td><td><strong>Variables</strong> (lo, hi)</td></tr>
+          <tr><td>5</td><td>Automated the high/low decision</td><td><strong>if / else</strong></td></tr>
+          <tr><td>6</td><td>Repeated the guessing 20 times</td><td><strong>for loop</strong></td></tr>
+          <tr><td>7</td><td>Packaged it as <code>mysqrt</code></td><td><strong>Functions</strong> (def)</td></tr>
+        </table>
+        <div class="fragment" data-fragment-index="0">
+          <p>The algorithm you built &mdash; <strong>binary search</strong> &mdash;
+          doesn&rsquo;t just work for square roots. It works for cube roots,
+          logarithms, and searching sorted lists. It&rsquo;s one of the most
+          important algorithms in computer science.</p>
+          <p style="font-size:0.9em;"><strong>And you just invented it.</strong></p>
+        </div>
+      </div>
