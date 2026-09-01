@@ -90,43 +90,44 @@ blocks:
         </div>
       </div>
 
-  # ── Slide 2: Confusion Matrix concept ────────────
+  # ── Slide 2: Invent the confusion matrix ──────────
   - type: text
     text: |
-      <div style="font-size:1.5em;">
-        <p>A <strong>confusion matrix</strong> organizes predictions into four categories:</p>
-        <table style="margin:0.6em auto; text-align:center;">
-          <tr>
-            <td></td>
-            <td colspan="2" style="text-align:center;"><strong>Predicted</strong></td>
-          </tr>
-          <tr>
-            <td></td>
-            <th style="padding:0.3em 1em;">0 (Negative)</th>
-            <th style="padding:0.3em 1em;">1 (Positive)</th>
-          </tr>
-          <tr>
-            <th style="padding:0.3em 0.5em;">Actual&nbsp;0</th>
-            <td style="background:#e8f5e9; padding:0.5em;"><strong>TN</strong><br/><span style="font-size:0.75em;">True Negative</span></td>
-            <td style="background:#ffebee; padding:0.5em;"><strong>FP</strong><br/><span style="font-size:0.75em;">False Positive</span></td>
-          </tr>
-          <tr>
-            <th style="padding:0.3em 0.5em;">Actual&nbsp;1</th>
-            <td style="background:#ffebee; padding:0.5em;"><strong>FN</strong><br/><span style="font-size:0.75em;">False Negative</span></td>
-            <td style="background:#e8f5e9; padding:0.5em;"><strong>TP</strong><br/><span style="font-size:0.75em;">True Positive</span></td>
-          </tr>
-        </table>
+      <div style="font-size:1.4em;">
+        <p>Each prediction has two properties:</p>
+        <ol style="font-size:0.95em;">
+          <li>What was the <strong>actual</strong> label? (0 or 1)</li>
+          <li>What did the model <strong>predict</strong>? (0 or 1)</li>
+        </ol>
+        <p>That gives <strong>2 &times; 2 = 4</strong> possible outcomes.
+        Try arranging them in a table &mdash; rows for actual, columns for predicted.</p>
         <div class="fragment" data-fragment-index="0">
-          <p style="font-size:0.9em;">
-            <span style="color:#2e7d32;"><strong>Green</strong></span> = correct &nbsp;&bull;&nbsp;
-            <span style="color:#c62828;"><strong>Red</strong></span> = errors
-          </p>
-          <p style="font-size:0.85em;">
-            <strong>TP:</strong> predicted 1, actually 1 &nbsp;&bull;&nbsp;
-            <strong>TN:</strong> predicted 0, actually 0<br/>
-            <strong>FP:</strong> predicted 1, actually 0 (false alarm) &nbsp;&bull;&nbsp;
-            <strong>FN:</strong> predicted 0, actually 1 (missed)
-          </p>
+          <table style="margin:0.5em auto; text-align:center;">
+            <tr>
+              <td></td>
+              <td colspan="2" style="text-align:center;"><strong>Predicted</strong></td>
+            </tr>
+            <tr>
+              <td></td>
+              <th style="padding:0.3em 1em;">0 (Negative)</th>
+              <th style="padding:0.3em 1em;">1 (Positive)</th>
+            </tr>
+            <tr>
+              <th style="padding:0.3em 0.5em;">Actual&nbsp;0</th>
+              <td style="background:#e8f5e9; padding:0.5em;"><strong>TN</strong><br/><span style="font-size:0.75em;">True Negative</span></td>
+              <td style="background:#ffebee; padding:0.5em;"><strong>FP</strong><br/><span style="font-size:0.75em;">False Positive</span></td>
+            </tr>
+            <tr>
+              <th style="padding:0.3em 0.5em;">Actual&nbsp;1</th>
+              <td style="background:#ffebee; padding:0.5em;"><strong>FN</strong><br/><span style="font-size:0.75em;">False Negative</span></td>
+              <td style="background:#e8f5e9; padding:0.5em;"><strong>TP</strong><br/><span style="font-size:0.75em;">True Positive</span></td>
+            </tr>
+          </table>
+          <p style="font-size:0.85em;">This is called a <strong>confusion matrix</strong>.
+            <span style="color:#2e7d32;"><strong>Green</strong></span> = correct,
+            <span style="color:#c62828;"><strong>Red</strong></span> = errors.<br/>
+            The first word says if the prediction was <strong>right</strong> (True) or <strong>wrong</strong> (False).
+            The second is what the model <strong>predicted</strong> (Positive or Negative).</p>
         </div>
       </div>
 
@@ -197,44 +198,32 @@ blocks:
     estimated_time: "~10 min"
     intro: null
 
-  # ── Slide 5: Metrics explanation ─────────────────
+  # ── Slide 5: Discover the metrics ─────────────────
   - type: text
     text: |
       <div style="font-size:1.3em;">
-        <p>Now that we have TP, TN, FP, FN &mdash; what can we measure?</p>
-        <table style="margin:0.5em auto; text-align:left;">
-          <tr><th style="padding:0.3em 0.5em;">Metric</th><th style="padding:0.3em 0.5em;">Formula</th><th style="padding:0.3em 0.5em;">Intuition</th></tr>
-          <tr>
-            <td><strong>Precision</strong></td>
-            <td>TP / (TP + FP)</td>
-            <td>&ldquo;Of everything I called positive, how many really were?&rdquo;</td>
-          </tr>
-          <tr class="fragment" data-fragment-index="0">
-            <td><strong>Recall</strong></td>
-            <td>TP / (TP + FN)</td>
-            <td>&ldquo;Of all the real positives, how many did I catch?&rdquo;</td>
-          </tr>
-          <tr class="fragment" data-fragment-index="1">
-            <td><strong>F1 Score</strong></td>
-            <td>2PR / (P + R)</td>
-            <td>Harmonic mean &mdash; balances precision and recall</td>
-          </tr>
-          <tr class="fragment" data-fragment-index="2">
-            <td><strong>Accuracy</strong></td>
-            <td>(TP+TN) / Total</td>
-            <td>Overall correctness (misleading if classes are imbalanced)</td>
-          </tr>
-          <tr class="fragment" data-fragment-index="2">
-            <td><strong>TPR</strong></td>
-            <td>TP / (TP + FN)</td>
-            <td>Same as recall &mdash; used in ROC curves</td>
-          </tr>
-          <tr class="fragment" data-fragment-index="2">
-            <td><strong>FPR</strong></td>
-            <td>FP / (FP + TN)</td>
-            <td>&ldquo;Of all the negatives, how many did I falsely flag?&rdquo;</td>
-          </tr>
-        </table>
+        <p>Now that we have TP=4, TN=4, FP=1, FN=1 &mdash; what should we measure?</p>
+        <p style="font-size:0.95em;">The model made <strong>5 positive predictions</strong> (TP&nbsp;+&nbsp;FP).
+        What fraction of those were actually positive?</p>
+        <div class="fragment" data-fragment-index="0">
+          <p>4 / 5 = 0.80 &rarr; This is <strong>Precision</strong> = TP / (TP + FP)<br/>
+          <span style="font-size:0.85em;">&ldquo;Of everything I called positive, how many really were?&rdquo;</span></p>
+          <p style="font-size:0.95em;">There were <strong>5 actual positives</strong> (TP&nbsp;+&nbsp;FN).
+          How many did the model catch?</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+          <p>4 / 5 = 0.80 &rarr; This is <strong>Recall</strong> = TP / (TP + FN)<br/>
+          <span style="font-size:0.85em;">&ldquo;Of all the real positives, how many did I find?&rdquo;</span></p>
+          <p style="font-size:0.95em;">Can we combine precision and recall into <strong>one number</strong>?</p>
+        </div>
+        <div class="fragment" data-fragment-index="2">
+          <p><strong>F1 Score</strong> = 2PR / (P + R) &mdash; the harmonic mean balances both</p>
+          <table style="margin:0.3em auto; text-align:left; font-size:0.85em;">
+            <tr><td><strong>Accuracy</strong></td><td style="padding:0 0.5em;">(TP+TN) / Total</td><td>Overall correctness (misleading if imbalanced)</td></tr>
+            <tr><td><strong>TPR</strong></td><td style="padding:0 0.5em;">TP / (TP+FN)</td><td>Same as recall &mdash; used in ROC curves</td></tr>
+            <tr><td><strong>FPR</strong></td><td style="padding:0 0.5em;">FP / (FP+TN)</td><td>&ldquo;Of all negatives, how many did I falsely flag?&rdquo;</td></tr>
+          </table>
+        </div>
       </div>
 
   # ── Slide 6: Calculate metrics by hand ───────────
@@ -574,30 +563,33 @@ blocks:
     estimated_time: "~10 min"
     intro: null
 
-  # ── Slide 15a: ROC curve — concept ────────────────
+  # ── Slide 15a: ROC curve — derive it ─────────────
   - type: text
     text: |
       <div style="font-size:1.4em;">
-        <div style="display:flex; align-items:flex-start; gap:1.5em; justify-content:center;">
-          <div style="flex:1; min-width:0;">
-            <p>The <strong>ROC curve</strong> plots TPR (recall) vs FPR at various thresholds.</p>
-            <p style="font-size:0.85em;">A perfect model hugs the top-left corner. A random model follows the diagonal.</p>
-          </div>
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="max-width:180px; flex-shrink:0;">
-            <line x1="30" y1="170" x2="190" y2="170" stroke="#999" stroke-width="1"/>
-            <line x1="30" y1="170" x2="30" y2="10" stroke="#999" stroke-width="1"/>
-            <text x="110" y="192" font-size="10" fill="#666" text-anchor="middle">FPR</text>
-            <text x="12" y="90" font-size="10" fill="#666" text-anchor="middle" transform="rotate(-90 12,90)">TPR</text>
-            <line x1="30" y1="170" x2="190" y2="10" stroke="#999" stroke-width="1" stroke-dasharray="4,4"/>
-            <text x="148" y="60" font-size="9" fill="#999">random</text>
-            <path d="M 30,170 C 30,50 90,10 190,10" stroke="#1565c0" stroke-width="2.5" fill="none"/>
-            <path d="M 30,170 C 30,50 90,10 190,10 L 190,170 Z" fill="#1565c0" fill-opacity="0.08"/>
-            <text x="120" y="130" font-size="10" fill="#1565c0">AUC</text>
-          </svg>
-        </div>
+        <p>You&rsquo;ve been plotting metrics against threshold. What if you plotted
+        <strong>TPR vs FPR</strong> instead &mdash; one point per threshold?</p>
+        <p style="font-size:0.9em;">Think: what would a <strong>perfect</strong> model look like?
+        What about <strong>random guessing</strong>?</p>
         <div class="fragment" data-fragment-index="0">
-          <p style="font-size:0.9em;">As threshold decreases: both TPR and FPR increase (more positives predicted).
-          The ROC curve captures this tradeoff at every possible threshold.</p>
+          <div style="display:flex; align-items:flex-start; gap:1.5em; justify-content:center;">
+            <div style="flex:1; min-width:0; font-size:0.9em;">
+              <p>A perfect model hits <strong>TPR=1, FPR=0</strong> &mdash; the top-left corner.</p>
+              <p>Random guessing follows the diagonal (TPR&nbsp;&asymp;&nbsp;FPR at every threshold).</p>
+              <p>This plot is called the <strong>ROC curve</strong> (Receiver Operating Characteristic).</p>
+            </div>
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="max-width:180px; flex-shrink:0;">
+              <line x1="30" y1="170" x2="190" y2="170" stroke="#999" stroke-width="1"/>
+              <line x1="30" y1="170" x2="30" y2="10" stroke="#999" stroke-width="1"/>
+              <text x="110" y="192" font-size="10" fill="#666" text-anchor="middle">FPR</text>
+              <text x="12" y="90" font-size="10" fill="#666" text-anchor="middle" transform="rotate(-90 12,90)">TPR</text>
+              <line x1="30" y1="170" x2="190" y2="10" stroke="#999" stroke-width="1" stroke-dasharray="4,4"/>
+              <text x="148" y="60" font-size="9" fill="#999">random</text>
+              <path d="M 30,170 C 30,50 90,10 190,10" stroke="#1565c0" stroke-width="2.5" fill="none"/>
+              <path d="M 30,170 C 30,50 90,10 190,10 L 190,170 Z" fill="#1565c0" fill-opacity="0.08"/>
+              <text x="120" y="130" font-size="10" fill="#1565c0">AUC</text>
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -728,13 +720,14 @@ blocks:
   - type: text
     text: |
       <div style="font-size:1.3em;">
-        <p>The <strong>Area Under the ROC Curve (AUC)</strong> summarizes model quality in a single number:</p>
-        <ul style="font-size:0.9em;">
-          <li><strong>AUC = 1.0</strong> &rarr; perfect classifier (never makes a mistake)</li>
-          <li><strong>AUC = 0.5</strong> &rarr; random guessing (the diagonal line)</li>
-          <li><strong>AUC &lt; 0.5</strong> &rarr; worse than random (flip predictions!)</li>
-        </ul>
+        <p>The <strong>Area Under the ROC Curve (AUC)</strong> summarizes model quality in a single number.</p>
+        <p style="font-size:0.9em;">A perfect model&rsquo;s curve covers the entire square. What is its AUC?<br/>
+        A random model follows the diagonal. What area is that?</p>
         <div class="fragment" data-fragment-index="0">
+          <p style="font-size:0.9em;">
+            <strong>AUC = 1.0</strong> &rarr; entire square (perfect) &nbsp;&bull;&nbsp;
+            <strong>AUC = 0.5</strong> &rarr; triangle under diagonal (random) &nbsp;&bull;&nbsp;
+            <strong>AUC &lt; 0.5</strong> &rarr; worse than random!</p>
           <p>You already have <code>area_under_curve</code>. Apply it to the ROC points:</p>
       <pre><code>def compute_auc(fprs, tprs):
           # Sort by FPR, then use area_under_curve</code></pre>
