@@ -219,7 +219,9 @@ models using ROC curves and AUC.</p>
     <p style="font-size:0.95em;">Can we combine precision and recall into <strong>one number</strong>?</p>
   </div>
   <div class="fragment" data-fragment-index="2">
-    <p><strong>F1 Score</strong> = 2PR / (P + R) &mdash; the harmonic mean balances both</p>
+    <p><strong>F1 Score</strong> = 2PR / (P + R) &mdash; the harmonic mean, not (P+R)/2,
+    because the arithmetic mean lets one bad metric hide behind a good one
+    (e.g. P=1.0, R=0.0 &rarr; average 0.5 but F1&nbsp;=&nbsp;0)</p>
     <table style="margin:0.3em auto; text-align:left; font-size:0.85em;">
       <tr><td><strong>Accuracy</strong></td><td style="padding:0 0.5em;">(TP+TN) / Total</td><td>Overall correctness (misleading if imbalanced)</td></tr>
       <tr><td><strong>TPR</strong></td><td style="padding:0 0.5em;">TP / (TP+FN)</td><td>Same as recall &mdash; used in ROC curves</td></tr>
@@ -297,6 +299,12 @@ def recall(tp, fn):
     # return ?
 
 def f1_score(p, r):
+    # return ?
+
+def true_positive_rate(tp, fn):
+    # return ?
+
+def false_positive_rate(fp, tn):
     # return ?</code></pre>
   <div class="fragment" data-fragment-index="0">
 <pre><code>def precision(tp, fp):
@@ -604,8 +612,8 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
     for t in thresholds:
         pred = apply_threshold(outputs, t)
         tp, tn, fp, fn = confusion_matrix(actual, pred)
-        tprs.append(tp / (tp+fn) if (tp+fn) > 0 else 0)
-        fprs.append(fp / (fp+tn) if (fp+tn) > 0 else 0)
+        tprs.append(true_positive_rate(tp, fn) if (tp+fn) > 0 else 0)
+        fprs.append(false_positive_rate(fp, tn) if (fp+tn) > 0 else 0)
     plt.plot(fprs, tprs)
     plt.plot([0, 1], [0, 1], '--', color='gray')
     plt.xlabel('FPR'); plt.ylabel('TPR')
