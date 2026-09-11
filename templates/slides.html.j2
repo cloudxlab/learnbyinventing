@@ -62,70 +62,68 @@
 {% if slide.part %}
       <!-- Part {{ slide.part.number }}: {{ slide.part.title }} -->
       <section>
-        <section>
-          <h2>{% if slide.part.number is not none and slide.part.number is number %}Part {{ slide.part.number }}: {% endif %}{{ slide.part.title }}</h2>
+        <h2>{% if slide.part.number is not none and slide.part.number is number %}Part {{ slide.part.number }}: {% endif %}{{ slide.part.title }}</h2>
 {% if slide.part.intro %}
-          <div class="slide-content">{{ slide.part.intro | md }}</div>
+        <div class="slide-content">{{ slide.part.intro | md }}</div>
 {% endif %}
-        </section>
+      </section>
 
 {% for block in slide.blocks %}
 {% if block.type == 'exercise' %}
-        <section>
-          <h3>{{ block.title }}</h3>
-          <div class="slide-content">
+      <section>
+        <h3>{{ block.title }}</h3>
+        <div class="slide-content">
 {% if block.kind == 'mcq' %}
-          {{ block.question | md }}
+        {{ block.question | md }}
 {% for option in block.options %}
-          <p><strong>{{ option.label }}.</strong> {{ option.text }}</p>
+        <p><strong>{{ option.label }}.</strong> {{ option.text }}</p>
 {% endfor %}
 {% elif block.kind == 'conceptual' %}
 {% if block.description is defined and block.description %}
-          {{ block.description | md }}
+        {{ block.description | md }}
 {% endif %}
 {% if block.prompts is defined %}
 {% for prompt in block.prompts %}
-          <p>{{ prompt | md_inline }}</p>
+        <p>{{ prompt | md_inline }}</p>
 {% endfor %}
 {% endif %}
 {% else %}
-          {{ block.description | md }}
+        {{ block.description | md }}
 {% endif %}
-          </div>
-        </section>
-{% elif block.type == 'text' %}
-        <section>
-          <div class="slide-content">{{ block.text | md }}</div>
-        </section>
-{% elif block.type == 'reveal' %}
-        <section>
-          <div class="slide-content">{{ block.text | md }}</div>
-        </section>
-{% elif block.type == 'table' %}
-        <section>
-{% if block.title %}
-          <h3>{{ block.title }}</h3>
-{% endif %}
-          <div class="slide-content">
-          <table>
-            <tr>
-{% for header in block.headers %}
-              <th>{{ header | md_inline }}</th>
-{% endfor %}
-            </tr>
-{% for row in block.rows %}
-            <tr>
-{% for cell in row %}
-              <td>{{ cell | md_inline }}</td>
-{% endfor %}
-            </tr>
-{% endfor %}
-          </table>
-          </div>
-        </section>
-{% endif %}
-{% endfor %}
+        </div>
       </section>
+{% elif block.type == 'text' %}
+      <section>
+        <div class="slide-content">{{ block.text | md }}</div>
+      </section>
+{% elif block.type == 'reveal' %}
+      <section>
+        <div class="slide-content">{{ block.text | md }}</div>
+      </section>
+{% elif block.type == 'table' %}
+      <section>
+{% if block.title %}
+        <h3>{{ block.title }}</h3>
+{% endif %}
+        <div class="slide-content">
+        <table>
+          <tr>
+{% for header in block.headers %}
+            <th>{{ header | md_inline }}</th>
+{% endfor %}
+          </tr>
+{% for row in block.rows %}
+          <tr>
+{% for cell in row %}
+            <td>{{ cell | md_inline }}</td>
+{% endfor %}
+          </tr>
+{% endfor %}
+        </table>
+        </div>
+      </section>
+{% endif %}
+{% endfor %}
 {% endif %}
 {% endfor %}
 

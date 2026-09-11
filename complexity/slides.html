@@ -51,8 +51,6 @@
       <a href="index.html" style="color:#888;text-decoration:none;">Interactive</a>
       <strong style="color:#333;">Slides</strong>
 
-      <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/complexity/complexity.ipynb" target="_blank" style="color:#888;text-decoration:none;">Notebook (Colab)</a>
-
     </span>
   </nav>
   <div class="reveal">
@@ -72,19 +70,18 @@ captures it all.</div>
 
       <!-- Part 1: How Long Does It Take? -->
       <section>
-        <section>
-          <h2>Part 1: How Long Does It Take?</h2>
+        <h2>Part 1: How Long Does It Take?</h2>
 
-          <div class="slide-content"><p>You've written functions. Some are fast, some are slow. But <em>how</em> slow? And what
+        <div class="slide-content"><p>You've written functions. Some are fast, some are slow. But <em>how</em> slow? And what
 happens when the input gets bigger? Let's find out by measuring.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>Here are two functions. <code>sum_list</code> adds up all the numbers in a list (one loop).
+      <section>
+        <div class="slide-content"><p>Here are two functions. <code>sum_list</code> adds up all the numbers in a list (one loop).
 <code>has_pair_with_sum</code> checks whether any two numbers in the list add up to a target
 (a loop inside a loop).</p>
 
@@ -110,15 +107,15 @@ happens when the input gets bigger? Let's find out by measuring.</p>
 positive, no pair will ever add up to -1 — this forces the function to check
 <strong>every</strong> pair before giving up, so we measure its full workload.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Time It</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Time It</h3>
+        <div class="slide-content">
 
-          <p>Time both functions on lists of size <strong>1,000</strong>, <strong>5,000</strong>, and <strong>10,000</strong>.</p>
+        <p>Time both functions on lists of size <strong>1,000</strong>, <strong>5,000</strong>, and <strong>10,000</strong>.</p>
 
 <p>For each size, record how long each function takes. When the input gets 5× bigger
 (1,000 → 5,000), how much slower does each function get?</p>
@@ -141,27 +138,27 @@ positive, no pair will ever add up to -1 — this forces the function to check
 <p>Try the same for n = 5000 and n = 10000.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Plot the Growth</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Plot the Growth</h3>
+        <div class="slide-content">
 
-          <p>Plot <strong>time vs input size</strong> for both functions on the same graph.</p>
+        <p>Plot <strong>time vs input size</strong> for both functions on the same graph.</p>
 
 <p>Use input sizes from 100 to 5,000. What shape does each curve have?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>One function's time grows <strong>proportionally</strong> to the input size. The other grows
+      <section>
+        <div class="slide-content"><p>One function's time grows <strong>proportionally</strong> to the input size. The other grows
 proportionally to the <strong>square</strong> of the input size.</p>
 
 <p>This distinction is enormous. On a million items:</p>
@@ -174,33 +171,31 @@ proportionally to the <strong>square</strong> of the input size.</p>
 <p>Understanding which category your algorithm falls into is one of the most important
 skills in programming.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 2: Counting Steps -->
       <section>
-        <section>
-          <h2>Part 2: Counting Steps</h2>
+        <h2>Part 2: Counting Steps</h2>
 
-          <div class="slide-content"><p>Timing is noisy — it depends on your computer's speed, what else is running, even
+        <div class="slide-content"><p>Timing is noisy — it depends on your computer's speed, what else is running, even
 the room temperature. Can we predict how an algorithm grows <em>without</em> running it?</p>
 
 <p>Yes: <strong>count the key operations</strong>.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Instrument Your Code</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Instrument Your Code</h3>
+        <div class="slide-content">
 
-          <p>Go back to <code>sum_list</code> and <code>has_pair_with_sum</code>. Add a <strong>counter variable</strong> to each
+        <p>Go back to <code>sum_list</code> and <code>has_pair_with_sum</code>. Add a <strong>counter variable</strong> to each
 one that counts how many times the innermost operation runs. Return the count along
 with the result.</p>
 
@@ -209,16 +204,16 @@ with the result.</p>
 <p>How does the count relate to n in each case?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Discover the Pattern</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Discover the Pattern</h3>
+        <div class="slide-content">
 
-          <p>Look at the counts from <code>has_pair_counted</code>. Divide each count by n, then by n².</p>
+        <p>Look at the counts from <code>has_pair_counted</code>. Divide each count by n, then by n².</p>
 
 <table>
 <thead>
@@ -258,16 +253,16 @@ with the result.</p>
 the "÷2" make any practical difference at that scale?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Does the Constant Matter?</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Does the Constant Matter?</h3>
+        <div class="slide-content">
 
-          <p>Write two functions that both loop through a list once, but one does 3× as much
+        <p>Write two functions that both loop through a list once, but one does 3× as much
 work per element. For example, one adds each element once, the other adds it three
 times.</p>
 
@@ -277,45 +272,43 @@ times for each size.</p>
 <p>Does the ratio stay constant or change as n grows?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>We care about the <strong>growth rate</strong>, not the exact count. Whether it's $n$, $2n$, or
+      <section>
+        <div class="slide-content"><p>We care about the <strong>growth rate</strong>, not the exact count. Whether it's $n$, $2n$, or
 $100n$ — they all grow at the same rate. Whether it's $n^2$, $n^2/2$, or $5n^2 + 3n$
 — they all grow quadratically.</p>
 
 <p>We need a shorthand that captures the growth family and throws away the constants.
 How would <strong>you</strong> write "this algorithm grows like n²"?</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 3: Inventing a Notation -->
       <section>
-        <section>
-          <h2>Part 3: Inventing a Notation</h2>
+        <h2>Part 3: Inventing a Notation</h2>
 
-          <div class="slide-content"><p>You keep saying things like "this grows like n" or "this grows like n squared."
+        <div class="slide-content"><p>You keep saying things like "this grows like n" or "this grows like n squared."
 Let's make that precise.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Name the Families</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Name the Families</h3>
+        <div class="slide-content">
 
 
-          <p>You've already seen two growth families: one where count = n (linear) and one where
+        <p>You've already seen two growth families: one where count = n (linear) and one where
 count ≈ n² (quadratic). But there are others.</p>
 
 <p><strong>Try this experiment.</strong> Write a function that searches a <strong>sorted</strong> list by
@@ -347,25 +340,25 @@ function grows this slowly?</p>
 
 
 
-          <p>Steps for n=10:</p>
+        <p>Steps for n=10:</p>
 
-          <p>Steps for n=100,000:</p>
+        <p>Steps for n=100,000:</p>
 
-          <p>What function of n gives these values:</p>
-
-
-
-          </div>
-        </section>
+        <p>What function of n gives these values:</p>
 
 
 
-        <section>
-          <h3>The Growth Families</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
 
-          <p>You've now discovered three growth families from real code:</p>
+
+      <section>
+        <h3>The Growth Families</h3>
+        <div class="slide-content">
+
+
+        <p>You've now discovered three growth families from real code:</p>
 
 <table>
 <thead>
@@ -406,29 +399,29 @@ function grows this slowly?</p>
 
 
 
-          <p>Always the same, regardless of n:</p>
+        <p>Always the same, regardless of n:</p>
 
-          <p>Grows like log(n):</p>
+        <p>Grows like log(n):</p>
 
-          <p>Grows like n:</p>
+        <p>Grows like n:</p>
 
-          <p>Grows like n × log(n):</p>
+        <p>Grows like n × log(n):</p>
 
-          <p>Grows like n²:</p>
-
-
-
-          </div>
-        </section>
+        <p>Grows like n²:</p>
 
 
 
-        <section>
-          <h3>Drop the Noise</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
 
-          <p>You discovered that $n^2/2$ and $n^2$ and $7n^2$ all grow the same way. The
+
+      <section>
+        <h3>Drop the Noise</h3>
+        <div class="slide-content">
+
+
+        <p>You discovered that $n^2/2$ and $n^2$ and $7n^2$ all grow the same way. The
 constant multiplier doesn't matter. And you discovered that when $n$ is large,
 $n^2 + 10n$ is basically just $n^2$ (the $+10n$ is negligible).</p>
 
@@ -452,29 +445,29 @@ $n^2 + 10n$ is basically just $n^2$ (the $+10n$ is negligible).</p>
 
 
 
-          <p>5n + 3 →</p>
+        <p>5n + 3 →</p>
 
-          <p>2n² + 10n + 7 →</p>
+        <p>2n² + 10n + 7 →</p>
 
-          <p>100 →</p>
+        <p>100 →</p>
 
-          <p>n³ + 1000n² →</p>
+        <p>n³ + 1000n² →</p>
 
-          <p>3n·log(n) + 5n →</p>
-
-
-
-          </div>
-        </section>
+        <p>3n·log(n) + 5n →</p>
 
 
 
-        <section>
-          <h3>Invent a Shorthand</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
 
-          <p>You keep writing "this algorithm grows like n²" or "grows like n·log(n)." That's
+
+      <section>
+        <h3>Invent a Shorthand</h3>
+        <div class="slide-content">
+
+
+        <p>You keep writing "this algorithm grows like n²" or "grows like n·log(n)." That's
 wordy. Invent a shorter way to write it.</p>
 
 <p>Requirements for your shorthand:</p>
@@ -490,24 +483,24 @@ wordy. Invent a shorter way to write it.</p>
 
 
 
-          <p>Your shorthand for 'grows like 1 (constant)':</p>
+        <p>Your shorthand for 'grows like 1 (constant)':</p>
 
-          <p>Your shorthand for 'grows like n':</p>
+        <p>Your shorthand for 'grows like n':</p>
 
-          <p>Your shorthand for 'grows like n²':</p>
-
-
-
-          </div>
-        </section>
+        <p>Your shorthand for 'grows like n²':</p>
 
 
 
-        <section>
-          <h3>See the Hierarchy</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
-          <p>Plot all five growth families on the same graph for $n$ from 1 to 100:</p>
+
+
+      <section>
+        <h3>See the Hierarchy</h3>
+        <div class="slide-content">
+
+        <p>Plot all five growth families on the same graph for $n$ from 1 to 100:</p>
 
 <ul>
 <li>O(1): $f(n) = 1$</li>
@@ -521,13 +514,13 @@ wordy. Invent a shorter way to write it.</p>
 everything?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>The notation you just invented is called <strong>Big O notation</strong>. Computer scientists
+      <section>
+        <div class="slide-content"><p>The notation you just invented is called <strong>Big O notation</strong>. Computer scientists
 write:</p>
 
 <p>$$O(1) &lt; O(\log n) &lt; O(n) &lt; O(n \log n) &lt; O(n^2) &lt; O(n^3) &lt; O(2^n)$$</p>
@@ -540,32 +533,30 @@ constant times $n^2$.</p>
 Edmund Landau — but the idea is exactly what you discovered: classify algorithms
 by their growth family, ignore the constants.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 4: Analysing Real Code -->
       <section>
-        <section>
-          <h2>Part 4: Analysing Real Code</h2>
+        <h2>Part 4: Analysing Real Code</h2>
 
-          <div class="slide-content"><p>Now that you have the notation, let's practise using it. Given a piece of code,
+        <div class="slide-content"><p>Now that you have the notation, let's practise using it. Given a piece of code,
 how do you figure out its Big O without running it?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>One Loop</h3>
-          <div class="slide-content">
+      <section>
+        <h3>One Loop</h3>
+        <div class="slide-content">
 
 
-          <p>What's the Big O of this function? The input is a list of length $n$.</p>
+        <p>What's the Big O of this function? The input is a list of length $n$.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_max</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -582,21 +573,21 @@ how do you figure out its Big O without running it?</p>
 
 
 
-          <p>Big O:</p>
+        <p>Big O:</p>
 
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Two Separate Loops</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Two Separate Loops</h3>
+        <div class="slide-content">
 
 
-          <p>What about this one?</p>
+        <p>What about this one?</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">double_scan</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -615,23 +606,23 @@ What's the Big O?</p>
 
 
 
-          <p>Total operations:</p>
+        <p>Total operations:</p>
 
-          <p>Big O:</p>
-
-
-
-          </div>
-        </section>
+        <p>Big O:</p>
 
 
 
-        <section>
-          <h3>Nested Loops</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
 
-          <p>And this?</p>
+
+      <section>
+        <h3>Nested Loops</h3>
+        <div class="slide-content">
+
+
+        <p>And this?</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">all_pairs</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -649,21 +640,21 @@ across all values of <code>i</code>?</p>
 
 
 
-          <p>Big O:</p>
+        <p>Big O:</p>
 
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>No Loop at All</h3>
-          <div class="slide-content">
+      <section>
+        <h3>No Loop at All</h3>
+        <div class="slide-content">
 
 
-          <p>What's the Big O of this?</p>
+        <p>What's the Big O of this?</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_first</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -674,20 +665,20 @@ across all values of <code>i</code>?</p>
 
 
 
-          <p>Big O:</p>
+        <p>Big O:</p>
 
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Predict Then Measure</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Predict Then Measure</h3>
+        <div class="slide-content">
 
-          <p>You just predicted the Big O of four functions: <code>find_max</code> (O(n)),
+        <p>You just predicted the Big O of four functions: <code>find_max</code> (O(n)),
 <code>double_scan</code> (O(n)), <code>all_pairs</code> (O(n²)), and <code>get_first</code> (O(1)).</p>
 
 <p>Now <strong>verify</strong> your predictions. For each function, add an operation counter
@@ -696,17 +687,17 @@ by your predicted growth function ($n$ or $n^2$ or $1$). If your prediction is
 correct, the ratio should stay roughly constant as n grows.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Best, Worst, and Average</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Best, Worst, and Average</h3>
+        <div class="slide-content">
 
 
-          <p>Consider linear search — scanning a list from left to right looking for a target:</p>
+        <p>Consider linear search — scanning a list from left to right looking for a target:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linear_search</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
@@ -730,23 +721,23 @@ do they usually mean?</p>
 
 
 
-          <p>Best case — comparisons:</p>
+        <p>Best case — comparisons:</p>
 
-          <p>Worst case — comparisons:</p>
+        <p>Worst case — comparisons:</p>
 
-          <p>Average case — comparisons:</p>
+        <p>Average case — comparisons:</p>
 
-          <p>O(n) usually refers to:</p>
-
-
-
-          </div>
-        </section>
+        <p>O(n) usually refers to:</p>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>Rules of thumb for reading code:</strong></p>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>Rules of thumb for reading code:</strong></p>
 
 <table>
 <thead>
@@ -783,33 +774,31 @@ do they usually mean?</p>
 </tbody>
 </table>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 5: Memory Complexity -->
       <section>
-        <section>
-          <h2>Part 5: Memory Complexity</h2>
+        <h2>Part 5: Memory Complexity</h2>
 
-          <div class="slide-content"><p>Time isn't the only resource that matters. <strong>Memory</strong> (space) does too. The same
+        <div class="slide-content"><p>Time isn't the only resource that matters. <strong>Memory</strong> (space) does too. The same
 Big O notation works — instead of asking "how does time grow?" we ask "how much
 <strong>extra memory</strong> does this algorithm need as the input grows?"</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>How Much Extra Space?</h3>
-          <div class="slide-content">
+      <section>
+        <h3>How Much Extra Space?</h3>
+        <div class="slide-content">
 
 
-          <p>For each function, figure out how much <strong>extra</strong> memory it creates (beyond the
+        <p>For each function, figure out how much <strong>extra</strong> memory it creates (beyond the
 input itself). Don't count the input list — just the new things the function
 allocates.</p>
 
@@ -852,41 +841,41 @@ allocates.</p>
 
 
 
-          <p>Function A — new items created:</p>
+        <p>Function A — new items created:</p>
 
-          <p>Function B — new items created:</p>
+        <p>Function B — new items created:</p>
 
-          <p>Function C — new items created:</p>
-
-
-
-          </div>
-        </section>
+        <p>Function C — new items created:</p>
 
 
 
-        <section>
-          <h3>See the Space Grow</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
-          <p>Create lists of increasing size and n×n matrices of increasing size. Count the
+
+
+      <section>
+        <h3>See the Space Grow</h3>
+        <div class="slide-content">
+
+        <p>Create lists of increasing size and n×n matrices of increasing size. Count the
 number of elements in each to verify the growth pattern.</p>
 
 <p>For lists: how does the element count grow with n?
 For matrices: how does the element count grow with n?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>The Time–Space Tradeoff</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Time–Space Tradeoff</h3>
+        <div class="slide-content">
 
 
-          <p>You need to check if a list has any duplicate values. Here are two approaches:</p>
+        <p>You need to check if a list has any duplicate values. Here are two approaches:</p>
 
 <p><strong>Approach 1 — Nested loops (no extra memory):</strong></p>
 
@@ -922,50 +911,48 @@ For matrices: how does the element count grow with n?</p>
 
 
 
-          <p>Approach 1 — time / space:</p>
+        <p>Approach 1 — time / space:</p>
 
-          <p>Approach 2 — time / space:</p>
+        <p>Approach 2 — time / space:</p>
 
-          <p>Which is better and why:</p>
-
-
-
-          </div>
-        </section>
+        <p>Which is better and why:</p>
 
 
 
-        <section>
-          <div class="slide-content"><p>Every algorithm has both a time complexity and a space complexity. Now you know
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p>Every algorithm has both a time complexity and a space complexity. Now you know
 how to read and evaluate both. As you work through the chapters ahead, you'll see
 this tradeoff again and again — fast algorithms that use extra memory vs slow
 algorithms that work in-place.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 6: Why It Matters -->
       <section>
-        <section>
-          <h2>Part 6: Why It Matters</h2>
+        <h2>Part 6: Why It Matters</h2>
 
-          <div class="slide-content"><p>Let's see the full picture. How long does each complexity class take on real-world
+        <div class="slide-content"><p>Let's see the full picture. How long does each complexity class take on real-world
 input sizes?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Race</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Race</h3>
+        <div class="slide-content">
 
-          <p>Assume each operation takes 1 microsecond (one millionth of a second). For each
+        <p>Assume each operation takes 1 microsecond (one millionth of a second). For each
 complexity class, compute how many operations it takes at different input sizes,
 then convert to human-readable time.</p>
 
@@ -1022,137 +1009,135 @@ then convert to human-readable time.</p>
 hopeless?</p>
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part None: What You Invented -->
       <section>
-        <section>
-          <h2>What You Invented</h2>
+        <h2>What You Invented</h2>
 
-        </section>
-
-
-
-        <section>
-
-          <h3>Your Journey</h3>
-
-          <div class="slide-content">
-          <table>
-            <tr>
-
-              <th>Exercise</th>
-
-              <th>What You Did</th>
-
-              <th>Concept</th>
-
-            </tr>
-
-            <tr>
-
-              <td>1.1–1.2</td>
-
-              <td>Timed two functions, plotted growth curves</td>
-
-              <td>Empirical performance measurement</td>
-
-            </tr>
-
-            <tr>
-
-              <td>2.1–2.3</td>
-
-              <td>Counted operations, discovered constants don't matter</td>
-
-              <td>Operation counting, growth rate</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.1–3.2</td>
-
-              <td>Discovered logarithmic growth, named the families</td>
-
-              <td>Growth families</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.3–3.4</td>
-
-              <td>Simplified expressions, invented a shorthand</td>
-
-              <td>Big O notation</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.5</td>
-
-              <td>Plotted the hierarchy</td>
-
-              <td>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</td>
-
-            </tr>
-
-            <tr>
-
-              <td>4.1–4.5</td>
-
-              <td>Analysed code snippets, predicted and verified Big O</td>
-
-              <td>Static analysis + verification</td>
-
-            </tr>
-
-            <tr>
-
-              <td>4.6</td>
-
-              <td>Explored best, worst, and average case</td>
-
-              <td>Worst-case analysis</td>
-
-            </tr>
-
-            <tr>
-
-              <td>5.1–5.3</td>
-
-              <td>Counted extra memory, discovered the time–space tradeoff</td>
-
-              <td>Space complexity</td>
-
-            </tr>
-
-            <tr>
-
-              <td>6.1</td>
-
-              <td>Computed real-world running times</td>
-
-              <td>Why Big O matters in practice</td>
-
-            </tr>
-
-          </table>
-          </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>Going further:</strong></p>
+      <section>
+
+        <h3>Your Journey</h3>
+
+        <div class="slide-content">
+        <table>
+          <tr>
+
+            <th>Exercise</th>
+
+            <th>What You Did</th>
+
+            <th>Concept</th>
+
+          </tr>
+
+          <tr>
+
+            <td>1.1–1.2</td>
+
+            <td>Timed two functions, plotted growth curves</td>
+
+            <td>Empirical performance measurement</td>
+
+          </tr>
+
+          <tr>
+
+            <td>2.1–2.3</td>
+
+            <td>Counted operations, discovered constants don't matter</td>
+
+            <td>Operation counting, growth rate</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.1–3.2</td>
+
+            <td>Discovered logarithmic growth, named the families</td>
+
+            <td>Growth families</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.3–3.4</td>
+
+            <td>Simplified expressions, invented a shorthand</td>
+
+            <td>Big O notation</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.5</td>
+
+            <td>Plotted the hierarchy</td>
+
+            <td>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</td>
+
+          </tr>
+
+          <tr>
+
+            <td>4.1–4.5</td>
+
+            <td>Analysed code snippets, predicted and verified Big O</td>
+
+            <td>Static analysis + verification</td>
+
+          </tr>
+
+          <tr>
+
+            <td>4.6</td>
+
+            <td>Explored best, worst, and average case</td>
+
+            <td>Worst-case analysis</td>
+
+          </tr>
+
+          <tr>
+
+            <td>5.1–5.3</td>
+
+            <td>Counted extra memory, discovered the time–space tradeoff</td>
+
+            <td>Space complexity</td>
+
+          </tr>
+
+          <tr>
+
+            <td>6.1</td>
+
+            <td>Computed real-world running times</td>
+
+            <td>Why Big O matters in practice</td>
+
+          </tr>
+
+        </table>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>Going further:</strong></p>
 
 <ul>
 <li><strong>O(2ⁿ) — exponential:</strong> The number of subsets of a set with n items. Algorithms
@@ -1166,10 +1151,9 @@ where checking a solution is easy but <em>finding</em> one is fundamentally hard
 million-dollar prize awaits the answer.</li>
 </ul>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 

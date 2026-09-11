@@ -70,10 +70,9 @@
 
       <!-- Part 1: Impurity for Numbers -->
       <section>
-        <section>
-          <h2>Part 1: Impurity for Numbers</h2>
+        <h2>Part 1: Impurity for Numbers</h2>
 
-          <div class="slide-content"><p>The classification tree asked: "how <em>mixed</em> are the labels in this group?" For numbers the question becomes: "how <em>spread out</em> are the values?"</p>
+        <div class="slide-content"><p>The classification tree asked: "how <em>mixed</em> are the labels in this group?" For numbers the question becomes: "how <em>spread out</em> are the values?"</p>
 
 <p>Look at these two groups of house prices (in lakhs):</p>
 
@@ -84,31 +83,31 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p>If a leaf of your tree contains <code>group_a</code>, predicting their mean (10) is perfect. If it contains <code>group_b</code>, predicting the mean (33.5) is terrible for every single house.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Invent a Spread Score</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Invent a Spread Score</h3>
+        <div class="slide-content">
 
-          <p>Invent a single number that is <code>0</code> when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on.</p>
+        <p>Invent a single number that is <code>0</code> when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on.</p>
 
 <p>The classic answer is <strong>variance</strong>: the average <em>squared</em> distance from the mean. (Why squared? So that being 10 below the mean can't cancel out being 10 above it --- and big misses get punished extra hard.)</p>
 
 <p><strong>Write <code>variance(values)</code>.</strong></p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>The Value of a Split</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Value of a Split</h3>
+        <div class="slide-content">
 
-          <p>Take this group: <code>values = [10, 9, 11, 8, 10, 1]</code>. It has one troublemaker.</p>
+        <p>Take this group: <code>values = [10, 9, 11, 8, 10, 1]</code>. It has one troublemaker.</p>
 
 <p>Split it into <code>left = [10, 9, 11, 8, 10]</code> and <code>right = [1]</code>. Now <code>left</code> is nearly pure and <code>right</code> is <em>exactly</em> pure (a single value has zero variance).</p>
 
@@ -119,57 +118,55 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p><strong>Write <code>total_variance(left, right)</code>.</strong></p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Variance Reduction</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Variance Reduction</h3>
+        <div class="slide-content">
 
-          <p>A split is good when the children are much purer (lower variance) than the parent. You have the parent's variance and the children's combined (weighted) variance. How would you capture "how much purer did the split make things" in one number?</p>
+        <p>A split is good when the children are much purer (lower variance) than the parent. You have the parent's variance and the children's combined (weighted) variance. How would you capture "how much purer did the split make things" in one number?</p>
 
 <p><strong>Write <code>variance_reduction(parent, left, right)</code>.</strong></p>
 
 <p>Then check: for <code>[10, 9, 11, 8, 10, 1]</code>, splitting the troublemaker off should score much higher than splitting down the middle.</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Variance vs Impurity</h3>
-          <div class="slide-content">
-
-          <p>In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?</p>
-
-
-          <p><strong>A.</strong> Variance is faster to compute than impurity</p>
-
-          <p><strong>B.</strong> Regression targets are continuous numbers, not categories --- you can't count "how mixed" the labels are when labels are numbers like 23.5 or 41.2, but you CAN measure how spread out they are</p>
-
-          <p><strong>C.</strong> Variance works for classification too, so impurity was unnecessary</p>
-
-          <p><strong>D.</strong> Python's standard library only has a variance function, not an impurity function</p>
-
-
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <h3>Variance vs Impurity</h3>
+        <div class="slide-content">
+
+        <p>In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?</p>
+
+
+        <p><strong>A.</strong> Variance is faster to compute than impurity</p>
+
+        <p><strong>B.</strong> Regression targets are continuous numbers, not categories --- you can't count "how mixed" the labels are when labels are numbers like 23.5 or 41.2, but you CAN measure how spread out they are</p>
+
+        <p><strong>C.</strong> Variance works for classification too, so impurity was unnecessary</p>
+
+        <p><strong>D.</strong> Python's standard library only has a variance function, not an impurity function</p>
+
+
+        </div>
+      </section>
+
+
 
 
 
       <!-- Part 2: Choosing the Best Split -->
       <section>
-        <section>
-          <h2>Part 2: Choosing the Best Split</h2>
+        <h2>Part 2: Choosing the Best Split</h2>
 
-          <div class="slide-content"><p>Here is a tiny housing dataset. Each row is <code>[size_sqft, bedrooms]</code>; the target is the price.</p>
+        <div class="slide-content"><p>Here is a tiny housing dataset. Each row is <code>[size_sqft, bedrooms]</code>; the target is the price.</p>
 
 <table>
 <thead>
@@ -214,15 +211,15 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 </table>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Compare Two Splits by Hand</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Compare Two Splits by Hand</h3>
+        <div class="slide-content">
 
-          <p>Using your <code>variance_reduction</code>, compute the reduction for two candidate splits, and see which feature the tree should ask about first:</p>
+        <p>Using your <code>variance_reduction</code>, compute the reduction for two candidate splits, and see which feature the tree should ask about first:</p>
 
 <ul>
 <li><strong>Size &lt;= 1000</strong>: prices split into <code>[50, 55, 65]</code> vs <code>[150, 160, 170]</code></li>
@@ -230,16 +227,16 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 </ul>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Find the Best Split Automatically</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Find the Best Split Automatically</h3>
+        <div class="slide-content">
 
-          <p>Trying splits by hand doesn't scale. Write <code>find_best_split(X, y, feature_indices=None)</code> that:</p>
+        <p>Trying splits by hand doesn't scale. Write <code>find_best_split(X, y, feature_indices=None)</code> that:</p>
 
 <ol>
 <li>Considers every feature index (or only <code>feature_indices</code> if given --- you'll see why that parameter matters in Part 4).</li>
@@ -251,17 +248,17 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p>If there is nothing to split (no candidates), return <code>(None, None, 0.0)</code>.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>When Should the Tree Stop Asking Questions?</h3>
-          <div class="slide-content">
+      <section>
+        <h3>When Should the Tree Stop Asking Questions?</h3>
+        <div class="slide-content">
 
 
-          <p>Left alone, the tree splits until every leaf holds a single house --- that's not learning, it's <strong>memorization</strong>: perfect on training data, brittle on anything new. Two brakes prevent it:</p>
+        <p>Left alone, the tree splits until every leaf holds a single house --- that's not learning, it's <strong>memorization</strong>: perfect on training data, brittle on anything new. Two brakes prevent it:</p>
 
 <ul>
 <li><strong><code>max_depth</code></strong> --- the maximum number of questions from root to leaf. A shallow tree is forced to generalize.</li>
@@ -273,40 +270,38 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part 3: Build the Regression Tree -->
       <section>
-        <section>
-          <h2>Part 3: Build the Regression Tree</h2>
+        <h2>Part 3: Build the Regression Tree</h2>
 
-        </section>
-
-
-
-        <section>
-          <h3>The Node --- Provided</h3>
-          <div class="slide-content">
-
-          <p>A tree is made of nodes. A <strong>decision node</strong> holds a question (<code>feature</code>, <code>threshold</code>) and two children; a <strong>leaf</strong> holds only a <code>value</code> (the prediction: the mean of the targets that reached it). Run this as-is.</p>
-
-
-          </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Tree</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Node --- Provided</h3>
+        <div class="slide-content">
 
-          <p>Now assemble everything into a <code>DecisionTree</code> class:</p>
+        <p>A tree is made of nodes. A <strong>decision node</strong> holds a question (<code>feature</code>, <code>threshold</code>) and two children; a <strong>leaf</strong> holds only a <code>value</code> (the prediction: the mean of the targets that reached it). Run this as-is.</p>
+
+
+        </div>
+      </section>
+
+
+
+      <section>
+        <h3>The Tree</h3>
+        <div class="slide-content">
+
+        <p>Now assemble everything into a <code>DecisionTree</code> class:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DecisionTree</span><span class="p">:</span>
@@ -333,20 +328,18 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p><strong><code>predict</code></strong> walks each row from the root --- go left if <code>row[feature] &lt;= threshold</code> --- and returns the leaf's value.</p>
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part 4: Many Trees Are Better Than One -->
       <section>
-        <section>
-          <h2>Part 4: Many Trees Are Better Than One</h2>
+        <h2>Part 4: Many Trees Are Better Than One</h2>
 
-          <div class="slide-content"><p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized.</p>
+        <div class="slide-content"><p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized.</p>
 
 <p>Here's the big idea: train <strong>many</strong> trees and <strong>average</strong> their predictions. Individual mistakes point in different directions and cancel out; the shared signal survives. (The same reason a crowd's average guess of a jar's jellybean count beats almost every individual guess.)</p>
 
@@ -358,78 +351,76 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p>Averaging identical trees gives you... one tree. To benefit from a crowd, the trees must be <strong>different</strong>. Random Forests inject randomness in two places.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Bootstrap Sampling (randomize the *rows*)</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Bootstrap Sampling (randomize the *rows*)</h3>
+        <div class="slide-content">
 
-          <p>Give each tree its own dataset by sampling <code>n</code> rows from the original <code>n</code> rows <strong>with replacement</strong> --- some rows appear twice, some not at all. This is called a <strong>bootstrap sample</strong>.</p>
+        <p>Give each tree its own dataset by sampling <code>n</code> rows from the original <code>n</code> rows <strong>with replacement</strong> --- some rows appear twice, some not at all. This is called a <strong>bootstrap sample</strong>.</p>
 
 <p><strong>Write <code>bootstrap_sample(X, y)</code></strong> that returns a new <code>(X_sample, y_sample)</code> of the same length, where each position holds a uniformly random row of the original data --- and each <code>y</code> stays paired with its <code>X</code> row. Use <code>random.randint</code>.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Feature Randomness (randomize the *questions*)</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Feature Randomness (randomize the *questions*)</h3>
+        <div class="slide-content">
 
-          <p>Bootstrap samples still look similar, so most trees would still put the strongest feature (here: size) at the root --- the crowd stays too agreeable. Second injection of randomness: let each tree see only a <strong>random subset of the features</strong>.</p>
+        <p>Bootstrap samples still look similar, so most trees would still put the strongest feature (here: size) at the root --- the crowd stays too agreeable. Second injection of randomness: let each tree see only a <strong>random subset of the features</strong>.</p>
 
 <p><strong>Write <code>choose_features(n_features, max_features)</code></strong> that returns <code>max_features</code> <em>distinct</em> feature indices chosen at random from <code>0 .. n_features - 1</code>. (<code>random.sample</code> is your friend.)</p>
 
 <p>This is why <code>find_best_split</code> takes that <code>feature_indices</code> parameter.</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Why Randomness Helps</h3>
-          <div class="slide-content">
-
-          <p>In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?</p>
-
-
-          <p><strong>A.</strong> Random trees run faster because they see less data</p>
-
-          <p><strong>B.</strong> Randomness makes each tree different, so their errors are independent --- averaging independent errors cancels them out, while averaging identical errors would not</p>
-
-          <p><strong>C.</strong> It prevents Python from running out of memory</p>
-
-          <p><strong>D.</strong> Random selection always finds better splits than checking all features</p>
-
-
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <h3>Why Randomness Helps</h3>
+        <div class="slide-content">
+
+        <p>In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?</p>
+
+
+        <p><strong>A.</strong> Random trees run faster because they see less data</p>
+
+        <p><strong>B.</strong> Randomness makes each tree different, so their errors are independent --- averaging independent errors cancels them out, while averaging identical errors would not</p>
+
+        <p><strong>C.</strong> It prevents Python from running out of memory</p>
+
+        <p><strong>D.</strong> Random selection always finds better splits than checking all features</p>
+
+
+        </div>
+      </section>
+
+
 
 
 
       <!-- Part 5: The Random Forest -->
       <section>
-        <section>
-          <h2>Part 5: The Random Forest</h2>
+        <h2>Part 5: The Random Forest</h2>
 
-        </section>
-
+      </section>
 
 
-        <section>
-          <h3>Assemble It</h3>
-          <div class="slide-content">
 
-          <p>Write <code>RandomForestRegressor</code>:</p>
+      <section>
+        <h3>Assemble It</h3>
+        <div class="slide-content">
+
+        <p>Write <code>RandomForestRegressor</code>:</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RandomForestRegressor</span><span class="p">:</span>
@@ -448,16 +439,16 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 <p><strong><code>predict</code></strong>: ask every tree, and return the <strong>average</strong> of their answers for each row.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Think: When Does the Crowd Win?</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Think: When Does the Crowd Win?</h3>
+        <div class="slide-content">
 
-          <p>Look at your numbers. The single deep tree hit <strong>0.00 train RMSE</strong> (memorization) --- yet on this tiny, perfectly clean dataset its <em>test</em> error may still beat the forest's. So was all this for nothing?</p>
+        <p>Look at your numbers. The single deep tree hit <strong>0.00 train RMSE</strong> (memorization) --- yet on this tiny, perfectly clean dataset its <em>test</em> error may still beat the forest's. So was all this for nothing?</p>
 
 <p>No --- but the win shows up under <em>real</em> conditions. Reason through each:</p>
 
@@ -468,100 +459,97 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 </ol>
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part 6: Summary --- What Did You Just Build? -->
       <section>
-        <section>
-          <h2>Part 6: Summary --- What Did You Just Build?</h2>
-
-        </section>
-
-
-
-        <section>
-
-          <div class="slide-content">
-          <table>
-            <tr>
-
-              <th>Idea</th>
-
-              <th>You built</th>
-
-              <th>Why it matters</th>
-
-            </tr>
-
-            <tr>
-
-              <td>Variance as impurity</td>
-
-              <td><code>variance</code>, <code>total_variance</code>, <code>variance_reduction</code></td>
-
-              <td>extends decision trees from categories to numbers</td>
-
-            </tr>
-
-            <tr>
-
-              <td>Best split</td>
-
-              <td><code>find_best_split</code></td>
-
-              <td>the greedy heart of every tree learner</td>
-
-            </tr>
-
-            <tr>
-
-              <td>Regression tree</td>
-
-              <td><code>Node</code>, <code>DecisionTree</code></td>
-
-              <td><code>fit</code>/<code>predict</code> with <code>max_depth</code>, <code>min_samples_split</code> brakes</td>
-
-            </tr>
-
-            <tr>
-
-              <td>Bootstrap + feature randomness</td>
-
-              <td><code>bootstrap_sample</code>, <code>choose_features</code></td>
-
-              <td>makes trees <em>disagree</em> so averaging helps</td>
-
-            </tr>
-
-            <tr>
-
-              <td>Ensemble</td>
-
-              <td><code>RandomForestRegressor</code></td>
-
-              <td>many weak models -> one strong, stable model</td>
-
-            </tr>
-
-          </table>
-          </div>
-        </section>
-
-
-
-        <section>
-          <div class="slide-content"><p>You have now invented, from scratch, the algorithm behind scikit-learn's <code>RandomForestRegressor</code>. The next big idea in tree ensembles --- training each new tree on the <em>errors</em> of the previous ones --- is called <strong>gradient boosting</strong> (XGBoost, LightGBM). You already own every ingredient it needs.</p>
-</div>
-        </section>
-
+        <h2>Part 6: Summary --- What Did You Just Build?</h2>
 
       </section>
+
+
+
+      <section>
+
+        <div class="slide-content">
+        <table>
+          <tr>
+
+            <th>Idea</th>
+
+            <th>You built</th>
+
+            <th>Why it matters</th>
+
+          </tr>
+
+          <tr>
+
+            <td>Variance as impurity</td>
+
+            <td><code>variance</code>, <code>total_variance</code>, <code>variance_reduction</code></td>
+
+            <td>extends decision trees from categories to numbers</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Best split</td>
+
+            <td><code>find_best_split</code></td>
+
+            <td>the greedy heart of every tree learner</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Regression tree</td>
+
+            <td><code>Node</code>, <code>DecisionTree</code></td>
+
+            <td><code>fit</code>/<code>predict</code> with <code>max_depth</code>, <code>min_samples_split</code> brakes</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Bootstrap + feature randomness</td>
+
+            <td><code>bootstrap_sample</code>, <code>choose_features</code></td>
+
+            <td>makes trees <em>disagree</em> so averaging helps</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Ensemble</td>
+
+            <td><code>RandomForestRegressor</code></td>
+
+            <td>many weak models -> one strong, stable model</td>
+
+          </tr>
+
+        </table>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p>You have now invented, from scratch, the algorithm behind scikit-learn's <code>RandomForestRegressor</code>. The next big idea in tree ensembles --- training each new tree on the <em>errors</em> of the previous ones --- is called <strong>gradient boosting</strong> (XGBoost, LightGBM). You already own every ingredient it needs.</p>
+</div>
+      </section>
+
+
 
 
 

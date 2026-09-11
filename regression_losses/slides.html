@@ -51,8 +51,6 @@
       <a href="index.html" style="color:#888;text-decoration:none;">Interactive</a>
       <strong style="color:#333;">Slides</strong>
 
-      <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/regression_losses/regression_losses.ipynb" target="_blank" style="color:#888;text-decoration:none;">Notebook (Colab)</a>
-
     </span>
   </nav>
   <div class="reveal">
@@ -73,21 +71,20 @@ that number from scratch.</div>
 
       <!-- Part 1: The Prediction Error Problem -->
       <section>
-        <section>
-          <h2>Part 1: The Prediction Error Problem</h2>
+        <h2>Part 1: The Prediction Error Problem</h2>
 
-          <div class="slide-content"><p>Imagine you're building a model that predicts house prices (in lakhs) for 5 different
+        <div class="slide-content"><p>Imagine you're building a model that predicts house prices (in lakhs) for 5 different
 houses at a time. You want to compute the <strong>overall error</strong> of this model — a single
 number — so that you can try tweaking each individual weight and see how that weight
 impacts the overall error.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>Here are the actual prices and your model's predictions:</p>
+      <section>
+        <div class="slide-content"><p>Here are the actual prices and your model's predictions:</p>
 
 <table>
 <thead>
@@ -129,31 +126,31 @@ impacts the overall error.</p>
 <p>Your job: come up with a formula that gives <strong>one number</strong> representing how wrong
 the predictions are overall.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Can We Just Sum the Differences?</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Can We Just Sum the Differences?</h3>
+        <div class="slide-content">
 
-          <p>The simplest idea: for each house, compute <code>predicted - actual</code>, then add them all up.</p>
+        <p>The simplest idea: for each house, compute <code>predicted - actual</code>, then add them all up.</p>
 
 <p>Try it. What number do you get? Does that number accurately reflect how wrong the
 predictions are?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Fix the Cancellation</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Fix the Cancellation</h3>
+        <div class="slide-content">
 
 
-          <p>The problem is clear: positive and negative differences cancel each other out.</p>
+        <p>The problem is clear: positive and negative differences cancel each other out.</p>
 
 <p>Think of at least <strong>two different mathematical operations</strong> that would prevent
 this cancellation — operations that make every error contribute positively to the
@@ -162,19 +159,19 @@ total, regardless of whether the prediction was too high or too low.</p>
 
 
 
-          <p>Idea 1:</p>
+        <p>Idea 1:</p>
 
-          <p>Idea 2:</p>
-
-
-
-          </div>
-        </section>
+        <p>Idea 2:</p>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>What you just invented:</strong></p>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>What you just invented:</strong></p>
 
 <p>You independently arrived at the two most important loss functions in machine learning:</p>
 
@@ -185,24 +182,22 @@ total, regardless of whether the prediction was too high or too low.</p>
 
 <p>The entire field of regression uses one of these (or a combination). Let's formalise them.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 2: Two Loss Functions -->
       <section>
-        <section>
-          <h2>Part 2: Two Loss Functions</h2>
+        <h2>Part 2: Two Loss Functions</h2>
 
-        </section>
-
+      </section>
 
 
-        <section>
-          <div class="slide-content"><p>Let's give proper names and formulas to your two ideas.</p>
+
+      <section>
+        <div class="slide-content"><p>Let's give proper names and formulas to your two ideas.</p>
 
 <p><strong>Mean Squared Error (MSE):</strong></p>
 
@@ -216,15 +211,15 @@ total, regardless of whether the prediction was too high or too low.</p>
 
 <p>Below are implementations of both. Study them — you'll use them to compare behavior.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Compare on the House Data</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Compare on the House Data</h3>
+        <div class="slide-content">
 
-          <p>Compute MSE and MAE on the original house data. Then imagine house 5's prediction
+        <p>Compute MSE and MAE on the original house data. Then imagine house 5's prediction
 goes wildly wrong — say <code>predicted[4] = 100</code> instead of <code>2.0</code>. Compute both metrics
 again.</p>
 
@@ -234,17 +229,17 @@ again.</p>
 </ol>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Drawbacks of Each</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Drawbacks of Each</h3>
+        <div class="slide-content">
 
 
-          <p>You've just seen one drawback of MSE. Let's think more carefully:</p>
+        <p>You've just seen one drawback of MSE. Let's think more carefully:</p>
 
 <ol>
 <li><p><strong>MSE problem:</strong> When a single prediction is very wrong (an outlier), what happens
@@ -256,26 +251,24 @@ anything unusual about it at <code>x = 0</code>? (We'll investigate this in the 
 
 
 
-          <p>MSE drawback:</p>
+        <p>MSE drawback:</p>
 
-          <p>Possible MAE issue:</p>
-
-
-
-          </div>
-        </section>
+        <p>Possible MAE issue:</p>
 
 
+
+        </div>
       </section>
+
+
 
 
 
       <!-- Part 3: Why Gradients Matter -->
       <section>
-        <section>
-          <h2>Part 3: Why Gradients Matter</h2>
+        <h2>Part 3: Why Gradients Matter</h2>
 
-          <div class="slide-content"><p>Remember why we wanted a loss function in the first place? We said:</p>
+        <div class="slide-content"><p>Remember why we wanted a loss function in the first place? We said:</p>
 
 <blockquote>
   <p><em>"We need to tweak each individual weight and see how that weight impacts the
@@ -292,12 +285,12 @@ loss change?</p>
 <p>Let's check whether our two loss functions qualify.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>To keep things simple, let's focus on a <strong>single prediction</strong>. Define:</p>
+      <section>
+        <div class="slide-content"><p>To keep things simple, let's focus on a <strong>single prediction</strong>. Define:</p>
 
 <p>$$\text{diff} = y - \hat{y}$$</p>
 
@@ -311,15 +304,15 @@ loss change?</p>
 <p>We want to compute $\frac{dL}{d(\text{diff})}$ for each — how the loss changes as
 the prediction error changes.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Gradient of Squared Error</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Gradient of Squared Error</h3>
+        <div class="slide-content">
 
-          <p>For the squared loss $L = \text{diff}^2$, compute the gradient
+        <p>For the squared loss $L = \text{diff}^2$, compute the gradient
 $\frac{dL}{d(\text{diff})}$ using the power rule.</p>
 
 <p>Then verify your formula numerically: pick a few values of <code>diff</code> (e.g. -2, 0, 1, 3),
@@ -328,16 +321,16 @@ $\frac{L(\text{diff} + \epsilon) - L(\text{diff} - \epsilon)}{2\epsilon}$ with a
 $\epsilon$, and check that it matches your analytical formula.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Gradient of Absolute Error</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Gradient of Absolute Error</h3>
+        <div class="slide-content">
 
-          <p>Now for the absolute loss $L = |\text{diff}|$, compute the gradient
+        <p>Now for the absolute loss $L = |\text{diff}|$, compute the gradient
 $\frac{dL}{d(\text{diff})}$.</p>
 
 <p>Think piecewise:</p>
@@ -350,17 +343,17 @@ $\frac{dL}{d(\text{diff})}$.</p>
 <p>Then verify numerically for <code>diff</code> values: -2, -0.5, 0.5, 3.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>The Problem at Zero</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Problem at Zero</h3>
+        <div class="slide-content">
 
 
-          <p>You found that the gradient of <code>|diff|</code> is +1 when diff &gt; 0, and -1 when diff &lt; 0.</p>
+        <p>You found that the gradient of <code>|diff|</code> is +1 when diff &gt; 0, and -1 when diff &lt; 0.</p>
 
 <p>But what is the gradient when <code>diff = 0</code> <strong>exactly</strong>? Is it -1 or +1?</p>
 
@@ -370,19 +363,19 @@ of <code>y = |x|</code> looks like at <code>x = 0</code>. Is it smooth, or is th
 
 
 
-          <p>Gradient of |diff| at diff = 0:</p>
+        <p>Gradient of |diff| at diff = 0:</p>
 
-          <p>What does the graph look like at that point?</p>
-
-
-
-          </div>
-        </section>
+        <p>What does the graph look like at that point?</p>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>Why this matters:</strong></p>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>Why this matters:</strong></p>
 
 <p>Our training algorithm (gradient descent) works by computing the gradient of the loss
 and using it to update weights. If the gradient doesn't exist at some point, the
@@ -399,19 +392,17 @@ means gradient descent has no direction to follow when the prediction is exactly
 <p>So MSE has a problem with <strong>large</strong> errors, and MAE has a problem at <strong>zero</strong> error.
 Can we do better?</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 4: The Best of Both Worlds -->
       <section>
-        <section>
-          <h2>Part 4: The Best of Both Worlds</h2>
+        <h2>Part 4: The Best of Both Worlds</h2>
 
-          <div class="slide-content"><p>Here's our situation:</p>
+        <div class="slide-content"><p>Here's our situation:</p>
 
 <table>
 <thead>
@@ -441,16 +432,16 @@ Can we do better?</p>
 and the <strong>absolute loss for large errors</strong> (where it stays bounded)?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Naive Combination</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Naive Combination</h3>
+        <div class="slide-content">
 
 
-          <p>Here's the simplest idea. Pick some threshold $d$ and define:</p>
+        <p>Here's the simplest idea. Pick some threshold $d$ and define:</p>
 
 <p>$$L(\text{diff}) = \begin{cases} \text{diff}^2 &amp; \text{if } |\text{diff}| \le d \ |\text{diff}| &amp; \text{if } |\text{diff}| &gt; d \end{cases}$$</p>
 
@@ -475,28 +466,28 @@ and the <strong>absolute loss for large errors</strong> (where it stays bounded)
 
 
 
-          <p>Value from squared formula at |diff|=1:</p>
+        <p>Value from squared formula at |diff|=1:</p>
 
-          <p>Value from absolute formula at |diff|=1:</p>
+        <p>Value from absolute formula at |diff|=1:</p>
 
-          <p>Gradient from squared at diff=1:</p>
+        <p>Gradient from squared at diff=1:</p>
 
-          <p>Gradient from absolute at diff=1:</p>
+        <p>Gradient from absolute at diff=1:</p>
 
-          <p>The problem:</p>
-
-
-
-          </div>
-        </section>
+        <p>The problem:</p>
 
 
 
-        <section>
-          <h3>Visualize the Jump</h3>
-          <div class="slide-content">
+        </div>
+      </section>
 
-          <p>Plot the naive combined loss for $\text{diff}$ ranging from -3 to 3, using $d = 1$.</p>
+
+
+      <section>
+        <h3>Visualize the Jump</h3>
+        <div class="slide-content">
+
+        <p>Plot the naive combined loss for $\text{diff}$ ranging from -3 to 3, using $d = 1$.</p>
 
 <p>You should see a clear discontinuity (jump) at diff = 1 and diff = -1 where the
 two formulas switch.</p>
@@ -504,13 +495,13 @@ two formulas switch.</p>
 <p>Also plot the individual squared and absolute losses on the same graph for comparison.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>The problem is clear: at the switchover point $|\text{diff}| = d$, the squared and
+      <section>
+        <div class="slide-content"><p>The problem is clear: at the switchover point $|\text{diff}| = d$, the squared and
 absolute formulas disagree in both <strong>value</strong> and <strong>gradient</strong>.</p>
 
 <p>We can't change the squared part — it's what gives us smoothness near zero, which
@@ -524,15 +515,15 @@ and <strong>modify</strong> the absolute part to connect seamlessly.</p>
 <p>We need to find values of $A$ and $B$ such that at the boundary $|\text{diff}| = d$,
 the two pieces agree in both value and gradient.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Make It Smooth</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Make It Smooth</h3>
+        <div class="slide-content">
 
-          <p>We keep $\text{diff}^2$ for $|\text{diff}| \le d$. For $|\text{diff}| &gt; d$, we use
+        <p>We keep $\text{diff}^2$ for $|\text{diff}| \le d$. For $|\text{diff}| &gt; d$, we use
 $A \cdot |\text{diff}| + B$.</p>
 
 <p>At the boundary $|\text{diff}| = d$, we need two conditions:</p>
@@ -550,13 +541,13 @@ in terms of $d$.</p>
 $A$ and $B$, and plot it. Verify there's no jump or kink at $\pm d$.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>You just invented the Huber loss!</strong></p>
+      <section>
+        <div class="slide-content"><p><strong>You just invented the Huber loss!</strong></p>
 
 <p>The standard formulation divides everything by 2 for convenience (so the squared
 part's gradient is $\text{diff}$ instead of $2 \cdot \text{diff}$):</p>
@@ -578,31 +569,29 @@ the statistician <strong>Peter Huber</strong> in 1964 and is built into every mo
 <li>Can we combine them smoothly? → <strong>match value and gradient at the boundary</strong> → <strong>Huber loss</strong></li>
 </ol>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 5: Putting It All Together -->
       <section>
-        <section>
-          <h2>Part 5: Putting It All Together</h2>
+        <h2>Part 5: Putting It All Together</h2>
 
-          <div class="slide-content"><p>Let's implement the standard (÷2) Huber loss and see how it compares to MSE and MAE
+        <div class="slide-content"><p>Let's implement the standard (÷2) Huber loss and see how it compares to MSE and MAE
 on real data.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Implement Huber Loss</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Implement Huber Loss</h3>
+        <div class="slide-content">
 
-          <p>Write a function <code>huber_loss(y_true, y_pred, delta)</code> that returns the <strong>average</strong>
+        <p>Write a function <code>huber_loss(y_true, y_pred, delta)</code> that returns the <strong>average</strong>
 Huber loss over all pairs. Use the standard formulation (with the ½ factor):</p>
 
 <ul>
@@ -617,16 +606,16 @@ huber_loss([1, 2, 3], [1, 2, 3], delta=1)        # 0.0
 </code></pre>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>The Final Comparison</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Final Comparison</h3>
+        <div class="slide-content">
 
-          <p>Plot all three loss functions — MSE, MAE, and Huber — for a single prediction as
+        <p>Plot all three loss functions — MSE, MAE, and Huber — for a single prediction as
 <code>diff</code> varies from -5 to 5. Use <code>delta = 1</code>.</p>
 
 <p>Verify visually:</p>
@@ -639,16 +628,16 @@ huber_loss([1, 2, 3], [1, 2, 3], delta=1)        # 0.0
 </ol>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>Back to the Houses</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Back to the Houses</h3>
+        <div class="slide-content">
 
-          <p>Compute all three losses on the house price data — with and without the outlier.</p>
+        <p>Compute all three losses on the house price data — with and without the outlier.</p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="n">actual</span>    <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]</span>
@@ -661,137 +650,135 @@ huber_loss([1, 2, 3], [1, 2, 3], delta=1)        # 0.0
 scenarios?</p>
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part None: What You Invented -->
       <section>
-        <section>
-          <h2>What You Invented</h2>
+        <h2>What You Invented</h2>
 
-        </section>
-
-
-
-        <section>
-
-          <h3>Your Invention → Industry Name</h3>
-
-          <div class="slide-content">
-          <table>
-            <tr>
-
-              <th>Exercise</th>
-
-              <th>What You Did</th>
-
-              <th>Industry Name</th>
-
-            </tr>
-
-            <tr>
-
-              <td>1.1</td>
-
-              <td>Discovered that plain differences cancel out</td>
-
-              <td>The need for a loss function</td>
-
-            </tr>
-
-            <tr>
-
-              <td>1.2</td>
-
-              <td>Found two ways to fix cancellation</td>
-
-              <td>Squared error / Absolute error</td>
-
-            </tr>
-
-            <tr>
-
-              <td>2.1–2.2</td>
-
-              <td>Compared MSE and MAE, found drawbacks</td>
-
-              <td>Bias–variance tradeoff of losses</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.1</td>
-
-              <td>Computed gradient of squared error</td>
-
-              <td>MSE gradient: 2·diff</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.2</td>
-
-              <td>Computed gradient of absolute error</td>
-
-              <td>MAE gradient: sign(diff)</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3.3</td>
-
-              <td>Found MAE is not differentiable at 0</td>
-
-              <td>Non-differentiability of L1 loss</td>
-
-            </tr>
-
-            <tr>
-
-              <td>4.1–4.2</td>
-
-              <td>Tried naive combination, spotted discontinuity</td>
-
-              <td>Piecewise loss design</td>
-
-            </tr>
-
-            <tr>
-
-              <td>4.3</td>
-
-              <td>Solved for A and B to make it smooth</td>
-
-              <td>Huber loss derivation</td>
-
-            </tr>
-
-            <tr>
-
-              <td>5.1–5.3</td>
-
-              <td>Implemented and compared all three</td>
-
-              <td>Huber loss (Huber, 1964)</td>
-
-            </tr>
-
-          </table>
-          </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>Going further:</strong></p>
+      <section>
+
+        <h3>Your Invention → Industry Name</h3>
+
+        <div class="slide-content">
+        <table>
+          <tr>
+
+            <th>Exercise</th>
+
+            <th>What You Did</th>
+
+            <th>Industry Name</th>
+
+          </tr>
+
+          <tr>
+
+            <td>1.1</td>
+
+            <td>Discovered that plain differences cancel out</td>
+
+            <td>The need for a loss function</td>
+
+          </tr>
+
+          <tr>
+
+            <td>1.2</td>
+
+            <td>Found two ways to fix cancellation</td>
+
+            <td>Squared error / Absolute error</td>
+
+          </tr>
+
+          <tr>
+
+            <td>2.1–2.2</td>
+
+            <td>Compared MSE and MAE, found drawbacks</td>
+
+            <td>Bias–variance tradeoff of losses</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.1</td>
+
+            <td>Computed gradient of squared error</td>
+
+            <td>MSE gradient: 2·diff</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.2</td>
+
+            <td>Computed gradient of absolute error</td>
+
+            <td>MAE gradient: sign(diff)</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3.3</td>
+
+            <td>Found MAE is not differentiable at 0</td>
+
+            <td>Non-differentiability of L1 loss</td>
+
+          </tr>
+
+          <tr>
+
+            <td>4.1–4.2</td>
+
+            <td>Tried naive combination, spotted discontinuity</td>
+
+            <td>Piecewise loss design</td>
+
+          </tr>
+
+          <tr>
+
+            <td>4.3</td>
+
+            <td>Solved for A and B to make it smooth</td>
+
+            <td>Huber loss derivation</td>
+
+          </tr>
+
+          <tr>
+
+            <td>5.1–5.3</td>
+
+            <td>Implemented and compared all three</td>
+
+            <td>Huber loss (Huber, 1964)</td>
+
+          </tr>
+
+        </table>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>Going further:</strong></p>
 
 <ul>
 <li><strong>Pseudo-Huber loss:</strong> A smooth approximation $L = \delta^2 \left(\sqrt{1 + (\text{diff}/\delta)^2} - 1\right)$
@@ -804,10 +791,9 @@ that's twice differentiable everywhere.</li>
 What happens as $\delta \to 0$? As $\delta \to \infty$?</li>
 </ul>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 

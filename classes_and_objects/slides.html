@@ -69,21 +69,20 @@
 
       <!-- Part 1: From Dict to Class -->
       <section>
-        <section>
-          <h2>Part 1: From Dict to Class</h2>
+        <h2>Part 1: From Dict to Class</h2>
 
-          <div class="slide-content"><p>You could describe a customer with a dict: <code>customer = {"name": "Sandeep", "place": "India"}</code>. It works, but the data has no behavior: any code that wants to <em>do</em> something with a customer must live somewhere else.</p>
+        <div class="slide-content"><p>You could describe a customer with a dict: <code>customer = {"name": "Sandeep", "place": "India"}</code>. It works, but the data has no behavior: any code that wants to <em>do</em> something with a customer must live somewhere else.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Customer</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Customer</h3>
+        <div class="slide-content">
 
-          <p>Write a class <code>Customer</code>:</p>
+        <p>Write a class <code>Customer</code>:</p>
 
 <ul>
 <li><code>Customer("Sandeep", "India")</code> stores the two values on the object (<strong>hint:</strong> define <code>__init__(self, name, place)</code> and assign to <code>self.name</code>, <code>self.place</code>).</li>
@@ -91,13 +90,13 @@
 </ul>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>What just happened?</strong></p>
+      <section>
+        <div class="slide-content"><p><strong>What just happened?</strong></p>
 
 <ul>
 <li><code>Customer("Sandeep", "India")</code> <strong>constructs</strong> an object: Python creates an empty object and calls your <code>__init__</code> with it as <code>self</code>.</li>
@@ -105,30 +104,28 @@
 <li><code>c</code> and <code>c2</code> each carry their <strong>own</strong> <code>name</code> and <code>place</code>. One class, many objects.</li>
 </ul>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 2: A Model Is an Object — `TwoPointLine` -->
       <section>
-        <section>
-          <h2>Part 2: A Model Is an Object — `TwoPointLine`</h2>
+        <h2>Part 2: A Model Is an Object — `TwoPointLine`</h2>
 
-          <div class="slide-content"><p>Remember the thermometer from <em>Expressions &amp; Functions</em>? Calibration data: current 1 → 30°, current 2 → 35°. What temperature is current 3? You solved it with two loose functions, <code>fit</code> and <code>predict</code>, and had to carry the <code>(m, c)</code> tuple between them yourself. Let the object carry it.</p>
+        <div class="slide-content"><p>Remember the thermometer from <em>Expressions &amp; Functions</em>? Calibration data: current 1 → 30°, current 2 → 35°. What temperature is current 3? You solved it with two loose functions, <code>fit</code> and <code>predict</code>, and had to carry the <code>(m, c)</code> tuple between them yourself. Let the object carry it.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>TwoPointLine</h3>
-          <div class="slide-content">
+      <section>
+        <h3>TwoPointLine</h3>
+        <div class="slide-content">
 
-          <p>Write a class <code>TwoPointLine</code> with:</p>
+        <p>Write a class <code>TwoPointLine</code> with:</p>
 
 <ul>
 <li><code>fit(x, y)</code> — <code>x</code> and <code>y</code> are lists of <strong>two</strong> values each: two points <code>(x[0], y[0])</code> and <code>(x[1], y[1])</code>. Compute the slope <code>m = (y2 - y1) / (x2 - x1)</code> and intercept <code>c = y2 - m * x2</code>, and store them on <code>self</code>.</li>
@@ -143,13 +140,13 @@
 </div>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>You just invented the scikit-learn API</strong></p>
+      <section>
+        <div class="slide-content"><p><strong>You just invented the scikit-learn API</strong></p>
 
 <div class="codehilite">
 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
@@ -161,42 +158,40 @@
 
 <p>Same shape: construct → <code>fit</code> stores learned parameters on the object → <code>predict</code> uses them. Every model in the rest of this book fits this mold; the only thing that changes is <em>how</em> <code>fit</code> finds the parameters.</p>
 </div>
-        </section>
-
-
-
-        <section>
-          <h3>Guard the Gate</h3>
-          <div class="slide-content">
-
-          <p><code>fit</code> silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make <code>fit</code> <strong>raise</strong> a <code>ValueError</code> unless both lists have exactly two values (<strong>hint:</strong> <code>raise ValueError("need exactly two points")</code>).</p>
-
-
-          </div>
-        </section>
-
-
       </section>
+
+
+
+      <section>
+        <h3>Guard the Gate</h3>
+        <div class="slide-content">
+
+        <p><code>fit</code> silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make <code>fit</code> <strong>raise</strong> a <code>ValueError</code> unless both lists have exactly two values (<strong>hint:</strong> <code>raise ValueError("need exactly two points")</code>).</p>
+
+
+        </div>
+      </section>
+
+
 
 
 
       <!-- Part 3: Inheritance — Classes That Extend Classes -->
       <section>
-        <section>
-          <h2>Part 3: Inheritance — Classes That Extend Classes</h2>
+        <h2>Part 3: Inheritance — Classes That Extend Classes</h2>
 
-          <div class="slide-content"><p>All animals eat; only dogs bark. Instead of repeating <code>eat</code> in every animal class, write it once and <strong>inherit</strong> it.</p>
+        <div class="slide-content"><p>All animals eat; only dogs bark. Instead of repeating <code>eat</code> in every animal class, write it once and <strong>inherit</strong> it.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Animal, Dog, Cat</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Animal, Dog, Cat</h3>
+        <div class="slide-content">
 
-          <ul>
+        <ul>
 <li><code>Animal</code> has a method <code>eat()</code> returning <code>"eating"</code>.</li>
 <li><code>Dog(Animal)</code> adds <code>bark()</code> returning <code>"woof!"</code> — and must <strong>not</strong> redefine <code>eat</code>.</li>
 <li><code>Cat(Animal)</code> adds <code>meow()</code> returning <code>"meow"</code>.</li>
@@ -205,41 +200,39 @@
 <p>The class in parentheses — <code>class Dog(Animal):</code> — is the parent. Everything the parent can do, the child can do too.</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <h3>Quick Check — Why Inherit?</h3>
-          <div class="slide-content">
-
-          <p>In the <code>Animal</code>/<code>Dog</code>/<code>Cat</code> example, <code>Dog</code> inherits from <code>Animal</code>. What is the main benefit of this inheritance?</p>
-
-
-          <p><strong>A.</strong> Dogs run faster in Python than standalone classes</p>
-
-          <p><strong>B.</strong> Shared behavior (like `speak` or `name`) is defined once in `Animal`, and each subclass only adds or overrides what's different</p>
-
-          <p><strong>C.</strong> Python requires all classes to inherit from something</p>
-
-          <p><strong>D.</strong> It prevents you from creating `Animal` objects directly</p>
-
-
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <h3>Quick Check — Why Inherit?</h3>
+        <div class="slide-content">
+
+        <p>In the <code>Animal</code>/<code>Dog</code>/<code>Cat</code> example, <code>Dog</code> inherits from <code>Animal</code>. What is the main benefit of this inheritance?</p>
+
+
+        <p><strong>A.</strong> Dogs run faster in Python than standalone classes</p>
+
+        <p><strong>B.</strong> Shared behavior (like `speak` or `name`) is defined once in `Animal`, and each subclass only adds or overrides what's different</p>
+
+        <p><strong>C.</strong> Python requires all classes to inherit from something</p>
+
+        <p><strong>D.</strong> It prevents you from creating `Animal` objects directly</p>
+
+
+        </div>
+      </section>
+
+
 
 
 
       <!-- Part 4: Objects That Contain Objects — Trees -->
       <section>
-        <section>
-          <h2>Part 4: Objects That Contain Objects — Trees</h2>
+        <h2>Part 4: Objects That Contain Objects — Trees</h2>
 
-          <div class="slide-content"><p>An object's attributes can be <em>other objects</em> — that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments:</p>
+        <div class="slide-content"><p>An object's attributes can be <em>other objects</em> — that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments:</p>
 
 <pre><code>        10
       /    \
@@ -249,15 +242,15 @@
 </code></pre>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Node with total and count</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Node with total and count</h3>
+        <div class="slide-content">
 
-          <p>Write a class <code>Node</code>:</p>
+        <p>Write a class <code>Node</code>:</p>
 
 <ul>
 <li><code>Node(val, left=None, right=None)</code> stores the value and the two children.</li>
@@ -268,16 +261,16 @@
 <p>Notice the recursion: a method calling <em>the same method on its children</em>.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <h3>More Tree Methods</h3>
-          <div class="slide-content">
+      <section>
+        <h3>More Tree Methods</h3>
+        <div class="slide-content">
 
-          <p>Extend your <code>Node</code> class (copy it and add methods):</p>
+        <p>Extend your <code>Node</code> class (copy it and add methods):</p>
 
 <ul>
 <li><code>min_val()</code> / <code>max_val()</code> — smallest / largest value in the subtree.</li>
@@ -287,20 +280,18 @@
 </ul>
 
 
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
 
 
 
       <!-- Part 5: A Decision Tree Is an Object -->
       <section>
-        <section>
-          <h2>Part 5: A Decision Tree Is an Object</h2>
+        <h2>Part 5: A Decision Tree Is an Object</h2>
 
-          <div class="slide-content"><p>You get a job offer. Do you take it? Your (very rational) rules:</p>
+        <div class="slide-content"><p>You get a job offer. Do you take it? Your (very rational) rules:</p>
 
 <ol>
 <li>If the salary score is below 1 → <strong>No</strong>.</li>
@@ -311,15 +302,15 @@
 <p>That is a tree of decisions — and you can build it from objects.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>DecisionNode, Yes, No</h3>
-          <div class="slide-content">
+      <section>
+        <h3>DecisionNode, Yes, No</h3>
+        <div class="slide-content">
 
-          <ul>
+        <ul>
 <li><code>DecisionNode(criteria, boundary, left, right)</code> stores all four. Its method <code>answer(circumstance)</code> looks up <code>circumstance[self.criteria]</code> (circumstance is a dict) and <strong>delegates</strong>: How should the node decide which child to ask? What role does the <code>boundary</code> play?</li>
 <li><code>Yes(DecisionNode)</code> and <code>No(DecisionNode)</code> are leaf classes: their <code>answer</code> ignores the circumstance and returns <code>True</code> / <code>False</code>. Give them their own no-argument <code>__init__</code>.</li>
 </ul>
@@ -327,63 +318,61 @@
 <p>No <code>if</code>-chains about salaries anywhere — the <em>structure</em> of the objects encodes the rules.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>This is a real decision tree</strong></p>
+      <section>
+        <div class="slide-content"><p><strong>This is a real decision tree</strong></p>
 
 <p>You built its structure by hand. The <em>Decision Trees</em> chapter later in this book answers the natural next question: given a table of past decisions, how can <code>fit</code> discover the right criteria and boundaries <strong>automatically</strong>? Same object, learned instead of hand-crafted.</p>
 </div>
-        </section>
-
-
-
-        <section>
-          <h3>Quick Check — Classes vs. Dicts</h3>
-          <div class="slide-content">
-
-          <p>You built a decision tree using <code>DecisionNode</code>, <code>Yes</code>, and <code>No</code> classes. Could you have represented the same tree using nested dictionaries instead? What would you lose?</p>
-
-
-          <p><strong>A.</strong> Dictionaries can't be nested, so it's impossible</p>
-
-          <p><strong>B.</strong> It would work, but you'd lose the ability to call methods like `.predict()` directly on the tree — you'd need separate functions that know the dict structure</p>
-
-          <p><strong>C.</strong> Dictionaries are faster, so you'd actually gain performance</p>
-
-          <p><strong>D.</strong> You'd lose nothing — classes and dicts are interchangeable</p>
-
-
-          </div>
-        </section>
-
-
       </section>
+
+
+
+      <section>
+        <h3>Quick Check — Classes vs. Dicts</h3>
+        <div class="slide-content">
+
+        <p>You built a decision tree using <code>DecisionNode</code>, <code>Yes</code>, and <code>No</code> classes. Could you have represented the same tree using nested dictionaries instead? What would you lose?</p>
+
+
+        <p><strong>A.</strong> Dictionaries can't be nested, so it's impossible</p>
+
+        <p><strong>B.</strong> It would work, but you'd lose the ability to call methods like `.predict()` directly on the tree — you'd need separate functions that know the dict structure</p>
+
+        <p><strong>C.</strong> Dictionaries are faster, so you'd actually gain performance</p>
+
+        <p><strong>D.</strong> You'd lose nothing — classes and dicts are interchangeable</p>
+
+
+        </div>
+      </section>
+
+
 
 
 
       <!-- Part 6: Saving Objects to Files -->
       <section>
-        <section>
-          <h2>Part 6: Saving Objects to Files</h2>
+        <h2>Part 6: Saving Objects to Files</h2>
 
-          <div class="slide-content"><p>Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it.</p>
+        <div class="slide-content"><p>Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it.</p>
 
 <p>JSON can store dicts, lists, numbers, strings and booleans — but not your objects. So the plan is: <strong>object → dict → JSON file</strong>, and back.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>to_dict and from_dict</h3>
-          <div class="slide-content">
+      <section>
+        <h3>to_dict and from_dict</h3>
+        <div class="slide-content">
 
-          <ul>
+        <ul>
 <li><code>to_dict(node)</code> — a <code>Yes</code> leaf becomes <code>{"leaf": True}</code>, a <code>No</code> leaf becomes <code>{"leaf": False}</code>, and an inner node becomes <code>{"criteria": ..., "boundary": ..., "left": &lt;dict&gt;, "right": &lt;dict&gt;}</code> (children converted recursively). <strong>Hint:</strong> <code>isinstance(node, Yes)</code> tells leaves apart.</li>
 <li><code>from_dict(d)</code> — the exact inverse, rebuilding real objects.</li>
 </ul>
@@ -391,40 +380,38 @@
 <p>The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>Aside — <code>pickle</code></strong></p>
+      <section>
+        <div class="slide-content"><p><strong>Aside — <code>pickle</code></strong></p>
 
 <p>Python's <code>pickle</code> module can serialize almost any object in one line (<code>pickle.dump(offer_tree, f)</code>), no <code>to_dict</code> needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via <code>joblib</code>), while model <em>configs</em> travel as JSON or YAML.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 7: Bonus Challenge — `FitPlane` -->
       <section>
-        <section>
-          <h2>Part 7: Bonus Challenge — `FitPlane`</h2>
+        <h2>Part 7: Bonus Challenge — `FitPlane`</h2>
 
-          <div class="slide-content"><p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations.</p>
+        <div class="slide-content"><p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations.</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>FitPlane</h3>
-          <div class="slide-content">
+      <section>
+        <h3>FitPlane</h3>
+        <div class="slide-content">
 
-          <p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations:</p>
+        <p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations:</p>
 
 <pre><code>x1*a + y1*b + 1*d = z1
 x2*a + y2*b + 1*d = z2
@@ -439,103 +426,102 @@ x3*a + y3*b + 1*d = z3
 </ul>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-
-          <h3>Summary</h3>
-
-          <div class="slide-content">
-          <table>
-            <tr>
-
-              <th>Part</th>
-
-              <th>You built</th>
-
-              <th>The idea</th>
-
-            </tr>
-
-            <tr>
-
-              <td>1</td>
-
-              <td><code>Customer</code></td>
-
-              <td><code>__init__</code>, <code>self</code>, methods — data + behavior in one place</td>
-
-            </tr>
-
-            <tr>
-
-              <td>2</td>
-
-              <td><code>TwoPointLine</code></td>
-
-              <td><strong>the <code>fit</code>/<code>predict</code> model API</strong>, input validation</td>
-
-            </tr>
-
-            <tr>
-
-              <td>3</td>
-
-              <td><code>Animal</code> → <code>Dog</code>, <code>Cat</code></td>
-
-              <td>inheritance</td>
-
-            </tr>
-
-            <tr>
-
-              <td>4</td>
-
-              <td><code>Node.total/count/min_val/max_val/find/max_depth/apply</code></td>
-
-              <td>recursion on object trees</td>
-
-            </tr>
-
-            <tr>
-
-              <td>5</td>
-
-              <td><code>DecisionNode</code>, <code>Yes</code>, <code>No</code></td>
-
-              <td>a decision tree as objects; leaves via inheritance</td>
-
-            </tr>
-
-            <tr>
-
-              <td>6</td>
-
-              <td><code>to_dict</code> / <code>from_dict</code></td>
-
-              <td>serialization — models that survive the program</td>
-
-            </tr>
-
-            <tr>
-
-              <td>Bonus</td>
-
-              <td><code>FitPlane</code></td>
-
-              <td>fit = solving equations (three points → a plane)</td>
-
-            </tr>
-
-          </table>
-          </div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+
+        <h3>Summary</h3>
+
+        <div class="slide-content">
+        <table>
+          <tr>
+
+            <th>Part</th>
+
+            <th>You built</th>
+
+            <th>The idea</th>
+
+          </tr>
+
+          <tr>
+
+            <td>1</td>
+
+            <td><code>Customer</code></td>
+
+            <td><code>__init__</code>, <code>self</code>, methods — data + behavior in one place</td>
+
+          </tr>
+
+          <tr>
+
+            <td>2</td>
+
+            <td><code>TwoPointLine</code></td>
+
+            <td><strong>the <code>fit</code>/<code>predict</code> model API</strong>, input validation</td>
+
+          </tr>
+
+          <tr>
+
+            <td>3</td>
+
+            <td><code>Animal</code> → <code>Dog</code>, <code>Cat</code></td>
+
+            <td>inheritance</td>
+
+          </tr>
+
+          <tr>
+
+            <td>4</td>
+
+            <td><code>Node.total/count/min_val/max_val/find/max_depth/apply</code></td>
+
+            <td>recursion on object trees</td>
+
+          </tr>
+
+          <tr>
+
+            <td>5</td>
+
+            <td><code>DecisionNode</code>, <code>Yes</code>, <code>No</code></td>
+
+            <td>a decision tree as objects; leaves via inheritance</td>
+
+          </tr>
+
+          <tr>
+
+            <td>6</td>
+
+            <td><code>to_dict</code> / <code>from_dict</code></td>
+
+            <td>serialization — models that survive the program</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Bonus</td>
+
+            <td><code>FitPlane</code></td>
+
+            <td>fit = solving equations (three points → a plane)</td>
+
+          </tr>
+
+        </table>
+        </div>
+      </section>
+
+
 
 
 

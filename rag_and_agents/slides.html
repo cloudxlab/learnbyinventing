@@ -46,8 +46,6 @@
       <a href="index.html" style="color:#888;text-decoration:none;">Interactive</a>
       <strong style="color:#333;">Slides</strong>
 
-      <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/rag_and_agents/rag_and_agents.ipynb" target="_blank" style="color:#888;text-decoration:none;">Notebook (Colab)</a>
-
     </span>
   </nav>
   <div class="reveal">
@@ -65,10 +63,9 @@
 
       <!-- Part 1: The Knowledge Gap -->
       <section>
-        <section>
-          <h2>Part 1: The Knowledge Gap</h2>
+        <h2>Part 1: The Knowledge Gap</h2>
 
-          <div class="slide-content"><p>The central question: what does an LLM actually know, and what happens when it doesn't?</p>
+        <div class="slide-content"><p>The central question: what does an LLM actually know, and what happens when it doesn't?</p>
 
 <p><strong>Prerequisites.</strong> Basic Python (functions, lists, dicts, loops). No ML background required.</p>
 
@@ -80,15 +77,15 @@
 </ul>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Amnesiac Oracle</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Amnesiac Oracle</h3>
+        <div class="slide-content">
 
-          <p>Install the Anthropic SDK and run the observe code below. Both answers come back instantly and correctly.</p>
+        <p>Install the Anthropic SDK and run the observe code below. Both answers come back instantly and correctly.</p>
 
 <p>Now ask the model something it cannot possibly know — an internal company document it has never seen. Read the answer carefully.</p>
 
@@ -101,25 +98,25 @@
 </ol>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>You have just felt the core problem: a language model's knowledge is frozen at training time. It cannot know what happened yesterday, or what is in your company's private database. Your keyword check is a crude patch. The real fix requires giving the model the document at the moment it is asked.</p>
+      <section>
+        <div class="slide-content"><p>You have just felt the core problem: a language model's knowledge is frozen at training time. It cannot know what happened yesterday, or what is in your company's private database. Your keyword check is a crude patch. The real fix requires giving the model the document at the moment it is asked.</p>
 
 <p><strong>What you invented:</strong> the intuition behind <em>retrieval-augmented generation</em> — the idea that knowledge should come from outside the model, not from inside it.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Stuffing the Prompt</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Stuffing the Prompt</h3>
+        <div class="slide-content">
 
-          <p>Import the Acme Corp policy documents and try putting all three directly into the prompt (see the observe code). It works — the model answers correctly from the documents.</p>
+        <p>Import the Acme Corp policy documents and try putting all three directly into the prompt (see the observe code). It works — the model answers correctly from the documents.</p>
 
 <p><strong>The problem.</strong> Imagine you have 10,000 documents instead of 3, each 500 words. Run the calculation code below. You cannot stuff all 10,000 into the prompt.</p>
 
@@ -134,40 +131,38 @@
 <p>Test it with at least two different questions. Does it always pick the right document?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>You have just reinvented keyword-based retrieval. It is fast and requires no ML. But try this question: <code>"What is the per-night accommodation limit?"</code> — the word "hotel" does not appear, and "accommodation" might not match "lodging." You would miss documents that mean the same thing but use different words.</p>
+      <section>
+        <div class="slide-content"><p>You have just reinvented keyword-based retrieval. It is fast and requires no ML. But try this question: <code>"What is the per-night accommodation limit?"</code> — the word "hotel" does not appear, and "accommodation" might not match "lodging." You would miss documents that mean the same thing but use different words.</p>
 
 <p><strong>What you invented:</strong> the idea of <em>retrieval as a preprocessing step</em> — only sending relevant context to the model. This is the skeleton of RAG. The next module fixes the keyword-matching weakness.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 2: The Search Problem -->
       <section>
-        <section>
-          <h2>Part 2: The Search Problem</h2>
+        <h2>Part 2: The Search Problem</h2>
 
-          <div class="slide-content"><p>The central question: how do you find a document that means the same thing, even when it uses different words?</p>
+        <div class="slide-content"><p>The central question: how do you find a document that means the same thing, even when it uses different words?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>When Words Lie</h3>
-          <div class="slide-content">
+      <section>
+        <h3>When Words Lie</h3>
+        <div class="slide-content">
 
-          <p>Build a tiny keyword search engine using the mini corpus (see the observe code). The first sentence scores highest because it shares the word "hotel." But the second and third sentences mean <em>exactly the same thing</em> and score zero — they share no words with the query.</p>
+        <p>Build a tiny keyword search engine using the mini corpus (see the observe code). The first sentence scores highest because it shares the word "hotel." But the second and third sentences mean <em>exactly the same thing</em> and score zero — they share no words with the query.</p>
 
 <p><strong>Your task.</strong> Measure meaning using numbers instead of words.</p>
 
@@ -180,25 +175,25 @@
 <p>Do the accommodation and lodging sentences now rank above the Python sentence?</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>You have just used <em>embeddings</em> — dense numerical representations of meaning. The dot product between two embedding vectors measures how semantically similar two pieces of text are. This is the engine inside every modern search system.</p>
+      <section>
+        <div class="slide-content"><p>You have just used <em>embeddings</em> — dense numerical representations of meaning. The dot product between two embedding vectors measures how semantically similar two pieces of text are. This is the engine inside every modern search system.</p>
 
 <p><strong>What you invented:</strong> <em>semantic search using vector embeddings</em> — the retrieval backbone of production RAG systems.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Building a Document Index</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Building a Document Index</h3>
+        <div class="slide-content">
 
-          <p>In the real world, you embed documents <em>once</em> (when they are added to the system) and store those embeddings. At query time, you only embed the question — not all the documents again.</p>
+        <p>In the real world, you embed documents <em>once</em> (when they are added to the system) and store those embeddings. At query time, you only embed the question — not all the documents again.</p>
 
 <p><strong>Your task.</strong> Build a simple in-memory vector store.</p>
 
@@ -209,38 +204,36 @@
 <p><strong>Step 3</strong> — If you had 1 million documents, computing a dot product with each one would be slow. In one or two sentences, describe what you might do to speed this up.</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <div class="slide-content"><p><strong>What you invented:</strong> a <em>vector index</em> — the data structure at the heart of systems like Pinecone, Weaviate, and pgvector. You embed documents once, store the vectors, and at query time only embed the question.</p>
-</div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>What you invented:</strong> a <em>vector index</em> — the data structure at the heart of systems like Pinecone, Weaviate, and pgvector. You embed documents once, store the vectors, and at query time only embed the question.</p>
+</div>
+      </section>
+
+
 
 
 
       <!-- Part 3: Inventing RAG -->
       <section>
-        <section>
-          <h2>Part 3: Inventing RAG</h2>
+        <h2>Part 3: Inventing RAG</h2>
 
-          <div class="slide-content"><p>The central question: how do you combine retrieval with generation to get answers that are grounded in your documents?</p>
+        <div class="slide-content"><p>The central question: how do you combine retrieval with generation to get answers that are grounded in your documents?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Grounded Answer</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Grounded Answer</h3>
+        <div class="slide-content">
 
-          <p>You now have two working pieces: a retrieval system and a language model. Try connecting them naively (see the observe code). It works — but there is a subtle problem.</p>
+        <p>You now have two working pieces: a retrieval system and a language model. Try connecting them naively (see the observe code). It works — but there is a subtle problem.</p>
 
 <p><strong>The problem.</strong> Ask a question completely outside the documents: <code>"What is the boiling point of water?"</code> Does the model say "I don't know" or does it answer from general knowledge?</p>
 
@@ -252,63 +245,61 @@
 </ol>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>You have just built a complete RAG pipeline: retrieve relevant chunks, gate on confidence, generate a grounded answer. The confidence gate is a simple but important production pattern — it prevents the model from hallucinating when retrieval fails.</p>
+      <section>
+        <div class="slide-content"><p>You have just built a complete RAG pipeline: retrieve relevant chunks, gate on confidence, generate a grounded answer. The confidence gate is a simple but important production pattern — it prevents the model from hallucinating when retrieval fails.</p>
 
 <p><strong>What you invented:</strong> <em>Retrieval-Augmented Generation (RAG)</em> — the dominant architecture for grounding LLMs in private or recent knowledge.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Chunking and the Goldilocks Problem</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Chunking and the Goldilocks Problem</h3>
+        <div class="slide-content">
 
-          <p>Real documents are long. If you embed an entire 10-page PDF as one vector, you lose precision — the embedding averages out over too many topics. But if you split every sentence into its own chunk, each chunk loses context. There is a Goldilocks size.</p>
+        <p>Real documents are long. If you embed an entire 10-page PDF as one vector, you lose precision — the embedding averages out over too many topics. But if you split every sentence into its own chunk, each chunk loses context. There is a Goldilocks size.</p>
 
 <p><strong>Your task.</strong> Write a <code>chunk_document(text, chunk_size, overlap)</code> function that splits a document into overlapping chunks of approximately <code>chunk_size</code> words, with <code>overlap</code> words repeated at the start of each new chunk.</p>
 
 <p>Then index the chunks and test retrieval with the provided questions. Finally, <strong>experiment</strong>: change <code>chunk_size</code> to 20 (very small) and then to 200 (very large). How does retrieval quality change?</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <div class="slide-content"><p><strong>What you invented:</strong> <em>document chunking with overlap</em> — a standard preprocessing step in all production RAG systems. The overlap prevents relevant sentences from being split across chunk boundaries.</p>
-</div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>What you invented:</strong> <em>document chunking with overlap</em> — a standard preprocessing step in all production RAG systems. The overlap prevents relevant sentences from being split across chunk boundaries.</p>
+</div>
+      </section>
+
+
 
 
 
       <!-- Part 4: The Single-Step Limit -->
       <section>
-        <section>
-          <h2>Part 4: The Single-Step Limit</h2>
+        <h2>Part 4: The Single-Step Limit</h2>
 
-          <div class="slide-content"><p>The central question: what happens when answering a question requires <em>doing</em> something — not just knowing something?</p>
+        <div class="slide-content"><p>The central question: what happens when answering a question requires <em>doing</em> something — not just knowing something?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Model That Cannot Act</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Model That Cannot Act</h3>
+        <div class="slide-content">
 
-          <p>Ask the model things that require real-time actions (see the observe code). The time question fails — the model cannot check a clock. The calculator question might work for easy math but could fail on harder ones. The model is stateless and sandboxed: it cannot call your system clock, run a calculator, search the web, or write a file.</p>
+        <p>Ask the model things that require real-time actions (see the observe code). The time question fails — the model cannot check a clock. The calculator question might work for easy math but could fail on harder ones. The model is stateless and sandboxed: it cannot call your system clock, run a calculator, search the web, or write a file.</p>
 
 <p><strong>Your task.</strong></p>
 
@@ -318,25 +309,25 @@
 </ol>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>The model produces structured text that <em>describes</em> what tool to call. You have to parse that text and actually run the tool. The model is a reasoning engine, not an execution engine. You are the executor.</p>
+      <section>
+        <div class="slide-content"><p>The model produces structured text that <em>describes</em> what tool to call. You have to parse that text and actually run the tool. The model is a reasoning engine, not an execution engine. You are the executor.</p>
 
 <p><strong>What you invented:</strong> the concept of <em>tool use</em> (also called <em>function calling</em>) — the mechanism that allows language models to request external actions.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Parsing and Executing Tool Calls</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Parsing and Executing Tool Calls</h3>
+        <div class="slide-content">
 
-          <p>Complete the loop: parse the model's text output, run the right tool, and feed the result back.</p>
+        <p>Complete the loop: parse the model's text output, run the right tool, and feed the result back.</p>
 
 <p><strong>Your task.</strong> Write a <code>one_step_agent(question)</code> function that:</p>
 
@@ -350,40 +341,38 @@
 <p><strong>The limitation.</strong> Try: <code>"How many days from today until New Year's Day next year?"</code> — this requires <em>two</em> tool calls (<code>get_current_date</code> then <code>days_until</code>). Your one-step agent can only do one.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>A single tool call is not enough for complex questions. You need a loop — the model calls a tool, gets a result, decides if it needs another tool, calls again, and so on. That loop is an agent.</p>
+      <section>
+        <div class="slide-content"><p>A single tool call is not enough for complex questions. You need a loop — the model calls a tool, gets a result, decides if it needs another tool, calls again, and so on. That loop is an agent.</p>
 
 <p><strong>What you invented:</strong> the <em>tool execution loop</em> — the bridge between a model's text output and real-world actions.</p>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
       <!-- Part 5: Inventing Agents -->
       <section>
-        <section>
-          <h2>Part 5: Inventing Agents</h2>
+        <h2>Part 5: Inventing Agents</h2>
 
-          <div class="slide-content"><p>The central question: how do you give a model the ability to act repeatedly until a task is complete?</p>
+        <div class="slide-content"><p>The central question: how do you give a model the ability to act repeatedly until a task is complete?</p>
 </div>
 
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>The Reasoning Loop</h3>
-          <div class="slide-content">
+      <section>
+        <h3>The Reasoning Loop</h3>
+        <div class="slide-content">
 
-          <p>An agent is a <em>loop</em> where:</p>
+        <p>An agent is a <em>loop</em> where:</p>
 
 <ol>
 <li>The model receives the question and any previous tool results.</li>
@@ -404,23 +393,23 @@
 </ul>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p><strong>What you invented:</strong> the <em>agentic loop</em> — the core architecture of every AI agent, from simple assistants to autonomous research systems. This is also known as the <em>ReAct</em> pattern (Reasoning + Acting).</p>
+      <section>
+        <div class="slide-content"><p><strong>What you invented:</strong> the <em>agentic loop</em> — the core architecture of every AI agent, from simple assistants to autonomous research systems. This is also known as the <em>ReAct</em> pattern (Reasoning + Acting).</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>Giving the Agent Memory</h3>
-          <div class="slide-content">
+      <section>
+        <h3>Giving the Agent Memory</h3>
+        <div class="slide-content">
 
-          <p>Your agent has no memory between separate <code>run_agent</code> calls. Try: first tell it <code>"My monthly budget is $3000."</code>, then ask <code>"How much is 40% of my budget?"</code> — the second call fails.</p>
+        <p>Your agent has no memory between separate <code>run_agent</code> calls. Try: first tell it <code>"My monthly budget is $3000."</code>, then ask <code>"How much is 40% of my budget?"</code> — the second call fails.</p>
 
 <p><strong>Your task.</strong> Add a simple external memory store with two new tools:</p>
 
@@ -432,25 +421,25 @@
 <p>Update your <code>TOOL_PROMPT</code> to include these tools and update <code>run_tool</code> to dispatch to them. Then test the two-call sequence above.</p>
 
 
-          </div>
-        </section>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><p>You have added persistent state to a stateless model. The model itself still forgets between calls — but the <em>system</em> around it remembers. This pattern (external memory + stateless model) is how real production agents are built.</p>
+      <section>
+        <div class="slide-content"><p>You have added persistent state to a stateless model. The model itself still forgets between calls — but the <em>system</em> around it remembers. This pattern (external memory + stateless model) is how real production agents are built.</p>
 
 <p><strong>What you invented:</strong> <em>external agent memory</em> — the pattern used in systems like LangChain's memory modules, AutoGPT's file-based memory, and enterprise AI assistants.</p>
 </div>
-        </section>
+      </section>
 
 
 
-        <section>
-          <h3>RAG Agent — Combining Everything</h3>
-          <div class="slide-content">
+      <section>
+        <h3>RAG Agent — Combining Everything</h3>
+        <div class="slide-content">
 
-          <p>Your final exercise combines everything: the vector index from Module 2, the grounded generation from Module 3, and the agentic loop from Module 5.</p>
+        <p>Your final exercise combines everything: the vector index from Module 2, the grounded generation from Module 3, and the agentic loop from Module 5.</p>
 
 <p><strong>Your task.</strong> Add a <code>search_docs(query)</code> tool that wraps your <code>retrieve</code> function. Update the tool prompt to include it. Then build a complete RAG agent that can both retrieve information from documents AND use tools — and decide which it needs at each step.</p>
 
@@ -465,164 +454,162 @@
 <p><strong>Bonus:</strong> Use <code>QA_EVAL_SET</code> from acme_datasets to measure your agent's accuracy across 15 question-answer pairs.</p>
 
 
-          </div>
-        </section>
-
-
-
-        <section>
-          <div class="slide-content"><p><strong>What you invented:</strong> a <em>RAG-powered tool-using agent</em> — an architecture that appears in production systems like Perplexity, enterprise knowledge assistants, and AI copilots. You built it from scratch, from first principles.</p>
-</div>
-        </section>
-
-
+        </div>
       </section>
+
+
+
+      <section>
+        <div class="slide-content"><p><strong>What you invented:</strong> a <em>RAG-powered tool-using agent</em> — an architecture that appears in production systems like Perplexity, enterprise knowledge assistants, and AI copilots. You built it from scratch, from first principles.</p>
+</div>
+      </section>
+
+
 
 
 
       <!-- Part None: What You Invented -->
       <section>
-        <section>
-          <h2>What You Invented</h2>
+        <h2>What You Invented</h2>
 
-        </section>
+      </section>
 
 
 
-        <section>
+      <section>
 
-          <h3>Your Inventions vs. Industry Names</h3>
+        <h3>Your Inventions vs. Industry Names</h3>
 
-          <div class="slide-content">
-          <table>
-            <tr>
+        <div class="slide-content">
+        <table>
+          <tr>
 
-              <th>Exercise</th>
+            <th>Exercise</th>
 
-              <th>What you built</th>
+            <th>What you built</th>
 
-              <th>Industry name</th>
+            <th>Industry name</th>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>1.1</td>
+            <td>1.1</td>
 
-              <td>Detected unanswerable questions</td>
+            <td>Detected unanswerable questions</td>
 
-              <td>Hallucination detection</td>
+            <td>Hallucination detection</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>1.2</td>
+            <td>1.2</td>
 
-              <td>Selected relevant docs before prompting</td>
+            <td>Selected relevant docs before prompting</td>
 
-              <td>Context injection / prompt stuffing</td>
+            <td>Context injection / prompt stuffing</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>2.1</td>
+            <td>2.1</td>
 
-              <td>Measured meaning with dot products</td>
+            <td>Measured meaning with dot products</td>
 
-              <td>Semantic similarity</td>
+            <td>Semantic similarity</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>2.2</td>
+            <td>2.2</td>
 
-              <td>Stored embeddings once, queried many times</td>
+            <td>Stored embeddings once, queried many times</td>
 
-              <td>Vector index</td>
+            <td>Vector index</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>3.1</td>
+            <td>3.1</td>
 
-              <td>Retrieved then generated, with a fallback</td>
+            <td>Retrieved then generated, with a fallback</td>
 
-              <td>Retrieval-Augmented Generation (RAG)</td>
+            <td>Retrieval-Augmented Generation (RAG)</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>3.2</td>
+            <td>3.2</td>
 
-              <td>Split long docs into overlapping windows</td>
+            <td>Split long docs into overlapping windows</td>
 
-              <td>Chunking with overlap</td>
+            <td>Chunking with overlap</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>4.1</td>
+            <td>4.1</td>
 
-              <td>Made the model describe actions as text</td>
+            <td>Made the model describe actions as text</td>
 
-              <td>Tool use / function calling</td>
+            <td>Tool use / function calling</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>4.2</td>
+            <td>4.2</td>
 
-              <td>Parsed model text and ran the right function</td>
+            <td>Parsed model text and ran the right function</td>
 
-              <td>Tool dispatcher</td>
+            <td>Tool dispatcher</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>5.1</td>
+            <td>5.1</td>
 
-              <td>Looped model + tools until task complete</td>
+            <td>Looped model + tools until task complete</td>
 
-              <td>Agentic loop / ReAct pattern</td>
+            <td>Agentic loop / ReAct pattern</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>5.2</td>
+            <td>5.2</td>
 
-              <td>Added persistent storage outside the model</td>
+            <td>Added persistent storage outside the model</td>
 
-              <td>External agent memory</td>
+            <td>External agent memory</td>
 
-            </tr>
+          </tr>
 
-            <tr>
+          <tr>
 
-              <td>5.3</td>
+            <td>5.3</td>
 
-              <td>Combined retrieval, tools, memory, and loop</td>
+            <td>Combined retrieval, tools, memory, and loop</td>
 
-              <td>RAG agent</td>
+            <td>RAG agent</td>
 
-            </tr>
+          </tr>
 
-          </table>
-          </div>
-        </section>
+        </table>
+        </div>
+      </section>
 
 
 
-        <section>
-          <div class="slide-content"><h2>Going Further</h2>
+      <section>
+        <div class="slide-content"><h2>Going Further</h2>
 
 <p>Once you have completed all exercises, the natural next steps are:</p>
 
@@ -634,10 +621,9 @@
 <li><strong>Multi-agent systems.</strong> What if one agent specialised in retrieval and another in calculation, and a coordinator decided which to call? That is a multi-agent system — the current frontier.</li>
 </ul>
 </div>
-        </section>
-
-
       </section>
+
+
 
 
 
