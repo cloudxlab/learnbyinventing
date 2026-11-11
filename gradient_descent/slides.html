@@ -311,14 +311,11 @@
     <tr><td style="padding:0.3em 1em;">Slope <strong>zero</strong></td><td>&rarr; you&rsquo;re at the <strong>bottom</strong>!</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
-    <p>You know the slope of a line through two points:
-    $\;\text{slope} = \frac{f(b) - f(a)}{b - a}$</p>
-    <p>To approximate the slope of the <em>curve</em> at $x$,
-    use two points very close together:</p>
-    <p style="font-size:1.05em; text-align:center;">
-      $\text{slope at } x \;\approx\; \dfrac{f(x + h) - f(x - h)}{2h}$
-    </p>
-    <p style="font-size:0.85em;">where $h$ is a tiny number like $0.00001$.</p>
+    <p><strong>Your turn:</strong> You already know how to compute
+    the numerical derivative of a function at a point.</p>
+    <p>Write a formula that approximates the slope of a curve $f$
+    at point $x$, using a tiny step size $h$.</p>
+    <p style="font-size:0.85em;">(Hint: think about two points very close to $x$.)</p>
   </div>
 </div>
 </div>
@@ -361,29 +358,88 @@
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.4em;">
-  <p>If the slope is positive, move left. If negative, move right.
-  One formula captures both:</p>
-  <p style="font-size:1.1em; text-align:center; margin:0.5em 0;">
-    $x_{\text{new}} = x - \alpha \times \text{slope}$
-  </p>
-  <p style="font-size:0.9em;">$\alpha$ (alpha) is the <strong>step size</strong>
-  &mdash; how far to move each time.</p>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Your turn:</strong> If the slope is positive, move left.
+  If negative, move right. Keep going until the slope is near zero.</p>
+  <p>Implement this naive approach &mdash; move by a fixed step of 1 each time:</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def find_minima_1d(f, x, epsilon=1e-6, max_steps=100000):
+    """Return x that minimizes f, starting from the given x."""
+    # Compute slope at x
+    # If slope positive, move x left by 1
+    # If slope negative, move x right by 1
+    # Stop when |slope| &lt; epsilon
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def find_minima_1d(f, x, epsilon=1e-6, max_steps=100000):
+    for step in range(max_steps):
+        slope = numerical_derivative(f, x)
+        if abs(slope) &lt; epsilon:
+            break
+        if slope > 0:
+            x = x - 1
+        else:
+            x = x + 1
+    return x, f(x)</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Let&rsquo;s trace through a simple example.</p>
+  <p>Consider $f(x) = x^2$ which has its minimum at $x = 0$.
+  Start at $x = 0.5$.</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Hand-calculate one step. Start at $x = 2$, $\alpha = 0.01$:</p>
-    <table style="margin:0.3em auto; font-size:0.9em;">
-      <tr><td style="padding:0.2em 0.5em;">slope at $x = 2$</td><td>= 28.0</td></tr>
-      <tr><td style="padding:0.2em 0.5em;">$x_{\text{new}} = 2 - 0.01 \times 28$</td><td>= <strong>1.72</strong></td></tr>
-      <tr><td style="padding:0.2em 0.5em;">$f(1.72)$</td><td>&asymp; 11.9 &nbsp;(down from 18!)</td></tr>
-    </table>
-    <p>It moved downhill. <strong>One more step?</strong></p>
+    <p><strong>Q1:</strong> The slope at $x = 0.5$ is positive.
+    So we move left by 1. What is $x$ now?</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <table style="margin:0.3em auto; font-size:0.9em;">
-      <tr><td style="padding:0.2em 0.5em;">slope at $x = 1.72$</td><td>&asymp; 16.4</td></tr>
-      <tr><td style="padding:0.2em 0.5em;">$x_{\text{new}} = 1.72 - 0.01 \times 16.4$</td><td>&asymp; <strong>1.56</strong></td></tr>
-      <tr><td style="padding:0.2em 0.5em;">$f(1.56)$</td><td>&asymp; 9.7 &nbsp;(still going down!)</td></tr>
-    </table>
+    <p>$x = 0.5 - 1 = -0.5$. &nbsp;
+    The slope at $x = -0.5$ is negative, so we move right by 1.
+    $x = -0.5 + 1 = 0.5$. &nbsp; We&rsquo;re back where we started!</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p><strong>Q2:</strong> The value of $x$ is oscillating:
+    $0.5 \to -0.5 \to 0.5 \to \ldots$
+    &nbsp; It never converges. Why?</p>
+  </div>
+  <div class="fragment" data-fragment-index="3">
+    <p style="font-size:0.95em;">Our fixed step of 1 is too large &mdash;
+    it overshoots the minimum every time.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p><strong>Q3:</strong> Look at the slope values as we approach the minimum:</p>
+  <table style="margin:0.5em auto; font-size:0.9em;">
+    <tr><th style="padding:0.2em 0.6em;">$x$</th><th style="padding:0.2em 0.6em;">slope</th><th style="padding:0.2em 0.6em;">$|$slope$|$</th></tr>
+    <tr><td>2.0</td><td>4.0</td><td>4.0</td></tr>
+    <tr><td>1.0</td><td>2.0</td><td>2.0</td></tr>
+    <tr><td>0.5</td><td>1.0</td><td>1.0</td></tr>
+    <tr><td>0.1</td><td>0.2</td><td>0.2</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>The gradient&rsquo;s absolute value <strong>gets smaller</strong>
+    as we get closer to the minimum.</p>
+    <p>What if, instead of a fixed step, we moved $x$ <strong>in proportion
+    to the gradient</strong>?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Small gradient &rarr; small step (gentle landing).<br/>
+    Large gradient &rarr; large step (far from the answer, move boldly).</p>
+    <p><strong>Write a formula for $x_{\text{new}}$ using this idea.</strong></p>
   </div>
 </div>
 </div>
@@ -393,16 +449,27 @@
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>Keep stepping until the slope is near zero. Write this loop:</p>
-  <div class="code-stack" style="min-height:10em;">
-    <div class="code-step fragment fade-out" data-fragment-index="0">
+  <div class="fragment fade-out" data-fragment-index="0">
+    <p>The formula you should arrive at:</p>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p style="font-size:1.1em; text-align:center; margin:0.5em 0;">
+      $x_{\text{new}} = x - \alpha \times \text{slope}$
+    </p>
+    <p style="font-size:0.9em;">$\alpha$ (alpha) is the <strong>learning rate</strong>
+    &mdash; a small constant that controls how aggressively we step.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now rewrite <code>find_minima_1d</code> using this formula:</p>
+    <div class="code-stack" style="min-height:8em;">
+      <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def find_minima_1d(f, x, alpha=0.01, epsilon=1e-6, max_steps=100000):
     """Return x that minimizes f, starting from the given x."""
-    # Repeat: compute slope, update x
+    # Repeat: compute slope, update x using the new formula
     # Stop when |slope| &lt; epsilon
     # your code here</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="0">
+      </div>
+      <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def find_minima_1d(f, x, alpha=0.01, epsilon=1e-6, max_steps=100000):
     for step in range(max_steps):
         slope = numerical_derivative(f, x)
@@ -410,9 +477,10 @@
             break
         x = x - alpha * slope
     return x, f(x)</code></pre>
+      </div>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="1">
+  <div class="fragment" data-fragment-index="3">
     <p style="font-size:0.9em; font-family:monospace;">
       find_minima_1d(f, x=2.0) &rarr; (1.0000, 7.0000)
     </p>
@@ -427,30 +495,23 @@
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>What happens if $\alpha$ is wrong?</p>
-  <div style="display:flex; gap:1.5em; margin:0.5em 0;">
-    <div style="flex:1; text-align:center; border:1px solid #ffcdd2; border-radius:6px; padding:0.5em;">
-      <p style="color:#c62828;"><strong>$\alpha$ too large</strong></p>
-      <p style="font-size:0.8em;">Overshoots the minimum,<br/>
-      bounces back and forth,<br/>may <strong>diverge</strong></p>
-      <p style="font-size:0.75em; font-family:monospace;">x: 2 &rarr; &minus;6 &rarr; 200 &rarr; &infin;</p>
-    </div>
-    <div style="flex:1; text-align:center; border:1px solid #c8e6c9; border-radius:6px; padding:0.5em;">
-      <p style="color:#2e7d32;"><strong>$\alpha$ just right</strong></p>
-      <p style="font-size:0.8em;">Steady progress<br/>
-      toward the minimum,<br/>converges smoothly</p>
-      <p style="font-size:0.75em; font-family:monospace;">x: 2 &rarr; 1.7 &rarr; 1.4 &rarr; 1.0</p>
-    </div>
-    <div style="flex:1; text-align:center; border:1px solid #ffe0b2; border-radius:6px; padding:0.5em;">
-      <p style="color:#e65100;"><strong>$\alpha$ too small</strong></p>
-      <p style="font-size:0.8em;">Barely moves,<br/>
-      takes forever,<br/>may not converge in time</p>
-      <p style="font-size:0.75em; font-family:monospace;">x: 2 &rarr; 1.997 &rarr; 1.994 &rarr; &hellip;</p>
-    </div>
-  </div>
+  <p><strong>Experiment:</strong> Try running <code>find_minima_1d</code>
+  on $f(x) = x^4 - 4x + 10$ starting from $x = 2$ with these
+  three values of $\alpha$:</p>
+  <table style="margin:0.5em auto; font-size:0.9em;">
+    <tr><th style="padding:0.2em 0.8em;">$\alpha$</th><th style="padding:0.2em 0.8em;">What happens?</th></tr>
+    <tr><td><code>0.01</code></td><td style="font-size:0.85em;">Try it and note the result</td></tr>
+    <tr><td><code>1.0</code></td><td style="font-size:0.85em;">Try it and note the result</td></tr>
+    <tr><td><code>0.000001</code></td><td style="font-size:0.85em;">Try it and note the result</td></tr>
+  </table>
   <div class="fragment" data-fragment-index="0">
-    <p>The <strong>learning rate</strong> $\alpha$ is the most important knob
-    in gradient descent. Choosing it well is an art.</p>
+    <p>What did you observe? Which $\alpha$ converged? Which didn&rsquo;t?
+    Can you explain <em>why</em>?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="font-size:0.95em;">The <strong>learning rate</strong> $\alpha$ is the most important knob
+    in gradient descent. Too large &rarr; overshoots and diverges.
+    Too small &rarr; barely moves. Choosing it well is an art.</p>
   </div>
 </div>
 </div>

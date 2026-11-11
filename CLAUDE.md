@@ -33,11 +33,37 @@ When generating or updating a chapter, read `src/<chapter_name>/polished_prompt.
 
 Notebooks are the learner-facing artifact. When creating or editing them:
 
-- All content is **Markdown cells** with exercise prompts; learners write code in empty **Code cells** below each exercise.
+### The Invention Arc (per chapter)
+
+Each chapter follows a consistent pedagogical arc:
+
+1. **Start with a concrete, intuitive problem** — "Which bag of marbles is more mixed?" (decision tree), "Guess my number" (binary search), "Find where this function is lowest" (gradient descent).
+2. **Learner writes a naive solution** that almost works — they discover the flaw and fix it themselves.
+3. **Generalize incrementally** — each step changes one thing from the previous (sqrt → cube root → nth root → log₁₀ → log base n), so the learner sees the structural pattern.
+4. **Connect to real ML** — a closing "What you just invented" table maps the learner's home-grown functions to their standard names (Gini impurity, CART, gradient descent, etc.).
+
+### The 3-Cell Exercise Pattern
+
+Every exercise is a rigid triplet of cells:
+
+1. **Markdown cell** — numbered exercise ID (e.g., "Exercise 1.2"), task description, "Before coding" pencil-and-paper questions that force reasoning before implementation, and concrete input/output examples.
+2. **Code cell** — contains only `# YOUR CODE HERE` (the learner writes here).
+3. **Markdown cell** — progressive `<details><summary>Hint N</summary>` blocks (1–3 hints, escalating from gentle nudge to near-giveaway), followed by a `<details><summary>Solution</summary>` block.
+
+### Additional Structural Elements
+
+- **"Before coding" questions** — nearly every exercise opens with a pencil-and-paper derivation prompt. This is the core invention mechanism: reason first, then code.
+- **Helper/boilerplate code** — plotting functions, test assertions, timing harnesses, and imports are provided as pre-filled code cells *before* the exercise that uses them.
+- **Quick Check cells** — multiple-choice comprehension questions (options A–D) between exercise clusters to test conceptual understanding.
+- **Reflection sections** — each chapter ends with open-ended "What did you just build?" questions asking learners to articulate what they discovered.
+- **Cumulative building** — later exercises reuse functions from earlier ones. Cross-chapter foreshadowing also appears (e.g., binary search's `find_min_convex` notes "this is exactly how gradient descent works").
+
+### General Rules
+
 - Never reveal solutions — guide learners to derive everything themselves.
 - Make steps granular: one concrete, self-contained problem per exercise.
-- Add helper/plotting utilities as provided Python code (since the learner shouldn't have to fight boilerplate).
-- Exercises should build cumulatively toward a final ML concept (impurity → splitting → decision tree; gradient → MSE → linear regression).
+- Exercises should build cumulatively toward a final ML concept.
+- Tone: conversational, encouraging, first-person-plural. Chapters open with "You won't be taught — you will *discover*."
 
 ## Current Chapters
 
