@@ -167,11 +167,15 @@
     </svg>
   </div>
   <div class="fragment" data-fragment-index="0">
-    <p><strong>Is $f(x) = x^4 - 4x + 10$ convex?</strong></p>
+    <p><strong>Is $f(x) = x^4 - 4x + 10$ convex?</strong>
+    Go back to Desmos and check &mdash; pick any two points
+    on the curve and draw a mental line between them.
+    Does the curve stay below that line?</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p>Yes! It has a single valley &mdash; no bumps, no extra dips.
-    A convex function has exactly <strong>one minimum</strong>.</p>
+    <p>A convex function has exactly <strong>one minimum</strong>
+    &mdash; no bumps, no extra dips. That&rsquo;s what makes
+    it possible to find the bottom reliably.</p>
   </div>
 </div>
 </div>
@@ -280,6 +284,25 @@
 # should print something close to 1.0</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Use a small step like 0.01. Compare <code>f(x - step)</code>
+      and <code>f(x + step)</code>. Move toward whichever is smaller.
+      Stop when both are larger than <code>f(x)</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
+<pre><code>def find_minimum(x, step=0.01):
+    while True:
+        if f(x - step) &lt; f(x):
+            x = x - step
+        elif f(x + step) &lt; f(x):
+            x = x + step
+        else:
+            return x</code></pre>
+    </details>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <p>Your strategy works! But it&rsquo;s <strong>slow</strong> &mdash; lots of tiny steps.</p>
     <p>What if, instead of just checking left vs. right,
     you could know exactly <em>how steep</em> the function is
@@ -324,13 +347,13 @@
 
 
       <section>
-        <div class="slide-content"><style>
-  .reveal .code-stack { position: relative; }
-  .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
-</style>
-
-<div style="font-size:1.3em;">
-  <p>Write this as a Python function:</p>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Check your formula: you should have something like</p>
+  <p style="font-size:1.05em; text-align:center;">
+    $\text{slope at } x \;\approx\; \dfrac{f(x + h) - f(x - h)}{2h}$
+  </p>
+  <p style="font-size:0.85em;">where $h$ is a tiny number like $0.00001$.</p>
+  <p>Now write it as a Python function:</p>
   <div class="code-stack" style="min-height:5.5em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def numerical_derivative(f, x, h=1e-5):
@@ -343,13 +366,13 @@
     </div>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p style="font-size:0.9em;">Test on $f(x) = x^4 - 4x + 10$:</p>
-    <table style="margin:0.3em auto; font-size:0.85em;">
-      <tr><th style="padding:0.2em 0.6em;">x</th><th style="padding:0.2em 0.6em;">Slope</th><th style="padding:0.2em 0.6em;">Meaning</th></tr>
-      <tr><td>0</td><td>&minus;4.0</td><td>Negative &rarr; move right</td></tr>
-      <tr><td>1</td><td>&asymp; 0</td><td>Zero &rarr; at the bottom!</td></tr>
-      <tr><td>2</td><td>+28.0</td><td>Positive &rarr; move left</td></tr>
-    </table>
+    <p style="font-size:0.9em;">Test it on $f(x) = x^4 - 4x + 10$. Call
+    <code>numerical_derivative(f, 0)</code>,
+    <code>numerical_derivative(f, 1)</code>, and
+    <code>numerical_derivative(f, 2)</code>.</p>
+    <p style="font-size:0.9em;">For each value: is the slope positive, negative,
+    or near zero? What does that tell you about which direction
+    to move?</p>
   </div>
 </div>
 </div>
@@ -460,7 +483,8 @@
     &mdash; a small constant that controls how aggressively we step.</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p>Now rewrite <code>find_minima_1d</code> using this formula:</p>
+    <p>Now rewrite <code>find_minima_1d</code> using this formula
+    (this replaces your earlier fixed-step version):</p>
     <div class="code-stack" style="min-height:8em;">
       <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def find_minima_1d(f, x, alpha=0.01, epsilon=1e-6, max_steps=100000):
@@ -556,13 +580,11 @@
     </svg>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p style="font-size:0.9em;">Same formula &mdash; hold one variable fixed, nudge the other:</p>
-    <p style="font-size:0.95em; text-align:center;">
-      $\dfrac{\partial g}{\partial x} \approx \dfrac{g(x\!+\!h,\; y) - g(x\!-\!h,\; y)}{2h}$
-      &emsp;
-      $\dfrac{\partial g}{\partial y} \approx \dfrac{g(x,\; y\!+\!h) - g(x,\; y\!-\!h)}{2h}$
-    </p>
-    <p style="font-size:0.85em;">These are called <strong>partial derivatives</strong>.</p>
+    <p><strong>Your turn:</strong> You have <code>numerical_derivative(f, x)</code>
+    which computes the slope of a 1D function. How would you compute
+    the slope in the $x$-direction while keeping $y$ fixed?</p>
+    <p style="font-size:0.85em;">(Hint: treat $g$ as a function of $x$ alone,
+    with $y$ held constant.)</p>
   </div>
 </div>
 </div>
@@ -572,21 +594,26 @@
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>The update rule is the same &mdash; applied to each variable:</p>
+  <p>You should arrive at formulas like these &mdash;
+  called <strong>partial derivatives</strong>:</p>
   <p style="font-size:0.95em; text-align:center;">
-    $x_{\text{new}} = x - \alpha \cdot \frac{\partial g}{\partial x}$
+    $\dfrac{\partial g}{\partial x} \approx \dfrac{g(x\!+\!h,\; y) - g(x\!-\!h,\; y)}{2h}$
     &emsp;
-    $y_{\text{new}} = y - \alpha \cdot \frac{\partial g}{\partial y}$
+    $\dfrac{\partial g}{\partial y} \approx \dfrac{g(x,\; y\!+\!h) - g(x,\; y\!-\!h)}{2h}$
   </p>
-  <div class="code-stack" style="min-height:12em;">
-    <div class="code-step fragment fade-out" data-fragment-index="0">
+  <div class="fragment" data-fragment-index="0">
+    <p>Now write <code>find_minima_2d</code> &mdash; apply the same
+    gradient descent logic, but update both $x$ and $y$ each step:</p>
+    <div class="code-stack" style="min-height:10em;">
+      <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def find_minima_2d(g, x, y, alpha=0.01, epsilon=1e-6, max_steps=100000):
     """Find (x, y) that minimizes g."""
-    # Repeat: compute partial derivatives, update x and y
+    # Compute partial derivatives for x and y
+    # Update both using the gradient descent formula
     # Stop when gradient magnitude &lt; epsilon
     # your code here</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="0">
+      </div>
+      <div class="code-step fragment" data-fragment-index="1">
 <pre><code>def find_minima_2d(g, x, y, alpha=0.01, epsilon=1e-6, max_steps=100000):
     h = 1e-5
     for step in range(max_steps):
@@ -597,9 +624,10 @@
         x = x - alpha * dx
         y = y - alpha * dy
     return x, y, g(x, y)</code></pre>
+      </div>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="1">
+  <div class="fragment" data-fragment-index="2">
     <p style="font-size:0.85em; font-family:monospace;">
       find_minima_2d(g, 2.0, 3.0) &rarr; (0.0000, 0.0000, 0.0000) &check;
     </p>
@@ -612,32 +640,29 @@
 
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
-  <p>See the pattern?</p>
+  <p>Look at what you wrote for 1D and 2D side by side:</p>
   <table style="margin:0.3em auto; font-size:0.9em;">
     <tr><th style="padding:0.2em 0.6em;">&nbsp;</th><th style="padding:0.2em 0.6em;">Position</th><th style="padding:0.2em 0.6em;">Gradient</th></tr>
     <tr><td>1D</td><td>a number</td><td>a number</td></tr>
     <tr><td>2D</td><td>a pair</td><td>a pair</td></tr>
-    <tr><td>ND</td><td>a list of N numbers</td><td>a list of N numbers</td></tr>
+    <tr><td>ND</td><td>?</td><td>?</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
-    <p>One function handles all cases:</p>
+    <p>Fill in the ND row. Then write a general
+    <code>compute_gradient</code> that takes a function and a
+    <strong>list</strong> of variables and returns the gradient
+    (a list of partial derivatives).</p>
+    <p style="font-size:0.85em;">(Hint: loop over each variable,
+    nudge it by $h$, compute that partial derivative.)</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
 <pre><code>def compute_gradient(f, variables, h=1e-5):
     grad = []
     for i in range(len(variables)):
         v_plus = variables.copy();  v_plus[i] += h
         v_minus = variables.copy(); v_minus[i] -= h
         grad.append((f(v_plus) - f(v_minus)) / (2 * h))
-    return grad
-
-def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
-    variables = list(variables)
-    for step in range(100000):
-        grad = compute_gradient(f, variables)
-        if sum(g**2 for g in grad)**0.5 &lt; epsilon:
-            break
-        for i in range(len(variables)):
-            variables[i] -= alpha * grad[i]
-    return variables, f(variables)</code></pre>
+    return grad</code></pre>
   </div>
 </div>
 </div>
@@ -646,7 +671,37 @@ def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
 
 
       <section>
-        <div class="slide-content"><p><style>td .fragment.fade-out { display: none; }</style></p>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>Your turn:</strong> Now write a single
+  <code>find_minima</code> that works for any number of variables,
+  using <code>compute_gradient</code>.</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
+    """Find the values that minimize f. variables is a list."""
+    # Compute gradient, update each variable, stop when small
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
+    variables = list(variables)
+    for step in range(100000):
+        grad = compute_gradient(f, variables)
+        if sum(g**2 for g in grad)**0.5 &lt; epsilon:
+            break
+        for i in range(len(variables)):
+            variables[i] -= alpha * grad[i]
+    return variables, f(variables)</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><style>td .fragment.fade-out { display: none; }</style>
 
 <div style="font-size:1.3em;">
   <p>One algorithm, any number of dimensions:</p>
@@ -743,10 +798,20 @@ def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
   The <strong>error</strong> is $y_i - \hat{y}_i$.</p>
   <p>But some errors are positive and some negative &mdash;
   they cancel if you just add them.</p>
-  <p><strong>How do you fix the cancellation problem?</strong></p>
+  <p><strong>How would you fix the cancellation problem?</strong>
+  Think of at least one way to make all errors positive
+  before adding them.</p>
   <div class="fragment" data-fragment-index="0">
-    <p><strong>Square</strong> each error (makes them all positive),
-    then take the <strong>mean</strong>:</p>
+    <p style="font-size:0.9em;">Two common ideas: take the
+    <strong>absolute value</strong> of each error, or
+    <strong>square</strong> each error. Both work!
+    Squaring is more common &mdash; it penalizes large errors
+    more heavily and is smoother (easier for gradient descent).</p>
+    <p><strong>Your turn:</strong> Write a formula that squares each
+    error and takes the mean. This is called
+    <strong>Mean Squared Error (MSE)</strong>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
     <p style="font-size:1.05em; text-align:center;">
       $\text{MSE}(m, c) = \frac{1}{N} \sum_{i=1}^{N} (y_i - (m x_i + c))^2$
     </p>
@@ -840,14 +905,29 @@ def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>Wrap MSE so <code>find_minima</code> can use it
-  &mdash; it needs a function of a <strong>list</strong>:</p>
+  <p><strong>Your turn:</strong> <code>find_minima</code> expects a function
+  of a <strong>list</strong>. <code>mse</code> takes <code>(X, y, m, c)</code>.</p>
+  <p>Write a wrapper that bridges the two &mdash; it takes
+  <code>params = [m, c]</code> and calls <code>mse</code> with your data.
+  Then plug it into <code>find_minima</code> and run it.</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def mse_for_optimizer(params):
+    # unpack params into m and c
+    # call mse with X_data, y_data, m, c
+    # your code here
+
+result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
 <pre><code>def mse_for_optimizer(params):
     m, c = params
     return mse(X_data, y_data, m, c)
 
 result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></pre>
-  <div class="fragment" data-fragment-index="0">
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.95em; font-family:monospace;">
       Found: &nbsp;m = 2.4970, &nbsp;c = 4.0189<br/>
       True: &nbsp;&nbsp;m = 2.5, &nbsp;&nbsp;&nbsp;&nbsp;c = 4.0
@@ -864,16 +944,19 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
 
       <section>
         <div class="slide-content"><div style="font-size:1.4em;">
-  <p>Verify: <code>np.polyfit(X_data, y_data, 1)</code> uses an
-  <strong>exact formula</strong> (not gradient descent) and gives
-  the same answer.</p>
+  <p>Try: <code>np.polyfit(X_data, y_data, 1)</code>.
+  It gives the same answer &mdash; but it uses an
+  <strong>exact formula</strong>, not gradient descent.</p>
   <div class="fragment" data-fragment-index="0">
-    <p>So why use gradient descent at all?</p>
+    <p><strong>Think:</strong> If an exact formula exists,
+    why would anyone bother with gradient descent?</p>
+    <p style="font-size:0.9em;">Consider: what if your model had
+    1 million parameters instead of 2?
+    What if it wasn&rsquo;t a straight line at all?</p>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.95em;">The exact formula only works
-    for linear models.</p>
-    <p style="font-size:0.95em;">Gradient descent works for
+    for linear models. Gradient descent works for
     <em>any</em> differentiable function &mdash; including
     <strong>neural networks</strong> with millions of parameters.</p>
     <p style="font-size:0.85em;">The same loop you wrote
@@ -903,6 +986,9 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
   <p style="font-size:1.05em; text-align:center;">
     $\hat{y} = m_0 x_0 + m_1 x_1 + \dots + m_{k-1} x_{k-1} + c$
   </p>
+  <p><strong>Your turn:</strong> Write a <code>predict</code> function
+  that takes a list of features <code>x</code>, a list of slopes
+  <code>m</code>, and an intercept <code>c</code>, and returns the prediction.</p>
   <div class="code-stack" style="min-height:7em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def predict(x, m, c):
@@ -931,25 +1017,41 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
 
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
-  <p>The training loop is the same: compute gradient per weight,
-  step against it.</p>
+  <p>You already have <code>find_minima</code> which works on
+  any number of variables. The weights
+  $[m_0, m_1, \ldots, c]$ are just variables.</p>
+  <p><strong>Your turn:</strong> Write a <code>fit(X, y)</code> function
+  that finds the best weights. You can reuse
+  <code>find_minima</code> (wrap MSE like before),
+  or write the gradient descent loop yourself with
+  <code>compute_gradient</code>.</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def fit(X, y, learning_rate=0.01, epochs=5000):
+    """Find the best weights m and intercept c for the data."""
     m = [0.0] * len(X[0])    # one weight per feature
     c = 0.0
-    for epoch in range(epochs):
-        grad_m, grad_c = gradients(X, y, m, c)
-        for i in range(len(m)):
-            m[i] -= learning_rate * grad_m[i]
-        c -= learning_rate * grad_c
+    # Use gradient descent to minimize MSE
+    # your code here
     return m, c</code></pre>
-  <div class="fragment" data-fragment-index="0">
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def fit(X, y, learning_rate=0.01, epochs=5000):
+    m = [0.0] * len(X[0])
+    c = 0.0
+    def loss(params):
+        return mse_multi(X, y, params[:-1], params[-1])
+    result, _ = find_minima(loss, m + [c], alpha=learning_rate)
+    return result[:-1], result[-1]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.9em;">Test on $y = 2x_0 + 3x_1 + 1$:</p>
     <p style="font-size:0.85em; font-family:monospace;">
       X = [[1,2], [2,1], [3,4], [4,3]]<br/>
       y = [9, 8, 19, 18]<br/>
       fit(X, y) &rarr; m = [2.000, 3.000], c = 1.000 &check;
     </p>
-    <p style="font-size:0.9em;">Same algorithm. More weights. That&rsquo;s it.</p>
   </div>
 </div>
 </div>
@@ -960,16 +1062,21 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p>What if the data follows $y = x^2$?
-  A straight line can&rsquo;t fit a curve.</p>
+  A straight line can&rsquo;t fit a curve. Try it:</p>
   <p style="font-size:0.9em; font-family:monospace;">
     X = [[1],[2],[3],[4],[5]],
     &nbsp;y = [1, 4, 9, 16, 25]<br/>
     fit(X, y) &rarr; MSE &gt; 1 &nbsp;(stuck!)
   </p>
   <div class="fragment" data-fragment-index="0">
-    <p>The escape: <strong>add a column</strong>.
-    If $y = x^2$, then <em>as a function of $x^2$</em>
-    it&rsquo;s a straight line!</p>
+    <p><strong>Think:</strong> $y$ depends on $x^2$, but your model
+    only knows about $x$. What if you gave it $x^2$ as
+    an <em>additional column</em>?</p>
+    <p><strong>Your turn:</strong> Write an <code>add_feature</code>
+    function that appends a new computed column to each row,
+    then try <code>fit</code> again with the extra feature.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
 <pre><code>def add_feature(X, fn):
     return [row + [fn(row)] for row in X]
 
@@ -979,7 +1086,7 @@ X2 = add_feature(X, lambda row: row[0]**2)
       fit(X2, y) &rarr; MSE &lt; 0.01 &check;
     </p>
   </div>
-  <div class="fragment" data-fragment-index="1">
+  <div class="fragment" data-fragment-index="2">
     <p style="font-size:0.9em;">Same algorithm, no new math.
     You added the right <strong>feature</strong>,
     and the linear model handled the rest.</p>
@@ -1032,23 +1139,22 @@ X2 = add_feature(X, lambda row: row[0]**2)
   </script>
 <div class="chapter-footer">
 
-  <p><em><p>You started with a curve and a question: &ldquo;where&rsquo;s the bottom?&rdquo;
-You invented the numerical derivative, the update rule, and
-gradient descent. Then you discovered that fitting a line is
-just minimizing MSE &mdash; and your algorithm handles it.
-You built linear regression from scratch.</p>
+  <p><em>You started with a curve and a question: &ldquo;where&rsquo;s the bottom?&rdquo;
+  You invented the numerical derivative, the update rule, and
+  gradient descent. Then you discovered that fitting a line is
+  just minimizing MSE &mdash; and your algorithm handles it.
+  You built linear regression from scratch.</em></p>
 
-<p><strong>Going further:</strong></p>
-
-<ul>
-<li><strong>Stochastic Gradient Descent (SGD):</strong> Use a random subset
-of data per step &mdash; much faster on large datasets.</li>
-<li><strong>Learning rate schedulers:</strong> Start large, shrink over time
-for faster convergence.</li>
-<li><strong>Neural networks:</strong> Replace the linear prediction $mx + c$
-with layers of neurons &mdash; the gradient descent loop
-stays the same, but the model becomes vastly more powerful.</li>
-</ul></em></p>
+  <p><strong>Going further:</strong></p>
+  <ul>
+    <li><strong>Stochastic Gradient Descent (SGD):</strong> Use a random subset
+    of data per step &mdash; much faster on large datasets.</li>
+    <li><strong>Learning rate schedulers:</strong> Start large, shrink over time
+    for faster convergence.</li>
+    <li><strong>Neural networks:</strong> Replace the linear prediction $mx + c$
+    with layers of neurons &mdash; the gradient descent loop
+    stays the same, but the model becomes vastly more powerful.</li>
+  </ul>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
