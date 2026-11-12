@@ -10,6 +10,7 @@
     window.MathJax = { tex: { inlineMath: [['$','$']] } };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js@2/dist/plotly.min.js"></script>
 
   <style>
     .reveal { font-family: Georgia, serif; margin-top: 25px; }
@@ -1364,6 +1365,116 @@ print(diffn(full, [1, 2, 1, 3]))</code></pre>
 
 
 
+      <!-- Part 8: The Derivative as Slope -->
+      <section>
+        <h2>Part 8: Seeing the Derivative</h2>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You&rsquo;ve been computing derivatives as numbers.
+  But what does a derivative <strong>look like</strong>?</p>
+  <p>Plot $y = x^2$ and pick two points close together.
+  The dashed line through them is called a <strong>secant</strong>:</p>
+  <div id="plot-secant" style="width:600px;height:340px;margin:0 auto;"></div>
+  <p><strong>Compute:</strong> What is the slope
+  $\dfrac{\Delta y}{\Delta x}$ of this secant?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>$\dfrac{2.89 - 2.25}{1.7 - 1.5} = \dfrac{0.64}{0.2} = 3.2$
+    &mdash; exactly the ratio you&rsquo;ve been computing!</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Now bring the two points <strong>closer and closer</strong>
+  together. The secant becomes a <strong>tangent</strong> &mdash;
+  a line that just <em>touches</em> the curve at one point:</p>
+  <div id="plot-tangent" style="width:600px;height:340px;margin:0 auto;"></div>
+  <p>This tangent touches the curve at $x = 1.5$.
+  <strong>What is its slope?</strong> Use the derivative
+  formula you found for $x^2$.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Derivative of $x^2$ is $2x$, so at $x = 1.5$:
+    slope $= 2(1.5) = \mathbf{3}$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The <strong>derivative at a point</strong> is the
+    <strong>slope of the tangent line</strong> at that point.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.15em;">
+  <p>What does the slope <em>tell</em> you? Look at three points
+  on $y = x^2$:</p>
+  <div id="plot-three-slopes" style="width:900px;height:340px;margin:0 auto;"></div>
+  <div class="fragment" data-fragment-index="0">
+    <table style="margin:0.3em auto; font-size:1em;">
+      <tr><th style="padding:0.2em 0.8em;">Point</th>
+          <th style="padding:0.2em 0.8em;">Slope</th>
+          <th style="padding:0.2em 0.8em;">Meaning</th></tr>
+      <tr><td>$x = -1.5$</td>
+          <td style="color:#c62828; font-weight:bold;">$-3$</td>
+          <td>Negative &darr; &mdash; curve is <strong>falling</strong></td></tr>
+      <tr><td>$x = 0$</td>
+          <td style="color:#2e7d32; font-weight:bold;">$0$</td>
+          <td>Zero &mdash; curve is <strong>flat</strong> (minimum!)</td></tr>
+      <tr><td>$x = 1.5$</td>
+          <td style="color:#1565c0; font-weight:bold;">$3$</td>
+          <td>Positive &uarr; &mdash; curve is <strong>rising</strong></td></tr>
+    </table>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.35em;">
+  <p>To summarize:</p>
+  <table style="margin:0.5em auto; font-size:1em;">
+    <tr><th style="padding:0.3em 1em;">Derivative</th>
+        <th style="padding:0.3em 1em;">Slope</th>
+        <th style="padding:0.3em 1em;">Curve is&hellip;</th></tr>
+    <tr><td style="color:#c62828; font-weight:bold;">&lt; 0</td>
+        <td>tilts downward &#x2572;</td>
+        <td>falling</td></tr>
+    <tr><td style="color:#2e7d32; font-weight:bold;">= 0</td>
+        <td>flat &mdash;</td>
+        <td>at a peak or valley</td></tr>
+    <tr><td style="color:#1565c0; font-weight:bold;">&gt; 0</td>
+        <td>tilts upward &#x2571;</td>
+        <td>rising</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>This is why gradient descent works: if the derivative is
+    <strong>positive</strong>, moving <em>left</em> decreases the
+    function. If it&rsquo;s <strong>negative</strong>, moving
+    <em>right</em> decreases it. If it&rsquo;s <strong>zero</strong>,
+    you&rsquo;re at the bottom.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The derivative doesn&rsquo;t just tell you <em>how fast</em>
+    &mdash; it tells you <em>which direction</em> to go.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
@@ -1375,6 +1486,105 @@ print(diffn(full, [1, 2, 1, 3]))</code></pre>
       width: 1200,
       height: 700,
     });
+
+    /* ---- Plotly charts for Part 8 ---- */
+    var plotCfg = {displayModeBar: false, staticPlot: true};
+    var plotLayout = {
+      margin: {l:45, r:20, t:25, b:40},
+      xaxis: {title: 'x', zeroline: true, zerolinecolor: '#999'},
+      yaxis: {title: 'y', zeroline: true, zerolinecolor: '#999'},
+      font: {family: 'Georgia, serif', size: 13},
+      showlegend: false,
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+    };
+
+    function linspace(a, b, n) {
+      var out = []; var step = (b - a) / (n - 1);
+      for (var i = 0; i < n; i++) out.push(a + i * step);
+      return out;
+    }
+
+    function renderPlots() {
+      var xs = linspace(-2.5, 2.5, 200);
+      var ys = xs.map(function(x){ return x*x; });
+      var curve = {x: xs, y: ys, mode: 'lines', line: {color: '#1565c0', width: 3}, name: 'y = x²'};
+
+      /* Plot 1: Secant */
+      if (document.getElementById('plot-secant')) {
+        var x1 = 1.5, y1 = x1*x1, x2 = 1.7, y2 = x2*x2;
+        var secSlope = (y2 - y1) / (x2 - x1);
+        var secXs = [0.8, 2.4];
+        var secYs = secXs.map(function(x){ return y1 + secSlope * (x - x1); });
+        Plotly.newPlot('plot-secant', [
+          curve,
+          {x: secXs, y: secYs, mode: 'lines', line: {color: '#e65100', width: 2, dash: 'dash'}, name: 'secant'},
+          {x: [x1, x2], y: [y1, y2], mode: 'markers+text', marker: {color: '#c62828', size: 10},
+           text: ['(1.5, 2.25)', '(1.7, 2.89)'], textposition: ['bottom left', 'top left'],
+           textfont: {color: '#c62828', size: 12}},
+          {x: [x1, x2, x2], y: [y1, y1, y2], mode: 'lines', line: {color: '#888', width: 1, dash: 'dot'}},
+        ], Object.assign({}, plotLayout, {
+          xaxis: Object.assign({}, plotLayout.xaxis, {range: [-0.5, 3]}),
+          yaxis: Object.assign({}, plotLayout.yaxis, {range: [-0.5, 7]}),
+          annotations: [
+            {x: (x1+x2)/2, y: y1 - 0.3, text: 'Δx', showarrow: false, font: {color: '#888', size: 13}},
+            {x: x2 + 0.15, y: (y1+y2)/2, text: 'Δy', showarrow: false, font: {color: '#888', size: 13}},
+          ],
+        }), plotCfg);
+      }
+
+      /* Plot 2: Tangent */
+      if (document.getElementById('plot-tangent')) {
+        var tx = 1.5, ty = tx*tx, tslope = 2*tx;
+        var tanXs = [0, 3];
+        var tanYs = tanXs.map(function(x){ return ty + tslope * (x - tx); });
+        Plotly.newPlot('plot-tangent', [
+          curve,
+          {x: tanXs, y: tanYs, mode: 'lines', line: {color: '#e65100', width: 2.5}, name: 'tangent'},
+          {x: [tx], y: [ty], mode: 'markers', marker: {color: '#c62828', size: 10}},
+        ], Object.assign({}, plotLayout, {
+          xaxis: Object.assign({}, plotLayout.xaxis, {range: [-0.5, 3]}),
+          yaxis: Object.assign({}, plotLayout.yaxis, {range: [-1, 7]}),
+          annotations: [
+            {x: 2.6, y: ty + tslope*(2.6 - tx) + 0.3, text: 'tangent (slope = 3)',
+             showarrow: false, font: {color: '#e65100', size: 13}},
+            {x: tx, y: ty - 0.5, text: '(1.5, 2.25)',
+             showarrow: false, font: {color: '#c62828', size: 12}},
+          ],
+        }), plotCfg);
+      }
+
+      /* Plot 3: Three slopes side by side */
+      if (document.getElementById('plot-three-slopes')) {
+        var pts = [
+          {px: -1.5, color: '#c62828', label: 'slope = −3'},
+          {px: 0,    color: '#2e7d32', label: 'slope = 0'},
+          {px: 1.5,  color: '#1565c0', label: 'slope = 3'},
+        ];
+        var traces = [curve];
+        var annots = [];
+        pts.forEach(function(p) {
+          var py = p.px * p.px;
+          var s = 2 * p.px;
+          var lx = [p.px - 1, p.px + 1];
+          var ly = lx.map(function(x){ return py + s * (x - p.px); });
+          traces.push({x: lx, y: ly, mode: 'lines', line: {color: p.color, width: 2.5}});
+          traces.push({x: [p.px], y: [py], mode: 'markers', marker: {color: p.color, size: 10}});
+          annots.push({x: p.px, y: py + (p.px === 0 ? 0.5 : (p.px < 0 ? 1.5 : 1.5)),
+                       text: p.label, showarrow: false, font: {color: p.color, size: 13, family: 'Georgia'}});
+        });
+        Plotly.newPlot('plot-three-slopes', traces,
+          Object.assign({}, plotLayout, {
+            xaxis: Object.assign({}, plotLayout.xaxis, {range: [-3, 3]}),
+            yaxis: Object.assign({}, plotLayout.yaxis, {range: [-1.5, 7]}),
+            annotations: annots,
+          }), plotCfg);
+      }
+    }
+
+    /* Render on load and when Reveal navigates to a slide with a plot */
+    Reveal.on('slidechanged', function() { setTimeout(renderPlots, 100); });
+    Reveal.on('ready', function() { setTimeout(renderPlots, 300); });
   </script>
 <div class="chapter-footer">
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
