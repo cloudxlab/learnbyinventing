@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Differentiation — Slides</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    .reveal { font-family: Georgia, serif; margin-top: 25px; }
+    .reveal .slide-content { font-size: 0.55em; }
+    .reveal h1 { font-size: 1.8em; }
+    .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
+    .reveal h3 { font-size: 1.1em; }
+    .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+    .reveal p code, .reveal li code {
+      background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
+      color: #c7254e; font-size: 0.85em;
+    }
+    .reveal pre code { background: #282c34; color: #abb2bf; padding: 0.8em; border-radius: 5px; }
+    .reveal table { font-size: 0.7em; margin: 0 auto; }
+    .reveal th { background: #f5f3ef; }
+    .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
+    .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
+    .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .chapter-footer { text-align:center; padding:1rem 0; font-size:0.75em; color:#888; font-family:system-ui,sans-serif; }
+    .chapter-footer a { color:#888; text-decoration:none; }
+    .chapter-footer a:hover { color:#c8a96e; }
+  </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9TZCPED97E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9TZCPED97E');
+</script>
+
+</head>
+<body>
+  <nav class="slides-topnav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);padding:4px 16px;font-size:13px;font-family:sans-serif;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+    <a href="../index.html" style="color:#888;text-decoration:none;">&larr; All chapters</a>
+    <span style="display:flex;gap:10px;align-items:center;">
+      <strong style="color:#333;">Slides</strong>
+    </span>
+  </nav>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Title slide -->
+      <section>
+        <h1>Differentiation</h1>
+
+        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
+
+      </section>
+
+
+
+      <!-- Part 1: How fast is a function changing? -->
+      <section>
+        <h2>Part 1: How Fast Is a Function Changing?</h2>
+
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p>Think of a function as a <strong>machine</strong>.
+  You feed it an input $x$, and it gives you an output $y$.</p>
+  <div style="display:flex; justify-content:center; margin:0.8em 0;">
+    <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" style="max-width:420px;">
+      <!-- Arrow in -->
+      <line x1="20" y1="70" x2="100" y2="70" stroke="#555" stroke-width="2.5"
+            marker-end="url(#arrowhead)"/>
+      <text x="60" y="58" font-size="18" fill="#1565c0" text-anchor="middle"
+            font-style="italic">x</text>
+      <!-- Box -->
+      <rect x="105" y="25" width="190" height="90" rx="10"
+            fill="#f5f3ef" stroke="#7a6b3a" stroke-width="2.5"/>
+      <foreignObject x="105" y="25" width="190" height="90">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;font-family:Georgia,serif;color:#333;">
+          y = 2x
+        </div>
+      </foreignObject>
+      <!-- Arrow out -->
+      <line x1="300" y1="70" x2="380" y2="70" stroke="#555" stroke-width="2.5"
+            marker-end="url(#arrowhead)"/>
+      <text x="340" y="58" font-size="18" fill="#c62828" text-anchor="middle"
+            font-style="italic">y</text>
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6"
+                refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Feed it two inputs very close together:</p>
+    <table style="margin:0.5em auto; font-size:0.95em;">
+      <tr><th style="padding:0.2em 0.8em;">Input</th><th style="padding:0.2em 0.8em;">Output</th></tr>
+      <tr><td>$x_1 = 1$</td><td>$y_1 = \;?$</td></tr>
+      <tr><td>$x_2 = 1.01$</td><td>$y_2 = \;?$</td></tr>
+    </table>
+    <p>Compute $y_1$ and $y_2$.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p>You should get:</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">Input</th><th style="padding:0.2em 0.8em;">Output</th></tr>
+    <tr><td>$x_1 = 1$</td><td>$y_1 = 2$</td></tr>
+    <tr><td>$x_2 = 1.01$</td><td>$y_2 = 2.02$</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now compute:</p>
+    <p style="font-size:1.1em; text-align:center;">
+      $\dfrac{y_2 - y_1}{x_2 - x_1} = \;?$
+    </p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="font-size:1.1em; text-align:center;">
+      $= \dfrac{2.02 - 2}{1.01 - 1} = \dfrac{0.02}{0.01} = \mathbf{2}$
+    </p>
+    <p><strong>What does this number mean?</strong></p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>When $x$ increased by $0.01$, $y$ increased by $0.02$
+    &mdash; <strong>twice as fast</strong>.
+    This ratio measures how fast $y$ changes per unit change in $x$.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p>This ratio is called the <strong>derivative</strong> of $y$
+  with respect to $x$.</p>
+  <p>You&rsquo;ll also see it written as:</p>
+  <p style="font-size:1.15em; text-align:center; margin:0.6em 0;">
+    $\dfrac{dy}{dx}$ &emsp; or &emsp;
+    $\dfrac{\Delta y}{\Delta x}$
+  </p>
+  <p>The process of finding it is called
+  <strong>differentiation</strong>.</p>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p>Now let&rsquo;s try another function: $y = 3x$.</p>
+  <p>Write it as a Python function:</p>
+  <div class="code-stack" style="min-height:4.5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def f(x):
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def f(x):
+    return 3 * x</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now:</p>
+    <ol style="font-size:0.95em;">
+      <li>Compute <code>f(1)</code></li>
+      <li>Increase $x$ by a tiny amount &mdash; try <code>0.000001</code>.
+      Compute <code>f(1.000001)</code></li>
+      <li>Compute $\dfrac{y_2 - y_1}{x_2 - x_1}$</li>
+    </ol>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p>You should get:</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">&nbsp;</th><th style="padding:0.2em 0.8em;">Value</th></tr>
+    <tr><td><code>f(1)</code></td><td>$3$</td></tr>
+    <tr><td><code>f(1.000001)</code></td><td>$3.000003$</td></tr>
+    <tr><td>$\dfrac{3.000003 - 3}{1.000001 - 1}$</td><td>$= \mathbf{3}$</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>The derivative of $y = 3x$ is $\mathbf{3}$.
+    That makes sense &mdash; for every 1 unit increase in $x$,
+    $y$ increases by 3.</p>
+    <p>You just computed a derivative using Python.
+    <strong>Well done!</strong></p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.35em;">
+  <p>Now a more interesting function: $y = x^2$.</p>
+  <p><strong>Your turn:</strong> Write it as a Python function:</p>
+  <div class="code-stack" style="min-height:4.5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def g(x):
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def g(x):
+    return x ** 2</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Using the same technique (nudge $x$ by $0.000001$),
+    find the derivative of $g$ at each of these points:</p>
+    <table style="margin:0.5em auto; font-size:0.95em;">
+      <tr><th style="padding:0.2em 0.8em;">$x$</th><th style="padding:0.2em 0.8em;">Derivative at $x$</th></tr>
+      <tr><td>$1$</td><td>?</td></tr>
+      <tr><td>$-1$</td><td>?</td></tr>
+      <tr><td>$0$</td><td>?</td></tr>
+      <tr><td>$2$</td><td>?</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.35em;">
+  <p>Check your answers:</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">$x$</th><th style="padding:0.2em 0.8em;">Derivative at $x$</th></tr>
+    <tr><td>$1$</td><td>$\approx \mathbf{2}$</td></tr>
+    <tr><td>$-1$</td><td>$\approx \mathbf{-2}$</td></tr>
+    <tr><td>$0$</td><td>$\approx \mathbf{0}$</td></tr>
+    <tr><td>$2$</td><td>$\approx \mathbf{4}$</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Notice something? The derivative of $x^2$ at $x$
+    seems to be $2x$. Unlike $y = 3x$ where the derivative
+    was the same everywhere, here it <strong>changes depending
+    on where you are</strong>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>At $x = 0$ the function is flat (derivative = 0).
+    At $x = 2$ it&rsquo;s climbing steeply (derivative = 4).</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You&rsquo;ve been repeating the same steps each time:</p>
+  <ol style="font-size:0.95em; line-height:1.8;">
+    <li>Pick a tiny $h$ (like $0.000001$)</li>
+    <li>Compute $f(x)$ and $f(x + h)$</li>
+    <li>Return $\dfrac{f(x + h) - f(x)}{h}$</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Your turn:</strong> Put this into a reusable Python function.
+    It should work for <em>any</em> function, at <em>any</em> point $x$:</p>
+<pre><code>def diff(my_func, x):
+    """Return the derivative of my_func at point x."""
+    # your code here</code></pre>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Here&rsquo;s one way to write it:</p>
+<pre><code>def diff(my_func, x, h=1e-6):
+    return (my_func(x + h) - my_func(x)) / h</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Test it:</p>
+<pre><code>print(diff(g, 1))    # should be ≈ 2
+print(diff(g, -1))   # should be ≈ -2
+print(diff(g, 0))    # should be ≈ 0
+print(diff(g, 2))    # should be ≈ 4</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>You now have a function that can compute the derivative
+    of <em>any</em> function at <em>any</em> point.
+    <strong>You just invented numerical differentiation.</strong></p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide',
+      width: 1200,
+      height: 700,
+    });
+  </script>
+<div class="chapter-footer">
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+  <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
+</div>
+
+</body>
+</html>
