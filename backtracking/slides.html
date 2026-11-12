@@ -28,6 +28,12 @@
     .chapter-footer { text-align:center; padding:1rem 0; font-size:0.75em; color:#888; font-family:system-ui,sans-serif; }
     .chapter-footer a { color:#888; text-decoration:none; }
     .chapter-footer a:hover { color:#c8a96e; }
+      .reveal .progress { display: none !important; }
+    #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
+    #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
+    #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
+    #bottom-copyright a { color: #aaa; text-decoration: none; }
+    #bottom-copyright a:hover { color: #c8a96e; }
   </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9TZCPED97E"></script>
@@ -50,6 +56,8 @@
 
     </span>
   </nav>
+  <div id="top-progress"><div id="top-progress-bar"></div></div>
+  <div id="bottom-copyright">&copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
   <div class="reveal">
     <div class="slides">
 
@@ -479,10 +487,19 @@ Enumeration provides completeness; checking provides the speed.</p>
     Reveal.initialize({
       hash: true,
       slideNumber: true,
+      progress: true,
       transition: 'slide',
       width: 1200,
       height: 700,
     });
+    function updateProgress() {
+      var total = Reveal.getTotalSlides();
+      var current = Reveal.getSlidePastCount() + 1;
+      var pct = Math.min(100, (current / total) * 100);
+      document.getElementById('top-progress-bar').style.width = pct + '%';
+    }
+    Reveal.on('slidechanged', function() { updateProgress(); });
+    Reveal.on('ready', function() { updateProgress(); });
   </script>
 <div class="chapter-footer">
 
