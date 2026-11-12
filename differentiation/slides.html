@@ -951,6 +951,186 @@ print(diffn(f4, [2, 5, 4, 1]))
 
 
 
+      <!-- Part 6: The Chain Rule -->
+      <section>
+        <h2>Part 6: A Function of a Function</h2>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>What if the output of one function feeds into another?</p>
+  <div style="display:flex; justify-content:center; margin:0.8em 0;">
+    <svg viewBox="0 0 640 140" xmlns="http://www.w3.org/2000/svg" style="max-width:660px;">
+      <defs>
+        <marker id="arr3" markerWidth="8" markerHeight="6"
+                refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+        </marker>
+      </defs>
+      <!-- Arrow x in -->
+      <line x1="15" y1="70" x2="80" y2="70" stroke="#555" stroke-width="2.5"
+            marker-end="url(#arr3)"/>
+      <text x="48" y="58" font-size="18" fill="#1565c0" text-anchor="middle"
+            font-style="italic">x</text>
+      <!-- Block 1 -->
+      <rect x="85" y="30" width="170" height="80" rx="10"
+            fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+      <foreignObject x="85" y="30" width="170" height="80">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="display:flex;align-items:center;justify-content:center;
+                    height:100%;font-size:20px;font-family:Georgia,serif;color:#333;">
+          z = 2x + 5
+        </div>
+      </foreignObject>
+      <!-- Arrow z -->
+      <line x1="260" y1="70" x2="350" y2="70" stroke="#555" stroke-width="2.5"
+            marker-end="url(#arr3)"/>
+      <text x="305" y="58" font-size="18" fill="#6a1b9a" text-anchor="middle"
+            font-style="italic">z</text>
+      <!-- Block 2 -->
+      <rect x="355" y="30" width="170" height="80" rx="10"
+            fill="#fce4ec" stroke="#c62828" stroke-width="2.5"/>
+      <foreignObject x="355" y="30" width="170" height="80">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="display:flex;align-items:center;justify-content:center;
+                    height:100%;font-size:20px;font-family:Georgia,serif;color:#333;">
+          y = z&sup2;
+        </div>
+      </foreignObject>
+      <!-- Arrow y out -->
+      <line x1="530" y1="70" x2="620" y2="70" stroke="#555" stroke-width="2.5"
+            marker-end="url(#arr3)"/>
+      <text x="575" y="58" font-size="18" fill="#c62828" text-anchor="middle"
+            font-style="italic">y</text>
+    </svg>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Your turn:</strong> Write two Python functions
+    matching the diagram:</p>
+    <ul style="font-size:0.95em; line-height:1.8;">
+      <li><code>zz(x)</code> &mdash; takes $x$, returns $2x + 5$</li>
+      <li><code>yy(z)</code> &mdash; takes $z$, returns $z^2$</li>
+    </ul>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You should have something like:</p>
+<pre><code>def zz(x):
+    return 2*x + 5
+
+def yy(z):
+    return z**2</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now use them together &mdash; compute $z$ and $y$ at $x = 1$:</p>
+<pre><code>z_val = zz(1)
+y_val = yy(z_val)
+print(z_val, y_val)</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>$z = 2(1) + 5 = \mathbf{7}$</p>
+    <p>$y = 7^2 = \mathbf{49}$</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now, using your <code>diff</code> function from Part 1,
+    compute these two derivatives at $x = 1$:</p>
+    <ol style="line-height:2;">
+      <li>$\dfrac{dz}{dx}$ &mdash; how fast does $z$ change
+          when you nudge $x$?</li>
+      <li>$\dfrac{dy}{dz}$ &mdash; how fast does $y$ change
+          when you nudge $z$? (use $z = 7$)</li>
+    </ol>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.35em;">
+  <p>Check your answers:</p>
+<pre><code>dz_dx = diff(zz, 1)     # ≈ 2
+dy_dz = diff(yy, 7)     # ≈ 14</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>$\dfrac{dz}{dx} = \mathbf{2}$ &emsp; (slope of $2x + 5$)</p>
+    <p>$\dfrac{dy}{dz} = \mathbf{14}$ &emsp; ($2z$ at $z = 7$)</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now the big question: can you figure out $\dfrac{dy}{dx}$
+    &mdash; how fast does $y$ change when you nudge $x$ &mdash;
+    <em>using only these two numbers</em>?</p>
+    <p>Think about it before moving on.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <div class="fragment fade-out" data-fragment-index="1">
+    <p>Hint: if nudging $x$ by $1$ makes $z$ change by $2$,
+    and nudging $z$ by $1$ makes $y$ change by $14$&hellip;</p>
+    <p>Then nudging $x$ by $1$ makes $y$ change by&hellip;?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="font-size:1.15em; text-align:center;">
+      $\dfrac{dy}{dx} = \dfrac{dy}{dz} \times \dfrac{dz}{dx}
+      = 14 \times 2 = \mathbf{28}$
+    </p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>This is the <strong>Chain Rule</strong>: when functions
+    are chained together, you <strong>multiply</strong> the
+    derivatives along the chain.</p>
+    <p style="font-size:1.05em; text-align:center; margin:0.5em 0;">
+      $\dfrac{dy}{dx} = \dfrac{dy}{dz} \cdot \dfrac{dz}{dx}$
+    </p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Let&rsquo;s verify. Create a <strong>combined</strong>
+  function that takes $x$ and returns $y$ directly:</p>
+<pre><code>def yz(x):
+    return yy(zz(x))</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now compute its derivative numerically at $x = 1$:</p>
+<pre><code>print(diff(yz, 1))    # should be ≈ 28</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>$\approx \mathbf{28}$ &mdash; exactly what the chain rule
+    predicted!</p>
+    <p>$\dfrac{dy}{dz} \times \dfrac{dz}{dx} = 14 \times 2 = 28
+    \;\checkmark$</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>In neural networks, each layer is a function feeding
+    into the next. The chain rule lets you compute how the
+    <em>final output</em> changes when you tweak a weight in
+    <em>any</em> layer. That process is called
+    <strong>backpropagation</strong>.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
