@@ -1131,6 +1131,239 @@ dy_dz = diff(yy, 7)     # ≈ 14</code></pre>
 
 
 
+      <!-- Part 7: A Bigger Computation Graph -->
+      <section>
+        <h2>Part 7: A Bigger Computation Graph</h2>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.15em;">
+  <p>Real models have many inputs flowing through many blocks.
+  Let&rsquo;s try one with <strong>four inputs</strong> and
+  <strong>two blocks</strong>:</p>
+  <div style="display:flex; justify-content:center; margin:0.6em 0;">
+    <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" style="max-width:740px;">
+      <defs>
+        <marker id="arr4" markerWidth="8" markerHeight="6"
+                refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+        </marker>
+      </defs>
+      <!-- Arrows x1, x2, x3 -->
+      <line x1="10" y1="45" x2="80" y2="65" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="30" y="35" font-size="15" fill="#1565c0" font-style="italic">x&#x2081;</text>
+      <line x1="10" y1="90" x2="80" y2="90" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="30" y="80" font-size="15" fill="#1565c0" font-style="italic">x&#x2082;</text>
+      <line x1="10" y1="135" x2="80" y2="115" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="30" y="150" font-size="15" fill="#1565c0" font-style="italic">x&#x2083;</text>
+      <!-- Block 1 -->
+      <rect x="85" y="40" width="260" height="100" rx="10"
+            fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+      <foreignObject x="85" y="40" width="260" height="100">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="display:flex;align-items:center;justify-content:center;
+                    height:100%;font-size:16px;font-family:Georgia,serif;color:#333;">
+          z = x&#x2081;&sup2; + 2x&#x2081;x&#x2082; &minus; x&#x2082;&sup3; + 5x&#x2083;
+        </div>
+      </foreignObject>
+      <!-- Arrow z -->
+      <line x1="350" y1="90" x2="430" y2="90" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="390" y="80" font-size="15" fill="#6a1b9a" font-style="italic">z</text>
+      <!-- Block 2 -->
+      <rect x="435" y="55" width="180" height="70" rx="10"
+            fill="#fce4ec" stroke="#c62828" stroke-width="2.5"/>
+      <foreignObject x="435" y="55" width="180" height="70">
+        <div xmlns="http://www.w3.org/1999/xhtml"
+             style="display:flex;align-items:center;justify-content:center;
+                    height:100%;font-size:18px;font-family:Georgia,serif;color:#333;">
+          y = 3(z + x&#x2084;)
+        </div>
+      </foreignObject>
+      <!-- Arrow y out -->
+      <line x1="620" y1="90" x2="700" y2="90" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="660" y="80" font-size="15" fill="#c62828" font-style="italic">y</text>
+      <!-- Arrow x4 (skip connection) -->
+      <line x1="10" y1="200" x2="490" y2="200" stroke="#555" stroke-width="2"
+            stroke-dasharray="6,4"/>
+      <line x1="490" y1="200" x2="490" y2="130" stroke="#555" stroke-width="2"
+            marker-end="url(#arr4)"/>
+      <text x="30" y="195" font-size="15" fill="#1565c0" font-style="italic">x&#x2084;</text>
+    </svg>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Notice: $x_4$ <strong>skips</strong> block 1 and feeds
+    directly into block 2. This is common in real networks.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Your turn (algebraic):</strong> Start from the output
+  and work backwards.</p>
+  <p>$y = 3(z + x_4)$</p>
+  <ol style="line-height:2.2;">
+    <li>$\dfrac{\partial y}{\partial x_4} = \;?$</li>
+    <li>$\dfrac{\partial y}{\partial z} = \;?$</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p>Check:</p>
+    <p>$\dfrac{\partial y}{\partial x_4} = \mathbf{3}$ &emsp;
+       $\dfrac{\partial y}{\partial z} = \mathbf{3}$</p>
+    <p style="font-size:0.85em; color:#666;">
+      (Both are just constants &mdash; $y$ is linear in $z$ and $x_4$.)</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Now the first block: $z = x_1^2 + 2x_1 x_2 - x_2^3 + 5x_3$</p>
+  <p>Find all three partial derivatives:</p>
+  <ol style="line-height:2.2;">
+    <li>$\dfrac{\partial z}{\partial x_1} = \;?$</li>
+    <li>$\dfrac{\partial z}{\partial x_2} = \;?$</li>
+    <li>$\dfrac{\partial z}{\partial x_3} = \;?$</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p>Check:</p>
+    <p>$\dfrac{\partial z}{\partial x_1} = 2x_1 + 2x_2$ &emsp;
+       $\dfrac{\partial z}{\partial x_2} = 2x_1 - 3x_2^2$ &emsp;
+       $\dfrac{\partial z}{\partial x_3} = 5$</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Now use the <strong>chain rule</strong> to get from the
+  output all the way back to each input:</p>
+  <p style="text-align:center; font-size:1.05em;">
+    $\dfrac{dy}{dx_i} = \dfrac{\partial y}{\partial z}
+    \cdot \dfrac{\partial z}{\partial x_i}$
+  </p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Your turn:</strong> Evaluate at
+    $x_1\!=\!1,\; x_2\!=\!2,\; x_3\!=\!1,\; x_4\!=\!3$.</p>
+    <table style="margin:0.3em auto; font-size:0.9em;">
+      <tr><th style="padding:0.15em 0.6em;">&nbsp;</th>
+          <th style="padding:0.15em 0.6em;">Formula</th>
+          <th style="padding:0.15em 0.6em;">Value</th></tr>
+      <tr><td>$dy/dx_1$</td><td>$3 \cdot (2x_1 + 2x_2)$</td><td>?</td></tr>
+      <tr><td>$dy/dx_2$</td><td>$3 \cdot (2x_1 - 3x_2^2)$</td><td>?</td></tr>
+      <tr><td>$dy/dx_3$</td><td>$3 \cdot 5$</td><td>?</td></tr>
+      <tr><td>$dy/dx_4$</td><td>$3$</td><td>?</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Check your answers at $(1, 2, 1, 3)$:</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.15em 0.6em;">&nbsp;</th>
+        <th style="padding:0.15em 0.6em;">Calculation</th>
+        <th style="padding:0.15em 0.6em;">Value</th></tr>
+    <tr><td>$dy/dx_1$</td>
+        <td class="fragment" data-fragment-index="0">$3 \cdot (2 + 4) = 3 \cdot 6$</td>
+        <td class="fragment" data-fragment-index="0">$\mathbf{18}$</td></tr>
+    <tr><td>$dy/dx_2$</td>
+        <td class="fragment" data-fragment-index="1">$3 \cdot (2 - 12) = 3 \cdot (-10)$</td>
+        <td class="fragment" data-fragment-index="1">$\mathbf{-30}$</td></tr>
+    <tr><td>$dy/dx_3$</td>
+        <td class="fragment" data-fragment-index="2">$3 \cdot 5$</td>
+        <td class="fragment" data-fragment-index="2">$\mathbf{15}$</td></tr>
+    <tr><td>$dy/dx_4$</td>
+        <td class="fragment" data-fragment-index="3">$3$</td>
+        <td class="fragment" data-fragment-index="3">$\mathbf{3}$</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="4">
+    <p>The gradient is $[18,\; -30,\; 15,\; 3]$.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>Now verify numerically.</strong> Define the full
+  pipeline as a single function and use <code>diffn</code>:</p>
+<pre><code>def block1(x1, x2, x3):
+    return x1**2 + 2*x1*x2 - x2**3 + 5*x3
+
+def block2(z, x4):
+    return 3 * (z + x4)
+
+def full(x1, x2, x3, x4):
+    z = block1(x1, x2, x3)
+    return block2(z, x4)
+
+print(diffn(full, [1, 2, 1, 3]))</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>$\approx [18,\; -30,\; 15,\; 3]$ &mdash; matches your
+    algebraic answers. $\checkmark$</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>Reflect:</strong> you computed the gradient two ways.</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">Approach</th>
+        <th style="padding:0.2em 0.8em;">How it works</th></tr>
+    <tr><td><code>diffn</code></td>
+        <td>Nudge each of the 4 inputs, call <code>full</code> each time
+        &rarr; <strong>4 function calls</strong></td></tr>
+    <tr><td>Chain rule</td>
+        <td>Compute $\partial y / \partial z$ once, then multiply
+        by each $\partial z / \partial x_i$
+        &rarr; <strong>reuse one shared derivative</strong></td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>With 4 inputs the difference is small. But imagine a neural
+    network with <strong>a million weights</strong>.</p>
+    <p>The chain rule lets you compute
+    $\dfrac{\partial y}{\partial z}$ <em>once</em> and reuse it for
+    every weight in block 1 &mdash; that&rsquo;s the efficiency
+    behind <strong>backpropagation</strong>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>You work <strong>backwards</strong> from the output: compute
+    each block&rsquo;s local derivatives, then multiply along the
+    chain. One pass, all gradients.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
