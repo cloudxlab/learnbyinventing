@@ -1648,10 +1648,96 @@ print(diffn(full, [1, 2, 1, 3]))</code></pre>
     you want to reach or a <strong>hilltop</strong> you want to
     avoid.</p>
   </div>
+
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>You computed the second derivative algebraically.
+  Can you also compute it <strong>numerically</strong>
+  using the <code>diff</code> function you built?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: the second derivative is the derivative of
+    the derivative. You already have a function that
+    computes $\dfrac{dy}{dx}$ &mdash; can you write a
+    new function whose output is $\dfrac{dy}{dx}$, and
+    then pass <em>that</em> to <code>diff</code>?</p>
+  </div>
   <div class="fragment" data-fragment-index="1">
-    <p>You can also compute it numerically:
-    <code>diff(lambda x: diff(f, x), 5)</code>
-    &mdash; the derivative of the derivative.</p>
+    <p>Start with:</p>
+<pre><code>def f(x):
+    return x**2 - 10*x + 5
+
+def dfdx(x):
+    """Return the first derivative of f at x."""
+    # YOUR CODE HERE
+
+def d2fdx(x):
+    """Return the second derivative of f at x."""
+    # YOUR CODE HERE
+
+print(d2fdx(5))    # should be ≈ 2</code></pre>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Check your solution:</p>
+<pre><code>def dfdx(x):
+    return diff(f, x)
+
+def d2fdx(x):
+    return diff(dfdx, x)
+
+print(d2fdx(5))    # ≈ 2</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>The second derivative of $x^2 - 10x + 5$ is $\mathbf{2}$
+    everywhere &mdash; matching your algebraic answer.
+    The curve always bends upward at the same rate.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <!-- Ending slide -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <h2 style="border:none; color:#333;">What You Just Invented</h2>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">What you built</th>
+        <th style="padding:0.2em 0.8em;">Its real name</th></tr>
+    <tr><td>Nudge $x$, measure $\Delta y / \Delta x$</td>
+        <td><strong>Numerical differentiation</strong></td></tr>
+    <tr><td>Expand $(x+d)^2$, cancel, drop $d$</td>
+        <td><strong>Algebraic (analytical) differentiation</strong></td></tr>
+    <tr><td>$x^n \to nx^{n-1}$</td>
+        <td><strong>Power rule</strong></td></tr>
+    <tr><td>Nudge one input, hold the rest</td>
+        <td><strong>Partial derivative</strong></td></tr>
+    <tr><td>List of all partial derivatives</td>
+        <td><strong>Gradient</strong></td></tr>
+    <tr><td>Multiply derivatives along a chain</td>
+        <td><strong>Chain rule</strong></td></tr>
+    <tr><td>Slope of the tangent line</td>
+        <td><strong>Geometric interpretation</strong></td></tr>
+    <tr><td>Derivative of the derivative</td>
+        <td><strong>Second derivative</strong></td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Nobody taught you these &mdash; <strong>you derived them
+    yourself</strong>. The next time you see $\nabla$, backprop,
+    or gradient descent, you&rsquo;ll know exactly what&rsquo;s
+    happening under the hood.</p>
   </div>
 </div>
 </div>
