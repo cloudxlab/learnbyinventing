@@ -811,6 +811,146 @@ print(diff2(f, 2, 1.5))    # should be ≈ (7, 4)</code></pre>
 
 
 
+      <!-- Part 5: Generalizing to N Inputs -->
+      <section>
+        <h2>Part 5: Scaling to Any Number of Inputs</h2>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Your <code>diff2</code> works for two inputs.
+  But what if a function takes 3, 10, or 1000 inputs?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>First problem: how do you even <em>call</em> such a function?
+    Writing <code>f(x1, x2, x3, ...)</code> doesn&rsquo;t scale.</p>
+    <p>Python has a trick &mdash; you can pass a <strong>list</strong>
+    as arguments using <code>*</code>:</p>
+<pre><code>def f(a, b, c):
+    return a + b + c
+
+args = [10, 20, 30]
+f(*args)            # same as f(10, 20, 30)  → 60</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The <code>*</code> <strong>unpacks</strong> the list into
+    separate arguments. This works for any length.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.25em;">
+  <p>Try it yourself:</p>
+<pre><code>def g(x1, x2, x3):
+    return x1**2 + x2**2 + x3**2
+
+inputs = [3, 4, 5]
+print(g(*inputs))       # what do you get?</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>$3^2 + 4^2 + 5^2 = 9 + 16 + 25 = \mathbf{50}$</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now, you can also <strong>modify one element</strong> of the list
+    and call the function again:</p>
+<pre><code>nudged = inputs.copy()
+nudged[0] = inputs[0] + 0.000001    # nudge only x1
+print(g(*nudged))                   # ≈ 50.000006</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>That&rsquo;s exactly what you need for a partial derivative
+    &mdash; nudge one input, keep the rest fixed.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>Your turn:</strong> Write <code>diffn(my_func, arr)</code>
+  that returns a list of <em>all</em> partial derivatives &mdash;
+  one for each element of <code>arr</code>:</p>
+<pre><code>def diffn(my_func, arr):
+    """Return a list of partial derivatives, one per input."""
+    # your code here</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hints:</p>
+    <ul style="font-size:0.9em; line-height:1.8;">
+      <li>Loop over each index $i$ in <code>arr</code></li>
+      <li>Make a copy, nudge position $i$ by a tiny $h$</li>
+      <li>Compute $\dfrac{f(\text{nudged}) - f(\text{original})}{h}$</li>
+      <li>Use <code>*</code> to unpack when calling <code>my_func</code></li>
+    </ul>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p>Here&rsquo;s one way:</p>
+<pre><code>def diffn(my_func, arr, h=1e-6):
+    partials = []
+    base = my_func(*arr)
+    for i in range(len(arr)):
+        nudged = list(arr)
+        nudged[i] += h
+        partials.append((my_func(*nudged) - base) / h)
+    return partials</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Test it with a <strong>3-argument</strong> function:</p>
+<pre><code>def f3(x1, x2, x3):
+    return x1**2 + x2**2 + x3**2
+
+print(diffn(f3, [3, 4, 5]))
+# ≈ [6, 8, 10]   (i.e. 2·x1, 2·x2, 2·x3)</code></pre>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p>Now test with a <strong>4-argument</strong> function:</p>
+<pre><code>def f4(a, b, c, d):
+    return a*b + c**2 - 3*d
+
+print(diffn(f4, [2, 5, 4, 1]))
+# ≈ [5, 2, 8, -3]</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Verify by hand:</p>
+    <table style="margin:0.3em auto; font-size:0.9em;">
+      <tr><th style="padding:0.15em 0.6em;">Partial</th>
+          <th style="padding:0.15em 0.6em;">Formula</th>
+          <th style="padding:0.15em 0.6em;">At $(2, 5, 4, 1)$</th></tr>
+      <tr><td>$\partial y / \partial a$</td><td>$b$</td><td>$5$</td></tr>
+      <tr><td>$\partial y / \partial b$</td><td>$a$</td><td>$2$</td></tr>
+      <tr><td>$\partial y / \partial c$</td><td>$2c$</td><td>$8$</td></tr>
+      <tr><td>$\partial y / \partial d$</td><td>$-3$</td><td>$-3$</td></tr>
+    </table>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>This list of all partial derivatives has a name:
+    the <strong>gradient</strong>.
+    Your <code>diffn</code> computes the gradient of <em>any</em> function
+    with <em>any</em> number of inputs.</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
