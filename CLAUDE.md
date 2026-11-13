@@ -94,6 +94,32 @@ Every exercise is a rigid triplet of cells:
 - `projects/projects.md` — capstone projects (Markdown, open-ended, no answer key): Kaggle EDA, California housing end-to-end pipeline, Keras models, stock-price time series, NLP embeddings + next-char prediction, autoencoders/GANs, RL policy, reading GPT-from-scratch
 - `practice_problems/practice_problems.md` — 47 standalone ML-themed drill notebooks (Markdown index + Colab links; notebooks in subfolders 01_expressions … 05_recursion): each is one formula/algorithm, fill `# TODO`, run test cell; covers statistics, kNN, gradient descent, entropy, neural net perceptron, decision tree depth
 
+## Narration Pipeline (Reveal.js Presentations)
+
+Reusable tools in `tools/narration/` generate voice-over narration for any Reveal.js presentation:
+
+```bash
+# 1. Extract slide text → JSON
+python tools/narration/1_extract_slides.py <chapter>/slides.html
+
+# 2. Generate narration scripts via claude CLI
+python tools/narration/2_generate_scripts.py <chapter>/slides.html --topic "<Topic>"
+
+# 3. Generate MP3 audio (macOS say or Piper TTS)
+python tools/narration/3_generate_audio.py <chapter>/slides.html
+
+# 4. Wire up the player
+cp tools/narration/narration-player.js <chapter>/narration-player.js
+# Add <script src="narration-player.js"></script> before </body> in slides.html
+
+# 5. Test (must serve via HTTP, not file://)
+cd <chapter> && python3 -m http.server 8000
+```
+
+Output structure per chapter: `narration/slides_data.json`, `narration/scripts/*.txt` (editable), `narration/audio/*.mp3`. Re-running step 3 only regenerates audio for scripts newer than their audio file.
+
+Prerequisites: `claude` CLI (step 2), `ffmpeg` (MP3 conversion). On macOS, `say` is the default TTS engine (no install needed). See `tools/narration/README.md` for full details.
+
 ## Building for GitHub Pages
 
 ```bash
