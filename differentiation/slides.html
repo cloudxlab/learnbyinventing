@@ -96,8 +96,11 @@
 <pre><code>def diff(my_func, x):
     """Return the derivative of my_func at point x."""
     # your code here</code></pre>
-  <p>Test: <code>diff(lambda x: x**2, 3)</code> should return
-  $\approx 6$.</p>
+  <p>Test:</p>
+<pre><code>def g(x):
+    return x ** 2
+
+print(diff(g, 3))   # should print ≈ 6</code></pre>
   <p style="font-size:0.85em; color:#888;">Already got it?
   <a href="#/part2">Skip to Part 2</a>. Otherwise, the next slides will guide you
   step by step.</p>
@@ -501,9 +504,13 @@ print(diff(g, 2))    # should be ≈ 4</code></pre>
   <div class="fragment" data-fragment-index="3">
     <p>Now verify these algebraic results using your
     <code>diff</code> function from Part 1:</p>
-<pre><code>print(diff(lambda x: 10, 3))         # should be ≈ 0
-print(diff(lambda x: 5*x + 6, 3))    # should be ≈ 5
-print(diff(lambda x: 3*x**2 + 2, 3)) # should be ≈ 6*3 = 18</code></pre>
+<pre><code>def c(x):  return 10
+def h(x):  return 5*x + 6
+def k(x):  return 3*x**2 + 2
+
+print(diff(c, 3))   # should be ≈ 0
+print(diff(h, 3))   # should be ≈ 5
+print(diff(k, 3))   # should be ≈ 6*3 = 18</code></pre>
   </div>
   <div class="fragment" data-fragment-index="4">
     <p>Notice the patterns: a constant disappears, $5x$ becomes $5$,
@@ -611,7 +618,10 @@ print(diff(lambda x: 3*x**2 + 2, 3)) # should be ≈ 6*3 = 18</code></pre>
   $f(x) + g(x)$?</p>
   <div class="fragment" data-fragment-index="0">
     <p>The derivative of a <strong>sum</strong> is the
-    <strong>sum of the derivatives</strong>:</p>
+    <strong>sum of the derivatives</strong>.</p>
+    <p style="font-size:0.85em; color:#666;">
+      (Shorthand: $f'(x)$ means &ldquo;the derivative of $f$ at $x$&rdquo;
+      &mdash; same as $\dfrac{df}{dx}$, just shorter to write.)</p>
     <p style="text-align:center; font-size:1.1em;">
       $\dfrac{d}{dx}\big[f(x) + g(x)\big] = f'(x) + g'(x)$
     </p>
@@ -800,7 +810,7 @@ print(diff(lambda x: 3*x**2 + 2, 3)) # should be ≈ 6*3 = 18</code></pre>
   <div class="fragment" data-fragment-index="1">
     <p>$\dfrac{\partial y}{\partial x_2} = 2x_1$</p>
     <p style="font-size:0.85em; color:#666;">
-      ($x_1^2$ is a constant wrt $x_2$ &rarr; $0$; &ensp;
+      ($x_1^2$ is a constant with respect to $x_2$ &rarr; $0$; &ensp;
       $2x_1 \cdot x_2$ &rarr; $2x_1$)
     </p>
   </div>
@@ -926,8 +936,12 @@ print(diff2(f, 2, 1.5))    # should be ≈ (7, 4)</code></pre>
 <pre><code>def diffn(my_func, arr):
     """Return a list of partial derivatives, one per input."""
     # your code here</code></pre>
-  <p>Test: <code>diffn(lambda a,b,c: a**2+b**2+c**2, [3,4,5])</code>
-  should return $\approx [6, 8, 10]$.</p>
+  <p>Test:</p>
+<pre><code>def sum_of_squares(a, b, c):
+    return a**2 + b**2 + c**2
+
+print(diffn(sum_of_squares, [3, 4, 5]))
+# should print ≈ [6, 8, 10]</code></pre>
   <p style="font-size:0.85em; color:#888;">Already got it?
   <a href="#/part6">Skip to Part 6</a>. Otherwise, the next slides will guide you.</p>
 </div>
@@ -1385,7 +1399,9 @@ dy_dz = diff(yy, 7)     # ≈ 14</code></pre>
   <p>Find all three partial derivatives:</p>
   <ol style="line-height:2.2;">
     <li>$\dfrac{\partial z}{\partial x_1} = \;?$</li>
-    <li>$\dfrac{\partial z}{\partial x_2} = \;?$</li>
+    <li>$\dfrac{\partial z}{\partial x_2} = \;?$
+    <span style="font-size:0.8em; color:#666;">(Remember: $-x_2^3$
+    is $(-1) \cdot x_2^3$, so its derivative is $(-1) \cdot 3x_2^2 = -3x_2^2$)</span></li>
     <li>$\dfrac{\partial z}{\partial x_3} = \;?$</li>
   </ol>
   <div class="fragment" data-fragment-index="0">
@@ -1614,35 +1630,39 @@ print(diffn(full, [1, 2, 1, 3]))</code></pre>
   <p><strong>Your turn:</strong> Complete this table from what
   you just observed. What does the slope tell you about the
   curve&rsquo;s direction?</p>
-  <table style="margin:0.5em auto; font-size:1em;">
-    <tr><th style="padding:0.3em 1em;">Derivative</th>
-        <th style="padding:0.3em 1em;">Slope</th>
-        <th style="padding:0.3em 1em;">Curve is&hellip;</th></tr>
-    <tr><td style="color:#c62828; font-weight:bold;">&lt; 0</td>
-        <td>?</td>
-        <td>?</td></tr>
-    <tr><td style="color:#2e7d32; font-weight:bold;">= 0</td>
-        <td>?</td>
-        <td>?</td></tr>
-    <tr><td style="color:#1565c0; font-weight:bold;">&gt; 0</td>
-        <td>?</td>
-        <td>?</td></tr>
-  </table>
-  <div class="fragment" data-fragment-index="0">
-    <table style="margin:0.5em auto; font-size:1em;">
-      <tr><th style="padding:0.3em 1em;">Derivative</th>
-          <th style="padding:0.3em 1em;">Slope</th>
-          <th style="padding:0.3em 1em;">Curve is&hellip;</th></tr>
-      <tr><td style="color:#c62828; font-weight:bold;">&lt; 0</td>
-          <td>tilts downward &#x2572;</td>
-          <td>falling</td></tr>
-      <tr><td style="color:#2e7d32; font-weight:bold;">= 0</td>
-          <td>flat &mdash;</td>
-          <td>at a peak or valley</td></tr>
-      <tr><td style="color:#1565c0; font-weight:bold;">&gt; 0</td>
-          <td>tilts upward &#x2571;</td>
-          <td>rising</td></tr>
-    </table>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+      <table style="margin:0.5em auto; font-size:1em;">
+        <tr><th style="padding:0.3em 1em;">Derivative</th>
+            <th style="padding:0.3em 1em;">Slope</th>
+            <th style="padding:0.3em 1em;">Curve is&hellip;</th></tr>
+        <tr><td style="color:#c62828; font-weight:bold;">&lt; 0</td>
+            <td>?</td>
+            <td>?</td></tr>
+        <tr><td style="color:#2e7d32; font-weight:bold;">= 0</td>
+            <td>?</td>
+            <td>?</td></tr>
+        <tr><td style="color:#1565c0; font-weight:bold;">&gt; 0</td>
+            <td>?</td>
+            <td>?</td></tr>
+      </table>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+      <table style="margin:0.5em auto; font-size:1em;">
+        <tr><th style="padding:0.3em 1em;">Derivative</th>
+            <th style="padding:0.3em 1em;">Slope</th>
+            <th style="padding:0.3em 1em;">Curve is&hellip;</th></tr>
+        <tr><td style="color:#c62828; font-weight:bold;">&lt; 0</td>
+            <td>tilts downward &#x2572;</td>
+            <td>falling</td></tr>
+        <tr><td style="color:#2e7d32; font-weight:bold;">= 0</td>
+            <td>flat &mdash;</td>
+            <td>at a peak or valley</td></tr>
+        <tr><td style="color:#1565c0; font-weight:bold;">&gt; 0</td>
+            <td>tilts upward &#x2571;</td>
+            <td>rising</td></tr>
+      </table>
+    </div>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p>This is why gradient descent works: if the derivative is
@@ -1671,12 +1691,12 @@ print(diffn(full, [1, 2, 1, 3]))</code></pre>
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>For $y = x^2 - 10x + 5$, the derivative is zero at
-  $x = 5$. How can you tell whether that flat point is a
-  <strong>minimum</strong> or a <strong>maximum</strong>
+  <p>For $y = x^2 - 10x + 5$, find where the derivative
+  equals zero. Is that flat point a <strong>minimum</strong>
+  or a <strong>maximum</strong>? Can you figure it out
   without plotting the curve?</p>
-  <p>What is the &ldquo;derivative of the derivative&rdquo;,
-  and what does its sign tell you?</p>
+  <p>Hint: what happens if you take the &ldquo;derivative
+  of the derivative&rdquo;? What does its sign tell you?</p>
   <p style="font-size:0.85em; color:#888;">Already got it?
   <a href="#/ending">Skip to the ending</a>. Otherwise, the next slides will guide you.</p>
 </div>
