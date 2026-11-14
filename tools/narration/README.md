@@ -81,7 +81,7 @@ The build script auto-copies `narration-player.js` into the chapter folder. Add 
 
 Features:
 - Auto-plays narration on slide/fragment changes
-- Mute/unmute and replay buttons (bottom-right)
+- Mute/unmute and replay buttons (top-right)
 - Animated equalizer bars when audio is playing
 - Pulsing speaker icon during playback
 - Mute state persists in localStorage
@@ -113,3 +113,35 @@ Features:
 2. Review scripts in `narration/scripts/` — edit any that sound off.
 3. Run `build_narration.py` again — only changed scripts get new audio.
 4. Listen in the browser and repeat.
+
+## Making Slides Mobile-Friendly
+
+Add these to your `slides.html` for readable text on phones:
+
+1. **Viewport meta tag** in `<head>`:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+```
+
+2. **Mobile CSS overrides** inside `<style>`:
+
+```css
+@media screen and (max-width: 768px) {
+  .reveal .slide-content { font-size: 1.1em; }
+  .reveal h2 { font-size: 1.4em; }
+  .reveal h3 { font-size: 1.15em; }
+  .reveal pre { font-size: 0.9em; }
+  .reveal table { font-size: 1.0em; }
+  .reveal ul, .reveal ol { font-size: 1.1em; }
+  .reveal p code, .reveal li code { font-size: 1.0em; }
+  .reveal th, .reveal td { padding: 0.25em 0.5em; }
+}
+```
+
+3. **Flexible Reveal.js scaling** in `Reveal.initialize()`:
+
+```js
+minScale: 0.1,
+maxScale: 2.0,
+```
