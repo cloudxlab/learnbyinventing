@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Generate MP3 audio files from narration scripts.
 
-Supports two TTS backends:
-  - macOS 'say' (default on macOS, no install needed)
-  - Piper TTS   (use --engine piper)
+Supports three TTS backends:
+  - Kokoro       (best quality, default if installed: pip install kokoro-onnx)
+  - macOS 'say'  (no install needed on Mac)
+  - Piper TTS    (use --engine piper)
 
 Usage:
-    python 3_generate_audio.py <path/to/slides.html> [--engine say|piper]
+    python 3_generate_audio.py <path/to/slides.html> [--engine kokoro|say|piper]
                                                       [--voice <voice>]
                                                       [--force]
                                                       [--only slide-03.txt,slide-05-frag-0.txt]
@@ -27,9 +28,11 @@ import shutil
 import platform
 
 
+DEFAULT_KOKORO_VOICE = "am_michael"
 DEFAULT_SAY_VOICE = "Samantha"
 DEFAULT_PIPER_VOICE = "en_US-lessac-medium"
 VOICES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "voices")
+KOKORO_MODEL_DIR = os.path.join(VOICES_DIR, "kokoro")
 
 
 def read_narration(script_path):
@@ -60,6 +63,94 @@ def needs_regeneration(script_path, audio_path, force=False):
     if not os.path.exists(audio_path):
         return True
     return os.path.getmtime(script_path) > os.path.getmtime(audio_path)
+
+
+def wav_to_mp3(wav_path, mp3_path):
+    """Convert WAV to MP3 using ffmpeg. Returns True if successful."""
+    if not shutil.which("ffmpeg"):
+        return False
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", wav_path, "-codec:a", "libmp3lame",
+             "-qscale:a", "4", mp3_path],
+            capture_output=True, check=True, timeout=30,
+        )
+        os.remove(wav_path)
+        return True
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return False
+
+
+# ── Kokoro backend ────────────────────────────────────────────────────
+
+_kokoro_instance = None
+
+
+def get_kokoro():
+    global _kokoro_instance
+    if _kokoro_instance is not None:
+        return _kokoro_instance
+
+    import numpy as np
+    from kokoro_onnx import Kokoro
+
+    model_path = os.path.join(KOKORO_MODEL_DIR, "kokoro-v1.0.onnx")
+    voices_path = os.path.join(KOKORO_MODEL_DIR, "voices-v1.0.bin")
+
+    if not os.path.exists(model_path) or not os.path.exists(voices_path):
+        print(f"Error: Kokoro model files not found in {KOKORO_MODEL_DIR}")
+        print("Download them:")
+        print(f"  mkdir -p {KOKORO_MODEL_DIR}")
+        print(f"  curl -L -o {model_path} https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx")
+        print(f"  curl -L -o {voices_path} https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin")
+        sys.exit(1)
+
+    kokoro = Kokoro(model_path, voices_path)
+
+    # Patch _create_audio to fix dtype mismatch with newer onnxruntime
+    _orig_create = kokoro._create_audio
+    def _patched_create(phonemes, voice, speed):
+        import time
+        tokens = np.array(kokoro.tokenizer.tokenize(phonemes), dtype=np.int64)
+        voice = voice[len(tokens)]
+        tokens = np.array([[0, *tokens, 0]], dtype=np.int64)
+        inputs = {
+            "input_ids": tokens,
+            "style": np.array(voice, dtype=np.float32),
+            "speed": np.array([speed], dtype=np.float32),
+        }
+        audio = kokoro.sess.run(None, inputs)[0]
+        return audio, 24000
+    kokoro._create_audio = _patched_create
+
+    _kokoro_instance = kokoro
+    return kokoro
+
+
+def generate_audio_kokoro(text, output_path, voice):
+    """Generate audio using Kokoro TTS."""
+    import soundfile as sf
+
+    kokoro = get_kokoro()
+    wav_path = output_path.replace(".mp3", ".wav")
+
+    try:
+        samples, sr = kokoro.create(text, voice=voice, speed=1.0, lang="en-us")
+        sf.write(wav_path, samples, sr)
+    except Exception as e:
+        print(f"Kokoro error: {e}")
+        return False
+
+    if not os.path.exists(wav_path):
+        return False
+
+    if not wav_to_mp3(wav_path, output_path):
+        final = output_path.replace(".mp3", ".wav")
+        if wav_path != final:
+            os.rename(wav_path, final)
+        print("(no ffmpeg, kept .wav)", end=" ")
+
+    return True
 
 
 # ── macOS say backend ──────────────────────────────────────────────────
@@ -146,7 +237,7 @@ def download_voice_piper(voice_name):
         return model_path
     except Exception as e:
         print(f"Download failed: {e}")
-        print("Try downloading manually or use --engine say")
+        print("Try downloading manually or use --engine kokoro/say")
         sys.exit(1)
 
 
@@ -171,18 +262,7 @@ def generate_audio_piper(text, output_path, voice_model, piper_cmd):
     if not os.path.exists(wav_path):
         return False
 
-    if shutil.which("ffmpeg"):
-        try:
-            subprocess.run(
-                ["ffmpeg", "-y", "-i", wav_path, "-codec:a", "libmp3lame",
-                 "-qscale:a", "4", output_path],
-                capture_output=True, check=True, timeout=30,
-            )
-            os.remove(wav_path)
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            os.rename(wav_path, output_path.replace(".mp3", ".wav"))
-            print("(ffmpeg failed, saved as .wav)", end=" ")
-    else:
+    if not wav_to_mp3(wav_path, output_path):
         final = output_path.replace(".mp3", ".wav")
         if wav_path != final:
             os.rename(wav_path, final)
@@ -193,7 +273,19 @@ def generate_audio_piper(text, output_path, voice_model, piper_cmd):
 
 # ── Main ───────────────────────────────────────────────────────────────
 
+def check_kokoro():
+    try:
+        import kokoro_onnx
+        model_path = os.path.join(KOKORO_MODEL_DIR, "kokoro-v1.0.onnx")
+        voices_path = os.path.join(KOKORO_MODEL_DIR, "voices-v1.0.bin")
+        return os.path.exists(model_path) and os.path.exists(voices_path)
+    except ImportError:
+        return False
+
+
 def detect_engine():
+    if check_kokoro():
+        return "kokoro"
     if platform.system() == "Darwin" and shutil.which("say"):
         return "say"
     if check_piper():
@@ -201,10 +293,18 @@ def detect_engine():
     return None
 
 
+def default_voice(engine):
+    return {
+        "kokoro": DEFAULT_KOKORO_VOICE,
+        "say": DEFAULT_SAY_VOICE,
+        "piper": DEFAULT_PIPER_VOICE,
+    }.get(engine, DEFAULT_SAY_VOICE)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate audio from narration scripts")
     parser.add_argument("slides_html", help="Path to slides.html")
-    parser.add_argument("--engine", choices=["say", "piper"],
+    parser.add_argument("--engine", choices=["kokoro", "say", "piper"],
                         help="TTS engine (default: auto-detect)")
     parser.add_argument("--voice", type=str,
                         help="Voice name (default depends on engine)")
@@ -216,12 +316,14 @@ def main():
     engine = args.engine or detect_engine()
     if not engine and not args.dry_run:
         print("Error: No TTS engine found.")
-        print("On macOS: 'say' should be available by default.")
-        print("Otherwise: pip install piper-tts")
+        print("Install one of:")
+        print("  pip install kokoro-onnx soundfile  (best quality)")
+        print("  macOS 'say' is built-in")
+        print("  pip install piper-tts")
         sys.exit(1)
 
     if not args.voice:
-        args.voice = DEFAULT_SAY_VOICE if engine == "say" else DEFAULT_PIPER_VOICE
+        args.voice = default_voice(engine)
 
     print(f"Engine: {engine} | Voice: {args.voice}")
 
@@ -262,9 +364,12 @@ def main():
             print(f"  Would generate: {os.path.basename(audio_path)}")
         return
 
+    # Pre-init for engines that need setup
     piper_cmd = None
     voice_model = None
-    if engine == "piper":
+    if engine == "kokoro":
+        get_kokoro()
+    elif engine == "piper":
         piper_cmd = check_piper()
         voice_model = download_voice_piper(args.voice)
 
@@ -273,7 +378,9 @@ def main():
         word_count = len(text.split())
         print(f"[{i+1}/{len(to_generate)}] {label} ({word_count} words)...", end=" ", flush=True)
 
-        if engine == "say":
+        if engine == "kokoro":
+            ok = generate_audio_kokoro(text, audio_path, args.voice)
+        elif engine == "say":
             ok = generate_audio_say(text, audio_path, args.voice)
         else:
             ok = generate_audio_piper(text, audio_path, voice_model, piper_cmd)
