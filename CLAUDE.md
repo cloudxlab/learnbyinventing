@@ -99,26 +99,21 @@ Every exercise is a rigid triplet of cells:
 Reusable tools in `tools/narration/` generate voice-over narration for any Reveal.js presentation:
 
 ```bash
-# 1. Extract slide text → JSON
-python tools/narration/1_extract_slides.py <chapter>/slides.html
+# Install dependencies (one-time):
+bash tools/narration/install.sh
 
-# 2. Generate narration scripts via claude CLI
-python tools/narration/2_generate_scripts.py <chapter>/slides.html --topic "<Topic>"
+# Incremental build (only regenerates what changed):
+python tools/narration/build_narration.py <chapter>/slides.html --topic "<Topic>"
 
-# 3. Generate MP3 audio (macOS say or Piper TTS)
-python tools/narration/3_generate_audio.py <chapter>/slides.html
-
-# 4. Wire up the player
-cp tools/narration/narration-player.js <chapter>/narration-player.js
 # Add <script src="narration-player.js"></script> before </body> in slides.html
 
-# 5. Test (must serve via HTTP, not file://)
+# Test (must serve via HTTP, not file://):
 cd <chapter> && python3 -m http.server 8000
 ```
 
-Output structure per chapter: `narration/slides_data.json`, `narration/scripts/*.txt` (editable), `narration/audio/*.mp3`. Re-running step 3 only regenerates audio for scripts newer than their audio file.
+The build system is incremental: it re-extracts slide data only if `slides.html` changed, regenerates scripts only for changed slides, and regenerates audio only for modified scripts. Use `--force` for a full rebuild.
 
-Prerequisites: `claude` CLI (step 2), `ffmpeg` (MP3 conversion). On macOS, `say` is the default TTS engine (no install needed). See `tools/narration/README.md` for full details.
+TTS engines (auto-detected, best first): Kokoro (natural neural voice, default), macOS `say`, Piper. Kokoro model files (~340 MB) live in `tools/narration/voices/kokoro/` (git-ignored). See `tools/narration/README.md` for full details.
 
 ## Building for GitHub Pages
 
