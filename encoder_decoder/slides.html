@@ -123,6 +123,31 @@ This pattern (encode → black box → decode) is everywhere: ML pipelines call 
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+<div style="font-size:1.3em;">
+<p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+<p>You have a CSV of <code>email,item,rating</code> rows. A black-box recommender only accepts integer user IDs. Build the full pipeline:</p>
+<ol>
+<li><strong>Encode:</strong> map each unique email to an int, and save the mapping to a file.</li>
+<li><strong>Recommend:</strong> call the black box with the integer IDs.</li>
+<li><strong>Decode:</strong> map the integer IDs in the output back to emails.</li>
+</ol>
+<pre><code class="language-python">def run_pipeline(csv_path, mapping_path, recommender):
+    # returns {email: [recommended items]}
+    ...</code></pre>
+<pre><code class="language-python"># ratings.csv: a@x.com,Dune,5 / b@y.com,Emma,4 / a@x.com,Emma,3
+# mapping.json: {"a@x.com": 0, "b@y.com": 1}
+run_pipeline("ratings.csv", "mapping.json", recommender)
+# {"a@x.com": ["Heat"], "b@y.com": ["Dune"]}
+# Prove it: decode(encode(emails)) == emails</code></pre>
+<p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
+</div>
+</div></div>
+      </section>
+
+
+
       <!-- Part 1: Reading the Data -->
       <section id="part1">
         <h2>Part 1: Reading the Data</h2>

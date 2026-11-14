@@ -90,6 +90,28 @@
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+<div style="font-size:1.3em;">
+<p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+<p>An LLM can't answer questions about a private knowledge base, and a single search isn't enough for multi-hop questions. Build a tiny <strong>agent</strong> that does retrieval-augmented answering in a loop: <em>search</em> the docs, <em>decide</em> whether it has enough, and if not, <em>search again</em> with a refined query. Then <em>answer</em> from the retrieved text only.</p>
+<pre><code>def agent(question, docs, llm, max_steps=3):
+    """Loop: retrieve -> ask llm 'SEARCH: <query>' or 'ANSWER: <text>'.
+    Return the final answer string, grounded in retrieved docs."""
+</code></pre>
+<pre><code>docs = ["Acme's CEO is Dana Roy.", "Dana Roy was born in Lisbon."]
+agent("Where was Acme's CEO born?", docs, llm)
+# step 1: SEARCH: Acme CEO      -> finds Dana Roy
+# step 2: SEARCH: Dana Roy born -> finds Lisbon
+# -> "Lisbon"
+</code></pre>
+<p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
+</div>
+</div></div>
+      </section>
+
+
+
       <!-- Part 1: The Knowledge Gap -->
       <section id="part1">
         <h2>Part 1: The Knowledge Gap</h2>

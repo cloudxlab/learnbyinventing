@@ -98,6 +98,37 @@ that number from scratch.</div>
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+<div style="font-size:1.3em;">
+<p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+<p>Your house-price model overshoots some homes and undershoots others. Build a loss function that is <strong>smooth near zero</strong> (like squared error, so gradients shrink as you improve) but <strong>grows only linearly for big misses</strong> (like absolute error, so outliers don't dominate). This is the Huber loss.</p>
+<p>Write <code>huber_loss</code> to return the mean loss over all predictions. For each error $e = \text{pred} - \text{actual}$:</p>
+<ul>
+<li>If $|e| \le \delta$: loss is $\tfrac{1}{2}e^2$</li>
+<li>Otherwise: loss is $\delta\,(|e| - \tfrac{1}{2}\delta)$</li>
+</ul>
+<p>Then write <code>huber_gradient</code>, which returns the derivative of the loss for each prediction (with respect to that prediction, before averaging).</p>
+<pre><code class="python">def huber_loss(preds, actuals, delta=1.0):
+    # return the mean Huber loss
+    ...
+
+def huber_gradient(preds, actuals, delta=1.0):
+    # return a list: d(loss)/d(pred) for each house
+    ...
+
+# Test: the third house is a big outlier (error = 10)
+preds   = [3.0, 5.0, 20.0]
+actuals = [2.5, 5.5, 10.0]
+print(huber_loss(preds, actuals, delta=1.0))      # 3.4167
+print(huber_gradient(preds, actuals, delta=1.0))  # [0.5, -0.5, 1.0]</code></pre>
+<p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
+</div>
+</div></div>
+      </section>
+
+
+
       <!-- Part 1: The Prediction Error Problem -->
       <section id="part1">
         <h2>Part 1: The Prediction Error Problem</h2>
