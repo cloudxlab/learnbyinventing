@@ -42,7 +42,7 @@
   var container = document.createElement('div');
   container.id = 'narration-controls';
   container.style.cssText =
-    'position:fixed;bottom:16px;right:16px;z-index:100;display:flex;align-items:center;gap:6px;' +
+    'position:fixed;top:16px;right:16px;z-index:100;display:flex;align-items:center;gap:6px;' +
     'opacity:0;transition:opacity 0.3s;pointer-events:none;';
 
   function makeBtn(id, title, svg) {
