@@ -1,0 +1,450 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Gradient Descent Linear Regression Don t just watch invent . Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Introduction: Gradient Descent",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "What you ll invent today: The most important algorithm in machine learning The one that trains every neural network The one that powers GPT, image classifiers, and AlphaFold",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "And you ll build it from scratch ."
+      }
+    ]
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "How this works: Open a Python notebook side by side Code along don t just read Try before you peek at the answer",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 1: Finding the Bottom of a Valley",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Consider this function: [math] Go to desmos.com/calculator and plot it. Type in the expression box.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Notice the shape it looks like a bowl . A function is convex if it curves upward everywhere. Visually: draw a straight line between any two points on the curve the curve always stays below that line.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Is [math] convex? Go back to Desmos and check pick any two points on the curve and draw a mental line between them. Does the curve stay below that line?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "A convex function has exactly one minimum no bumps, no extra dips. That s what makes it possible to find the bottom reliably."
+      }
+    ]
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Let s work with this in Python. Write a function that computes [math]:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Call your function: what are and ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "x f(x) 5 655 5 615 Both are large. The minimum is somewhere in between . Can you find it?"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Find the minimum by hit and trial. Call for different values in your notebook. Keep narrowing down.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "How would you know you ve reached the minimum?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Take a tiny step to the left and a tiny step to the right . If the function goes up on both sides you re at the bottom. That s exactly the right intuition: check whether the function is going up or going down near your point."
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Now try another convex function: [math] Find its minimum using hit and trial in Python.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The minimum is at x = 1 , where g(1) = 4. What strategy did you use? Describe it in words."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Check a nearby value on each side. Move toward whichever side is lower. Keep going until neither side is lower."
+      }
+    ]
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Convert your strategy into code: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Test it: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Hint Use a small step like 0.01. Compare and . Move toward whichever is smaller. Stop when both are larger than . Solution [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "text": "Your strategy works! But it s slow lots of tiny steps. What if, instead of just checking left vs. right, you could know exactly how steep the function is and which direction is downhill? That s the slope ."
+      }
+    ]
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Part 2: Inventing Gradient Descent",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "At any point [math] on the curve, the slope tells you: Slope positive (uphill to the right) move left Slope negative (uphill to the left) move right Slope zero you re at the bottom !",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Your turn: You already know how to compute the numerical derivative of a function at a point. Write a formula that approximates the slope of a curve [math] at point [math], using a tiny step size [math]. (Hint: think about two points very close to [math].)"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Check your formula: you should have something like [math] where [math] is a tiny number like [math]. Now write it as a Python function:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Test it on [math]. Call , , and . For each value: is the slope positive, negative, or near zero? What does that tell you about which direction to move?"
+      }
+    ]
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Your turn: If the slope is positive, move left. If negative, move right. Keep going until the slope is near zero. Implement this naive approach move by a fixed step of 1 each time:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Let s trace through a simple example. Consider [math] which has its minimum at [math]. Start at [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Q1: The slope at [math] is positive. So we move left by 1. What is [math] now?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[math]. The slope at [math] is negative, so we move right by 1. [math]. We re back where we started!"
+      },
+      {
+        "fragment_index": 2,
+        "text": "Q2: The value of [math] is oscillating: [math] It never converges. Why?"
+      },
+      {
+        "fragment_index": 3,
+        "text": "Our fixed step of 1 is too large it overshoots the minimum every time."
+      }
+    ]
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Q3: Look at the slope values as we approach the minimum: [math] slope [math]slope[math] 2.0 4.0 4.0 1.0 2.0 2.0 0.5 1.0 1.0 0.1 0.2 0.2",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The gradient s absolute value gets smaller as we get closer to the minimum. What if, instead of a fixed step, we moved [math] in proportion to the gradient ?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Small gradient small step (gentle landing). Large gradient large step (far from the answer, move boldly). Write a formula for [math] using this idea."
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The formula you should arrive at: [math] [math] (alpha) is the learning rate a small constant that controls how aggressively we step."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Now rewrite using this formula (this replaces your earlier fixed-step version): [code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 3,
+        "text": "find_minima_1d(f, x=2.0) (1.0000, 7.0000) Starting from [math], the algorithm walked to [math] the exact minimum. This is gradient descent."
+      }
+    ]
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Experiment: Try running on [math] starting from [math] with these three values of [math]: [math] What happens? Try it and note the result Try it and note the result Try it and note the result",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "What did you observe? Which [math] converged? Which didn t? Can you explain why ?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "The learning rate [math] is the most important knob in gradient descent. Too large overshoots and diverges. Too small barely moves. Choosing it well is an art."
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Part 3: Many Variables",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Now a function of two variables: [math] This is a bowl a 2D landscape with a single valley at [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The slope now has two parts : how steep in the [math] direction? How steep in [math]?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Your turn: You have which computes the slope of a 1D function. How would you compute the slope in the [math]-direction while keeping [math] fixed? (Hint: treat [math] as a function of [math] alone, with [math] held constant.)"
+      }
+    ]
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "You should arrive at formulas like these called partial derivatives : [math] [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Now write apply the same gradient descent logic, but update both [math] and [math] each step: [code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "text": "find_minima_2d(g, 2.0, 3.0) (0.0000, 0.0000, 0.0000)"
+      }
+    ]
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Look at what you wrote for 1D and 2D side by side: Position Gradient 1D a number a number 2D a pair a pair ND ? ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Fill in the ND row. Then write a general that takes a function and a list of variables and returns the gradient (a list of partial derivatives). (Hint: loop over each variable, nudge it by [math], compute that partial derivative.)"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Your turn: Now write a single that works for any number of variables, using .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "One algorithm, any number of dimensions: Function Start Found minimum [math] [2.0] [math] [2.0, 3.0] [math] [0, 0, 0]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "? [1.0] f = 7.0 ? [0.0, 0.0] f = 0.0 ? [1, 2, 3] f = 0.0"
+      },
+      {
+        "fragment_index": 1,
+        "text": "You have built a general-purpose optimizer . It can find the minimum of any smooth function in any number of dimensions. Now what should we minimize?"
+      }
+    ]
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Part 4: Fitting a Line to Data",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "You have data points. You want a line [math] that fits them. Which line is best?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The red line ([math]) misses badly. The green line ([math]) looks right. But looks right isn t a number. How do you measure fit?"
+      }
+    ]
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "For each point, the line predicts [math]. The error is [math]. But some errors are positive and some negative they cancel if you just add them. How would you fix the cancellation problem? Think of at least one way to make all errors positive before adding them.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Two common ideas: take the absolute value of each error, or square each error. Both work! Squaring is more common it penalizes large errors more heavily and is smoother (easier for gradient descent). Your turn: Write a formula that squares each error and takes the mean. This is called Mean Squared Error (MSE) ."
+      },
+      {
+        "fragment_index": 1,
+        "text": "[math] A smaller MSE means a better fit. MSE = 0 means the line passes through every point."
+      }
+    ]
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Write the function:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Test: [math], [math] perfectly on the line [math]: [math] MSE (2, 1) 0.0 perfect fit (1, 2) 1.67 close (0, 0) 27.67 terrible"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "MSE is a function of [math] and [math]. What shape is its landscape?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "A convex bowl one single minimum. You already have . MSE is just another function of two variables. What if you plugged MSE into find_minima?"
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Part 5: The Payoff — Linear Regression",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Your turn: expects a function of a list . takes . Write a wrapper that bridges the two it takes and calls with your data. Then plug it into and run it.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Found: m = 2.4970, c = 4.0189 True: m = 2.5, c = 4.0 This is linear regression. You just built what does."
+      }
+    ]
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "Try: . It gives the same answer but it uses an exact formula , not gradient descent.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Think: If an exact formula exists, why would anyone bother with gradient descent? Consider: what if your model had 1 million parameters instead of 2? What if it wasn t a straight line at all?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "The exact formula only works for linear models. Gradient descent works for any differentiable function including neural networks with millions of parameters. The same loop you wrote compute gradient, step, repeat is how GPT, image classifiers, and AlphaFold are trained."
+      }
+    ]
+  },
+  {
+    "slide_index": 34,
+    "slide_text": "Part 6: Many Features",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "slide_text": "A house price depends on size and bedrooms and age. Give each feature its own slope: [math] Your turn: Write a function that takes a list of features , a list of slopes , and an intercept , and returns the prediction.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "predict([1, 2], [2, 3], 1) 9 # 2 1 + 3 2 + 1"
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "slide_text": "You already have which works on any number of variables. The weights [math] are just variables. Your turn: Write a function that finds the best weights. You can reuse (wrap MSE like before), or write the gradient descent loop yourself with .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Test on [math]: X = [[1,2], [2,1], [3,4], [4,3]] y = [9, 8, 19, 18] fit(X, y) m = [2.000, 3.000], c = 1.000"
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "slide_text": "What if the data follows [math]? A straight line can t fit a curve. Try it: X = [[1],[2],[3],[4],[5]], y = [1, 4, 9, 16, 25] fit(X, y) MSE 1 (stuck!)",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Think: [math] depends on [math], but your model only knows about [math]. What if you gave it [math] as an additional column ? Your turn: Write an function that appends a new computed column to each row, then try again with the extra feature."
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block] fit(X2, y) MSE 0.01"
+      },
+      {
+        "fragment_index": 2,
+        "text": "Same algorithm, no new math. You added the right feature , and the linear model handled the rest. Before deep learning, this was most of the job of a machine-learning engineer."
+      }
+    ]
+  },
+  {
+    "slide_index": 38,
+    "slide_text": "What you built: 1. slope at a point 2. walk downhill to the bottom 3. measure how wrong a line is 4. linear regression! 5. many features, same algorithm 6. fit non-linear data",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "What s next? Replace [math] with a neural network the gradient descent loop stays exactly the same, but the model becomes vastly more powerful. That s deep learning."
+      }
+    ]
+  }
+]

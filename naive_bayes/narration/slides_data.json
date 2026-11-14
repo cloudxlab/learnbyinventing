@@ -1,0 +1,177 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Learning Naive Bayes by Inventing It You will discover the Naive Bayes classifier yourself — step by step, from counting to a working ML model. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Counting and Probability Before any algorithm, let's learn to count carefully. That's all probability is — careful counting.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Meet the Data Here are 14 days of weather observations. For each day we recorded the outlook, temperature, humidity, and wind — and whether we played tennis. Day Outlook Temp Humidity Wind Play? 1 Sunny Hot High Weak No 2 Sunny Hot High Strong No 3 Overcast Hot High Weak Yes 4 Rainy Mild High Weak Yes 5 Rainy Cool Normal Weak Yes 6 Rainy Cool Normal Strong No 7 Overcast Cool Normal Strong Yes 8 Sunny Mild High Weak No 9 Sunny Cool Normal Weak Yes 10 Rainy Mild Normal Weak Yes 11 Sunny Mild Normal Strong Yes 12 Overcast Mild High Strong Yes 13 Overcast Hot Normal Weak Yes 14 Rainy Mild High Strong No Tasks (pen paper): Count the number of Yes days and No days. What fraction of all days resulted in \"Yes\"? Without looking at any weather features, if someone asked \"Will we play tomorrow?\", what would you guess?",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Your First Prediction Rule Imagine you have no weather information at all . A friend calls and asks: \"Should I come to play tennis?\" What would you predict? Why? What is the probability of Play = Yes? Express it as a fraction. What is the probability of Play = No? Do these two probabilities add up to 1? Why must they? Your answers: Prediction: ... P(Yes) = ... P(No) = ... Sum = ... because ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Prior Probability P(Play = Yes) = 9/14. In probability and machine learning, this is called a \"prior\" probability. Why is it called \"prior\"? A. Because it was computed before computers existed B. Because it uses the first column of the data C. It's what you'd predict *before* looking at any features — your default belief based only on past outcomes D. It always equals 0.5",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Part 2: One Feature — Does Weather Help? The prior says \"Yes\" 64% of the time. But surely the weather matters. Let's see how one feature changes our prediction.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Counting with a Condition Look at the data table and answer by hand (just count the rows): Of the 9 Yes days , how many have Outlook = Sunny? Of the 5 No days , how many have Outlook = Sunny? Compute the fractions: \"Among Yes days, what fraction is Sunny?\" and \"Among No days, what fraction is Sunny?\" Your answers: Sunny Yes days: ... out of 9 Sunny No days: ... out of 5 Fraction among Yes: ... / 9 = ... Fraction among No: ... / 5 = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "The Key Question It's a Sunny day. You want to decide: is it more likely a Yes day or a No day? You have two pieces of information: From Ex 2.1: Among Yes days, 2/9 are Sunny. Among No days, 3/5 are Sunny. From Ex 1.2: P(Yes) = 9/14, P(No) = 5/14. Tasks: Compute: (fraction of Sunny among Yes) × P(Yes) = ? Compute: (fraction of Sunny among No) × P(No) = ? Which product is larger? What would you predict for a Sunny day? Your calculation: Score(Yes) = (2/9) × (9/14) = ... Score(No) = (3/5) × (5/14) = ... Winner: ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Try Other Outlooks Repeat the same calculation from Ex 2.2 for: Overcast days: compute Score(Yes) and Score(No). What do you predict? Rainy days: compute Score(Yes) and Score(No). What do you predict? You'll need to count how many Overcast and Rainy days appear among Yes days and No days first.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Code It: `count_where` Now let's automate the counting. Write a function that counts how many rows match a set of conditions. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Code It: `probability` Write a function that computes a conditional probability using . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Predict with One Feature Write a function that predicts the class using a single feature: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Part 3: Two Features — Combining Evidence One feature helped. Can two features help more? Let's combine evidence.",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Two Features by Hand It's a Sunny and Hot day. Should we play? We already know how to use one feature. For two features, try this: multiply the contribution of each feature separately, along with the prior. Compute by hand: From the data, find: P(Sunny | Yes) = ? P(Hot | Yes) = ? P(Yes) = ? Multiply them: Score(Yes) = P(Sunny | Yes) × P(Hot | Yes) × P(Yes) Do the same for No: Score(No) = P(Sunny | No) × P(Hot | No) × P(No) Which score is higher? What do you predict? Your calculation: P(Sunny|Yes) = ..., P(Hot|Yes) = ..., P(Yes) = ... Score(Yes) = ... × ... × ... = ... P(Sunny|No) = ..., P(Hot|No) = ..., P(No) = ... Score(No) = ... × ... × ... = ... Prediction: ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Try Another Combination Compute Score(Yes) and Score(No) for a Rainy and Cool day. Count P(Rainy | Yes), P(Cool | Yes), P(Rainy | No), P(Cool | No). Compute Score(Yes) and Score(No). What do you predict?",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "The Big Assumption In Exercise 3.1, you multiplied P(Sunny | Yes) × P(Hot | Yes). This multiplication is only mathematically valid under a specific assumption. What is it? A. Outlook and Temperature must have the same number of possible values B. Outlook and Temperature are *independent* given the label — knowing one doesn't tell you about the other (once you already know whether we played) C. The dataset must have at least 100 rows D. All feature probabilities must be greater than 0.5",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Code It: `predict_two_features` Write a function that predicts using two features: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Part 4: N Features — The General Algorithm You've done it for 1 feature and 2 features. Now let's generalize to any number of features.",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Three Features by Hand It's Sunny , Hot , and High humidity. Compute Score(Yes) and Score(No) using all three features. You already have P(Sunny|Yes) and P(Hot|Yes). Now find P(High|Yes) and P(High|No) from the data. Score(Yes) = P(Sunny|Yes) × P(Hot|Yes) × P(High|Yes) × P(Yes) Score(No) = P(Sunny|No) × P(Hot|No) × P(High|No) × P(No) Which class wins?",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Generalize to N Features You've seen the pattern: for each label, multiply the prior by the conditional probability of each feature. Now write the general version: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Test on All Training Rows Run your function on every row in the dataset and compare to the actual label. How many does it get right? Which rows (if any) does it get wrong? Look at those rows — can you see why?",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 5: The Zero-Frequency Problem Your algorithm has a fatal flaw. Let's find it and fix it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Break Your Code Look at the data: Outlook = Overcast appears on days 3, 7, 12, 13. What is the Play label for all of those days? Now answer: What is P(Overcast | No)? If you try to predict for a new day with Outlook = Overcast and any other features, what happens to Score(No)? Is this a reasonable prediction? What if you had Overcast + Strong Wind + High Humidity — conditions that historically lean toward No?",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Fix It: Laplace Smoothing The fix is beautifully simple: pretend you've seen every combination at least once. The idea: Instead of computing P(Overcast | No) = 0/5, add 1 to the numerator (pretend you saw one extra Overcast-No day) and add k to the denominator (where k is the number of possible values for that feature). For Outlook, k = 3 (Sunny, Overcast, Rainy). So: P_smooth(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125 Tasks: Compute P_smooth(Sunny | No) with k=3. Compare to the unsmoothed version. Write : [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Update Your Predict Function Write — like your from Part 4, but using instead of . You'll need to know k (number of possible values) for each feature. Compute this from the data. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Why Smoothing Works Laplace smoothing adds 1 to every count. What would happen if you added 1000 instead of 1? A. The classifier would become more accurate because it has more \"data\" B. Nothing would change — the relative ordering of scores stays the same C. All smoothed probabilities would approach 1/k (uniform) — the fake counts would overwhelm the real data, and the classifier would ignore the actual evidence D. Python would crash with an overflow error",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Part 6: The NaiveBayes Class You have all the pieces. Now wrap them into a reusable class with the standard ML interface: and .",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "Design the Interface Before writing code, think about what needs to compute and store so that can work later without re-scanning all the training data. Think about: What are the possible labels? (e.g., Yes and No) For each label, how many training examples had that label? (the priors) For each label AND each feature AND each feature value, how many times did that combination appear? (the conditional counts) For each feature, how many distinct values does it have? (needed for smoothing) Your design: After , should contain: self.labels = ... self.label_counts = ... self.feature_counts = ... self.feature_values = ... self.total = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Implement `NaiveBayes` Implement the full class: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "A Bigger Dataset Test your class on a spam detection problem. Each email is represented by the presence/absence of certain words: Tasks: Train your on this dataset. Compute training accuracy. Predict on these new emails: [code block] Do the predictions match your intuition?",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Part 7: Bonus Challenges",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Predict Probabilities Right now, returns just the winning label. Add a method that returns the probability of each class. To convert scores to probabilities, divide each score by the sum of all scores: For example, if Score(Yes) = 0.03 and Score(No) = 0.07, then: P(Yes) = 0.03 / (0.03 + 0.07) = 0.3 P(No) = 0.07 / (0.03 + 0.07) = 0.7 [code block] Test: The probabilities for each row should sum to 1.0.",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Compare with scikit-learn Scikit-learn has a built-in . Compare your results: [code block] Do the predictions match? If not, investigate why.",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "What About Continuous Features? Your classifier works with categorical features (Sunny, Rainy, etc.). But what if a feature is a number, like actual temperature (72°F, 85°F, etc.)? Why can't you directly count P(Temperature=72.3 | Yes)? (How many training rows have that exact value?) One approach: assume numerical features follow a bell curve (Gaussian distribution) within each class. Instead of counting, you'd compute the mean and standard deviation per class, then use the bell curve to get the probability. Another approach: bin the numbers into categories (e.g., Cold: 60, Mild: 60-80, Hot: 80) and use your existing categorical classifier. Try the binning approach on a dataset of your choice.",
+    "fragments": []
+  },
+  {
+    "slide_index": 34,
+    "slide_text": "What you just built: You started by counting rows in a table. From there, you: Discovered that prior probability (just counting labels) gives a baseline prediction. Found that conditional probabilities (counting features within each class) improve predictions. Learned to combine multiple features by multiplying their conditional probabilities — under the naive independence assumption . Discovered and fixed the zero-frequency problem with Laplace smoothing. Wrapped it all in a reusable class with and . This is the Naive Bayes classifier — one of the oldest and most practical algorithms in machine learning. Despite its \"naive\" assumption, it excels at text classification (spam detection, sentiment analysis), medical diagnosis, and any problem with many categorical features. The mathematical name for what you computed is Bayes' theorem : updating a prior belief using evidence. You invented it from scratch.",
+    "fragments": []
+  }
+]

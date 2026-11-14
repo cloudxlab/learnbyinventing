@@ -1,0 +1,182 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing Big O Notation Some programs finish in a blink. Others take hours — or years. In this chapter you'll discover why by measuring, counting, and eventually inventing a notation that captures it all. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: How Long Does It Take? You've written functions. Some are fast, some are slow. But how slow? And what happens when the input gets bigger? Let's find out by measuring.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Here are two functions. adds up all the numbers in a list (one loop). checks whether any two numbers in the list add up to a target (a loop inside a loop). [code block] We'll pass a target of -1 to . Since all our numbers are positive, no pair will ever add up to -1 — this forces the function to check every pair before giving up, so we measure its full workload.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Time It Time both functions on lists of size 1,000 , 5,000 , and 10,000 . For each size, record how long each function takes. When the input gets 5× bigger (1,000 → 5,000), how much slower does each function get? Use before and after each call to measure: [code block] Try the same for n = 5000 and n = 10000.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Plot the Growth Plot time vs input size for both functions on the same graph. Use input sizes from 100 to 5,000. What shape does each curve have?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "One function's time grows proportionally to the input size. The other grows proportionally to the square of the input size. This distinction is enormous. On a million items: The linear function takes ~1 second The quadratic function takes ~ 11 days Understanding which category your algorithm falls into is one of the most important skills in programming.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Counting Steps Timing is noisy — it depends on your computer's speed, what else is running, even the room temperature. Can we predict how an algorithm grows without running it? Yes: count the key operations .",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Instrument Your Code Go back to and . Add a counter variable to each one that counts how many times the innermost operation runs. Return the count along with the result. Then run your counted versions on sizes 10, 100, and 1,000. Print the counts. How does the count relate to n in each case?",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Discover the Pattern Look at the counts from . Divide each count by n, then by n². n count count / n count / n² 10 ? ? ? 100 ? ? ? 1000 ? ? ? Which ratio stays roughly constant — count/n or count/n²? When [math], the count will be about [math] (500 billion). Does it matter that it's [math] instead of [math]? Would the \"÷2\" make any practical difference at that scale?",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Does the Constant Matter? Write two functions that both loop through a list once, but one does 3× as much work per element. For example, one adds each element once, the other adds it three times. Time both on sizes 10,000, 100,000, and 1,000,000. Compute the ratio of their times for each size. Does the ratio stay constant or change as n grows?",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "We care about the growth rate , not the exact count. Whether it's [math], [math], or [math] — they all grow at the same rate. Whether it's [math], [math], or [math] — they all grow quadratically. We need a shorthand that captures the growth family and throws away the constants. How would you write \"this algorithm grows like n²\"?",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Part 3: Inventing a Notation You keep saying things like \"this grows like n\" or \"this grows like n squared.\" Let's make that precise.",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Name the Families You've already seen two growth families: one where count = n (linear) and one where count ≈ n² (quadratic). But there are others. Try this experiment. Write a function that searches a sorted list by repeatedly cutting the search range in half: [code block] Run it on sorted lists of size 10, 100, 1,000, 10,000, and 100,000 (searching for -1 so it always fails). How many steps does it take each time? The count barely grows even as n goes from 10 to 100,000. What mathematical function grows this slowly? Steps for n=10: Steps for n=100,000: What function of n gives these values:",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "The Growth Families You've now discovered three growth families from real code: What the code does Count grows like Name Single loop over n items n ? Loop inside a loop n² ? Halve the range each step log(n) ? There are also two more common ones: A function that returns — always 1 step, regardless of n → ? An outer loop of n, where each iteration does a halving search (log n work) → ? Give each growth family a descriptive one-word name. Always the same, regardless of n: Grows like log(n): Grows like n: Grows like n × log(n): Grows like n²:",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Drop the Noise You discovered that [math] and [math] and [math] all grow the same way. The constant multiplier doesn't matter. And you discovered that when [math] is large, [math] is basically just [math] (the [math] is negligible). So to describe the growth family, we can simplify any expression by: Dropping constant multipliers ([math] → [math]) Keeping only the fastest-growing term ([math] → [math]) Try it. Simplify each expression to just the growth family: [math] [math] [math] (just the number, no [math]) [math] [math] 5n + 3 → 2n² + 10n + 7 → 100 → n³ + 1000n² → 3n·log(n) + 5n →",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Invent a Shorthand You keep writing \"this algorithm grows like n²\" or \"grows like n·log(n).\" That's wordy. Invent a shorter way to write it. Requirements for your shorthand: It should take a growth family (like [math]) and wrap it in some notation It should be clear that you mean \"grows like ___\" and not \"equals exactly ___\" It should work for all families: constant, log(n), n, n·log(n), n², etc. Write your notation for each family. Any format you like. Your shorthand for 'grows like 1 (constant)': Your shorthand for 'grows like n': Your shorthand for 'grows like n²':",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "See the Hierarchy Plot all five growth families on the same graph for [math] from 1 to 100: O(1): [math] O(log n): [math] O(n): [math] O(n log n): [math] O(n²): [math] Which families look practically the same at small n? Which one towers over everything?",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "The notation you just invented is called Big O notation . Computer scientists write: $[math][math]O(f(n))[math]f(n)[math]O(n^2)[math]n^2$. The formal notation was introduced by Paul Bachmann in 1894 and popularised by Edmund Landau — but the idea is exactly what you discovered: classify algorithms by their growth family, ignore the constants.",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 4: Analysing Real Code Now that you have the notation, let's practise using it. Given a piece of code, how do you figure out its Big O without running it?",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "One Loop What's the Big O of this function? The input is a list of length [math]. [code block] How many times does the comparison run? Big O:",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Two Separate Loops What about this one? [code block] The first loop does n operations, the second does another n. What's the total? What's the Big O? Total operations: Big O:",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Nested Loops And this? [code block] For each value of , how many times does the inner loop run? What's the total across all values of ? Big O:",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "No Loop at All What's the Big O of this? [code block] Big O:",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Predict Then Measure You just predicted the Big O of four functions: (O(n)), (O(n)), (O(n²)), and (O(1)). Now verify your predictions. For each function, add an operation counter (like you did in Part 2). Run on sizes 100, 1,000, and 10,000. Divide the count by your predicted growth function ([math] or [math] or [math]). If your prediction is correct, the ratio should stay roughly constant as n grows.",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Best, Worst, and Average Consider linear search — scanning a list from left to right looking for a target: [code block] Best case: What input makes this as fast as possible? How many comparisons? Worst case: What input makes this as slow as possible? How many comparisons? Average case: If the target is equally likely to be at any position, how many comparisons on average? When someone says \"linear search is O(n)\" without further explanation, which case do they usually mean? Best case — comparisons: Worst case — comparisons: Average case — comparisons: O(n) usually refers to:",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Rules of thumb for reading code: Pattern Big O No loop — fixed number of operations O(1) Single loop over n items O(n) Two separate loops (not nested) O(n) — it's [math], constants drop Loop inside a loop O(n²) Loop that halves the range each step O(log n) Loop over n, each iteration does O(log n) work O(n log n)",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Part 5: Memory Complexity Time isn't the only resource that matters. Memory (space) does too. The same Big O notation works — instead of asking \"how does time grow?\" we ask \"how much extra memory does this algorithm need as the input grows?\"",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "How Much Extra Space? For each function, figure out how much extra memory it creates (beyond the input itself). Don't count the input list — just the new things the function allocates. Function A: [code block] Function B: [code block] Function C: [code block] For each: how many new items does it create? How does that depend on n? Function A — new items created: Function B — new items created: Function C — new items created:",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "See the Space Grow Create lists of increasing size and n×n matrices of increasing size. Count the number of elements in each to verify the growth pattern. For lists: how does the element count grow with n? For matrices: how does the element count grow with n?",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "The Time–Space Tradeoff You need to check if a list has any duplicate values. Here are two approaches: Approach 1 — Nested loops (no extra memory): [code block] Approach 2 — Use a set (extra memory): [code block] What's the time complexity of each? (Think about the loop structure.) What's the space complexity of each? (How much extra memory does each create?) Which is \"better\"? Approach 1 — time / space: Approach 2 — time / space: Which is better and why:",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Every algorithm has both a time complexity and a space complexity. Now you know how to read and evaluate both. As you work through the chapters ahead, you'll see this tradeoff again and again — fast algorithms that use extra memory vs slow algorithms that work in-place.",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Part 6: Why It Matters Let's see the full picture. How long does each complexity class take on real-world input sizes?",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "The Race Assume each operation takes 1 microsecond (one millionth of a second). For each complexity class, compute how many operations it takes at different input sizes, then convert to human-readable time. Fill in this table for [math] = 10, 1000, [math], and [math]: n O(1) O(log n) O(n) O(n log n) O(n²) 10 ? ? ? ? ? 1,000 ? ? ? ? ? 1,000,000 ? ? ? ? ? 1,000,000,000 ? ? ? ? ? Which complexity classes are still practical at [math]? Which ones are hopeless?",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "What You Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 34,
+    "slide_text": "Your Journey Exercise What You Did Concept 1.1–1.2 Timed two functions, plotted growth curves Empirical performance measurement 2.1–2.3 Counted operations, discovered constants don't matter Operation counting, growth rate 3.1–3.2 Discovered logarithmic growth, named the families Growth families 3.3–3.4 Simplified expressions, invented a shorthand Big O notation 3.5 Plotted the hierarchy O(1) O(log n) O(n) O(n log n) O(n²) 4.1–4.5 Analysed code snippets, predicted and verified Big O Static analysis + verification 4.6 Explored best, worst, and average case Worst-case analysis 5.1–5.3 Counted extra memory, discovered the time–space tradeoff Space complexity 6.1 Computed real-world running times Why Big O matters in practice",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "slide_text": "Going further: O(2ⁿ) — exponential: The number of subsets of a set with n items. Algorithms that try every subset are O(2ⁿ) — feasible for n ≤ 20, impossible for n = 100. O(n!) — factorial: The number of permutations. Even worse than exponential. Amortized analysis: Some operations are usually fast but occasionally slow (like appending to a Python list that needs to resize). Amortized analysis averages the cost over many operations. P vs NP: The biggest open question in computer science — are there problems where checking a solution is easy but finding one is fundamentally hard? A million-dollar prize awaits the answer.",
+    "fragments": []
+  }
+]

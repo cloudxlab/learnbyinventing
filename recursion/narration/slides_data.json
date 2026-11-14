@@ -1,0 +1,172 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Learning Recursion by Inventing It You won't be taught --- you will discover . Every step builds on the last. Trust the process. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Factorial --- Your First Recursive Function",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Express It in Terms of Itself The factorial of is . By definition, . Before coding: Write as . What is in terms of ? Keep going until you reach a number whose factorial you already know without any multiplication. What is the smallest input for which you can answer \"what is ?\" without calling again? This is called the base case . For every other , how do you express using ? This is called the recursive case . Your derivation: base case: factorial(...) = ... recursive case: factorial(n) = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Write `factorial_recursive` Write a function that: returns if is (the base case), otherwise returns (the recursive case). Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "What If There's No Base Case? Before running anything: what do you think happens if you call ? Walk through it: does ever hit ? Now try it in the cell below --- wrapped in a / so it doesn't crash your whole notebook. What error do you get?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Base Case Purpose In Exercise 1.3 you saw what happens without a base case. What is the role of the base case in a recursive function? A. It makes the function run faster B. It tells Python to use a loop instead of recursion C. It provides the stopping condition --- the simplest case that can be answered directly without another recursive call D. It handles invalid inputs like negative numbers",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Multiplication --- Replacing an Operator with Recursion",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Multiplication Is Repeated Addition means \"add 4 to itself 3 times\": . Before coding (assume both and are non-negative for now): What is the base case --- the value of for which is obviously without doing any addition? For any other , how can you write in terms of ? Your derivation: base case: multiply(a, 0) = ... recursive case: multiply(a, b) = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Write It for Non-Negative `b` Write that works for , without using the operator. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Handling a Negative `b` Now suppose can be negative --- like , which should be . Before coding: If is negative, how is related to (where is now positive)? Rather than writing new logic, can you handle the negative case by converting to positive, calling your existing recursive logic, and then fixing the sign of the result? Your derivation: if b 0: multiply_recursive(a, b) = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Extend `multiply_recursive` Update to handle negative too. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Part 3: Power --- Multiplying by Itself, Recursively",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Express Power in Terms of Itself (for a positive integer ) means multiplying by itself times. For example, . Before coding: What's the base case --- the smallest (a positive integer) for which is just , with no multiplication needed? For any other (larger) , how do you write using ? Your derivation: base case: power(x, 1) = ... recursive case: power(x, n) = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Write `power` Write that returns using recursion, where is a positive integer (). Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 4: Power for Any Integer Exponent",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Two New Cases from Part 3 only handles . Now extend it to handle and negative too. Before coding: What should be, for any non-zero ? (No recursion needed --- this becomes a new base case.) If is negative, equals divided by what? Your derivation: new base case: compute_power(x, 0) = ... negative case: compute_power(x, n) for n 0 = 1 / compute_power(x, ...)",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Write `compute_power` Write that returns using recursion, for any integer --- positive, negative, or zero. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "A Second Route to Negative Exponents Your probably handles a negative by computing the positive power first, then taking the result. There's a route that never needs that flip: make the recursion itself climb toward zero . For negative , notice that [math] --- the exponent moves up by one each call, so reaches the same base case that positive reaches by counting down. Write with one base case () and two recursive cases: for positive recurse on (as before), for negative recurse on using the identity above. The lesson: a recursion just needs each call to step closer to the base case --- from below works as well as from above. Tests: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 5: Division by Repeated Subtraction",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Trace It by Hand : how many times does fit into , and what's left over? Before coding: Subtract from repeatedly, counting how many subtractions you do, until what's left is less than . How many subtractions did it take, and what's the leftover amount? Those two numbers are the quotient and the remainder . State the base case: when the dividend is already less than the divisor, what's the quotient, and what's the remainder? Otherwise --- one subtraction in --- how does the answer for relate to the answer for ? Your derivation: base case (dividend divisor): quotient = ..., remainder = ... recursive case: recursive_divide(dividend, divisor) in terms of recursive_divide(dividend - divisor, divisor) = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Write `recursive_divide` Write that returns a tuple , using recursion. You must not use or . Assume and . Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 6: HCF via Euclid's Method --- Reusing Part 5",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Euclid's Rule The HCF (Highest Common Factor, a.k.a. GCD) of two numbers can be found with a remarkably short recursive rule: If , the HCF is . Otherwise, the HCF of and is the same as the HCF of and . Before coding: you already have a way to compute a remainder --- from Part 5 returns . Instead of writing again, how would you get that same remainder by calling ? Your plan: remainder of a divided by b, using Part 5's function = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Write `compute_hcf` Write using Euclid's method, reusing from Part 5 to get the remainder instead of using . Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Part 7: Tower of Hanoi --- Two Recursive Calls",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Trace the Pattern by Hand You have 3 pegs: A (source), B (auxiliary), C (target), and a stack of discs on A , smallest on top. Move the whole stack to C , one disc at a time, never placing a larger disc on a smaller one. The general rule for discs , moving from to using as spare space: Move the top discs from to (using as spare). Move disc from to . Move the discs from to (using as spare). Before coding: What's the base case --- the smallest you can solve directly, with no sub-problem? For : write out the 3 moves yourself, in order, using the rule above (you have 1 disc to move in steps 1 and 3, and disc 2 in step 2). Notice that steps 1 and 3 are themselves smaller Tower of Hanoi problems --- just with the roles of the three pegs swapped around. This is what makes it recursive twice per call. Your derivation: base case: n = ..., move disc 1 from source to target. for n=2: move ... from ... to ..., move ... from ... to ..., move ... from ... to ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Write `solve_hanoi` Write that: prints each move exactly in the format uses the three-step rule above (two recursive calls plus one move printed in between), returns the total number of moves performed. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "Test on More Discs Tasks: Run . You should see exactly 3 moves, matching what you traced by hand in Exercise 7.1. Run . You should see exactly 7 moves. Run and just look at the returned total (don't worry about reading all the printed moves). What's the pattern in the totals for ? Can you guess the formula for the total number of moves as a function of ? Hint: look back at Part 3 or 4 --- your / function might help you verify your guess.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Recursive Call Count The Tower of Hanoi for n discs requires [math] moves. For n = 4 (four discs), how many moves are needed? A. 8 B. 15 C. 16 D. 31",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Part 8: Bonus Challenges",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Fibonacci, and Why It's Slow The Fibonacci sequence is defined recursively: , , and for . Tasks: Write using plain recursion (two recursive calls, just like Tower of Hanoi). Test it on (expected: ). Time how long takes. Then try . What's happening? (Hint: how many times does end up computing , for instance?) Fix the slowness using memoization : keep a dictionary that caches the first time you compute it, and check the cache before recursing. How much faster is now?",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Verify the Hanoi Move Formula In Exercise 7.3, you may have guessed that always returns [math] total moves. Write a small check that uses your function from Part 4 to verify this formula against the actual return value of , for from to (call in a way that doesn't print anything, or just ignore the printed output).",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Part 9: Reflection --- What Did You Just Build?",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "Reflection Take a moment to answer these questions in your own words. Every recursive function you wrote has a base case and a recursive case . What goes wrong if a function is missing a base case, or if the recursive case never gets closer to the base case? In Part 2, how did handling a negative show you a pattern: solve the \"hard\" case by converting it to a case you already know how to solve? In Part 6, what did you reuse from Part 5, and why was that better than rewriting the remainder logic with ? Tower of Hanoi and Fibonacci both make two recursive calls per step, instead of one. What's different about how their total work grows as increases? What is memoization, and what problem does it solve?",
+    "fragments": []
+  }
+]

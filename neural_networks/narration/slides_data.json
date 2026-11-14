@@ -1,0 +1,112 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing Neural Networks In the Gradient Descent chapter you taught a computer to fit a line: pick weights, measure the error, nudge every weight downhill, repeat. That one loop is more powerful than it looks — the only thing standing between you and a neural network is the shape of the function you feed it. In this chapter you will: Turn a line into a yes/no classifier — and discover what the field calls it. Trip over the most classic training bug and fix it. Chain small functions together and watch weights reshape curves. Take on a problem no straight line can solve — a realistic income-tax rule — and beat it three ways, ending with the activation function that powers modern deep learning. You need , , and your gradient-descent instincts from Chapter 15. Nothing else. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: From Numbers to Yes/No Here are five people's heights, labeled for adult and for teenager: [code block] A line outputs any number — 0.37, 12.5, -3. But the answer we want is yes/no. We need something that squashes a number into a decision.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "The step function The bluntest squasher possible: returns if , else . Write it. (In 1958 this exact function, wrapped around a weighted sum, was called the perceptron — the first artificial neuron.) Your task: Implement .",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "The smooth step Here's the problem with : imagine gradient descent trying to tune and inside . Nudge a little — the output usually doesn't change at all (it's still exactly 0 or exactly 1). The gradient is zero almost everywhere. Gradient descent is blind; there is no downhill to follow. We need a step with a slope — a function that goes from 0 to 1 but smoothly, so every nudge changes the output a little. What properties must this \"smooth step\" have? Output is always between 0 and 1 Output is 0.5 when the input is 0 (the tipping point) Output approaches 1 for large positive inputs, 0 for large negative inputs The function is smooth everywhere — it has a slope at every point Your challenge: Try the expression . Does it meet all four properties? Test it at , , , and . If it works, use it to write . After implementing, run the provided plotting code to compare the step and sigmoid side by side.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "An error we can descend Our model is now — a line squashed into (0, 1). Read its output as \"how confident am I that this is an adult.\" Write — the mean squared error between and the true labels. This is your familiar MSE with a sigmoid inside; numpy broadcasting handles the whole array at once.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Train it... and watch it refuse to learn Below is the finite-difference gradient helper you've built twice before, provided as-is. Write — the standard loop: compute both gradients of , step both weights against them, return the final . Then run it on the raw heights, starting from . The tests expect something strange: the error starts at 0.6 and ends at 0.6. One hundred epochs, no progress. Before moving on, diagnose it. Print . That's — which is . Every prediction is glued to 1.0 on sigmoid's flat plateau, where the slope is essentially zero. Zero slope means zero gradient means zero learning. This is called saturation , and it is the single most classic failure mode in neural networks.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "The fix: feed the neuron small numbers The plateau problem came from being huge, because heights are ~170. Keep the inputs near zero and sigmoid operates on its steep middle section, where gradients live. Subtract 165 from the heights (so they become ), train again from the same start with , and this time build the actual classifier: returns 1 when .",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "What you just invented is logistic regression — and it is exactly one neuron : weighted sum, plus bias, through a squashing activation function . The centering trick you used is why every deep-learning tutorial starts by normalizing inputs.",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Sigmoid saturation In Exercise 1.4, the sigmoid neuron \"refused to learn\" when given large input values. What caused this? A. Large values cause Python to crash with overflow errors B. The sigmoid function flattens to nearly 0 or 1 for large inputs — the gradient becomes almost zero, so gradient descent makes almost no progress C. Large values make the learning rate too high D. The sigmoid can only handle inputs between 0 and 1",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Part 2: Wiring Small Functions Together Your Part 1 function draws one boundary. But many real problems need more than one boundary — what if the answer depends on combining several simple decisions? Let's find out what happens when you feed one small function's output into another.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Follow the wires Implement this four-step graph as : [code block] Work the first test by hand before coding: with all weights 1 and , , , , .",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Weights reshape the curve Run the provided cell: it plots versus for the graph above with one set of weights. Then: Change the weights to a second set of your choosing and plot both curves together. Notice the kink where the step function switches — the weights decide where it happens, the later weights decide what happens on each side. Invent your own graph of a similar size — chain 3-5 operations mixing , , , — and plot it for two weight settings. What you just built — a recipe of chained steps with tunable weights — is called a computation graph . A neural network is nothing more than a large one. The graph fixes what shapes are possible; the weights choose one shape; gradient descent finds the weights.",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Why multiple neurons? A single sigmoid neuron can fit a smooth S-shaped curve. Why do we need multiple neurons? A. Multiple neurons run faster on modern hardware B. A single S-curve can only capture one transition (e.g., \"low to high\"), but real problems often have multiple transitions or complex shapes that require combining several curves C. Python limits each neuron to 10 weights D. Multiple neurons are needed only for classification, not regression",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 3: The Tax Problem — When No Line Will Do A country taxes income like this: nothing on the first 5000; 30% on everything above. So if income 5000, else 0. Plotted, it's a hockey stick — flat, then a straight climb, with a sharp kink at 5000. The cell below generates 200 people and — remembering Part 1's saturation lesson! — scales incomes and taxes down to the 0-1 range before we model anything. Run it. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Prove the line fails Fit the best straight line to — you may use (you derived what it computes, least squares, in Chapter 14). Compute its RMSE and look at what it predicts for low incomes. The tests capture two indictments: the RMSE stays above 0.1 no matter what, and for incomes below 3000 the line predicts negative tax — the government paying you. The problem isn't the fitting; the shape of the model is wrong. Plot the line against the data to see the mismatch.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Idea 1: first decide, then predict A human would solve this in two steps: is this person taxable at all? If no, the answer is 0. If yes, it's a simple line. Let's build exactly that. Step one is a yes/no question — a job for the neuron from Part 1. Create and train a sigmoid classifier on — your from Exercise 1.4 works unchanged (inputs are already scaled; use , starting from ). Report the accuracy of thresholding at 0.5, and print where the decision boundary sits: (in scaled income; multiply by 10000 to see it in currency — it should land near 5000).",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "The pipeline: classify, then regress Step two: for the taxable people only , the relationship is a perfect straight line. Fit a line on just the rows where — on the scaled data it should come out at exactly (check: at , i.e. income 10000, scaled tax is , i.e. 1500). Then chain the two models into : if the classifier says taxable -> return the line's prediction, else -> return . Compare its RMSE with the line's from 3.1. What you invented: a gated model — one network deciding which expert handles the input. Scaled up, this idea is called a mixture of experts , and it's inside several frontier LLMs. It's also the honest answer to \"how do I put an inside a machine-learning model.\"",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Idea 2: one network, end to end The pipeline needed us to know the problem splits into classify-then-regress. Could a single network figure the shape out by itself? Try the smallest one imaginable — two neurons in a chain: $[math]$ Neuron 1 squashes, neuron 2 scales and shifts. Four weights. First write — your gradient-descent loop generalized to a list of parameters: each epoch, finite-difference each parameter (copy the list, nudge one entry), then step all of them. (You wrote the two-parameter and many-weight versions in Chapter 15 — this is the same music.) Then define for the two-neuron model and fit it from with . The tests expect an honest middle result: clearly better than the line (RMSE ≈ 0.05 vs 0.14), clearly worse than the pipeline. Look at the plot to see why — sigmoid rises and then flattens , but real tax keeps climbing. A smooth step times a constant can imitate a kink, not a ramp.",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "The right activation: ReLU Look at the tax rule one more time: zero below a threshold, a straight ramp above it. There is an activation function that is that shape: Your challenge: Before looking at any formula, write a function that outputs 0 for negative inputs and the input itself for positive inputs. That's the shape you need. Write (use so it works on arrays). Then reuse your on the model [math] — same starting point, same settings, only the activation changed. The tests expect near-perfection: the network can now represent the true rule exactly (one solution: — but gradient descent may find an equivalent scaling, e.g. ). The reveal: ReLU — the rectified linear unit — is the default activation of modern deep learning, powering nearly every large model. Sigmoid saturates at both ends (you met that plateau in Exercise 1.4); ReLU never saturates on the positive side, and stacks of ReLU neurons build arbitrary piecewise-linear shapes — kinks upon kinks, like the one you just fit with a single neuron.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Explorations (open-ended) No tests here — experiment and observe: Replace with in the two-neuron net. Better or worse on the tax data? (tanh is a sigmoid stretched to output -1...1.) Add a second ReLU neuron: [math] (seven parameters — doesn't care). Invent a tax rule with two brackets and see if it can fit that too. Feed in again at the output: [math]. (Networks with such shortcuts are called residual — the trick that made very deep networks trainable.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "ReLU advantage ReLU (max(0, z)) is simpler than sigmoid. What is its main practical advantage for training neural networks? A. ReLU outputs larger numbers, making predictions more accurate B. ReLU's gradient is either 0 or 1 — it never becomes a tiny fraction like sigmoid's, so gradient descent doesn't slow down for large inputs C. ReLU uses less memory than sigmoid D. ReLU can only be used in the output layer",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "You built The field calls it the perceptron (1958) + gradient descent logistic regression = one neuron stuck training on raw heights saturation / vanishing gradients — fixed by input scaling chained small functions with weights a computation graph classify-then-regress gate a mixture of experts over a parameter list training a neural network the default activation of deep learning",
+    "fragments": []
+  }
+]

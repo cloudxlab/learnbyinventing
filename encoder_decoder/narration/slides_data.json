@@ -1,0 +1,92 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "The Encoder-Decoder Pipeline — A Real Data Engineering Problem You are handed a real task at work: We bought a recommendation engine . It reads a CSV file with three columns — — and writes its recommendations to another CSV with columns . It only accepts integers for . Our data, however, identifies users by email address : [code block] Make it work. And when the engine answers, translate its output back to emails. You cannot change the engine. So you will wrap it: [code block] The Encoder and Decoder are separate programs that communicate only through files — so the mapping between emails and integers must itself be saved to a file. This pattern (encode → black box → decode) is everywhere: ML pipelines call it label encoding , and you already met its purest form in the Information Theory chapter. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Reading the Data First, create the input data file. Run this provided cell as-is.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Parse One Line The lines are messy: spaces after commas, a newline at the end. Write that returns a clean tuple with the right types: , , . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Read the Whole File Write that opens the file and returns a list of parsed tuples, skipping any blank lines. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 2: The Encoder",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Assign an Integer to Each Email Write that gives each distinct user an integer ID: 1 for the first user seen, 2 for the second new user, and so on. Users repeat in the data — they must keep the same ID. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Persist the Mapping The mapping file maps email → id. The decoder needs id → email. The Decoder is a separate program — it will not share memory with the Encoder. The mapping must survive as a file. Write (one line per user) and that reads it back — types intact (ids are ints). The test is the round trip: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "The Complete Encoder Program Put it together. Write that reads the raw data, builds and saves the mapping, and writes the encoded CSV with emails replaced by their integer IDs. Expected for our data: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Part 3: The Recommendation Engine (Black Box) Here is the engine you bought. You are not allowed to modify it — run the cell as-is. For each user it recommends the products they have not rated yet, scored by that product's average rating from other users. Notice it would crash on emails: it calls on the first column. That is exactly why you wrote the Encoder. Only one line came out: user should look at product . Makes sense — everyone else has already rated everything. But who is user 3? Time for the Decoder.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "The Black-Box Recommender Run this provided cell as-is. Do not modify the recommender.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 4: The Decoder",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Invert the Mapping The mapping file maps email → id. The decoder needs id → email. Write . (You built this in the Dictionaries chapter — rebuild it from memory.) Why is inversion safe here — what property must the mapping have? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "The Complete Decoder Program Write that loads the mapping from its file, inverts it, reads the engine's recommendations, and writes the final CSV with integer IDs translated back to emails. [code block] So the mystery user 3 was subodh , and the pipeline recommends product 1 with score 1.5.",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Why Encode at All? The recommendation engine takes integer IDs instead of email addresses. Why is this encoding step necessary? A. Emails take too much memory — integers are smaller B. The recommendation algorithm works with numerical operations (similarity scores, matrix math) that require numbers, not strings C. Python can't compare strings, only numbers D. Encoding makes the data more secure by hiding email addresses",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 5: Prove the Pipeline",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Round Trip on Bigger Data A pipeline you have run once works once. A pipeline you have tested works. The provided cell generates a bigger random dataset. Run your whole pipeline on it, then write that verifies: Every user in the final output existed in the original data (no invented users). No integer IDs leaked into the final output (every user field contains ). Think about: what could silently break if two different emails ever received the same ID? Which of your functions guarantees that cannot happen?",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Part 6: Summary The same encode → black box → decode shape appears when you one-hot-encode categories for a model, tokenize text for an LLM, or compress data before a network hop (your Huffman coder!). The black box changes; the wrapper pattern never does.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Piece What you built The general pattern , messy text → typed tuples every pipeline starts with parsing email → int, first-seen order label encoding — is exactly this , mapping as a file separate programs share state only through files the Encoder program adapt your data to their interface untouched black box you wrapped it instead of changing it , the Decoder program translate answers back into your domain end-to-end verification trust pipelines you have tested, not pipelines that ran",
+    "fragments": []
+  }
+]

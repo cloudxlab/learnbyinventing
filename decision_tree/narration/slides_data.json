@@ -1,0 +1,325 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Decision Trees You have a bag of mixed-up marbles. Some are red, some blue. You want to separate them. What s the best way to split the bag? You ll invent a measure of mixedness , use it to find the cleanest split, then discover that repeating this process builds a decision tree. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: The Mixing Problem",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "You have two bags of marbles red and blue: Bag Red Blue Total A 10 0 10 B 5 5 10 Which bag is more mixed up ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Bag A has only red it s pure . Bag B is half-and-half it s maximally mixed ."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Can you assign a number to how mixed a bag is? The number should be 0 when the bag is pure and highest when it s 50/50."
+      }
+    ]
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Let [math] = fraction of red, [math] = fraction of blue, and [math]. Bag p (red) q (blue) impurity(p, q) = ? A (all red) 1.0 0.0 should be 0 B (all blue) 0.0 1.0 should be 0 C (half-half) 0.5 0.5 should be 1 D (mostly red) 0.8 0.2 should be between 0 and 1 Write a function that satisfies all four cases: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Try [math]: A: 1.0 0.0 = 0.00 B: 0.0 1.0 = 0.00 C: 0.5 0.5 = 0.25 not 1! Pure gives 0 but 50/50 gives 0.25, not 1."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Fix: multiply by 4 [math] A: 4 1.0 0.0 = 0.0 B: 4 0.0 1.0 = 0.0 C: 4 0.5 0.5 = 1.0 D: 4 0.8 0.2 = 0.64"
+      }
+    ]
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Your impurity formula: [math] [math] or [math] 0 (pure) [math] 1 (max mixed) Symmetric it doesn t matter which color is p",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "This is your impurity function . It measures how mixed a group is. (The standard Gini impurity is [math] same shape, just scaled by &frac12;. Both rank splits identically.)"
+      }
+    ]
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Part 2: Splitting a List",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Given a list of labels, compute its impurity: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Count: 3 red, 2 blue [math], [math] [math]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Write a function : [code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Now split a list into two halves and measure the total impurity: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Split at Left Right Left imp. Right imp. position 3 [R, R, B] [R, B, B, B, R] 0.89 0.96 position 4 [R, R, B, R] [B, B, B, R] 0.75 0.75"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Total impurity = weighted average: [math] Split at 3: [math] Split at 4: [math] better!"
+      },
+      {
+        "fragment_index": 2,
+        "text": "The best split has the lowest total impurity ."
+      }
+    ]
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Try every position and pick the one with minimum total impurity:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "This is the core algorithm: try every split, keep the cleanest one ."
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Part 3: Real Data — Height Gender",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "20 students each with a height (cm) and gender (M/F): [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Question: Can you predict gender from height? If you had to pick one height threshold to separate M from F, what would it be?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Short heights are mostly F , tall heights are mostly M but there s overlap in the middle."
+      }
+    ]
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Instead of splitting at a position , split at a threshold value : Left group: height threshold Right group: height threshold",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Try threshold = 170: Group Heights Genders Impurity Left ( 170) 158,162,165,167,168,170 F,F,F,F,M,F 0.56 Right ( 170) 171 190 M,M,F,M,M,M,M,M,F,M,M,M,M,M 0.41 Total: [math]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "But is 170 the best threshold? Try them all!"
+      }
+    ]
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Try every unique height as a threshold:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "The best threshold is height 167 . Left group: all F (pure!). Right group: mostly M with a few F outliers."
+      }
+    ]
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Now add a second feature weight : [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Which feature separates M from F better height or weight? Try every (feature, threshold) pair:"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 4: The Decision Node",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Imagine deciding whether to accept a job offer: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Trace each case: Salary Distance Result 800 20 salary 1000 Reject 1200 30 salary 1000, dist 40 Accept 1500 60 salary 1000, dist 40 Reject"
+      },
+      {
+        "fragment_index": 1,
+        "text": "salary 1000 Reject"
+      },
+      {
+        "fragment_index": 2,
+        "text": "salary 1000, dist 40 Accept"
+      },
+      {
+        "fragment_index": 3,
+        "text": "salary 1000, dist 40 Reject"
+      },
+      {
+        "fragment_index": 4,
+        "text": "This is a decision tree . It has two kinds of nodes: Boundary node: asks a question, has two children Leaf node: gives a final answer"
+      }
+    ]
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Design a class :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Build the job-offer tree by nesting nodes: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] The method traverses the tree recursively : at each boundary node it goes left or right, until it hits a leaf."
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 5: Growing the Tree",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "After the first split on height 167: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "The right group is impure. What do you do? Split it again! Find the best threshold in the right group, split, repeat."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Split it again! Find the best threshold in the right group, split, repeat."
+      },
+      {
+        "fragment_index": 2,
+        "text": "Stop when: The group is pure (all same label) The group has 1 element At the leaf, predict the majority label"
+      },
+      {
+        "fragment_index": 3,
+        "text": "This is recursion the same algorithm applied to smaller and smaller subsets."
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "the recursive algorithm:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Build the tree and print it: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] Your algorithm split on weight first (it separates M/F better than height), then height to handle the tricky cases in the middle."
+      }
+    ]
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Part 6: The Payoff — fit predict",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Real ML libraries use this interface: train the model return predictions",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Train on the height+weight dataset: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Accuracy: 20/20 = 100% 100% on training data the tree splits until every leaf is pure."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Predict on new people: [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Is 100% training accuracy a good thing?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Not necessarily. The tree has memorized the training data including its noise and outliers."
+      },
+      {
+        "fragment_index": 1,
+        "text": "This is overfitting . Solutions: max_depth: stop splitting after N levels min_samples: don t split groups smaller than K Random Forest: build many trees on random subsets, take a vote"
+      }
+    ]
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "What you just invented: You built Real name [math] mixing formula Gini impurity (scaled) Weighted split score Information gain Try every (feature, threshold) Greedy split search Recursive splitting CART algorithm",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "You didn t learn decision trees. You invented them."
+      }
+    ]
+  }
+]

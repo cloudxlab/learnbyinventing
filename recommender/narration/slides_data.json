@@ -1,0 +1,127 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing a Recommender System How does Netflix know what you should watch next? How does Spotify build your Discover Weekly? Nobody at those companies watches movies on your behalf and takes notes. The trick is beautifully simple: Find people whose taste matches yours, and recommend what they loved and you haven't seen yet. This is called collaborative filtering , and in this chapter you will invent it from scratch -- using real movie ratings collected from a live class of students. By the end you will compute, for any person in the class, the three movies they are most likely to enjoy. The plan: Clean the data -- real data is messy: missing ratings, people who barely rated anything, generous vs stingy raters. Measure taste similarity -- invent cosine similarity, then compute every pair of similarities in a single matrix multiplication. Recommend -- combine similarity with ratings to score unseen movies. Bonus -- how would this scale to Netflix size? Invent the MapReduce trick for multiplying gigantic sparse matrices. You'll need and . If you know a little pandas (reading a CSV, selecting columns) you're ready; we'll introduce everything else as we go. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 0: The Data Run the cell below as-is. It loads -- 25 Bollywood movies rated 0-5 by 18 people (a real class!). Rows are movies, columns are people, and an empty cell means that person never rated that movie . Pandas shows these as (Not a Number).",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Load the Data Run the cell below as-is to load the dataset.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Part 1: Cleaning Real Data",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Drop People Who Barely Rated Anything Look at the data: the table is full of . Some people rated almost every movie; a few rated nothing at all . Someone with 0 or 2 ratings tells us nothing about their taste -- keeping them would only add noise. Your task: build a DataFrame called that keeps only the people (columns) who rated at least 3 movies .",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Generous Raters vs Stingy Raters Print . Notice something? Bhaskar's average rating is about 1.7 while Venu's is about 4.1 . Does Venu love every movie and Bhaskar hate them all? More likely they just use the scale differently -- a 3 from Bhaskar might mean the same as a 5 from Venu. If we compare raw numbers, the stingy and generous raters will look like they disagree even when their taste is identical. We need to put everyone on the same scale. The fix -- min-max scaling, per person: You derived a normalization formula in the Loops Arrays chapter that maps any value to [0, 1] using the minimum and maximum. Apply that same idea here, column by column, so each person's lowest rating becomes 0 and highest becomes 1. Your task: create from using that formula, applied column-by-column.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Filling the Holes The similarity math coming in Part 2 can't handle -- we need a number in every cell. But which number? Think about the options before reading on: Fill with 0 ? That says \"this person would hate this movie\" -- a strong claim we have no evidence for. Fill with 1 ? Same problem, opposite direction. Fill with that person's average scaled rating ? That says \"no opinion -- assume they'd feel about it the way they feel about a typical movie.\" Neutral. This is the one. Your task: create from , replacing each with the mean of that person's column .",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Part 2: Measuring Taste",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "How Similar Are Two People? Each person is now a column of 25 numbers -- a vector in 25-dimensional space (one dimension per movie). Two people with similar taste should have vectors pointing in a similar direction . You already know the dot product from the Secrets of Prediction chapter. Think about these questions: The dot product of two identical vectors is large. The dot product of perpendicular vectors is 0. So the dot product tells you something about alignment . But it also depends on the vectors' lengths -- how can you remove the length effect? What if you divided the dot product by both vectors' lengths? What would that give you for identical vectors? For perpendicular vectors? This quantity -- the dot product divided by the product of lengths -- is called cosine similarity : 1 means identical taste, 0 means unrelated taste. It measures direction only , which is one more defense against scale differences between raters. Your task: write for two columns of .",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Unit Vectors We want the similarity between every pair of people -- that's [math] numbers. Calling in a double loop would work, but there is a spectacular shortcut. It starts with one observation: What happens to the similarity formula when both vectors already have length 1? Simplify the formula and see what's left. A vector divided by its own length has length 1 (a unit vector ). Your task: build the numpy array where every column of is scaled to length 1.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "All 225 Similarities at Once Here's the payoff. Remember how matrix multiplication works: entry [math] of [math] is the dot product of row [math] of [math] with column [math] of [math] . So what is [math]? Row [math] of [math] is column [math] of [math] -- person [math]'s unit vector. So entry [math] is the dot product of person [math]'s unit vector with person [math]'s unit vector... which is exactly their cosine similarity. One operation computes the entire similarity table. This is not a toy trick -- it is precisely how real recommender systems (and the attention layers inside LLMs!) compute all-pairs similarity. Your task: compute , then wrap it as a labeled DataFrame: [code block] Before running the tests, predict: what should the diagonal of be, and why? Should equal its own transpose?",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Your Taste Twin Your task: write returning the name of the person with the highest similarity to -- excluding the person themselves (everyone's best match would otherwise be themselves, similarity 1.0).",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Why Normalize Ratings? Before computing cosine similarity, you applied min-max scaling to each person's ratings. Why is this normalization step important? A. It makes the computation faster B. Without normalization, a generous rater (who gives 4s and 5s to everything) would appear similar to another generous rater even if their actual preferences are completely different C. Python requires values between 0 and 1 for cosine similarity D. It removes missing values from the matrix",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 3: Making Recommendations",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "What Haven't You Seen? We only want to recommend movies the person hasn't rated yet -- no point suggesting a movie they already gave 5 stars. Careful: which table remembers what was actually rated? Not -- we erased that information when we filled the NaNs. Go back to . Your task: write returning a list of movie names the person never rated.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "The Recommender Now assemble the pieces. To score a candidate movie [math] for a person [math]: $[math][math]m[math]p[math]p$'s column of . So all candidate scores at once is: [code block] Your task: write that scores every unrated movie and returns the movie names with the highest scores, best first.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "The Cold Start Problem A brand-new user signs up and hasn't rated any movies yet. What happens when the recommender tries to find their taste twin? A. The system recommends the most popular movies by default B. Cosine similarity can't be computed -- the user's rating vector is all zeros (or NaN), so there's no direction to compare C. The system assigns random ratings and proceeds normally D. The user is automatically matched with the most active rater",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "You just built a working collaborative-filtering recommender on real data. Try on a few more people -- do the suggestions make sense given who their taste twin is? One honest limitation to notice: what would do for a brand-new person with zero ratings? Nothing useful -- there's no vector to compare. This is the famous cold-start problem , and it's why every streaming service pesters new users to \"pick a few titles you like\" before showing recommendations.",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 4: Two More Recommender Moves",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Ask Your Five Best Taste Twins let everyone vote, weighted by similarity. Real systems often do something blunter and cheaper: find your top 5 most similar people , pool their top 5 favorite movies , and drop anything you've already seen. No scores, no weighted sums -- just \"what do people like me love?\" Your task: write three functions: -- the 5 most similar people (by , excluding the person), most similar first. -- the person's 5 highest- rated movies. Use (their real opinions), and before sorting. -- pool the friends' favorites in order, remove movies has already rated, and drop duplicates while keeping first appearance. Then compare with from Part 3 -- do the two strategies agree?",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Flip the Matrix: Similar Movies Everything we built compared people -- the columns of . But the same data read the other way compares movies : each row is a movie's vector of 15 ratings, and two movies whose rows point the same way are liked by the same people. This powers the other famous recommendation sentence: \"customers who watched this also watched...\" -- no user profile needed at all. Your task: repeat the Part 2 trick along the other axis: Scale each row of to length 1. Row lengths: ( makes the division broadcast row-wise). -- note the transpose moved to the other side: entry (i, j) is now row-dot-row, movie i against movie j. Wrap it: . Write (mirror of ). What you invented: item-item collaborative filtering -- the variant Amazon famously chose, because with millions of users and thousands of items, item-item similarities are fewer, more stable, and reusable for every visitor.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 5: Scaling to Netflix -- MapReduce Matrix Multiplication Our class matrix was 25x15. Netflix has ~300 million users and ~20,000 titles. The user-similarity matrix alone would have [math] entries -- no single machine can even hold that, let alone compute it. Two observations rescue us: The matrix is almost entirely zeros. A typical user rates a few dozen titles out of 20,000. Why store the zeros at all? Keep only the non-zero entries as triples. Matrix multiplication decomposes into independent little jobs. Recall: [math]. Each non-zero pair [math] contributes one product [math] to one output cell [math] -- and every contribution can be computed on a different machine , then summed up per cell. That \"compute little contributions anywhere, then group and sum by key\" pattern is called MapReduce , and it's how the giants do it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Sparse MapReduce Matrix Multiplication Your task: write where each argument is a list of triples of the non-zero entries. Return a dict mapping for the non-zero entries of the product.",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Part 6: What You Invented This is collaborative filtering -- recommending purely from the pattern of who-likes-what, knowing nothing about the movies themselves (no genres, no actors, no plots). The alternative, content-based filtering , compares movie features instead; modern systems blend both. And that trick -- all-pairs similarity as a single matrix product -- will meet you again in the most unexpected place: it's the heart of the attention mechanism inside transformers, where every word in a sentence computes its similarity to every other word. Same math, different vectors.",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Idea What it does Dropping sparse raters Fewer than 3 ratings tells us nothing about taste Per-person min-max scaling Puts generous and stingy raters on the same 0-1 scale Fill NaN with the person's mean A neutral \"no opinion\" value -- invents no fake enthusiasm Cosine similarity Compares taste direction , ignoring rating magnitude Unit vectors + The entire 15x15 similarity table in one matrix multiplication Similarity-weighted scoring Your taste twins' opinions count the most Friend-pooling Top-5 similar people's top-5 favorites, minus what you've seen Item-item similarity () \"Customers who watched this also watched...\" Sparse MapReduce matmul Store only non-zeros; split the multiplication into independent jobs",
+    "fragments": []
+  }
+]

@@ -1,0 +1,167 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Learning If-Else by Inventing Branching Logic You won't be taught — you will discover . Every step builds on the last. Trust the process. Python Quick Reference This chapter uses if/elif/else to make decisions and comparisons to test conditions. [code block] Navigate: press or Space to advance | to go back , , must end with a colon; the body is indented. tests equality; assigns a value. // combine boolean conditions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Branching with Randomness",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "A Random Die Roll returns a random decimal number between (inclusive) and (exclusive) — something like . Before coding: If you multiply a number in by , what range does the result fall in? If you then take the integer part (), what range of whole numbers do you get? How would you shift that range so it becomes to instead of to — like a die? Your derivation: is in the range: ... is in the range: ... To shift to 1--6: ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Write `roll_die` Write a function that returns a random integer between and (inclusive), using only — no needed yet, just the expression you derived above. Run it a bunch of times to make sure you only ever see through .",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Your First Branch: Coin Toss Now for an actual decision. is about half the time, the other half. Write a function that returns the string or , using an / on . Tasks: Implement . Call it 20 times and print the results. Call it 10,000 times and count how many times you got . Is it close to 5,000?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "A Three-Way Branch / only gives you two outcomes. // gives you more. Write a function that takes a die result (1 through 6) and returns: if is 1 or 2 if is 3 or 4 if is 5 or 6 Tasks: Implement it using //. Roll the die 20 times with and classify each result. Print both the roll and its class.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Comparing Two Distances — Closer to A or B?",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Set Up the Comparison You're given three points on a 2D plane: , , and . You want to know whether is closer to or to . You could compute the real distances (with a square root), but for comparing two distances, you don't need to — the one with the smaller squared distance is also the one with the smaller actual distance. (Square root is increasing, so it never flips the order.) Before coding: For , , : Compute the squared distance from to : . Compute the squared distance from to . Which is smaller? So which point is closer to? Your derivation: squared distance P to A: ... squared distance P to B: ... closer point: ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Write `closer_point` Write a function where , , are each tuples. It should return: if is closer to if is closer to if the distances are the same This needs a three-way branch — //. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Try More Cases Tasks: Pick three new points where you can predict the answer just by sketching them on paper. Verify your function agrees. Pick a point exactly halfway between and . What does say?",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 3: Is a Point Between Two Others? (1D)",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "The Order Problem On a number line, you have two points and , and a third point . You want to know if lies between and (including the endpoints). The tricky part: you're not told whether or . Before coding: If and , what are the actual lower and upper bounds of the segment? Python's built-in and can take two arguments. How would you use them to get the lower and upper bounds regardless of which of , is bigger? Your derivation: lower bound = ... upper bound = ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Write `is_point_on_line_1d` Write that returns if lies between and (inclusive), regardless of which of , is larger. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Test with Negative Numbers A good function shouldn't need special-casing for negative numbers if the logic is right. Tasks: test on these and check the results match the comments. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 4: Do Two Segments Touch or Overlap? (1D)",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Think About Separation, Not Overlap You now have two segments on the number line: segment 1 from to , and segment 2 from to (and again, you can't assume for either one). It's easier to reason about when they're completely separate first, then negate it. Before coding: After sorting each segment so you know its true and , when is segment 1 entirely to the left of segment 2? Write the condition. When is segment 1 entirely to the right of segment 2? The segments touch or overlap exactly when neither of those is true. Using and (or by flipping the logic directly), write the combined condition for \"touching or overlapping\". Your derivation: segment 1 entirely left of segment 2 when: ... segment 1 entirely right of segment 2 when: ... touching or overlapping when: ...",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Write `are_lines_touching_or_overlapping` Write that returns if the two segments touch or overlap, if they're completely separate. Remember to handle the case where for either segment, just like in Part 3. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Test with Negative and Reversed Inputs Tasks: verify these all match the comments — pay special attention to the last one, where both segments are given \"backwards\". [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Separation vs Overlap Logic You wrote by checking whether the segments are NOT separated. Why is it easier to check for separation instead of directly checking for overlap? A. Separation is faster to compute B. Overlap has many sub-cases (partial overlap, containment, touching at endpoint) but separation has only two simple conditions C. Python can only check inequality, not equality D. Separation works in 2D but overlap doesn't",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Part 5: Is a Point Inside a Rectangle? (2D)",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Reduce 2D to Two 1D Problems A rectangle with sides parallel to the axes is defined by its bottom-left corner and top-right corner (with and ). A point is inside it if its is between and , and its is between and . Look closely — \"is between and \" is exactly the function you wrote in Part 3! Before coding: write out, in words, how could be built using two calls to instead of writing brand-new comparison logic. Your plan:",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Write `is_point_inside_rectangle` Write by reusing — don't rewrite the comparison logic from scratch. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Visualise It Use the plotting helper below to see a rectangle and a point together, colour-coded by whether the point is inside. Tasks: Try a few of your own points and rectangles to build intuition. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Part 6: Do Two Rectangles Intersect? (2D)",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Project onto Each Axis A rectangle is just two independent ranges glued together: an -range and a -range. Two rectangles intersect exactly when their -ranges touch/overlap and their -ranges touch/overlap. This is the same trick as Part 5 — except now you reuse the Part 4 function (segment overlap) instead of the Part 3 function (point between). A rectangle here is represented as — bottom-left and top-right corners. Before coding: write out, in words, how could be built using two calls to — one for the x-coordinates of both rectangles, one for the y-coordinates. Your plan:",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Write `are_rectangles_intersecting` Write by reusing on the x-coordinates and on the y-coordinates. Example: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Visualise It Use the plotting helper below to see both rectangles, colour-coded by whether they intersect. Tasks: Try a few of your own rectangle pairs to build intuition. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "Dimension Decomposition To check if two rectangles intersect in 2D, you checked whether their projections overlap on BOTH axes. What happens if you only check one axis? A. You get the correct answer for squares, but not rectangles B. You might say they intersect when they actually don't — projections can overlap on one axis while the rectangles are side by side on the other C. You miss some valid intersections D. It works fine for 2D — one axis is enough",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Part 7: Bonus Challenges",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Devise Your Own Impurity Formula In machine learning (you'll meet this properly in the Decision Trees chapter), we often need a number that says how \"mixed\" a set is between two classes. Write where and are counts (not fractions) of two classes. Your formula must satisfy: If or (all one class), impurity should be . Impurity should increase as the counts become more evenly balanced. Impurity should be maximum when . There's no single right answer — invent a formula, test it against the three conditions, and adjust if it doesn't satisfy them. (One possible formula: .)",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "3D Boxes You generalised \"point between two numbers\" into \"point inside a rectangle\" by checking the x-axis and y-axis independently. Push it one step further. A 3D box is — its two opposite corners. Write by reusing three times — once per axis.",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Part 8: Reflection — What Did You Just Build?",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Reflection Take a moment to answer these questions in your own words. What's the difference between / and //? When do you need the second form? Why is comparing squared distances enough, without ever computing a square root? In Part 3, why did you need / instead of just assuming ? What was the key trick that let you turn the 1D \"is point between\" function into the 2D \"is point inside a rectangle\" function? What was the key trick that let you turn the 1D \"segments overlap\" function into the 2D \"rectangles intersect\" function? In your own words: what general strategy do Parts 5 and 6 both use to turn a 2D (or 3D) problem into something easier?",
+    "fragments": []
+  }
+]

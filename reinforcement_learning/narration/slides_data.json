@@ -1,0 +1,372 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing Reinforcement Learning You won't read about RL — you'll play a game, get frustrated, build strategies, and accidentally invent every major RL algorithm along the way. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Let's Play a Game Forget theory. We're going to play a game. The game is called CartPole — there's a cart on a track with a pole balanced on top. You can push the cart left or right. The goal: keep the pole from falling over as long as possible. The twist? You play using Python code.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "The CartPole environment: keep the pole balanced by pushing the cart left or right.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "This chapter uses the library (the game engine). Install it before starting: [code block] On a local VS Code setup, run in your terminal.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Set Up the Game First, create a CartPole game. Run — it gives you back 4 numbers. Print them. What do you think they mean?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "The 4 numbers describe the world: Index What it is Meaning Cart position Where the cart is on the track Cart velocity How fast the cart is moving Pole angle Which way the pole is leaning Angular velocity How fast the pole is falling You have two possible actions: 0 = push left , 1 = push right .",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Take a Step Call with action 0 (push left) or 1 (push right). It returns 5 things. Print them all and figure out what each one means.",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Play a Full Game (Randomly) Write a loop that keeps taking random actions (0 or 1) until the game ends ( or ). Count how many steps you survived — that's your score. Run it a few times. What scores do you get?",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Develop Your Intuition Before writing any strategy, just think: The pole is tilting to the RIGHT. Should you push the cart left or right to keep it balanced? The pole is tilting to the LEFT. Which way should you push? The pole is nearly vertical but moving (rotating) fast to the right. What should you do?",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Part 2: Build Your Own Player Random actions give terrible scores. You already have intuition about what to do — let's turn it into code.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Write a Game Runner In Exercise 1.3 you wrote a game loop. You'll be testing many different strategies in this chapter, so let's turn that loop into a reusable function. Write that plays one full episode using (a function that takes an observation and returns an action) and returns the total reward. Then write that plays games and returns the average score. Test them with a random policy: .",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Your First Policy Write a function that takes the 4 observation numbers and returns 0 (left) or 1 (right). Use your intuition from the previous exercise: if the pole is tilting right (positive angle = ), push right (return 1). Otherwise push left. Evaluate it over 100 episodes. How much better is it than random?",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Improve Your Policy Your angle-only policy probably scores around 40–60. Can you do better? Try using the angular velocity () too. If the pole is tilting right AND the angular velocity is positive (falling faster to the right), it's more urgent to push right. Experiment with different rules. Can you consistently score above 200?",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "The Best You Can Do By Hand Optional stretch — skip this if you want to move on. You won't miss anything later. Figure out all possible ways you can write the policy function to maximize the score. Try at least 3 different heuristics and record their average scores. Some ideas to explore: Use all 4 observations, not just angle and angular velocity Try different combinations and multipliers Try non-linear rules (if-else chains, thresholds) What's the highest average score you can achieve by hand-tuning?",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 3: What Just Happened?",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Name the Pieces You just played a game, wrote a strategy function, tested it, tweaked it, and repeated. Before we go further, give each piece a short name: The game itself (CartPole) — what would you call the 'world' the player interacts with? The 4 numbers you receive each step — what are they? Push left / push right — what is this? The number of steps survived (your score) — what is this? Your function (my_policy) — what would you call it? The process of playing → seeing the score → tweaking your function → replaying — what is this?",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Here are the names computer scientists settled on: What you experienced What it's called The game (CartPole) Environment The 4 numbers you see each step Observations (or state ) Push left / push right Actions Number of steps survived Reward Your function () A policy Play game → see result → tweak policy → repeat Reinforcement Learning This is the closest thing to how humans learn. You don't get a textbook — you try stuff, get feedback, and adapt. A child learning to walk, a dog learning tricks, you learning to drive — all reinforcement learning. That's life!",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "RL Is Everywhere Map the RL terms to a real-life example: a child learning to ride a bicycle. What is the environment? What are the observations (state)? What are the actions? What are the rewards and penalties? What is the policy?",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 4: Policy as a Formula Look at your best heuristic from Part 2. It probably looked something like: \"if angle 0, go right\" or \"if angle + 0.5 × angular_velocity 0, go right.\" That's really just: multiply each observation by some number, add them up, and check the sign . Your action is a function of the observations.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "A note about in loops. In the exercises ahead, you'll see code like: [code block] The part is important. Without it, all the lambdas in a loop would share the same variables and use whatever value they have at the end of the loop — not the value when the lambda was created. The trick captures the current value. This is a common Python gotcha with closures; you'll see it in several exercises from here on.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Two-Weight Policy Write a policy that computes (angle and angular velocity). If score 0, go right. Otherwise go left. Try these weight combinations and record the average score for each: w1=1, w2=0 w1=1, w2=1 w1=1, w2=0.5 w1=0.5, w2=1",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Four-Weight Policy Now use ALL 4 observations. Write that computes: Go right if positive, left otherwise. This is a dot product — in numpy. Try weights = (ignoring cart position and velocity). Then try .",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "The numbers you've been manually tuning — w1, w2, w3, w4 — are called policy parameters . The function that maps observations to actions is the policy . The entire goal of reinforcement learning just became a concrete optimization problem: Find the weights (policy parameters) that maximize the average reward. But how? Trying them by hand is tedious. We need a strategy.",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Part 5: The Search for Best Parameters You need 4 good numbers. How hard can it be?",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Brute Force? One idea: try ALL possible combinations of the 4 weights. Each weight is a real number (like 0.37 or -1.2). How many possible values does a single weight have? If you discretized each weight to 100 values (from -1 to 1 in steps of 0.02), how many combinations of 4 weights would you need to try? Why is this approach impractical?",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Your Ideas Think for a minute. What strategies can YOU think of for finding 4 good weight values without trying every combination? Write down at least 2 ideas before looking at hints. Strategy 1? Strategy 2?",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Strategy 1 — Random Search Generate 100 random weight vectors (each weight between -1 and 1). Evaluate each one over 5 episodes. Print the best weights and their score.",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "Strategy 2 — Evolve! Random search found a decent solution, but can we do better? Here's an idea: Start with 100 random weight vectors Evaluate all of them Keep only the top 20 Now you have 20 good weight vectors. But you need 100 for the next round. How would you get from 20 back to 100? And then what? Design the rest of this algorithm yourself, implement it, and run it for 10 generations. Print the best score each generation.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "What you just invented is called a Genetic Algorithm . See the analogy? Your code Biology Weight vector DNA Score Fitness Top 20 survive Natural selection Adding noise to create children Mutation Repeat for generations Evolution You found good policy parameters without any calculus — just random variation and selection. Evolution works!",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Improve Evolution Optional stretch — skip this if you want to move on. You won't miss anything later. Can you think of ways to make the genetic algorithm better? Try implementing any of these ideas: Crossover: instead of just mutating one parent, combine two parents (e.g., take weights 0-1 from parent A and weights 2-3 from parent B) Adaptive mutation: start with large noise (±0.5) and reduce it each generation Elitism: always keep the single best individual unchanged Larger population or more generations Try your ideas and see if they beat the basic version! If you invent something new, we want to hear about it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Part 6: Can Gradients Help? Genetic algorithms work but feel brute-force. You might remember a more targeted approach: compute the gradient, move in the direction that improves the objective. Can we do that here?",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Strategy 3 — Tweak and Observe Here's the idea: for each weight, nudge it slightly (+0.01), play a few games, nudge it the other way (-0.01), play again. The difference in scores tells you which direction improves that weight. This is called finite differences — estimating the gradient by measuring the effect of small changes. Take your best weights from the genetic algorithm (or start with ). Estimate the gradient and update for 20 steps. Does the score improve?",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Reading the Gradient Before moving on, make sure you understand what you just computed. Look at the gradient from one of your steps. The gradient is a vector of 4 numbers — one per weight. If gradient[2] is large and positive, what does that tell you about weight 2? If gradient[0] is close to zero, what does that mean? In plain English, what is the gradient telling you? (No calculus needed — think about what you measured.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "Why Didn't That Work Well? The gradient approach probably gave erratic results — the score jumps around instead of steadily improving. Why? If you play 10 games with the EXACT same weights, do you always get the same score? Why not? If the score varies by ±30 between runs, and you're trying to detect a difference of 0.01 in one weight, can you reliably measure the gradient?",
+    "fragments": []
+  },
+  {
+    "slide_index": 34,
+    "slide_text": "So the noise kills the gradient signal. But there's an even deeper problem. When you push right at step 5, was it the right move? You won't know until the game ends — maybe at step 200. The total score doesn't tell you WHICH of your 200 individual actions were good and which were bad. This is called the credit assignment problem : how do you assign credit (or blame) to each action? Let's tackle this problem step by step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "slide_text": "Assigning Credit You played a game and scored 150 steps. At step 100, you pushed right. Was pushing right at step 100 a good action? How would you know? Which reward is more relevant to the action at step 100 — the reward at step 101 or the reward at step 150? If you got a reward of 1 at each step, how would you assign 'credit' to the action at step 100? Should nearby rewards count more than distant ones?",
+    "fragments": []
+  },
+  {
+    "slide_index": 36,
+    "slide_text": "Design Your Own Credit System You agreed that nearby rewards should count more than distant ones. Now design a formula. Suppose you played 5 steps and got rewards [1, 1, 1, 1, 1]. You want to compute a \"total credit\" for the action at step 0. If you just sum all future rewards equally, what's the credit for step 0? (1+1+1+1+1 = 5). What's the problem with this? What if each future reward was worth a little LESS than the one before it — say 99% as much? Step 0's own reward counts fully (×1), step 1's reward counts ×0.99, step 2's counts ×0.99², etc. What would the credit for step 0 be? What should the credit for the LAST step (step 4) be? It has no future rewards. What would you call that 0.99 multiplier?",
+    "fragments": []
+  },
+  {
+    "slide_index": 37,
+    "slide_text": "Code Your Credit System Write that implements the credit system you just designed. It takes a list of rewards (one per step) and returns the discounted return for each step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 38,
+    "slide_text": "Inspect the Credit Signal Play a game, compute discounted rewards, and look at the values. Run the code below. What do you notice about the numbers — are any of them negative?",
+    "fragments": []
+  },
+  {
+    "slide_index": 39,
+    "slide_text": "Fix the Credit Signal All the credits are positive, so every action looks good. But some were clearly better than others. How would you fix this so that above-average actions get POSITIVE credit and below-average actions get NEGATIVE credit? Write a function that does this and apply it to the discounted rewards.",
+    "fragments": []
+  },
+  {
+    "slide_index": 40,
+    "slide_text": "Part 7: Teaching a Model to Play So far you've been hand-tuning weights or using evolution. But there's something unsatisfying — you're searching OUTSIDE the game. You try weights, play a full game, check the score, try new weights. What if the model could learn FROM each game it plays?",
+    "fragments": []
+  },
+  {
+    "slide_index": 41,
+    "slide_text": "New vocabulary ahead. Parts 7–9 introduce several new terms (REINFORCE, value function, TD error, advantage, actor, critic). Each is defined inline when it first appears. If you ever need a quick refresher, open the Glossary panel (top of the page) — it has one-line definitions of every term in this chapter.",
+    "fragments": []
+  },
+  {
+    "slide_index": 42,
+    "slide_text": "Why Probabilities? Your current policy is deterministic: if , always go right. Always. Every single time. If the policy always makes the same decision in the same state, can it ever discover that the OTHER action might have been better? What if instead of 'always go right when score 0', the model said 'go right with 70% probability'? Sometimes it would go left — accidentally. What could you learn from those accidents? If an accidental action leads to a HIGHER reward than usual, what should the model do next time?",
+    "fragments": []
+  },
+  {
+    "slide_index": 43,
+    "slide_text": "Squashing to a Probability You want to convert your from a hard yes/no decision into a probability. Instead of \"go right if \", output a PROBABILITY of going right — a number between 0 and 1. Your current policy computes , which can be any number (positive, negative, large, small). You need a function that takes and outputs a value between 0 and 1. When z is large and positive (strong signal for 'right'), the probability should be close to what? When z is large and negative (strong signal for 'left'), the probability should be close to what? When z = 0 (no signal either way), the probability should be what? Can you think of a formula that maps any number to the range (0, 1) with these properties? Hint: think about what happens to [math] when that 'something' is very large vs. very small.",
+    "fragments": []
+  },
+  {
+    "slide_index": 44,
+    "slide_text": "A Probabilistic Policy Now use the sigmoid to build a probabilistic policy. Write: — returns — samples an action from the probability Test with . What probability do you get? Why?",
+    "fragments": []
+  },
+  {
+    "slide_index": 45,
+    "slide_text": "How Should the Model Learn? Your model outputs a probability and samples an action. After the game, you have discounted rewards telling you which actions were good (positive) and which were bad (negative). If action = 'go right' and the discounted reward was POSITIVE (good action), should the model make 'go right' MORE or LESS likely next time? If action = 'go right' and the discounted reward was NEGATIVE (bad action), what should happen? You want to INCREASE reward. If you had a gradient (the direction that increases probability of the chosen action), what should you do — move WITH the gradient or AGAINST it? To compute a gradient, you need a single number that measures how likely the chosen action was. The probability [math] does that. But across many steps, probabilities multiply ([math]), which is awkward for optimization. What mathematical function turns products into sums?",
+    "fragments": []
+  },
+  {
+    "slide_index": 46,
+    "slide_text": "Why [math] and not just [math]? Quick recap before we dive into gradients. Across a 200-step game, the total probability of your sequence of actions is [math] — a product of 200 numbers between 0 and 1. This product quickly becomes astronomically small (like [math]), causing numerical problems. Taking the log turns this into a sum: [math] — a sensible number that your computer can work with. You'll use [math] in the next exercise — just remember: it's the same information as [math], just in a form that doesn't explode or vanish.",
+    "fragments": []
+  },
+  {
+    "slide_index": 47,
+    "slide_text": "Discover the Gradient You need the gradient — the direction to push the weights to make the chosen action more likely. Instead of deriving it with calculus, let's measure it using finite differences (the same trick from Exercise 6.1). Write a function that: For each weight [math], nudge it by [math] and [math] Compute [math] each time (where [math] is the probability of the chosen action) Gradient[math] Then compare your numerical gradient to this formula (which comes from calculus): If action = 1 (went right): gradient [math] If action = 0 (went left): gradient [math] Do the numbers match?",
+    "fragments": []
+  },
+  {
+    "slide_index": 48,
+    "slide_text": "The gradient formulas are: Action = 1 (went right): gradient [math] Action = 0 (went left): gradient [math] You verified these numerically — they tell you which direction to push the weights to make the chosen action more likely. Multiply by the reward signal and you have a learning rule: reinforce good actions, suppress bad ones. From here on we'll use the analytical formulas (they're faster than finite differences and give the same answer).",
+    "fragments": []
+  },
+  {
+    "slide_index": 49,
+    "slide_text": "Record an Episode Write that plays one full game using the probabilistic policy and records everything that happens: At each step, compute the probability with Sample an action from the probability Compute the gradient for that action Record: observation, action, reward, and gradient Return all four lists. Test it — play one episode and print the number of steps and the total reward.",
+    "fragments": []
+  },
+  {
+    "slide_index": 50,
+    "slide_text": "The Learning Rule Now write that uses to learn from one game: Play an episode and get the recorded gradients and rewards Compute discounted rewards (your ) Normalize them (your function) Multiply each step's gradient by its normalized reward Sum all the weighted gradients Update: (gradient ASCENT!) Return .",
+    "fragments": []
+  },
+  {
+    "slide_index": 51,
+    "slide_text": "Here's what a typical REINFORCE training curve looks like. Notice the high variance — scores bounce around wildly because each episode is different and the model is still exploring.",
+    "fragments": []
+  },
+  {
+    "slide_index": 52,
+    "slide_text": "Train the Agent! Run the REINFORCE update in a loop for 1000 episodes. Record the score each episode and plot it. Does the agent learn to balance the pole? After training, evaluate the final policy over 100 fresh episodes with and compare to the random baseline (~20).",
+    "fragments": []
+  },
+  {
+    "slide_index": 53,
+    "slide_text": "You just invented the REINFORCE algorithm (Williams, 1992)! Look at what happened: The model started knowing nothing (all weights = 0, coin-flip decisions) It played games, making random choices Good accidents (high reward) → gradient got amplified → model repeats those choices Bad accidents (low reward) → gradient got reversed → model avoids those choices Over hundreds of games, the model converged on a good policy No one told the model the rules of physics. It learned entirely from its own experience — just like you did in Part 1, but automatically.",
+    "fragments": []
+  },
+  {
+    "slide_index": 54,
+    "slide_text": "Expect noise. RL training is inherently noisy — your scores will bounce around, and sometimes the agent's performance dips before recovering. If your scores collapse and stay low, try re-running the training cell (a different random seed can make a big difference). This instability is normal and is one of the main reasons researchers developed the improvements in Parts 8 and 9.",
+    "fragments": []
+  },
+  {
+    "slide_index": 55,
+    "slide_text": "Part 8: Predicting Value REINFORCE works, but notice something: it has to finish the ENTIRE game before it can learn anything. It plays 200 steps, then looks back and assigns credit. Can we do better?",
+    "fragments": []
+  },
+  {
+    "slide_index": 56,
+    "slide_text": "If you restarted your notebook since Part 7, run this cell to restore the functions and trained weights you'll need: [code block] If your kernel is still running from Part 7, skip this cell.",
+    "fragments": []
+  },
+  {
+    "slide_index": 57,
+    "slide_text": "You Can Already Predict Think about two situations mid-game: The pole is nearly vertical, barely moving. How many more steps do you think you'll survive? What's your expected future reward from here? The pole is nearly horizontal, falling fast. Expected future reward? You just made an intuitive prediction about future reward based on the state. If a MODEL could make this prediction, why would that be useful for learning?",
+    "fragments": []
+  },
+  {
+    "slide_index": 58,
+    "slide_text": "Build a Value Predictor Build a simple linear model: given a state (observation), predict the total future reward. $[math][math](V(\\text{obs}) - \\text{target})^2$. To train it: play 200 episodes using your trained REINFORCE policy (the from Exercise 7.5), compute actual discounted rewards with , and update the value weights to reduce the squared error.",
+    "fragments": []
+  },
+  {
+    "slide_index": 59,
+    "slide_text": "The Waiting Problem Your value model works — but it still needs , which requires the FULL list of rewards from a completed episode. Can you think of a way to estimate the discounted return at step t WITHOUT finishing the game? You have: the reward at step t, and the value model's prediction for the NEXT state. The discounted return at step t is: reward[t] + gamma × (discounted return at step t+1). But the discounted return at step t+1 is approximately... what? So the discounted return at step t is approximately: reward[t] + gamma × V(next_state). Does this require finishing the game?",
+    "fragments": []
+  },
+  {
+    "slide_index": 60,
+    "slide_text": "Step-by-Step Value Learning Implement the idea you just derived. At each step, compute: (your estimate of the true return) (how wrong the value model was) Update: Write . When the game is done, (no future rewards).",
+    "fragments": []
+  },
+  {
+    "slide_index": 61,
+    "slide_text": "What Does the Error Mean? Look at the error from : . If the error is positive, it means: what you actually got (reward + predicted future) is MORE than what you expected (V(current)). Was the action that got you here good or bad? If the error is negative, was the action good or bad? Compare this error to the normalized discounted rewards from REINFORCE. Which gives a more specific signal about whether an action was good?",
+    "fragments": []
+  },
+  {
+    "slide_index": 62,
+    "slide_text": "Compare the Signals You trained the value model on 200 episodes in Exercise 8.2. Now let's see how its advantage signal compares to the normalized discounted rewards from REINFORCE. Play an episode using your REINFORCE policy ( from Exercise 7.5) and compute both: The normalized discounted rewards (REINFORCE's signal) The TD errors from your trained value model (advantages) Print the standard deviation of each. Which is more stable?",
+    "fragments": []
+  },
+  {
+    "slide_index": 63,
+    "slide_text": "You just invented several things at once: A model that predicts future reward from a state = the value function (or critic ) Training it step-by-step using = Temporal Difference (TD) learning The error = the advantage (or TD error ) The value model doesn't pick actions — it just evaluates states. That's why it's called the critic : it watches the policy play and judges how well it's doing. A related approach called DQN (Deep Q-Network) uses a neural network to predict the value of each action rather than each state — but the core idea of TD learning is what you built here.",
+    "fragments": []
+  },
+  {
+    "slide_index": 64,
+    "slide_text": "Part 9: Best of Both Worlds — Actor-Critic You now have two models: The actor (REINFORCE policy from Part 7) — picks actions The critic (value model from Part 8) — evaluates states What if you used BOTH together? The critic tells the actor how good its actions are (via advantages), and the actor uses that feedback to improve. The critic learns alongside the actor, getting better at evaluating states as the actor gets better at playing.",
+    "fragments": []
+  },
+  {
+    "slide_index": 65,
+    "slide_text": "If you restarted your notebook since Part 8, run the Part 8 checkpoint cell first, then also define: [code block] If your kernel is still running from Part 8, skip this cell.",
+    "fragments": []
+  },
+  {
+    "slide_index": 66,
+    "slide_text": "Two Models Working Together Think about how to combine the actor and critic: In REINFORCE, you multiplied gradients by normalized discounted rewards. But you now have a better signal — the advantage (TD error). What should you multiply the gradients by instead? Both models learn at the same time. What does the actor learn from? What does the critic learn from? REINFORCE waits until the end of the episode. With a critic providing advantages at each step, do you still need to wait?",
+    "fragments": []
+  },
+  {
+    "slide_index": 67,
+    "slide_text": "Here's a typical Actor-Critic learning curve. Compare it to the REINFORCE curve — notice how Actor-Critic converges faster and with less variance, because the critic provides a per-step learning signal instead of waiting until the episode ends.",
+    "fragments": []
+  },
+  {
+    "slide_index": 68,
+    "slide_text": "One Step of Actor-Critic Before writing the full training loop, let's trace through ONE step of the combined update by hand. Use the code below to set up a single step, then compute and print each piece: The actor's probability and sampled action The critic's predicted value for the current AND next state The TD error (advantage) The actor's gradient The updated actor weights and critic weights This is the same math from Parts 7 and 8 — you're just combining them.",
+    "fragments": []
+  },
+  {
+    "slide_index": 69,
+    "slide_text": "Build Actor-Critic Wrap the logic from Ex 9.2 into a reusable function: Write that: Initializes actor and critic weights to zeros For each episode, runs the combined update at each step Records the score each episode Returns Train for 2000 episodes, plot the scores, and evaluate the final policy.",
+    "fragments": []
+  },
+  {
+    "slide_index": 70,
+    "slide_text": "The Grand Comparison You've built several approaches. Let's see three of them side by side — the ones that produce a score each episode, so we can plot learning curves: Random — baseline (random actions, no learning) REINFORCE — 1000 episodes of policy gradient Actor-Critic — 1000 episodes of combined learning Plot them together. Which learns fastest? Which achieves the highest score?",
+    "fragments": []
+  },
+  {
+    "slide_index": 71,
+    "slide_text": "Summary",
+    "fragments": []
+  },
+  {
+    "slide_index": 72,
+    "slide_text": "Look at how far you came: You played CartPole with random actions (scored ~20) You hand-coded a heuristic (scored ~60) You evolved weights with a genetic algorithm (scored ~200+) You tried gradient estimation (learned why it's noisy) You invented discounted rewards (credit assignment) You invented REINFORCE (policy gradient) You invented a value function (the critic) You combined them into Actor-Critic Every single one of these is a real algorithm used in production. The only difference between yours and DeepMind's is scale — they use massive neural networks, millions of episodes, and GPU clusters. The ideas are identical.",
+    "fragments": []
+  },
+  {
+    "slide_index": 73,
+    "slide_text": "What You Built vs. What the Field Calls It What you built The field calls it Hand-coded if-else rules Heuristic policy Linear policy / parameterized policy Try 100 random weights, keep the best Random search Keep top 20, mutate, repeat Genetic algorithm / evolutionary strategy Tweak weight, measure score change Finite-difference policy gradient Discounted return / reward-to-go Multiply gradient by reward, update REINFORCE (Williams, 1992) Model that predicts future reward Value function / critic [math] TD error / advantage Step-by-step value updates Temporal Difference (TD) learning Actor picks actions, critic evaluates Actor-Critic",
+    "fragments": []
+  }
+]

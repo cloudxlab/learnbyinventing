@@ -1,0 +1,122 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "The Ancient Secrets of Prediction You go to the market and buy 3 apples; with parking, the trip costs 6. Next week you buy 5 apples; the trip costs 8. How much will a 10-apple trip cost? Write the story as an equation: $[math][math]3\\beta_1 + \\beta_0 = 6[math]5\\beta_1 + \\beta_0 = 8[math]2\\beta_1 = 2$, so the price is 1 and parking is 3. Ten apples: 13 . That is the oldest prediction machine there is: turn observations into equations, solve, extrapolate . Long before gradient descent, this is how curves were fit --- and in this chapter you rebuild the whole machine, then push it to its breaking point (data that no curve passes through) and invent least squares . Prerequisite: the Loops and Arrays chapter --- you will reuse your from its Part 5. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Vectors --- the Arithmetic of Prediction A fitted model is just a list of coefficients --- a vector . Evaluating it at a point is a dot product . Build that toolkit first.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "`dot_product` multiplies element-by-element and sums: is . Tasks: Write . Verify with these assertions: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "`vector_length` and `convert_to_unit` The length of a vector is the distance formula in disguise: [math] --- reuse your . A unit vector keeps the direction but has length 1: divide every component by the length. -> . Tasks: Write using and . Write that divides each component by the length. Verify: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "`cosine_similarity` How aligned are two vectors? Take the dot product of their unit versions. The result is the cosine of the angle between them: same direction -> perpendicular -> opposite -> This one number is how modern systems compare documents, faces and embeddings --- you will meet it again the moment you touch LLMs. Tasks: Write using and . Verify: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "`matrix_mul` A matrix is a list of rows. In the product , entry is the dot product of row i of A with column j of B . An (n x k) matrix times a (k x m) matrix gives an (n x m) matrix. Write using your . Hint: column of is . Verify: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Cosine Similarity Meaning Two vectors have a cosine similarity of 0. What does this tell you about their relationship? A. They are identical B. They point in exactly opposite directions C. They are perpendicular (at 90 degrees) --- knowing one tells you nothing about the other D. One of the vectors is all zeros",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Part 2: Bring Your Solver We store the equation [math] as the list , and a system as a list of such lists --- exactly the representation you used in Loops and Arrays, Part 5 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Paste and Verify Your Solver Paste your (with its helpers , , ) into the code cell. The test must pass before you go on. (Skipped that chapter? Go invent it there first --- this whole chapter stands on it.) Think: your solver eliminates one variable at a time, and each elimination touches every remaining equation, and each equation has that many coefficients --- three nested loops. Roughly how does the running time grow with equations? If solving 4 equations takes 1 second, what would 8 take? Keep that number in mind --- it returns at the end of the chapter.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Part 3: Prediction as Equation Solving",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "The Apple Trips, by Code Redo the opening story with your tools: Build the two equations in : trip 1 -> , trip 2 -> . gives you . Predict the 10-apple trip with .",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "When a Line Isn't Enough Traffic through a junction is measured three times: t traffic 1 6 2 12 3 20 The growth is not linear (check the gaps: +6, +8). Assume a quadratic: [math]. Each measurement is one equation in [math] --- for [math]: [math], and so on. Tasks: Build the three equations. Solve for . Predict the traffic at .",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "`solve_poly`: the General Machine Automate it. Write : and are observed points; assume a polynomial of degree . For each point build the row and solve for the coefficients. Return the polynomial's value at --- a of the coefficients with the matching powers of . Think: why do points pin down exactly a degree- polynomial --- what goes wrong with fewer coefficients, and what freedom is left with more?",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 4: When No Curve Fits A factory reports: input output 1 8 2 11 3 16 4 ?? Try a line through the first two points: slope 3, intercept 5 --- but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 --- but input 2 predicts 12, not 11. No line passes through all three points. Real measurements are noisy; perfect solving just broke. New plan: accept an imperfect line, but pick the one that is least wrong . But how do you measure how wrong a line is? You'll figure that out in the next exercise.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "`total_error` For a candidate line [math], each data point [math] has an error: the prediction [math] minus the actual [math]. But some errors are positive (prediction too high) and some are negative (prediction too low) --- if you just add them up, they cancel out. Think: How do you prevent cancellation? What operation makes all errors positive? Then how do you combine them into a single \"total wrongness\" score? Write where is a list of pairs.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "The Best Line, Without Guessing At the minimum of [math], nudging [math] or [math] changes nothing --- both partial derivatives are zero. Your task: Write the partial derivative [math] --- differentiate each term of [math] with respect to [math]. Set it to zero and simplify. You should get a linear equation in [math] and [math]. Do the same for [math]. Plug in the factory data values and use from Part 2 to find [math] and [math]. Use on the two equations you derived. The test also nudges your answer in every direction to confirm no neighbor does better --- the definition of a minimum.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "`best_line`: Least Squares for Any Data Wrap it up. Write : From the pairs compute [math], [math], [math], [math] and [math]. Build the two normal equations and . Return . On data that is perfectly linear it must recover the exact line --- least squares contains exact fitting as a special case.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Why Square the Errors In the least squares method, you minimize the sum of squared errors. Why not just minimize the sum of raw errors (without squaring)? A. Squaring makes the computation faster B. Raw errors can be positive or negative --- a prediction 10 too high and one 10 too low would cancel out, giving a total error of 0 even though both predictions are wrong C. Python can't handle negative numbers in sums D. Squaring is needed because the data might contain negative values",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 5: Bonus --- Matrices That Move the World So far matrices held data (trips, prices). But has a second life: a matrix can be a machine that moves points . Every video game, every 3D animation, every graphics chip is built on this. Keep points as rows, . Multiplying a stack of points by one 2x2 matrix moves all of them at once with your existing --- no new code needed.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "The Rotation Matrix The matrix that rotates every point counter-clockwise by angle [math] (with points as rows) is: $[math]$ Write returning that 2x2 list-of-lists. Use to convert, then / . Sanity checks worth predicting before you run: the point (due east) rotated 90 degrees should land at (due north). Rotated 180 degrees, at .",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Turn a Whole Shape Here is a kite, five points as rows (the last repeats the first so it draws closed): [code block] Rotate the entire kite by 45 degrees with one call to , storing the result in . Then run the provided plotting cell to see both. A deep property to verify while you're here: rotation moves points but never stretches them. The test checks every point stays the same distance from the origin.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "What Does a *Random* Matrix Do? Rotation matrices are special. What happens with an arbitrary 2x2 matrix? Build one from random numbers, apply it to the kite with , and plot the result (reuse the plotting code above). Run it several times. Observe, then answer: straight edges stay straight, and parallel edges stay parallel --- but lengths and angles change: the kite gets stretched, squashed, sheared, maybe flipped. Every 2x2 matrix is some such linear transformation , and rotations are exactly the ones that preserve all lengths. (When a neural network multiplies data by a learned weight matrix, this stretching and squashing of space is literally what it's doing.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "You built The secret , , , , models are vectors; evaluation is a dot product apple trips, traffic at the junction prediction = set up equations + solve n points -> one degree-(n-1) polynomial , normal equations, least squares --- when nothing fits, minimize the squared error",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "What you just derived is Ordinary Least Squares , the same closed-form answer computes. So why does the next chapter exist? Two cracks in the ancient method: solving grows like [math] (your Part 2 estimate), and the derive-set-to-zero trick needs a formula for the derivative --- which complicated models don't offer. Gradient Descent fixes both by walking toward the minimum instead of jumping to it.",
+    "fragments": []
+  }
+]

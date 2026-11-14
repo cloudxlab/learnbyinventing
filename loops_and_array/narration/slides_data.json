@@ -1,0 +1,317 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Loops and Arrays In this chapter you build a toolkit of functions that operate on lists of numbers. Eight thematic parts, each building on the last. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Statistics",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Find Minimum and Maximum Write that returns . Before you code: How would you find the minimum if you could only look at one number at a time? Test cases: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Min-Max Normalization You want to rescale any value to [0, 1] relative to the dataset, so the minimum maps to 0 and the maximum maps to 1. Think it through: Given , what operation maps 10 → 0 and 30 → 1? What does 20 become? Can you write a general formula using min and max? Write . Reuse . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Compute Mean Write — average of the list. Return for an empty list. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Standard Deviation Standard deviation measures how spread out values are around the mean: $[math]$ Break the formula into pieces you can compute step by step. You already have . Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Detect Outliers with Z-Score The z-score tells you how many standard deviations a value is from the mean. Think about it: In , the value 90 looks suspicious. How far is it from the mean? And how does that distance compare to the \"typical spread\" (the SD)? Write a formula for \"how many SDs from the mean.\" Values with [math] threshold are outliers . Write . Reuse and . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Interquartile Range (IQR) [math] is the median of the lower half of the sorted data; [math] is the median of the upper half . You know [math] (median of the lower half) and [math] (median of the upper half). What single number captures the width of the \"middle 50%\" of the data? $[math]$ Think about how to find the median of just the lower or upper half of a sorted list. Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Plotting helper — run as-is Run this cell to visualise the statistics you have built so far.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Standardization You want to transform a dataset so its mean becomes 0 and its standard deviation becomes 1. What operation shifts the mean to 0? What further operation scales the SD to 1? Combine both. Write . Reuse and . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 2: Error Metrics How wrong is a model? These functions measure the gap between actual and predicted values.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Root Mean Square Error (RMSE) Compute error = actual[i] − predicted[i] for each pair. Square each error. Average the squared errors. Take the square root. Write . [code block] Bonus: What is ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Mean Absolute Error (MAE) Mean Absolute Error (MAE) measures how wrong predictions are, on average. Think: For each pair (actual, predicted), what's the simplest measure of \"how wrong\"? Why use absolute value instead of plain difference? How do you combine all the individual errors into one summary number? Write for 1-D lists. [code block] Extension: Modify your function to handle N-D points (each element can be a list of coordinates). When elements are lists, compute the absolute difference per coordinate, then average over all coordinates across all points. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Huber Loss Huber loss is a hybrid: squared error for small errors, absolute error for large ones. This makes it robust to outliers. For each pair [math]: If [math]: Else: Return the average over all pairs. Worked example: y_true=[5,2,7], y_pred=[4.8,2.5,10], delta=1 (5, 4.8): |0.2| ≤ 1 → 0.5 × 0.04 = 0.02 (2, 2.5): |0.5| ≤ 1 → 0.5 × 0.25 = 0.125 (7, 10): |3.0| 1 → 1×3 − 0.5 = 2.5 Average = (0.02 + 0.125 + 2.5) / 3 ≈ 0.8817 Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "RMSE vs MAE Your model's predictions for 5 data points have errors: [1, 1, 1, 1, 20]. Which error metric will be affected MORE by the single large error of 20? A. MAE (Mean Absolute Error) B. RMSE (Root Mean Square Error) C. Both are affected equally D. Neither — both ignore outliers",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Part 3: Nearest Neighbor Finding the closest point is the core of the k-Nearest-Neighbors (k-NN) algorithm. We build up from 1-D to N-D, then add a pluggable distance function.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Closer Point in N Dimensions In the If-Else chapter you compared distances in 2-D. Now generalize to N dimensions: given three N-D points P, A, B (each a list), return , , or . You do not need — comparing squared distances is enough. Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Find Nearest Neighbour in 1-D Given a list of numbers and a target, return the number closest to the target. Distance = |number − target|. Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Find Nearest Neighbour in 2-D Now points are tuples. Use Euclidean distance. (Again, squared distance is enough for comparison.) Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Plotting helper — run as-is Run this cell to visualise nearest-neighbour search.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Find Nearest Neighbour in N Dimensions Generalize: each point is a list of any length. Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Nearest Neighbour with Custom Distance Function Different problems use different distance metrics. Accept the metric as an argument. First implement two distance functions, then implement the general search. Write: — sum of |a − b| per coordinate [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "When to Normalize A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first? A. The algorithm won't run — Python will throw an error B. Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant C. Age will dominate because it has a smaller range D. It makes no difference — Euclidean distance handles different scales automatically",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Part 4: Polynomials A polynomial like [math] is stored as a list of coefficients in descending power order: . Index 0 = highest power; last index = constant term ([math]).",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Multiply Polynomial by a Scalar [math] List form: Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Add Two Polynomials [math] List form: Tricky part: If the polynomials have different lengths, align them from the right (the constant terms line up) and treat missing higher-power terms as 0. → → Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Multiply Two Polynomials [math] List form: Strategy: Each coefficient at position in p1 has power . Multiplying by [math] means appending zeros to the end. Take each term from p1. Scale p2 by that coefficient: . Shift left by the power (append zeros): . Sum all shifted results with . Write . Reuse and . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "Part 5: Solving Linear Equations A linear equation with N variables: [math] is stored as (coefficients then RHS). A system of equations is a list of such lists. You will build a recursive solver step by step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Solve for the First Variable If you know all variables except the first, you can rearrange the equation to solve for it. Try it by hand with the worked example below, then generalize. Write where contains values for [math] Worked example: equation = [3, 4, 6, 20], vars = [5, 6] [math] → [math] → [math] [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Eliminate a Variable (Two Equations) To eliminate the variable at position from two equations: Let , . Compute element by element. The result has a 0 at position . Drop that position. Return the shorter list. Worked example: Eliminate x (index 0) from [2, 1, 5] and [1, -1, 1]: c1=2, c2=1: 1*[2,1,5] - 2*[1,-1,1] = [0, 3, 3] Drop index 0: [3, 3] — this represents [math] Write . [code block] Verify the second by hand: c1=2, c2=1: 1 [1,2,3]-2*[2,1,4] = [-3,0,-5], drop idx 1 → [-3,-5]*",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Eliminate a Variable from a System Given a full system of equations, eliminate the variable at using the first equation (the pivot) against each other equation. Let . For each other equation, call . Return the list of reduced equations (pivot not included — it served its purpose). Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Solve Equations Recursively Now put it all together: Base case: One equation, one unknown: . Recursive case: Eliminate variable 0 from the system → reduced system. Recursively solve the reduced system → values for [math] Substitute those into the first equation to find [math] (use ). Return . Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "Part 6: Probability and Sampling Random processes underlie stochastic gradient descent, Monte Carlo methods, and many more ML algorithms. You will build from a simple coin toss up to a temperature-scaled weighted sampler.",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "slide_text": "Fair Coin Toss Write that: Uses (returns float in [0, 1)). Prints and returns 0 if the value 0.5. Prints and returns 1 otherwise. Run it 10 times. Is it roughly 50/50?",
+    "fragments": []
+  },
+  {
+    "slide_index": 34,
+    "slide_text": "Biased Coin Toss (70% Head) Write — Head 70% of the time, Tail 30%. Print / , return 0 / 1. After writing, run 1000 tosses and check that the fraction of heads is near 0.70.",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "slide_text": "Biased Coin with Probability Argument Generalise: write where is the probability of Head. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 36,
+    "slide_text": "Weighted Choice Given a list of probabilities that sum to 1, return one index chosen according to those weights. Idea: Build cumulative boundaries. → boundaries Draw . Return the first index whose boundary exceeds . Write . Before you code: If , which index is chosen? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 37,
+    "slide_text": "Normalize to Probabilities Divide each weight by the total sum so the list sums to 1. Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 38,
+    "slide_text": "Amplify Before Normalizing Take the array . After normalizing to probabilities, the value gets about 55% of the total — but you want the big values to stand out even more and the small values to shrink further. Come up with as many ideas as you can to amplify the differences before normalizing. Test each one: Multiply every value by 10. Normalize. Did the probabilities change? Square every value. Normalize. Did the probabilities change? Cube every value. Normalize. What about now? Can you think of any other transformation? For each idea, print the resulting probabilities and explain whether (and why) it worked.",
+    "fragments": []
+  },
+  {
+    "slide_index": 39,
+    "slide_text": "Softmax You built , but it fails when values are negative — negative \"probabilities\" make no sense. Key idea: What if you transformed each value to be positive first, while preserving order? Try — it is always positive, and larger inputs give larger outputs. Now normalize these exponentials. Write . All outputs should be positive and sum to 1. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 40,
+    "slide_text": "Softmax (Numerically Stable) Problem: raises . Your challenge: Try . It crashes! The exponentials are astronomically large. But you only care about the ratios , not the absolute sizes. What constant could you subtract from every value before exponentiating, to keep the numbers small without changing the ratios? Try it and verify the result matches . Rewrite with this trick. [code block] Verify that and give the same result.",
+    "fragments": []
+  },
+  {
+    "slide_index": 41,
+    "slide_text": "Softmax with Temperature Experiment: What happens to the softmax output if you divide all values by 2 before applying softmax? Try it. Then try dividing by 0.5. What pattern do you see? Dividing by a number [math] before softmax controls the sharpness of the distribution. This [math] is called the temperature . Predict: what happens when [math]? Predict: what happens when [math]? Predict: what happens when [math]? Write . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 42,
+    "slide_text": "Plotting helper — run as-is Run this cell to visualise softmax at different temperatures.",
+    "fragments": []
+  },
+  {
+    "slide_index": 43,
+    "slide_text": "Weighted Choice with Temperature Combine what you have built: given weights and temperature [math], sample an index with probability proportional to . Steps: Return Write . Before you code: What happens as [math]? (The largest weight dominates completely.) What happens as [math]? (All weights become equal.) Raise if [math] or all weights are zero. Run a statistical test: with weights , index 2 should be chosen more often at [math] than at [math].",
+    "fragments": []
+  },
+  {
+    "slide_index": 44,
+    "slide_text": "Softmax Temperature In softmax with temperature, what happens as the temperature T approaches 0? A. All outputs become equal (uniform distribution) B. The output with the highest input gets nearly all the probability — the distribution becomes \"sharper\" C. All outputs become 0 D. The function becomes undefined",
+    "fragments": []
+  },
+  {
+    "slide_index": 45,
+    "slide_text": "Part 7: Recursion on Nested Structures",
+    "fragments": []
+  },
+  {
+    "slide_index": 46,
+    "slide_text": "Flatten a Nested List A nested list contains other lists inside it, to any depth: Flattening produces a single flat list: . Write using recursion. Before you code: Use to check if an element is a sub-list. Base action: if the element is a number, add it to the result directly. Recursive action: if the element is a list, call on it and extend. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 47,
+    "slide_text": "Solve Expression in Array Form Instead of strings like , expressions are stored as nested arrays: means 20 + 40 = 60 means (20 + 40) × 90 = 5400 Format: . Each operand is either a number or another such array. Write using recursion. Before you code: Base case: if is a number (not a list), return it. Recursive case: Extract operator = expr[0], left = expr[1], right = expr[2]. Recursively solve left and right. Apply the operator (+, -, *, /). [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 48,
+    "slide_text": "A Calculator with Rules assumed every operator takes exactly two operands. Real calculators are pickier and more flexible: happily sums ten numbers, but of two numbers is nonsense. Write — an upgraded evaluator: New operators: (use ) and (base 10 — ). Arity rules: and accept two or more operands; and accept exactly two ; and accept exactly one . Wrong count → with a message naming the operator. Unknown operator → too. Operands may be numbers or nested expressions, as before. Hint: evaluate all operands first (), then check against the operator's rule before applying it. [code block] These should all raise : [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 49,
+    "slide_text": "Compose Your Functions Try combining things you built: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 50,
+    "slide_text": "Part 8: Bonus — In-Place Array Moves Some array jobs come with a hard constraint: no second array allowed . A billion-element list won't fit in memory twice, so you must rearrange it in place , using only a spare variable or two.",
+    "fragments": []
+  },
+  {
+    "slide_index": 51,
+    "slide_text": "Three-Way XOR First, meet a new operator. is XOR (exclusive or): for each bit of the two numbers, the result bit is exactly when the input bits differ . [code block] Write that takes three equal-length lists and returns a new list where element is .",
+    "fragments": []
+  },
+  {
+    "slide_index": 52,
+    "slide_text": "Reverse, In Place Write that reverses the list without creating a new list — no , no , no second list. Walk two indices toward each other from the ends, swapping as you go. The function should modify and return nothing.",
+    "fragments": []
+  },
+  {
+    "slide_index": 53,
+    "slide_text": "Circular Shift by One Write that moves every element one position to the left, with the first element wrapping around to the end — in place, with only one temporary variable: becomes .",
+    "fragments": []
+  },
+  {
+    "slide_index": 54,
+    "slide_text": "Circular Shift by k: the Triple-Reversal Trick Shifting left by could be done by calling k times — but that is O(n·k). There is a beautiful O(n) trick that uses reversal three times. Watch with : Reverse the first elements: Reverse the remaining elements: Reverse the whole array: — done! Write using this trick. You will want a helper that reverses just the slice between indices and in place.",
+    "fragments": []
+  },
+  {
+    "slide_index": 55,
+    "slide_text": "Part 9: Bonus — Loop Explorations These exercises practice using loops to explore function behavior, extract data, and capture common patterns.",
+    "fragments": []
+  },
+  {
+    "slide_index": 56,
+    "slide_text": "Extract All Digits Given two tiny helper functions that pull apart a number one digit at a time: returns the rightmost digit chops off that digit Using these (plus a loop), write that returns a list of 's digits, in order. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 57,
+    "slide_text": "Explore a Formula with a Loop Simple interest is . A helper is provided below. Tasks: Fix and . Use a loop to compute the interest for . What pattern do you notice in how the interest grows as increases by 1 each time? Now fix and . Compute the interest for . Is the pattern the same kind of growth as in #1? In one sentence, describe what you'd call this kind of growth (hint: it's the same shape as the line ).",
+    "fragments": []
+  },
+  {
+    "slide_index": 58,
+    "slide_text": "Compare Euclidean and Manhattan Distance You wrote and in Part 3. Now use a loop to compare them across several point pairs. Tasks: For the points and , compute both distances. Which is bigger? Will the Manhattan distance ever be smaller than the Euclidean distance? Try a few pairs of points to support your answer. Find a pair of points for which the two distances come out equal . What do those points have in common?",
+    "fragments": []
+  },
+  {
+    "slide_index": 59,
+    "slide_text": "Test a Derivative Approximation A forward-difference derivative approximation is provided below. Tasks: Try on at . The true derivative of [math] is [math] — at that's . How close are you? Try it on at . The true derivative of at is . What happens to the accuracy as gets smaller — try ? What about when gets too small (like )? Can you explain what you observe?",
+    "fragments": []
+  },
+  {
+    "slide_index": 60,
+    "slide_text": "Your Own `map` You've been writing the same loop again and again: go over a list, do something to each element, collect the results . Capture the pattern once and for all. Write that returns a new list containing for each in . Notice what you're doing: passing a function as an argument .",
+    "fragments": []
+  },
+  {
+    "slide_index": 61,
+    "slide_text": "Your Own `reduce` The other loop you keep writing: combine all the elements into one value (a sum, a product, a maximum...). Write where takes two arguments. Start with the first element, then repeatedly combine the running result with the next element: computes .",
+    "fragments": []
+  },
+  {
+    "slide_index": 62,
+    "slide_text": "Part Functions 1 Statistics , , , , , , 2 Error Metrics , , 3 Nearest Neighbor , , 4 Polynomials , , 5 Linear Equations , , , 6 Probability , , , , , , 7 Nested Structures , , 8 In-Place Moves , , , 9 Loop Explorations , ,",
+    "fragments": []
+  }
+]

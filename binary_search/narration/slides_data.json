@@ -1,0 +1,137 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Binary Search and Approximations A single idea powers this entire chapter: if you know a function is monotone (always increasing or always decreasing), you can find any target value in it by repeatedly halving your search interval. You will apply this idea to approximate square roots, cube roots, nth roots, and logarithms — without ever using , , or . Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 0: The Core Idea",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Guess My Number Suppose someone thinks of an integer between 1 and 1000 (inclusive). You can ask \"Is it less than, equal to, or greater than X?\" and they will answer honestly. Question 1: If you always guess randomly, how many guesses might you need in the worst case? Question 2: If you always guess the middle of the remaining range, how many guesses do you need in the worst case? Try it on paper for the range [1, 1000]. Key insight: Each \"guess the middle\" halves the range. After k guesses the range has shrunk from 1000 to roughly [math]. How many times can you halve 1000 before you reach 1? [code block] Write a function that returns how many times you can halve (starting from a whole number) before reaching 1 or below. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Part 1: Square Root via Binary Search The square root of is the number such that . For example, sqrt(25) = 5 because 5 * 5 = 25. Before you code — think about the search: If you want sqrt(25), you know the answer is between 0 and 25 . Why? Now suppose you could make one guess to narrow that range as much as possible. What single guess would eliminate the most possibilities? And once you check that guess, how do you decide which half of the range to keep? Keep narrowing until is within of .",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Square Root Write that returns an approximation of sqrt(n). Arguments: : a non-negative number : how close must be to (e.g., 0.0001) Before you code: What is the initial ? What is the initial ? When , should you move or to ? When does the loop stop?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Visualise the Convergence Run the plotting helper below to see how the search interval [low, high] narrows with each step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Cube Root via Binary Search The cube root of is the number such that . For example, cuberoot(27) = 3 because 3 * 3 * 3 = 27. This is more interesting than sqrt because: The cube root of a negative number is also negative (cuberoot(-8) = -2). For , the cube root is larger than (cuberoot(0.001) = 0.1). Before you code — think about these cases: cuberoot(27): search range [0, 27]. Standard. cuberoot(-64): cube root of |-64| = 4, then negate → -4. cuberoot(0.001): |n| 1, so the answer is between 0 and 1, not 0 and 0.001. Use range [0, 1] when |n| 1. Stopping rule: Stop when .",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Cube Root Write . You already built — adapt it. The core binary search loop is the same; what changes is the check and the edge cases. Think about: What do you check instead of ? Negative numbers: what is ? How can you handle negatives by working on and fixing the sign at the end? Numbers between -1 and 1: cuberoot(0.001) = 0.1, which is larger than 0.001. What does that mean for your initial ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Part 3: Nth Root via Binary Search You just wrote and . Look at them side by side. The only thing that changes is the check function : Function Check sqrt cuberoot nth root Before you code: What range should and be for the nth root? If : range is [0, x] (the nth root is always ≤ x for n ≥ 1). If : the nth root is larger than x, so use range [0, 1]. For odd n, negative x values have real roots. For even n, they do not.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Nth Root Write that returns the real nth root of x. For simplicity, assume x ≥ 0 (handle negatives as a bonus below).",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Verify with Python's Built-in Python can compute nth roots with . Verify that your function gives the same answer for a range of values.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "When Binary Search Applies Binary search works for square root, cube root, and nth root. What property of these functions makes binary search possible? A. They all use exponents B. They are all monotonically increasing — a larger input always gives a larger output, so the midpoint test tells you which half to keep C. They all return values between 0 and 1 D. They can all be computed without importing any library",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Part 4: Log Base 10 via Binary Search So far you searched for a VALUE such that . Now flip the problem: search for an EXPONENT such that . This is exactly the definition of the logarithm: $[math][math]f(y) = 10^y$ is strictly increasing. So if , the true exponent must be larger: move . If , move . Before you code — think about the bracket: Before you can search, you need to know where to look. How would you find a range [low, high] such that the answer is definitely inside? Think about what and equal — when do you need to look beyond that range? What about when ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Log Base 10 Write . You have already built binary search for roots — this is the same idea applied to exponents. The new challenge is figuring out the initial search bracket, since the exponent could be any real number.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Visualise the Log Search Run the plotting helper below to visualise the search for the exponent y such that [math].",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Part 5: Log Base N via Binary Search Now generalise: instead of searching for such that , search for such that for any base . When n 1: [math] is strictly increasing. Same logic as log10. When 0 n 1: [math] is strictly decreasing . For example: [math]. As y increases, [math] decreases. For the case 0 n 1, the comparisons flip: If , we need a larger exponent → . If , we need a smaller exponent → . Before you code: Verify by hand: because [math]. With base=5 ( 1), [math] is increasing. x=0.04 1 so y must be negative. Start with ; keep until . Raise if , , or .",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Log Base N Write . The bracket-finding logic is the same as log10, but with instead of . For , you will need to flip the comparison in the binary search step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Change of Base Formula The change of base formula says: $[math]$ Verify this using your function: should equal for any a. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 6: Bonus — Binary Search on Sorted Arrays Everything so far searched a continuous range of numbers. But the same halving idea works on a sorted array — and this is the version you will meet everywhere, from databases to in the standard library. The setup changes slightly: Instead of and being numbers, they are indices into the array. Instead of stopping at a precision, you stop when the indices cross.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Is It There? Write that returns if occurs in the sorted list . Look at the middle element, decide which half could contain , and repeat. No , no walking the whole list: for a million items your function should look at ~20 elements at most.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "First and Last If the array has duplicates , \"is it there\" isn't enough — you often need where does it start and where does it end . Write and that return the index of the first / last occurrence of in the sorted list , or if it's absent. Hint: when you find a match, don't stop — remember the index, then keep searching the half where an even earlier (or later) match could still hide.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Counting Without Counting A sensor logs a billion readings, each one , or , and the log is sorted. Your boss wants to know how many s there are. Walking the array is a billion steps; you can answer it in about sixty. Write that returns how many times occurs in the sorted list , by combining and .",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Common Elements, Small vs Huge You have a small list of IDs and a huge sorted list of registered IDs, and you want the ones that appear in both. Checking each small ID against every huge ID costs [math] comparisons; binary-searching each small ID costs only [math]. Write that returns the elements of (in order) that occur in the sorted list . Reuse your .",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Finding the Bottom of a Valley One last twist. This array isn't sorted — it goes down, then up , like a valley: [code block] Binary search still works! Compare with : if , you are on the downhill slope — the minimum must be to the right; otherwise you are on the uphill slope (or at the bottom) — the minimum is at or to its left. Write that returns the minimum value of such a valley-shaped array. Hold on to this idea: \"walk downhill until it stops going down\" is exactly how gradient descent trains machine-learning models — you will meet it again in the Gradient Descent chapter.",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Binary Search Complexity A sorted list has 1,000,000 elements. What is the maximum number of comparisons binary search needs to find an element (or confirm it's missing)? A. 1,000,000 B. 1,000 C. About 20 D. About 500,000",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Summary",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Function Searching for Check condition x such that x² = n vs x such that x³ = n vs (handle sign) x such that x^n = target vs y such that 10^y = x vs y such that n^y = x vs (flip if n 1)",
+    "fragments": []
+  }
+]

@@ -1,0 +1,112 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing K-Means Clustering All the algorithms you've built so far have had labels — you knew the right answer and trained a model to predict it. But what if you just have a pile of data with no labels at all? Can you still find structure in it? You're about to find out — by grouping points that \"belong together,\" using nothing but distances and averages. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Grouping Points by Distance Here's a bunch of points scattered on a 2D plane. Your goal: split them into two groups so that points in the same group are close together. How would you start? You need some notion of a \"center\" for each group. The simplest idea: just pick two points and call them the centers. Then assign every point to whichever center is closer.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Distance Between Two Points Before you can group anything, you need to measure how far apart two points are. If you completed the Expressions Functions chapter, you already wrote this in Exercise 3.3 — \"Distance Between Two Points (2D).\" You can reuse that function here. Write that computes the straight-line (Euclidean) distance between two 2D points. Recall: the distance between [math] and [math] is [math].",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Assign Points to Nearest Center You have 10 points and 2 centers. For each point, figure out which center is closer, and put that point in that center's group. Write that returns a list of groups — one group per center. Each group is a list of points assigned to that center.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Find New Centers You have two groups. The centers you started with were arbitrary — just the first two points. Now that you have groups, can you find better centers? What single point best represents a group of points? Write that returns a new list of centers — one per group.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Part 2: Iterate Until Done You can now assign points to centers and compute better centers from the groups. What happens if you keep doing this — assign, recompute, assign, recompute?",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "One Full Cycle Starting from your initial centers ( and ): Assign all points to groups using Compute new centers using Print the old and new centers Did the centers move?",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Repeat Until Stable Run the assign → recompute cycle multiple times. Print the centers after each round. When should you stop? Look at the centers each round — what do you notice? Write a loop that repeats the cycle and stops when the centers don't change (or change by less than a tiny amount like 0.0001).",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "See Your Clusters Run the plotting helper below to visualize the groups your algorithm found. The centers are shown as large X markers. Don't worry about understanding the plotting code — just run it and look at the result.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Congratulations! You just invented one of the most widely used algorithms in machine learning: K-Means clustering . Here's what you built: Your step The algorithm calls it Pick 2 starting points as centers Initialization Assign each point to the nearest center Assignment step Compute new centers as the group average Update step Repeat until centers stop moving Convergence K-Means is an unsupervised learning algorithm — it finds structure in data without any labels. No one told the algorithm which points belong together. It figured it out on its own, using nothing but distances and averages.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 3: The General Algorithm Your code works for 2 groups in 2D. But what if you have 3D data? Or want 5 groups? Let's make it general.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "N-Dimensional Distance Your function only works for 2D points. Rewrite it to work with points of any number of dimensions. The Euclidean distance in N dimensions is: [math]",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "N-Dimensional Centers Your function only averages x and y. Rewrite it to work with points of any number of dimensions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "The Complete K-Means Function Now combine everything into a single function that works for any number of groups (K) and any number of dimensions. Write: [code block] Use the first K points as the initial centers.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Custom Distance Function Different problems call for different notions of \"distance.\" For example, Manhattan distance (sum of absolute differences) is better when your coordinates represent things like city blocks. Modify your function to accept a distance function as an argument: [code block] Also update to accept . Test it with both Euclidean and Manhattan distance.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Part 4: How Many Groups? K-Means needs you to choose K — the number of groups. But how do you know the right K? What if you pick too many? Too few? Let's find out by measuring how \"good\" each grouping is.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Measuring Cluster Quality How tight are your clusters? One measure: for each point, compute its distance to its center. Sum up all these distances. A lower total means tighter clusters. Write that returns this total.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Try Different Values of K Run K-Means on the dataset below with k = 2, 3, 4, 5, and 6. Compute the inertia for each. What happens to the inertia as K increases?",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "The Elbow Method Plot inertia vs. K. The curve always goes down, but at some point the drop slows dramatically — like the bend of an elbow. That bend is your best K. Where is the elbow for the dataset above? Does it match the number of clusters we generated (3)?",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Visualize Different K Values See what the clusters look like for different values of K. Run the code below to plot k=2, k=3, and k=5 side by side. Which one looks most natural?",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Summary",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "What you did What the field calls it Measured how far apart two points are Euclidean distance Assigned each point to the nearest center Assignment step Computed the average of each group Update step (centroid computation) Repeated assign → update until stable K-Means convergence Summed distances from points to centers Inertia Plotted inertia vs. K to find the best K Elbow method",
+    "fragments": []
+  }
+]

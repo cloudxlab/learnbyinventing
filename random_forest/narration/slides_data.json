@@ -1,0 +1,117 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Random Forests --- Inventing Ensemble Learning In the Decision Trees chapter you invented a tree that predicts categories by minimizing impurity. Two questions remain open: What if the target is a number ? And can we do better than a single tree that memorizes its training data? You will invent the answers: first a regression tree , then the idea that powers many production ML systems --- combine many imperfect trees into one strong model . That is a Random Forest. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Impurity for Numbers The classification tree asked: \"how mixed are the labels in this group?\" For numbers the question becomes: \"how spread out are the values?\" Look at these two groups of house prices (in lakhs): [code block] If a leaf of your tree contains , predicting their mean (10) is perfect. If it contains , predicting the mean (33.5) is terrible for every single house.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Invent a Spread Score Invent a single number that is when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on. The classic answer is variance : the average squared distance from the mean. (Why squared? So that being 10 below the mean can't cancel out being 10 above it --- and big misses get punished extra hard.) Write .",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "The Value of a Split Take this group: . It has one troublemaker. Split it into and . Now is nearly pure and is exactly pure (a single value has zero variance). But there's a trap: having zero variance shouldn't count as much as a five-element group having zero variance --- otherwise the tree learns to slice off one element at a time. Your challenge: Simply adding the two variances treats a 1-element group the same as a 5-element group --- that can't be right. How should you combine the two variances so that a larger group's variance counts more? Think about what \"fraction of elements\" each side holds and use that to weight the variances. Write .",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Variance Reduction A split is good when the children are much purer (lower variance) than the parent. You have the parent's variance and the children's combined (weighted) variance. How would you capture \"how much purer did the split make things\" in one number? Write . Then check: for , splitting the troublemaker off should score much higher than splitting down the middle.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Variance vs Impurity In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change? A. Variance is faster to compute than impurity B. Regression targets are continuous numbers, not categories --- you can't count \"how mixed\" the labels are when labels are numbers like 23.5 or 41.2, but you CAN measure how spread out they are C. Variance works for classification too, so impurity was unnecessary D. Python's standard library only has a variance function, not an impurity function",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Choosing the Best Split Here is a tiny housing dataset. Each row is ; the target is the price. Size Bedrooms Price 500 1 50 600 1 55 900 3 65 1500 3 150 1600 3 160 1700 4 170",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Compare Two Splits by Hand Using your , compute the reduction for two candidate splits, and see which feature the tree should ask about first: Size = 1000 : prices split into vs Bedrooms 3 : prices split into vs",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Find the Best Split Automatically Trying splits by hand doesn't scale. Write that: Considers every feature index (or only if given --- you'll see why that parameter matters in Part 4). For each feature, takes the midpoints between consecutive sorted unique values as candidate thresholds (e.g. sizes give thresholds ). For each candidate , splits the targets into rows with (left) and the rest (right), and computes the variance reduction. Returns the best --- keep the first candidate when there's a tie. If there is nothing to split (no candidates), return .",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "When Should the Tree Stop Asking Questions? Left alone, the tree splits until every leaf holds a single house --- that's not learning, it's memorization : perfect on training data, brittle on anything new. Two brakes prevent it: --- the maximum number of questions from root to leaf. A shallow tree is forced to generalize. --- the smallest group still allowed to be split. Splitting a 2-house group into two 1-house \"groups\" scores a perfect variance reduction, and learns nothing. There's nothing to compute here --- just convince yourself why each brake prevents memorization. You'll wire both into the tree next.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 3: Build the Regression Tree",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "The Node --- Provided A tree is made of nodes. A decision node holds a question (, ) and two children; a leaf holds only a (the prediction: the mean of the targets that reached it). Run this as-is.",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "The Tree Now assemble everything into a class: [code block] grows the tree recursively, starting at depth 0. A group becomes a leaf (value = mean of its targets) when any brake fires: depth has reached , or the group has fewer than rows, or finds no split with reduction 0. Otherwise: split the rows on the best and recurse into each side with . Pass through to . walks each row from the root --- go left if --- and returns the leaf's value.",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 4: Many Trees Are Better Than One Your deep tree scored a perfect 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized. Here's the big idea: train many trees and average their predictions. Individual mistakes point in different directions and cancel out; the shared signal survives. (The same reason a crowd's average guess of a jar's jellybean count beats almost every individual guess.) But wait. If every tree sees exactly the same data, every tree is identical : [code block] Averaging identical trees gives you... one tree. To benefit from a crowd, the trees must be different . Random Forests inject randomness in two places.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Bootstrap Sampling (randomize the *rows*) Give each tree its own dataset by sampling rows from the original rows with replacement --- some rows appear twice, some not at all. This is called a bootstrap sample . Write that returns a new of the same length, where each position holds a uniformly random row of the original data --- and each stays paired with its row. Use .",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Feature Randomness (randomize the *questions*) Bootstrap samples still look similar, so most trees would still put the strongest feature (here: size) at the root --- the crowd stays too agreeable. Second injection of randomness: let each tree see only a random subset of the features . Write that returns distinct feature indices chosen at random from . ( is your friend.) This is why takes that parameter.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Why Randomness Helps In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction? A. Random trees run faster because they see less data B. Randomness makes each tree different, so their errors are independent --- averaging independent errors cancels them out, while averaging identical errors would not C. It prevents Python from running out of memory D. Random selection always finds better splits than checking all features",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Part 5: The Random Forest",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Assemble It Write : [code block] : for each of trees --- take a bootstrap sample, choose a random feature subset (all features if is ), train a on the sample with those , and store it in . : ask every tree, and return the average of their answers for each row.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Think: When Does the Crowd Win? Look at your numbers. The single deep tree hit 0.00 train RMSE (memorization) --- yet on this tiny, perfectly clean dataset its test error may still beat the forest's. So was all this for nothing? No --- but the win shows up under real conditions. Reason through each: Add measurement noise to the prices (e.g. per row). Which model's test error degrades more, and why? (Try it!) The single tree changes drastically if you delete one training row --- the forest barely moves. Why does averaging make predictions stable ? Why is more valuable when you have 50 features than when you have 2?",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Part 6: Summary --- What Did You Just Build?",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Idea You built Why it matters Variance as impurity , , extends decision trees from categories to numbers Best split the greedy heart of every tree learner Regression tree , / with , brakes Bootstrap + feature randomness , makes trees disagree so averaging helps Ensemble many weak models -> one strong, stable model",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "You have now invented, from scratch, the algorithm behind scikit-learn's . The next big idea in tree ensembles --- training each new tree on the errors of the previous ones --- is called gradient boosting (XGBoost, LightGBM). You already own every ingredient it needs.",
+    "fragments": []
+  }
+]

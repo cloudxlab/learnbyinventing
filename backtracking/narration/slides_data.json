@@ -1,0 +1,102 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Backtracking — Exhaustive Search, Done Right Some problems have no formula. Nobody can compute the solution of a Sudoku puzzle — you have to try possibilities . The art is in trying them systematically: Enumerate — walk through every candidate, missing none, repeating none. Check — recognize a valid (or doomed) state quickly. Backtrack — when a choice leads to a dead end, undo it and try the next one. You already met this idea once: the wildcard in the Pattern Matching chapter tried both branches and gave up on the ones that failed. In this chapter you build the technique up from tiny exercises until you can solve any Sudoku board. Prerequisite: the Recursion chapter. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Warm-Up — Enumerating Pairs A room of people all shake hands, each pair exactly once.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "handshakes Write that returns the list of all unique pairs as tuples. A pair should appear once: if is in the list, must not be. [code block] Think: for people, how many handshakes will there be? Test your formula with the last assertion.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Part 2: Enumerating Everything — The Odometer Print all numbers of length where each digit runs from to — that is, all n-digit numbers in base m. (No allowed — you are inventing it.) First idea: a car odometer. To go from to the rightmost wheel rolls over to and carries into the next wheel.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "next_numb Write that treats the list as digits in base and adds 1 in place . Return if the increment succeeded, if every digit was already maxed out. Work it out by hand first: what happens when you add 1 to in base 3? What about ? Where does the \"carrying\" start, and when does it stop? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "generate Write that returns all n-digit base-m numbers as strings, in counting order. Start from and keep calling until it returns , collecting each state as a string. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "generate_rec Now the recursive view: an n-digit number is a first digit followed by an (n-1)-digit number. Write : Base case: — there is exactly one number of length 0: the empty string . Recursive case: for each digit from 0 to m-1, prepend to every string in . It must produce exactly the same list as . Think: how many strings does return? You met this formula in the very first chapter ( Learning to Count ): d digits in base B represent B^d numbers. Enumeration and counting are the same tree — one walks it, one measures it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Part 3: Permutations",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "perms Print all rearrangements of your name (assume all letters are distinct). Write returning the list of all permutations of the string . Approach: pick each character in turn to go first, then recurse on the string without that character: [code block] Think: how many permutations does a string of length n have? (Your name has 7 distinct letters — expect 5040.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Quick Check 3.1 — Permutation Count How many permutations does a list of 4 distinct elements have? A. 4 B. 16 C. 24 D. 256",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 4: Checking a State — Valid Parentheses Exhaustive search lives or dies by its checker — the little function that says \"this state is fine\" or \"this state is broken\". Before Sudoku, practice on brackets.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "are_valid Write for a string of , , characters. It is valid when every opener is closed by the matching closer, in the right order. Hint: as you scan left to right, you need to remember which openers are still waiting for their closers. What data structure naturally handles \"most recent first\"? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Part 5: Sudoku The main event. A Sudoku board is a 9×9 grid; every row , every column , and every 3×3 block must contain the digits 1–9 exactly once. The puzzle gives you some digits (the clues ); you fill the rest. We represent the board as a list of 9 lists, with meaning empty .",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "find_first_empty_space Write that scans top-to-bottom, left-to-right and returns the of the first . If the board has no empty cell, return — that will be our signal that the puzzle is solved.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "can_place The checker. Write — may digit legally go into cell ? If already appears anywhere in that row — . If already appears anywhere in that column — . If already appears in the cell's 3×3 block — . Otherwise .",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "solve_sudoku Now the backtracking itself. Write (it modifies the board in place and returns /). You have and . For each empty cell, you could try placing digits 1–9. If a placement leads to a dead end, what should you do? Think about the pattern from and the wildcard matcher.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Quick Check 5.1 — Why Backtracking Prunes A 9×9 Sudoku has 81 cells. If you tried every possible assignment of digits 1–9 to all empty cells (brute force without checking constraints), approximately how many combinations would that be for a puzzle with 50 empty cells? A. 50 × 9 = 450 B. 9^50 — an astronomically large number C. 50! (50 factorial) D. 81 × 9 = 729",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Think — Why Is This Fast? The puzzle has 51 empty cells. Blind enumeration would try up to 9⁵¹ ≈ 10⁴⁸ boards — the sun would burn out first. Your solver finishes in well under a second. The difference is pruning : kills a bad branch at its first wrong digit, so the enormous tree of possibilities almost entirely never gets built. Enumeration provides completeness; checking provides the speed.",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Summary",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Function Idea nested loops that never repeat a pair , the odometer — iterative enumeration , recursive enumeration: choose a first element, recurse on the rest a stack as a fast validity checker , , backtracking: try → recurse → undo",
+    "fragments": []
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Pattern Matching -- Inventing Wildcards and Regular Expressions When you type in a file browser, or validate an email address on a signup form, or grep through a server log -- a pattern matcher is at work. In this chapter you will invent one from scratch: first exact matching, then the wildcard, then the surprisingly deep wildcard (a beautiful use of the recursion you already own), and finally you will graduate to Python's industrial-strength module and mine a real web-server log with it. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Exact Match",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Character by Character Write that returns only when the pattern and the text are exactly the same -- without using on whole strings . Compare one character at a time. Why the restriction? Because in a moment some pattern characters will stop meaning themselves -- and then whole-string is useless. Build the loop (or recursion) now, while the problem is easy. Think recursively: two strings match if their first characters match and the rest of them match. What are the base cases? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Part 2: The `?` Wildcard New rule: in the pattern, matches exactly one character -- any character. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Add `?` to Your Matcher Write . It is with one extra case: when the first pattern character is , what should you compare -- and what do you recurse on? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Part 3: The `*` Wildcard The big one: matches zero or more characters -- any characters. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Think Before You Code Pattern , text . The matches. Now the pattern says and the text says . How many characters should the swallow? You cannot know yet -- it depends on what comes after the star. So don't decide. Try both options and let recursion explore: The swallows nothing --> try matching the rest of the pattern () against . The swallows one more character --> the star stays , try against . If either branch succeeds, the match succeeds. What is the base case when the text runs out but the pattern is ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "The Full Matcher Write supporting literals, , and .",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Use It Like a Shell Your is exactly what the shell does with filenames (called globbing ). Write that returns all names matching the pattern. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Why `*` Needs Backtracking The pattern is matched against the string . The is greedy -- it first tries to consume as many characters as possible. Why does the matcher need backtracking to find the correct match? A. Because `*` can only match letters, not `x` or `y` B. The greedy `*` initially consumes `xxbyyb`, but then the final `b` in the pattern has nothing left to match -- so the matcher must back up and try consuming fewer characters C. Backtracking is needed because the string contains duplicate `b` characters D. The pattern is invalid -- `*` must be at the end",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Part 4: Regular Expressions -- The Professional Version What you invented is the core idea behind regular expressions -- a pattern language so useful it is built into every programming language. Python's module speaks a richer dialect: [code block] Note the twist: regex means \"repeat the previous item\" -- so matches , , . Your glob-style is written in regex. The two functions you need: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Quick Demo Run this quick demo to see and in action.",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Match Dates Dates appear as or (day, month, year -- separator is or ). Write a regex string so that finds dates. Start simple: two digits, a separator, two digits, a separator, four digits. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Valid Dates Only Your pattern happily matches . Tighten it: Day 01--31: can you express it as alternatives? covers 01--09, covers 10--29... what covers 30 and 31? Join alternatives with . Month 01--12: same game. Group alternatives in parentheses: . Write that matches valid day/month combinations only. [code block] (Don't chase February 30th -- even real-world validators leave calendar logic out of regex.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Find Credit Card Numbers A security audit: find credit-card-like numbers (four groups of 4 digits, separated by spaces, dashes, or nothing) leaking into text. Write returning the list of matches. [code block] Hint: a group-plus-separator is -- how many times does it repeat?",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Extract Email Addresses Write that extracts things shaped like email addresses: one-or-more \"word characters\" (letters, digits, , ), then , then a domain with at least one dot. [code block] (A regex that matches every legal email is famously monstrous -- the pragmatic version you are writing is what real codebases actually use.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Mine a Real Server Log Below are genuine lines from an Apache web-server access log ( -- 5 MB of real traffic from a Hadoop training site). Each line may contain URLs in the user-agent or referrer fields. Write that extracts every or URL. Look closely at the lines: a URL ends where whitespace, a quote , or a closing parenthesis begins -- a negated set handles all three. Run it over and count which domain appears most (your / word-count instincts from the Dictionaries chapter apply). Part A -- : Part B -- : Write that extracts the domain from each URL and counts how many times each domain appears.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Greedy vs Non-Greedy Matching Given the HTML string , what does the regex match? A. Just ` hello ` B. Both ` hello ` and ` world ` as two separate matches C. The entire string ` hello and world ` as one match, because `.*` is greedy D. Nothing -- the regex is invalid",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Stage What you built The idea Exact match compare char by char, recurse on the rest wildcard one pattern char can stand for any text char wildcard don't decide how much to swallow -- recurse on both options Globbing your matcher is what shells use for Regex / the same engine, richer language: sets , repeats , alternatives Log mining , patterns + dictionaries = real data extraction",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "What you just invented: The branching trick in your matcher -- try both, succeed if either succeeds -- is called backtracking . It is the same idea that solves mazes, Sudoku, and the N-Queens problem, and it is exactly how simple regex engines are implemented.",
+    "fragments": []
+  }
+]

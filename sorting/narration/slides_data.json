@@ -1,0 +1,162 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Sorting — Inventing Order Sorting looks like a solved problem: call and move on. But almost every important idea in algorithm design — nested loops, invariants, divide and conquer, trading memory for speed — shows up first in sorting. In this chapter you will invent five different sorting algorithms, measure them against each other, and discover why some are dramatically faster, and when you can beat all of them. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 0: Warm-Up",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Is It Sorted? Before sorting anything, you need a way to check whether a list is sorted. Write that returns if every element is less than or equal to the next one. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Swap In Place All the algorithms in this chapter rearrange elements inside the same list. The basic move is a swap. Write that exchanges the elements at positions and in place (modify the list, return nothing). [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 1: Comparing Neighbors The idea: walk through the list comparing neighbors . Whenever the left neighbor is bigger, swap them. What happens to the largest value after one full pass?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "One Bubble Pass Write that goes through the list once, comparing each pair of neighbors and swapping when they are out of order. Modify the list in place. Before you code: Take and do one pass by hand. Where does the 9 end up? Why must the largest element always reach the last position after one full pass? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Full Sort One pass guarantees the largest element is at the end. How many passes guarantee the whole list is sorted? Write that repeats passes until the list is sorted. Modify in place. Think about: After pass 1, the last element is final. After pass 2, the last two are final. Can each pass stop earlier than the previous one? If a whole pass makes zero swaps , what do you know? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Count the Comparisons How much work does bubble sort actually do? Write — same algorithm, but return the total number of comparisons made. Run it on lists of length 10, 100, and 1000 (use ). When the list gets 10x longer, how much does the comparison count grow? Fill in the table: n comparisons comparisons / n² 10 ? ? 100 ? ? 1000 ? ? This growth pattern is called O(n²) — quadratic time. Pause and think: a modern laptop does roughly [math]–[math] simple operations per second. If n = 1,000,000, then [math]. How long would bubble sort take? Hours? Days? This is why we need better ideas.",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Part 2: Sorting Like Playing Cards Think about how you sort playing cards in your hand: you pick up cards one at a time, and insert each new card into its correct place among the cards you already hold — which are always sorted.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Insert Into a Sorted Prefix Suppose is already sorted and is the new card. Write that moves left, one swap at a time, until it sits in its correct position. In place. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Sort the Whole Hand Now sort the whole list: the sorted prefix starts with just , and you insert , then , ... one at a time. Write . In place. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "The Best Case Run your on a list that is already sorted , counting comparisons (write , like you did for bubble sort). Already sorted list of length 1000: how many comparisons? Reversed list of length 1000: how many comparisons? Insertion sort is O(n²) in the worst case, but O(n) when the data is nearly sorted — which is why real-world sorts (like Python's Timsort) use it as a building block.",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Stability in Sorting Two students both scored 85: Alice (entered first) and Bob (entered second). After sorting by score, a stable sort guarantees Alice still appears before Bob. Which of the following is true? A. Bubble sort and insertion sort are stable, but quicksort is not (in its typical implementation) B. All comparison sorts are stable by definition C. Stability only matters for numbers, not for records with multiple fields D. Quicksort is stable but bubble sort is not",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 3: Split, Sort, Combine Here is a completely different idea, and it comes from a question: If I hand you two already-sorted lists , can you combine them into one sorted list faster than sorting from scratch?",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Merge Two Sorted Lists Write where and are each sorted. Return a new sorted list containing all elements of both. Before you code: merge and by hand. You only ever need to compare the two front elements. Why? [code block] How many comparisons did merging cost, roughly, for lists of total length n?",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Sort by Splitting and Merging Now the recursive leap (remember the Recursion chapter): To sort a list: split it in half, sort each half (how? the same way!), then the two sorted halves. Write that returns a new sorted list. What is the base case — the list so small it is already sorted? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Why Is It n·log(n)? Picture the recursion as levels: [code block] Each level does about n comparison work in total. How many times can you halve n before reaching lists of size 1? (You invented this number in the Binary Search chapter — it is [math] .) So the total is about [math] . For n = 1,000,000: [math] [math] 50,000x less work. Compute the ratio yourself for a few values of n.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Part 4: Sort by Splitting Smarter Part 3 splits blindly down the middle, then does its work while merging. What if you did the work while splitting , so no merge is needed?",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Partition 0s and 1s Warm-up from real life. You have records labeled 0 or 1: [code block] Move all the 0-records to the front and all the 1-records to the back — without creating another list , touching each element only a constant number of times (a single O(n) pass with swaps). Hint: keep two positions, one scanning from the left, one from the right. What should each of them look for? Write that rearranges in place. (Order within the 0-group and 1-group may end up anything.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Partition Around a Pivot Generalize: instead of 0s and 1s, pick one element of the list — the pivot — and rearrange so that everything is on its left and everything is on its right. Write that: works on the slice (inclusive) in place, uses as the pivot, returns the final index where the pivot lands. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Sort by Partitioning After partitioning, the pivot is in its final sorted position . What remains? Two smaller unsorted regions — one on each side. Sort each of them... the same way. Write that sorts in place. [code block] Think about: merge sort needed extra memory for merging. How much extra memory does quick sort need?",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Quicksort Worst Case Quicksort is O(n·log n) on average, but what input causes its worst-case O(n²) performance when always picking the first element as pivot? A. A list of random numbers B. A list that is already sorted (or reverse-sorted) C. A list with many duplicate values D. A very short list (fewer than 5 elements)",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Part 5: Sorting Without Comparing A puzzle: You must sort the ages of a billion people . Ages are whole numbers between 0 and 200. Your Part 3 algorithm would need ~30 billion comparisons. Can you sort them with zero comparisons between elements ? Hint: how many different values can an age take?",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Count Occurrences Write that returns a list of length , where is how many times age appears. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Rebuild the Sorted List If you know there are three 0s, zero 1s, five 2s, ... you can write down the sorted list directly. Write that returns the sorted list using — no comparisons between elements at all. [code block] Then answer: How many operations for n ages with values up to k? (in terms of n and k) Why can't you use this trick to sort arbitrary floats or strings?",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "When O(n) Sorting Is Possible Counting sort can sort a billion ages in O(n) time. Why can't we always use it instead of O(n·log n) algorithms like merge sort? A. Counting sort only works on Python lists, not NumPy arrays B. Counting sort requires knowing the range of values and works best when that range is small — sorting a billion arbitrary floating-point numbers would need impossibly many buckets C. Counting sort is unstable, so we can't use it for important data D. Counting sort uses too much memory for any list larger than 1,000 elements",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Part 6: The Race Time to put every algorithm you invented on the same track.",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "The Race — Timing All Algorithms The helper below times each sorting algorithm on progressively larger lists and plots the results on a log-log scale. Run it once all your sorts pass their tests. Reading the plot: on a log-log plot, O(n²) algorithms climb with slope 2, O(n·log n) with slope ~1. You should see the two families separate clearly.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Predict Before You Run Using your timing for at n = 4000, predict how long it would take at n = 1,000,000 (scale by [math]). Write the number down. Then predict at n = 1,000,000 from its n = 64000 timing. One of these predictions is minutes-to-hours. The other is around a second. Which is which?",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Part 7: Summary",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Algorithm Idea you discovered Time Notes Bubble sort swap out-of-order neighbors, repeat O(n²) largest bubbles to the end each pass Insertion sort insert each card into a sorted hand O(n²), O(n) if nearly sorted building block of Timsort Merge sort sort halves recursively, merge O(n·log n) needs extra memory for merging Quick sort partition around a pivot, recurse O(n·log n) average in place; partition puts pivot in final spot Counting sort count values, rebuild O(n + k) no comparisons — only for small integer ranges",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Python's built-in (Timsort) combines two of your inventions: merge sort's structure with insertion sort's speed on nearly-sorted runs.",
+    "fragments": []
+  }
+]

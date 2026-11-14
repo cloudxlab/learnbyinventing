@@ -1,0 +1,157 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Inventing RAG and Agentic AI Every concept in this curriculum is something you will build before it is named. You will hit a wall, feel the frustration of a broken approach, and then invent the fix yourself. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: The Knowledge Gap The central question: what does an LLM actually know, and what happens when it doesn't? Prerequisites. Basic Python (functions, lists, dicts, loops). No ML background required. Companion files — download these alongside the curriculum: — all datasets used across every exercise. Import what you need. — step-by-step instructions for setting up Anthropic or OpenAI.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "The Amnesiac Oracle Install the Anthropic SDK and run the observe code below. Both answers come back instantly and correctly. Now ask the model something it cannot possibly know — an internal company document it has never seen. Read the answer carefully. Your task: The model answered confidently. Is that answer trustworthy? How would you know? Write a new version of called . Before calling the API, check whether the question contains the phrase or . If it does, return a plain string: Otherwise, call the API normally. This keyword check is brittle. In one sentence, describe why it will fail for most real questions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "You have just felt the core problem: a language model's knowledge is frozen at training time. It cannot know what happened yesterday, or what is in your company's private database. Your keyword check is a crude patch. The real fix requires giving the model the document at the moment it is asked. What you invented: the intuition behind retrieval-augmented generation — the idea that knowledge should come from outside the model, not from inside it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Stuffing the Prompt Import the Acme Corp policy documents and try putting all three directly into the prompt (see the observe code). It works — the model answers correctly from the documents. The problem. Imagine you have 10,000 documents instead of 3, each 500 words. Run the calculation code below. You cannot stuff all 10,000 into the prompt. Your task. Write a function that uses simple keyword matching to pick the most relevant document: Split the question into individual words (lowercase). For each document, count how many of those words appear in the document text (lowercase). Return only the single document with the highest count. Test it with at least two different questions. Does it always pick the right document?",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "You have just reinvented keyword-based retrieval. It is fast and requires no ML. But try this question: — the word \"hotel\" does not appear, and \"accommodation\" might not match \"lodging.\" You would miss documents that mean the same thing but use different words. What you invented: the idea of retrieval as a preprocessing step — only sending relevant context to the model. This is the skeleton of RAG. The next module fixes the keyword-matching weakness.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: The Search Problem The central question: how do you find a document that means the same thing, even when it uses different words?",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "When Words Lie Build a tiny keyword search engine using the mini corpus (see the observe code). The first sentence scores highest because it shares the word \"hotel.\" But the second and third sentences mean exactly the same thing and score zero — they share no words with the query. Your task. Measure meaning using numbers instead of words. Install and run the provided code. Each sentence becomes a vector of 384 numbers. Implement dot-product similarity between two vectors: sum of for all . Write it with a loop (no numpy). Build a function that embeds the query, computes dot products against all corpus embeddings, and returns results sorted by score. Do the accommodation and lodging sentences now rank above the Python sentence?",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "You have just used embeddings — dense numerical representations of meaning. The dot product between two embedding vectors measures how semantically similar two pieces of text are. This is the engine inside every modern search system. What you invented: semantic search using vector embeddings — the retrieval backbone of production RAG systems.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Building a Document Index In the real world, you embed documents once (when they are added to the system) and store those embeddings. At query time, you only embed the question — not all the documents again. Your task. Build a simple in-memory vector store. Step 1 — Write an function that takes the list of structured documents and returns a list of pairs. Step 2 — Write a function that embeds the query, computes dot product with every indexed embedding, and returns the top-k most relevant documents. Step 3 — If you had 1 million documents, computing a dot product with each one would be slow. In one or two sentences, describe what you might do to speed this up.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "What you invented: a vector index — the data structure at the heart of systems like Pinecone, Weaviate, and pgvector. You embed documents once, store the vectors, and at query time only embed the question.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Part 3: Inventing RAG The central question: how do you combine retrieval with generation to get answers that are grounded in your documents?",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "The Grounded Answer You now have two working pieces: a retrieval system and a language model. Try connecting them naively (see the observe code). It works — but there is a subtle problem. The problem. Ask a question completely outside the documents: Does the model say \"I don't know\" or does it answer from general knowledge? Your task. Improve into with two changes: Improve the prompt. Add a clear instruction: \"Answer only using the context provided. If the context does not contain the answer, respond with exactly: I cannot answer this from the provided documents.\" Add a confidence gate: after retrieval, check the top similarity score. If the best-matching document scores below , skip the API call entirely and return the fallback string directly.",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "You have just built a complete RAG pipeline: retrieve relevant chunks, gate on confidence, generate a grounded answer. The confidence gate is a simple but important production pattern — it prevents the model from hallucinating when retrieval fails. What you invented: Retrieval-Augmented Generation (RAG) — the dominant architecture for grounding LLMs in private or recent knowledge.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Chunking and the Goldilocks Problem Real documents are long. If you embed an entire 10-page PDF as one vector, you lose precision — the embedding averages out over too many topics. But if you split every sentence into its own chunk, each chunk loses context. There is a Goldilocks size. Your task. Write a function that splits a document into overlapping chunks of approximately words, with words repeated at the start of each new chunk. Then index the chunks and test retrieval with the provided questions. Finally, experiment : change to 20 (very small) and then to 200 (very large). How does retrieval quality change?",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "What you invented: document chunking with overlap — a standard preprocessing step in all production RAG systems. The overlap prevents relevant sentences from being split across chunk boundaries.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Part 4: The Single-Step Limit The central question: what happens when answering a question requires doing something — not just knowing something?",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "The Model That Cannot Act Ask the model things that require real-time actions (see the observe code). The time question fails — the model cannot check a clock. The calculator question might work for easy math but could fail on harder ones. The model is stateless and sandboxed: it cannot call your system clock, run a calculator, search the web, or write a file. Your task. Build a small toolkit of Python functions: , , . Invent a simple protocol. Write a prompt that instructs the model to output tool calls as / , and final answers as . Test it — does the model follow the protocol?",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "The model produces structured text that describes what tool to call. You have to parse that text and actually run the tool. The model is a reasoning engine, not an execution engine. You are the executor. What you invented: the concept of tool use (also called function calling ) — the mechanism that allows language models to request external actions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Parsing and Executing Tool Calls Complete the loop: parse the model's text output, run the right tool, and feed the result back. Your task. Write a function that: Asks the model a question using the tool prompt. Parses the response using (provided). If it is a tool call, runs the tool using (provided) and prints the result. If it is an answer, returns it. The limitation. Try: — this requires two tool calls ( then ). Your one-step agent can only do one.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "A single tool call is not enough for complex questions. You need a loop — the model calls a tool, gets a result, decides if it needs another tool, calls again, and so on. That loop is an agent. What you invented: the tool execution loop — the bridge between a model's text output and real-world actions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 5: Inventing Agents The central question: how do you give a model the ability to act repeatedly until a task is complete?",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "The Reasoning Loop An agent is a loop where: The model receives the question and any previous tool results. It decides: do I have enough information to answer, or do I need a tool? If it needs a tool, you run it, add the result to the conversation, and go to step 1. If it has an answer, return it. Your task. Build — a multi-turn agent using a conversation history list. At each step, ask the model, parse the response, and either run a tool (appending the result back to the conversation) or return the final answer. Test with questions requiring different numbers of steps: — 1 step — 1 step — 2 steps — 3 steps",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "What you invented: the agentic loop — the core architecture of every AI agent, from simple assistants to autonomous research systems. This is also known as the ReAct pattern (Reasoning + Acting).",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Giving the Agent Memory Your agent has no memory between separate calls. Try: first tell it , then ask — the second call fails. Your task. Add a simple external memory store with two new tools: — store a piece of information — retrieve a stored piece of information Update your to include these tools and update to dispatch to them. Then test the two-call sequence above.",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "You have added persistent state to a stateless model. The model itself still forgets between calls — but the system around it remembers. This pattern (external memory + stateless model) is how real production agents are built. What you invented: external agent memory — the pattern used in systems like LangChain's memory modules, AutoGPT's file-based memory, and enterprise AI assistants.",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "RAG Agent — Combining Everything Your final exercise combines everything: the vector index from Module 2, the grounded generation from Module 3, and the agentic loop from Module 5. Your task. Add a tool that wraps your function. Update the tool prompt to include it. Then build a complete RAG agent that can both retrieve information from documents AND use tools — and decide which it needs at each step. Test with: — retrieval only — retrieval + calculation Store trip details with , then ask about total costs — retrieval + memory + calculation Bonus: Use from acme_datasets to measure your agent's accuracy across 15 question-answer pairs.",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "What you invented: a RAG-powered tool-using agent — an architecture that appears in production systems like Perplexity, enterprise knowledge assistants, and AI copilots. You built it from scratch, from first principles.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "What You Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Your Inventions vs. Industry Names Exercise What you built Industry name 1.1 Detected unanswerable questions Hallucination detection 1.2 Selected relevant docs before prompting Context injection / prompt stuffing 2.1 Measured meaning with dot products Semantic similarity 2.2 Stored embeddings once, queried many times Vector index 3.1 Retrieved then generated, with a fallback Retrieval-Augmented Generation (RAG) 3.2 Split long docs into overlapping windows Chunking with overlap 4.1 Made the model describe actions as text Tool use / function calling 4.2 Parsed model text and ran the right function Tool dispatcher 5.1 Looped model + tools until task complete Agentic loop / ReAct pattern 5.2 Added persistent storage outside the model External agent memory 5.3 Combined retrieval, tools, memory, and loop RAG agent",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "Going Further Once you have completed all exercises, the natural next steps are: Proper vector databases. Replace your in-memory index with ChromaDB or Qdrant — both have free local modes and Python clients. The ReAct paper. Read ReAct: Synergizing Reasoning and Acting in Language Models (Yao et al., 2022). It formalises the loop you built in Exercise 5.1. Anthropic's native tool use. The Anthropic API supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it. Evaluation. Build a tiny evaluation set: 10 questions with known correct answers, and measure how often your agent gets them right. Multi-agent systems. What if one agent specialised in retrieval and another in calculation, and a coordinator decided which to call? That is a multi-agent system — the current frontier.",
+    "fragments": []
+  }
+]

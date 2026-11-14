@@ -1,0 +1,347 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Classification Metrics How do you know if a classifier is good? You'll start with raw predictions, invent the confusion matrix, derive precision, recall, and F1 — then discover how to choose the best threshold and compare models using ROC curves and AUC. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Confusion Matrix",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Here are two arrays one containing the actual labels and the other the predicted labels from a binary classifier: actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] Index 0 1 2 3 4 5 6 7 8 9 Actual 1 0 1 1 0 1 0 0 1 0 Predicted 1 0 0 1 0 1 1 0 1 0",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Some predictions match, some don t. Can we organize these errors into a structured summary?"
+      }
+    ]
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Each prediction has two properties: What was the actual label? (0 or 1) What did the model predict ? (0 or 1) That gives 2 2 = 4 possible outcomes. Try arranging them in a table rows for actual, columns for predicted.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Predicted 0 (Negative) 1 (Positive) Actual 0 TN True Negative FP False Positive Actual 1 FN False Negative TP True Positive This is called a confusion matrix . Green = correct, Red = errors. The first word says if the prediction was right (True) or wrong (False). The second is what the model predicted (Positive or Negative)."
+      }
+    ]
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Go through the arrays and fill in the confusion matrix: actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] Predicted 0 Predicted 1 Actual 0 TN = True Negative FP = False Positive Actual 1 FN = False Negative TP = True Positive",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "text": "? 4 ? 1 ? 1 ? 4 TP: indices 0, 3, 5, 8 TN: indices 1, 4, 7, 9 FP: index 6 FN: index 2"
+      }
+    ]
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Write a function that computes the confusion matrix: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block] confusion_matrix(actual, predicted) (4, 4, 1, 1)"
+      }
+    ]
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Part 2: Classification Metrics",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Now that we have TP=4, TN=4, FP=1, FN=1 what should we measure? The model made 5 positive predictions (TP + FP). What fraction of those were actually positive?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "4 / 5 = 0.80 This is Precision = TP / (TP + FP) Of everything I called positive, how many really were? There were 5 actual positives (TP + FN). How many did the model catch?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "4 / 5 = 0.80 This is Recall = TP / (TP + FN) Of all the real positives, how many did I find?"
+      }
+    ]
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Can we combine precision and recall into one number ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "F1 Score = 2PR / (P + R) the harmonic mean, not (P+R)/2, because the arithmetic mean lets one bad metric hide behind a good one (e.g. P=1.0, R=0.0 average 0.5 but F1 = 0)"
+      },
+      {
+        "fragment_index": 1,
+        "text": "A few more metrics you ll need: Accuracy (TP+TN) / Total Overall correctness (misleading if imbalanced) TPR TP / (TP+FN) Same as recall used in ROC curves FPR FP / (FP+TN) Of all negatives, how many did I falsely flag?"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Given TP = 4, TN = 4, FP = 1, FN = 1 , calculate each metric:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Metric Formula Value Precision TP / (TP + FP) ? Recall TP / (TP + FN) ? F1 Score 2PR / (P + R) ? Accuracy (TP + TN) / Total ? TPR TP / (TP + FN) ? FPR FP / (FP + TN) ? Metric Formula Calculation Value Precision TP / (TP + FP) 4 / (4 + 1) 0.80 Recall TP / (TP + FN) 4 / (4 + 1) 0.80 F1 Score 2PR / (P + R) 2 0.8 0.8 / 1.6 0.80 Accuracy (TP + TN) / Total (4 + 4) / 10 0.80 TPR TP / (TP + FN) 4 / (4 + 1) 0.80 FPR FP / (FP + TN) 1 / (1 + 4) 0.20"
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Accuracy looks great at 0.80. But consider this: A hospital tests 1000 patients for a rare disease. Only 10 actually have it. A lazy model says: Nobody is sick. What is its accuracy?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Accuracy = 990 / 1000 = 99%! But what are precision, recall, and F1?"
+      },
+      {
+        "fragment_index": 1,
+        "text": "TP = 0, FN = 10 Recall = 0% the model missed every sick patient. Accuracy is misleading when classes are imbalanced. That s why we need precision and recall."
+      }
+    ]
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Write functions for each metric: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Part 3: Choosing the Right Threshold",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "A model doesn t always output 0 or 1 it often outputs a probability : outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35] actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] Write a function that converts outputs to 0s and 1s using a threshold: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "apply_threshold(outputs, 0.5) [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] That s our original array!"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Question is how do we decide on this threshold?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "t = 0.3 [1,1,1,1,0,1,1,0,1,1] (8 positives) t = 0.5 [1,0,0,1,0,1,1,0,1,0] (5 positives) t = 0.8 [1,0,0,1,0,0,0,0,1,0] (3 positives) Lower threshold more positives. Higher threshold fewer positives."
+      },
+      {
+        "fragment_index": 1,
+        "text": "Let s see what happens to our metrics at each threshold."
+      }
+    ]
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "For threshold t = 0.5 , what is the precision? outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35] actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "apply_threshold [1,0,0,1,0,1,1,0,1,0] TP=4, FP=1 Precision = 0.80 Now write a function that computes precision for any threshold: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Run for each threshold: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Threshold 0.2 0.3 0.4 0.5 0.6 0.8 0.9 Precision 0.56 0.63 0.83 0.80 1.00 1.00 1.00 Best precision: t 0.6 (Precision = 1.00) Higher threshold fewer false positives higher precision."
+      }
+    ]
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Now do the same for recall . For t = 0.5 , what is the recall?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Same predictions: TP=4, FN=1 Recall = 0.80 Write a similar function for recall: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Run for each threshold: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Threshold 0.2 0.3 0.4 0.5 0.6 0.8 0.9 Recall 1.00 1.00 1.00 0.80 0.80 0.60 0.20 Best recall: t 0.4 (Recall = 1.00) Lower threshold fewer misses higher recall. The opposite of precision!"
+      }
+    ]
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "For threshold t = 0.5 , what is the F1 Score? You already know: Precision = 0.80, Recall = 0.80",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "F1 = 2 0.8 0.8 / (0.8 + 0.8) = 0.80 Write a function for F1 at any threshold: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Run for each threshold: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Threshold 0.2 0.3 0.4 0.5 0.6 0.8 0.9 F1 0.71 0.77 0.91 0.80 0.89 0.75 0.33 Best F1: t = 0.4 (F1 = 0.91) Best precision wants a high threshold. Best recall wants a low threshold. F1 finds the sweet spot."
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Which metric would you optimize? Scenario 1: You re screening patients for cancer. Missing a sick patient (FN) could be fatal. Optimize ___? Scenario 2: You re filtering spam emails. Blocking a real email (FP) is very annoying. Optimize ___?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "1. Recall catch every positive, even if some healthy patients get extra tests. 2. Precision only block when sure, even if some spam slips through. The right metric depends on the cost of each type of error."
+      }
+    ]
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "Plot Precision, Recall, and F1 vs Threshold to visualize the tradeoff: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Now apply this to a real dataset logistic regression on Iris (virginica vs. rest): [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Use your plotting function: [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Part 4: ROC Curve & AUC",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "You ve been plotting metrics against threshold. What if you plotted TPR vs FPR instead one point per threshold? Think: what would a perfect model look like? What about random guessing ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "A perfect model hits TPR=1, FPR=0 the top-left corner. Random guessing follows the diagonal (TPR FPR at every threshold). This plot is called the ROC curve (Receiver Operating Characteristic)."
+      }
+    ]
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Write a function to compute and plot the ROC curve: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "What is the area under the line connecting these two points? (5, 6) and (7, 10)",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "This is a trapezoid ! Area = width average height = (7 5) (6 + 10) / 2 = 2 8 = 16"
+      }
+    ]
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Now three points: (2, 3), (5, 7), (8, 4) What is the total area under the curve?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Two trapezoids: Blue: (5 2) (3+7)/2 = 3 5 = 15 Orange: (8 5) (7+4)/2 = 3 5.5 = 16.5 Total = 15 + 16.5 = 31.5"
+      }
+    ]
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Write a function to compute the area under any curve given x and y values: [code block] Test cases: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "slide_text": "The Area Under the ROC Curve (AUC) summarizes model quality in a single number. A perfect model s curve covers the entire square. What is its AUC? A random model follows the diagonal. What area is that?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "AUC = 1.0 entire square (perfect) AUC = 0.5 triangle under diagonal (random) AUC 0.5 worse than random! You already have . Apply it to the ROC points: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "text": "[code block] The higher the AUC, the better the model separates the two classes regardless of which threshold you pick."
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "slide_text": "Train two models on the same Iris data and compare: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Plot both ROC curves and compute AUC for each: [code block] The model with the higher AUC is the better classifier!"
+      },
+      {
+        "fragment_index": 1,
+        "text": "Expected: Logistic Regression AUC 0.99 Decision Stump AUC 0.85"
+      }
+    ]
+  },
+  {
+    "slide_index": 32,
+    "slide_text": "You just built from scratch what sklearn provides: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "text": "Compare with your implementations the numbers should match! Now you know exactly what these functions do under the hood."
+      }
+    ]
+  }
+]

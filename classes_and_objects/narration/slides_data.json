@@ -1,0 +1,122 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Classes & Objects — Inventing the Model API So far your programs kept data (lists, dicts) and behavior (functions) in separate boxes, and you passed one to the other by hand. A class glues them together: an object carries its own data and the functions that work on it. Why should a machine-learning book care? Because a trained model is an object — some learned numbers plus a function that uses them. By the end of this chapter you will have invented the / interface that scikit-learn, Keras and friends all use, hand-built a decision tree out of objects, and saved a model to disk. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: From Dict to Class You could describe a customer with a dict: . It works, but the data has no behavior: any code that wants to do something with a customer must live somewhere else.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Customer Write a class : stores the two values on the object ( hint: define and assign to , ). A method returns .",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "What just happened? constructs an object: Python creates an empty object and calls your with it as . is exactly — the object slides in as . Try it: returns the same string. and each carry their own and . One class, many objects.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 2: A Model Is an Object — `TwoPointLine` Remember the thermometer from Expressions Functions ? Calibration data: current 1 → 30°, current 2 → 35°. What temperature is current 3? You solved it with two loose functions, and , and had to carry the tuple between them yourself. Let the object carry it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "TwoPointLine Write a class with: — and are lists of two values each: two points and . Compute the slope and intercept , and store them on . — take a list of x values, return the list of . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "You just invented the scikit-learn API [code block] Same shape: construct → stores learned parameters on the object → uses them. Every model in the rest of this book fits this mold; the only thing that changes is how finds the parameters.",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Guard the Gate silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make raise a unless both lists have exactly two values ( hint: ).",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Part 3: Inheritance — Classes That Extend Classes All animals eat; only dogs bark. Instead of repeating in every animal class, write it once and inherit it.",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Animal, Dog, Cat has a method returning . adds returning — and must not redefine . adds returning . The class in parentheses — — is the parent. Everything the parent can do, the child can do too.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Quick Check — Why Inherit? In the // example, inherits from . What is the main benefit of this inheritance? A. Dogs run faster in Python than standalone classes B. Shared behavior (like `speak` or `name`) is defined once in `Animal`, and each subclass only adds or overrides what's different C. Python requires all classes to inherit from something D. It prevents you from creating `Animal` objects directly",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Part 4: Objects That Contain Objects — Trees An object's attributes can be other objects — that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Node with total and count Write a class : stores the value and the two children. returns this node's plus the totals of its children (skip a child if it is ). returns how many nodes are in this subtree. Notice the recursion: a method calling the same method on its children .",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "More Tree Methods Extend your class (copy it and add methods): / — smallest / largest value in the subtree. — if appears anywhere in the subtree. — length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive crashes on a leaf — handle children. — replace every node's with , in place.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Part 5: A Decision Tree Is an Object You get a job offer. Do you take it? Your (very rational) rules: If the salary score is below 1 → No . Otherwise, if the learning opportunity score is below 1 → No . Otherwise, if the distance score is below 1 → Yes ; too far → No . That is a tree of decisions — and you can build it from objects.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "DecisionNode, Yes, No stores all four. Its method looks up (circumstance is a dict) and delegates : How should the node decide which child to ask? What role does the play? and are leaf classes: their ignores the circumstance and returns / . Give them their own no-argument . No -chains about salaries anywhere — the structure of the objects encodes the rules.",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "This is a real decision tree You built its structure by hand. The Decision Trees chapter later in this book answers the natural next question: given a table of past decisions, how can discover the right criteria and boundaries automatically ? Same object, learned instead of hand-crafted.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Quick Check — Classes vs. Dicts You built a decision tree using , , and classes. Could you have represented the same tree using nested dictionaries instead? What would you lose? A. Dictionaries can't be nested, so it's impossible B. It would work, but you'd lose the ability to call methods like `.predict()` directly on the tree — you'd need separate functions that know the dict structure C. Dictionaries are faster, so you'd actually gain performance D. You'd lose nothing — classes and dicts are interchangeable",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Part 6: Saving Objects to Files Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it. JSON can store dicts, lists, numbers, strings and booleans — but not your objects. So the plan is: object → dict → JSON file , and back.",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "to_dict and from_dict — a leaf becomes , a leaf becomes , and an inner node becomes (children converted recursively). Hint: tells leaves apart. — the exact inverse, rebuilding real objects. The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Aside — Python's module can serialize almost any object in one line (), no needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via ), while model configs travel as JSON or YAML.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 7: Bonus Challenge — `FitPlane` fits a line through 2 points. In 3D, three points determine a plane — and finding , , means solving three linear equations.",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "FitPlane fits a line through 2 points. In 3D, three points determine a plane — and finding , , means solving three linear equations: [code block] You already own a tool for that: paste your (and its helpers) from the Loops and Arrays chapter into the cell, then write : — is a list of three tuples. Build the three equations and solve for . — a list of tuples in, a list of out.",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "Summary Part You built The idea 1 , , methods — data + behavior in one place 2 the / model API , input validation 3 → , inheritance 4 recursion on object trees 5 , , a decision tree as objects; leaves via inheritance 6 / serialization — models that survive the program Bonus fit = solving equations (three points → a plane)",
+    "fragments": []
+  }
+]

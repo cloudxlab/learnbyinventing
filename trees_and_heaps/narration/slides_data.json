@@ -1,0 +1,132 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Trees & Heaps -- Inventing Fast Lookup You keep a collection of numbers. Items are inserted , deleted , and searched constantly. What is the best data structure? Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Warm-Up -- Trees That Compute A tree is nodes connected downward: each node holds a value and has up to two children, and . Here is the arithmetic expression drawn as a tree: [code block] Leaves are numbers; internal nodes are operators. This is exactly how compilers see your code (Python, SQL, C++ -- everything is parsed into trees). The class and a tree printer are provided -- run this cell as-is.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Evaluate an Expression Tree Write that computes the value of an expression tree. Before you code: If the node's value is a number (leaf) -- what is the answer? If it is -- what two smaller problems must you solve first? (This is recursion on a tree: each child is a smaller tree.) Support , , , . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Build a Tree Yourself Build the tree for using , print it with , and check that returns . Notice: the tree needs no parentheses . The structure is the precedence.",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 2: The Binary Search Tree Back to our fast-lookup problem. Here is the one rule that makes a tree searchable: BST rule: everything in a node's left subtree is smaller than the node's value; everything in the right subtree is larger . Play with the animation before coding: BST Visualization . Insert 10, 12, 1, 11, 13, 3 and watch where each lands.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Insert Write that inserts into the tree rooted at and returns the root of the resulting tree. Think recursively: If is -- where does the new value go? If -- which subtree does it belong to? Insert it there and reattach: . [code block] Compare the printed tree with what the animation showed you.",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Find Write that returns if is in the tree. The payoff: at each node you compare once and discard half the tree -- the same halving you invented in the Binary Search chapter. That is why find is O(log n)... if the tree is balanced (more on that soon). [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Walk the Tree in Order Write that returns a list of all values using this recipe: first everything in the left subtree, then the node itself, then the right subtree. [code block] Run it. Look carefully at the output. What did you just get for free? (You have invented tree sort : insert n values, walk once, sorted output.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Find the Minimum Where does the smallest value in a BST live? Trace it on the picture. Write that returns the smallest value in a non-empty tree. No comparisons needed -- just walking. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "...and the Maximum Mirror image: write returning the largest value. Same rule -- no comparisons, just walk. Both of these run in O(height): on a balanced tree of a million values, about 20 steps to either extreme.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Delete Deletion is the tricky one. Write that removes and returns the root of the resulting subtree. Think about what happens in each case: What if the node you want to delete has no children ? What if it has one child ? What if it has two children -- this is the tricky one. If removing it leaves a \"hole\", what value could you put there that would keep the BST property? (Hint: you just wrote .) [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "The Catch -- Balance Insert in that order and print the tree. What shape do you get? Every insert went right: the \"tree\" is a chain -- a glorified linked list, and find is back to O(n). Sorted input is the worst input for a plain BST. Self-balancing trees (AVL, Red-Black) fix this by rotating nodes on insert to keep the height at log n. Watch one rebalance itself: Red-Black Tree Visualization -- insert 1...10 in order and watch it stay shallow. (Databases use B-Trees -- the same idea, made disk-friendly.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "BST Search Complexity You insert the numbers 1, 2, 3, 4, 5 (in that order) into an empty BST. What does the tree look like, and how many comparisons does finding the value 5 require? A. A balanced tree with 3 levels -- finding 5 takes 3 comparisons B. A straight chain leaning right (like a linked list) -- finding 5 takes 5 comparisons C. A straight chain leaning left -- finding 5 takes 1 comparison D. The BST refuses to insert sorted data",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 3: The Scheduler Problem & The Heap You are building a task scheduler (like Unix cron). Tasks arrive at any time: task1: run at 1:00pm task2: run at 12:30pm task3: run at 2:00pm The scheduler repeatedly needs just one thing: the earliest task . So the operations are: , . Nothing else. No search, no arbitrary delete. Before reading on , rate each strategy (fill the ?s in your head): Strategy add pop earliest unsorted list O(1) O(?) scan keep list sorted O(?) O(1) BST O(log n) O(log n) one slot per second for 1000 days O(1) O(?) -- and how much memory? The BST wins -- but it maintains total order, and we only ever ask for the min. Can a structure that promises less do the job with less work? It exists: the min-heap . The Heap Shape A min-heap is a binary tree with one weak promise: Heap rule: every node is = its children. (Nothing about left vs right!) So the minimum is always... where? Because the shape is always a \"filled top-down, left-to-right\" tree, we don't need Node objects at all -- we can store it in a plain list : [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "The Index Arithmetic For the node at list index , figure out (try it on the picture above): = ? = ? = ? Write the three functions. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Push To add a value, append it at the end of the list (this keeps the shape correct). But the heap rule might now be broken -- the new value could be smaller than its parent. How would you fix this? Write (in place). [code block] How many swaps can a push cost at most, for a heap of n items? (The tree has [math] levels -- that is the whole point.)",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Pop the Minimum The minimum is . Removing it leaves a hole at the root. To keep the shape, move the last element into the root position. But now the heap rule might be broken -- how would you fix it? Write that removes and returns the minimum. In place. Edge case to think about: why must you swap with the smaller child? What if a node has only a left child? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "The Scheduler, Solved Your heap works on anything comparable -- including tuples, which Python compares by first element. So a task is just . Write that takes a list of tuples, pushes them all into a heap, then pops until empty, returning the task names in execution order. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Heap Sort, and the Standard Library You already proved it in the stress test: push n values, pop n values -> sorted. Package it as returning a new sorted list. Each of the 2n operations costs O(log n) -- so heap sort is O(n log n) , in place-able, no merging needed. Python ships your invention as the module: , , and (which builds a heap from a list in O(n)). Verify your heap agrees with it. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Heap Property In a min-heap, which of the following is guaranteed? A. The left child is always smaller than the right child B. Every parent is smaller than or equal to both its children, and the root is the overall minimum C. The tree is sorted from left to right at every level D. The smallest element is always at the bottom-left",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Heap vs BST Both a BST and a min-heap store elements. When would you choose a heap over a BST? A. When you need to search for arbitrary elements quickly B. When you repeatedly need the minimum (or maximum) element and don't need to search for arbitrary values C. When you need to iterate elements in sorted order D. When the data contains duplicates",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 4: Two More Tree Tricks",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "In-Order Without Recursion Your from Exercise 2.3 relies on Python's call stack. But recursion is not magic -- it's just a stack that Python manages for you. Prove it. Write that returns the same list as , using no recursion -- manage a plain list as your own stack: From the current node, push nodes while walking left as far as you can. Pop a node -- that's the next value in order. Move to the popped node's right child and repeat, until both the stack and the current node are exhausted.",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "From Text to Tree: a Tiny Parser In Part 1 you evaluated expression trees that were built by hand. Real programs receive expressions as strings : . Turning the string into a tree is called parsing -- it's the front half of every compiler (your from Exercise 1.1 is the back half). Write for fully parenthesized expressions with the operators , , and non-negative integer numbers (no spaces): If the current character is a digit, read the whole number -- that's a leaf . If it is : parse the left sub-expression, read the operator, parse the right sub-expression, expect -- that's an operator . A recursive helper that takes the current position and returns works beautifully.",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Structure You built Sweet spot Expression tree -- recursion on trees how compilers see code Binary search tree , , , , ordered data with frequent insert/delete, all O(log n) if balanced Min-heap , , , only need the min: schedulers, priority queues, O(log n) with a plain list",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "What you just invented -- the trade-off ladder you climbed: A dictionary promises the most (any-key O(1)) and pays in memory and lost ordering. A BST promises total order and pays log n per operation -- plus a balance headache (solved by AVL / Red-Black trees; B-Trees take the same idea to disk in every database). A heap promises the least -- just the minimum -- and is the simplest and fastest of all. Choosing a data structure = paying only for the promises you actually use. Bonus tricks: showed that recursion is just a stack you can manage yourself, and turned a string into an expression tree -- text in, -ready tree out.",
+    "fragments": []
+  }
+]

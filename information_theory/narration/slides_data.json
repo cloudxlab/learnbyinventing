@@ -1,0 +1,152 @@
+[
+  {
+    "slide_index": 0,
+    "slide_text": "Information Theory — Lossless Compression You can only send 0s and 1s over a wire. Your job is to design a scheme that converts any message into bits — and lets the receiver convert it back without any confusion. By the end of this chapter you will invent a method that produces the shortest possible binary encoding for any alphabet and any set of letter frequencies. Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "slide_text": "Part 1: Two Symbols — A and B You need to transmit messages that contain only the letters A and B . The wire only carries 0s and 1s.",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "slide_text": "Design the Encoding You need to decide: what bit string does A become? What does B become? Before you code: You have two symbols and two possible 1-bit strings: and . Try: A → , B → . Encode by hand. What do you get? Now decode it back. Do you get the original? Write a function that takes a string of As and Bs and returns a binary string. Write a function that takes a binary string and returns the original message. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "slide_text": "Check for Ambiguity Would any other encoding cause confusion? Try: A → , B → . Encode → ? Encode → ? Are they the same bit string? Key definition: A code is prefix-free if no codeword is the start (prefix) of another. A=, B= is NOT prefix-free: is a prefix of . A=, B= IS prefix-free. Write that checks whether a given dict is prefix-free. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 4,
+    "slide_text": "Part 2: Three Symbols — A, B, and C Now messages contain A , B , and C . You still can only send 0s and 1s.",
+    "fragments": []
+  },
+  {
+    "slide_index": 5,
+    "slide_text": "Why One Bit Each No Longer Works With 1 bit you can only represent 2 different things ( and ). You have 3 symbols — so at least one must get a longer code. Option 1 — Fixed-width (2 bits each): A → , B → , C → (We skip — it goes unused.) Write and using this fixed 2-bit scheme. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
+    "slide_text": "Variable-Length Prefix-Free Encoding Option 2 — Variable length: A → , B → , C → This uses only 1 bit for A, and 2 bits for B and C. Is it prefix-free? Is a prefix of ? starts with , not . ✓ Is a prefix of ? starts with , not . ✓ Is a prefix of ? They share but differ at position 2. ✓ How do you decode variable-length codes? Walk through the bits one at a time, accumulating characters until the accumulated string matches a known codeword — then emit the symbol and reset. Write and using A=, B=, C=. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "slide_text": "Compare the Two Schemes For the message : Fixed scheme (2 bits/symbol): how many bits total? Variable scheme: how many bits total? Which is shorter? Verify that the variable scheme is prefix-free. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "slide_text": "Why Prefix-Free Matters In a prefix-free code, no codeword is a prefix of another. Why is this property essential for decoding? A. It makes the codes shorter B. Without it, the decoder can't tell where one codeword ends and the next begins — the bit stream becomes ambiguous C. It ensures all codewords have the same length D. It prevents errors during transmission",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "slide_text": "Part 3: Frequencies Matter (A, B, C, D) Now add a fourth symbol D . Suppose you know how often each symbol appears: Symbol Frequency A 50% B 25% C 20% D 5% Question: Does the order in which you assign short vs. long codes matter? Let us find out.",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "slide_text": "Average Bits Per Symbol Write that computes the expected number of bits per symbol. Think it through: In the fixed 2-bit scheme, every symbol costs 2 bits, so the average is obviously 2. But in a variable-length scheme, A costs 1 bit and appears 50% of the time, B costs 2 bits and appears 25% of the time, and so on. What operation combines \"how often\" with \"how many bits\" into an overall average? Try by hand first: For scheme with frequencies A=50%, B=25%, C=20%, D=5%: A contributes 0.50 × 1 bit = ? B contributes 0.25 × 2 bits = ? C contributes 0.20 × 2 bits = ? D contributes 0.05 × 2 bits = ? Total = ? Now generalize this into a function. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "slide_text": "Try Three Schemes Compare these three prefix-free schemes on the same frequencies: Scheme A B C D 1. Fixed 2-bit 2. Short codes for common 3. Short codes for rare (reversed) For each scheme: Check it is prefix-free. Compute the average bits per symbol. Which scheme gives the shortest encoding?",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "slide_text": "Measure on Real Data Generate a random message of 1000 symbols according to the given frequencies, then measure how many bits each scheme actually produces. Run the code above and observe which scheme produces the fewest bits on real data. Does it match the theoretical you computed?",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "slide_text": "Part 4: Finding the Shortest Encoding Scheme 2 was shorter than the fixed scheme. But is it the shortest possible ? Key insight: Give the shortest codes to the most frequent symbols . The rare symbols are used infrequently, so making their codes long barely hurts. But how do you decide which symbols to group together? Think about it: if you had to start combining symbols into groups of two, which ones would you pair first? Why? Once you pair two symbols, you can treat the pair as a single \"super-symbol\" whose frequency is the sum of its parts. Now you have a smaller problem — what do you do next? Keep this idea in mind as you work through the exercises below.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
+    "slide_text": "Build the Tree by Hand You have four symbols with frequencies: A=50%, B=25%, C=20%, D=5%. You want to build a binary tree where each leaf is a symbol, and you assign codes by tracing from root to leaf (0 for left, 1 for right). Symbols deeper in the tree get longer codes. Your task: Trace the process by hand. Which two symbols would you combine first? Try different pairings — which gives the shortest codes? Now treat that pair as a single super-symbol and look at what remains. Pick two to combine again. Repeat until everything is merged into one tree. Draw the tree you get. What code does each symbol end up with? [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
+    "slide_text": "Automate the Tree Building Represent the tree using nested tuples: A leaf is just a string: , , etc. An internal node is a tuple of its two children: . So the tree from the example is: [code block] Translate the process you just did by hand into code. Start with pairs and repeat the combining step until one tree remains. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "slide_text": "Assign Codes from the Tree Now walk the tree recursively to assign binary codes. Write that: If is a string (a leaf/symbol), return . Handle the edge case where is empty (single-symbol alphabet) by returning . If is a tuple : Recursively assign codes to with prefix . Recursively assign codes to with prefix . Merge and return the combined dict. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "slide_text": "Huffman Scheme Combine and into one function. Write that returns the complete dict. [code block] Verify: The scheme is prefix-free. is ≤ 2.0 (the fixed-width baseline).",
+    "fragments": []
+  },
+  {
+    "slide_index": 18,
+    "slide_text": "Information-Theoretic Lower Bound (Entropy) Your Huffman code assigns A (50%) a 1-bit code, B (25%) a 2-bit code, D (5%) a 3-bit code. Do you see a pattern between frequency and code length? Think about it: A appears 50% = 1/2 of the time and gets 1 bit. Notice: [math]. B appears 25% = 1/4 of the time and gets 2 bits. Notice: [math]. For a symbol with frequency [math], the \"ideal\" code length is [math]. Your challenge: If each symbol could have exactly its ideal code length [math], what would the average bits per symbol be? Use the same weighted-average idea from , but with the ideal lengths instead of actual code lengths. Write and compare it to your Huffman average. No lossless code can do better than this theoretical minimum. [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "slide_text": "Visualisation — Encoding Efficiency Run the plotting helper below to compare fixed-width, Huffman, and entropy visually.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "slide_text": "Huffman Optimality Huffman coding assigns shorter codes to more frequent symbols. Is this always the most efficient possible prefix-free encoding? A. No — there are always better encodings that Huffman misses B. Yes — Huffman is provably optimal among all prefix-free codes that assign a whole number of bits per symbol C. Yes, but only for alphabets with exactly 4 symbols D. No — fixed-length codes are always more efficient",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "slide_text": "Part 5: Generalized Encode and Decode Now put everything together into two clean functions.",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "slide_text": "`encode(data, frequencies)` Write that: Builds the Huffman scheme from . Encodes (a string) using that scheme. Returns . [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "slide_text": "`decode(encoded_data, scheme)` Write that: Builds a reverse lookup: . Walks through one bit at a time. When the accumulated bits match a codeword, emit the symbol and reset. Returns the decoded string. [code block] Before you code: Why does the prefix-free property guarantee this works? Could two different symbols ever produce the same accumulated prefix at the same step?",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "slide_text": "Round-Trip on a Longer Message Generate a 500-symbol message using the given frequencies and verify that . Then measure the compression ratio.",
+    "fragments": []
+  },
+  {
+    "slide_index": 25,
+    "slide_text": "Try Different Alphabets Your and work on any alphabet and any frequencies. Try them on English-like letter frequencies. Observe: the most frequent letters (e, t, a) get short codes (3-4 bits), while the rarest (q, z) get long codes (8+ bits). On average this saves many bits compared to fixed-width encoding.",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "slide_text": "Entropy as a Lower Bound The entropy of an alphabet with frequencies {A: 50%, B: 25%, C: 12.5%, D: 12.5%} is exactly 1.75 bits per symbol. Your Huffman code achieves exactly 1.75 bits per symbol. Is it always possible to match the entropy exactly? A. Yes — Huffman always matches entropy exactly B. No — this case works because the frequencies are all powers of 1/2, giving exact integer code lengths. For other frequency distributions, Huffman gets close but can't go below the entropy bound C. No — entropy is a theoretical concept that can never be achieved D. Yes, but only if you use more than 4 symbols",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "slide_text": "What you just invented You just invented Huffman coding (1952), one of the most important algorithms in data compression. It is still used today inside ZIP files, JPEG images, and MP3 audio. The key ideas you discovered:",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "slide_text": "Idea What you built Prefix-free codes prevent ambiguity Shorter codes for common symbols saves bits Greedy: always merge the two rarest Walk tree to assign codes No code can beat Shannon entropy Full compressor Full decompressor",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "slide_text": "Huffman coding is provably optimal among all codes that assign a fixed bit-string to each symbol.",
+    "fragments": []
+  }
+]

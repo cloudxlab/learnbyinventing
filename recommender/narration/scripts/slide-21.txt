@@ -1,0 +1,8 @@
+# ON SCREEN:
+# Part 5: Scaling to Netflix -- MapReduce Matrix Multiplication Our class matrix was 25x15. Netflix has ~300 million users and ~20,000 titles. The user-similarity matrix alone would have [math] entries -- no single machine can even hold that, let alone compute it. Two observations rescue us: The matrix is almost entirely zeros. A typical user rates a few dozen titles out of 20,000. Why store the zeros at all? Keep only the non-zero entries as triples. Matrix multiplication decomposes into independent little jobs. Recall: [math]. Each non-zero pair [math] contributes one product [math] to one output cell [math] -- and every contribution can be computed on a different machine , then summed up per cell. That "compute little contributions anywhere, then group and sum by key" pattern is called MapReduce , and it's how the giants do it.
+# ---
+Our class matrix was small, just twenty-five people and fifteen movies. Now imagine Netflix: hundreds of millions of users and tens of thousands of titles. A user-similarity matrix that size is far too big for any single machine to even hold.
+
+But two ideas rescue us. First, almost every rating is missing, so why store all those zeros? Keep only the real ratings. Second, matrix multiplication breaks into tiny independent products, and each one can run on a different machine. Then we just group and add them up by cell.
+
+That's MapReduce.
