@@ -19,12 +19,30 @@
   var userHasInteracted = false;
   var pendingPlay = null;
 
+  // ── CSS for animations ──────────────────────────────────────────────
+
+  var style = document.createElement('style');
+  style.textContent =
+    '@keyframes narration-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.5)} 50%{box-shadow:0 0 0 8px rgba(59,130,246,0)} }' +
+    '@keyframes narration-bar1 { 0%,100%{height:4px} 50%{height:14px} }' +
+    '@keyframes narration-bar2 { 0%,100%{height:6px} 50%{height:16px} }' +
+    '@keyframes narration-bar3 { 0%,100%{height:8px} 50%{height:12px} }' +
+    '#narration-controls.playing #narration-mute { animation: narration-pulse 2s ease-in-out infinite; }' +
+    '.narration-bars { display:none; align-items:center; gap:2px; height:18px; margin-left:6px; }' +
+    '#narration-controls.playing .narration-bars { display:flex; }' +
+    '.narration-bars span { display:block; width:3px; background:#3b82f6; border-radius:1px; }' +
+    '.narration-bars span:nth-child(1) { animation:narration-bar1 0.8s ease-in-out infinite; }' +
+    '.narration-bars span:nth-child(2) { animation:narration-bar2 0.6s ease-in-out infinite 0.1s; }' +
+    '.narration-bars span:nth-child(3) { animation:narration-bar3 0.7s ease-in-out infinite 0.2s; }' +
+    '.narration-bars span:nth-child(4) { animation:narration-bar1 0.9s ease-in-out infinite 0.15s; }';
+  document.head.appendChild(style);
+
   // ── UI ──────────────────────────────────────────────────────────────
 
   var container = document.createElement('div');
   container.id = 'narration-controls';
   container.style.cssText =
-    'position:fixed;bottom:16px;right:16px;z-index:100;display:flex;gap:6px;' +
+    'position:fixed;bottom:16px;right:16px;z-index:100;display:flex;align-items:center;gap:6px;' +
     'opacity:0;transition:opacity 0.3s;pointer-events:none;';
 
   function makeBtn(id, title, svg) {
@@ -61,8 +79,29 @@
   var muteBtn = makeBtn('narration-mute', 'Mute/Unmute', muted ? SVG_MUTED : SVG_UNMUTED);
   var replayBtn = makeBtn('narration-replay', 'Replay', SVG_REPLAY);
 
+  var bars = document.createElement('div');
+  bars.className = 'narration-bars';
+  for (var b = 0; b < 4; b++) bars.appendChild(document.createElement('span'));
+
   container.appendChild(muteBtn);
   container.appendChild(replayBtn);
+  container.appendChild(bars);
+
+  // ── Playing state ───────────────────────────────────────────────────
+
+  function setPlaying(isPlaying) {
+    if (isPlaying) {
+      container.classList.add('playing');
+    } else {
+      container.classList.remove('playing');
+    }
+  }
+
+  audio.addEventListener('play', function () { setPlaying(true); });
+  audio.addEventListener('pause', function () { setPlaying(false); });
+  audio.addEventListener('ended', function () { setPlaying(false); });
+
+  // ── Button handlers ─────────────────────────────────────────────────
 
   muteBtn.addEventListener('click', function (e) {
     e.stopPropagation();
@@ -85,8 +124,6 @@
   });
 
   // ── Autoplay unlock ─────────────────────────────────────────────────
-  // Browsers block audio.play() until the user clicks/taps/presses a key.
-  // We listen for the first interaction, then play any pending audio.
 
   function onFirstInteraction() {
     if (userHasInteracted) return;
@@ -207,7 +244,6 @@
     });
   }
 
-  // Wait for Reveal to be ready. Handle all timing cases.
   function waitForReveal() {
     if (typeof Reveal === 'undefined') {
       document.addEventListener('DOMContentLoaded', waitForReveal);
