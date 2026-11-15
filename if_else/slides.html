@@ -227,6 +227,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
 <p>Run it a bunch of times to make sure you only ever see <code>1</code> through <code>6</code>.</p>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> Start with <code>random.random() * 6</code>. That gives you a decimal between 0 and 6. How do you turn that into a whole number?</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> <code>int(random.random() * 6)</code> gives 0 to 5. Add 1 to shift the range to 1 through 6.</p>
+</div>
 
         </div>
       </section>
@@ -249,6 +255,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 <li>Call it 10,000 times and count how many times you got <code>"Heads"</code>. Is it close to 5,000?</li>
 </ol>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> The structure is: <code>if random.random() &lt; 0.5:</code> return one string, <code>else:</code> return the other.</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> For counting heads in 10,000 tosses, use a variable <code>count = 0</code> and a <code>for</code> loop. Each time <code>coin_toss()</code> returns <code>"Heads"</code>, add 1 to <code>count</code>.</p>
+</div>
 
         </div>
       </section>
@@ -276,11 +288,42 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 <li>Roll the die 20 times with <code>roll_die()</code> and classify each result. Print both the roll and its class.</li>
 </ol>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint:</strong> You need to check two boundaries. <code>if n &lt;= 2:</code> handles "Low". <code>elif n &lt;= 4:</code> handles "Mid". The <code>else:</code> catches everything left (5 and 6).</p>
+</div>
 
         </div>
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 1.1 — Branching Basics</h3>
+        <div class="slide-content">
+
+        <p>What does this code print?</p>
+
+<pre><code>x = 3
+if x > 5:
+    print("big")
+elif x > 1:
+    print("medium")
+else:
+    print("small")</code></pre>
+
+        <p><strong>A.</strong> big</p>
+        <p><strong>B.</strong> medium</p>
+        <p><strong>C.</strong> small</p>
+        <p><strong>D.</strong> big medium</p>
+
+<div class="fragment" data-fragment-index="0">
+<p><strong>Answer: B.</strong> Python checks conditions top to bottom. <code>x &gt; 5</code> is <code>False</code> (3 is not greater than 5), so it skips to the next check. <code>x &gt; 1</code> is <code>True</code>, so it prints <code>"medium"</code> and stops — it never reaches <code>else</code>.</p>
+</div>
+
+        </div>
+      </section>
 
 
 
@@ -350,6 +393,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 </code></pre>
 </div>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> Unpack each tuple: <code>px, py = p</code>, <code>ax, ay = a</code>, <code>bx, by = b</code>. Then compute <code>dist_a = (px - ax)**2 + (py - ay)**2</code> and similarly for <code>dist_b</code>.</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> Compare <code>dist_a</code> and <code>dist_b</code> with <code>if</code>/<code>elif</code>/<code>else</code>: if <code>dist_a &lt; dist_b</code> return <code>'A'</code>, elif <code>dist_b &lt; dist_a</code> return <code>'B'</code>, else return <code>'Equal'</code>.</p>
+</div>
 
         </div>
       </section>
@@ -372,6 +421,26 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 2.1 — Squared Distance</h3>
+        <div class="slide-content">
+
+        <p>Why can you compare squared distances instead of actual distances to decide which point is closer?</p>
+
+        <p><strong>A.</strong> Squared distance is always smaller, so it's easier to compare</p>
+        <p><strong>B.</strong> The square root function never changes the order of two positive numbers — if one squared distance is smaller, its actual distance is also smaller</p>
+        <p><strong>C.</strong> Actual distance can be negative, but squared distance cannot</p>
+        <p><strong>D.</strong> You need squared distances for 3D, but actual distances work fine in 2D</p>
+
+<div class="fragment" data-fragment-index="0">
+<p><strong>Answer: B.</strong> The square root is a strictly increasing function: for any two positive numbers, if <code>a &lt; b</code> then <code>sqrt(a) &lt; sqrt(b)</code>. So comparing squared distances always gives the same answer as comparing actual distances, and you save the cost of computing square roots.</p>
+</div>
+
+        </div>
+      </section>
 
 
 
@@ -431,6 +500,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 </code></pre>
 </div>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> Use <code>min(a, b)</code> and <code>max(a, b)</code> to find the lower and upper bounds, so the order of <code>a</code> and <code>b</code> does not matter.</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> Return <code>min(a, b) &lt;= p &lt;= max(a, b)</code>. Python allows chained comparisons like this.</p>
+</div>
 
         </div>
       </section>
@@ -517,6 +592,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 </code></pre>
 </div>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> First normalise each segment: <code>lo1, hi1 = min(start1, end1), max(start1, end1)</code> and the same for segment 2.</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> They are separated when <code>hi1 &lt; lo2</code> (segment 1 entirely left) or <code>hi2 &lt; lo1</code> (entirely right). Return <code>not</code> of that condition.</p>
+</div>
 
         </div>
       </section>
@@ -544,7 +625,7 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
 
       <section>
-        <h3>Separation vs Overlap Logic</h3>
+        <h3>Quick Check 4.1 — Separation vs Overlap Logic</h3>
         <div class="slide-content">
 
         <p>You wrote <code>are_lines_touching_or_overlapping</code> by checking whether the segments are NOT separated. Why is it easier to check for separation instead of directly checking for overlap?</p>
@@ -558,6 +639,9 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
         <p><strong>D.</strong> Separation works in 2D but overlap doesn't</p>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Answer: B.</strong> There are many ways two segments can overlap: one could be inside the other, they could partially overlap, or they could just touch at an endpoint. But there are only two ways they can be completely separate: one is entirely to the left of the other, or entirely to the right. Checking for separation and then negating is much simpler.</p>
+</div>
 
         </div>
       </section>
@@ -613,6 +697,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 </code></pre>
 </div>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> The point is inside if its x-coordinate is between x1 and x2, AND its y-coordinate is between y1 and y2. You already have a function that checks "is a number between two others".</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> Return <code>is_point_on_line_1d(x1, x2, px) and is_point_on_line_1d(y1, y2, py)</code>.</p>
+</div>
 
         </div>
       </section>
@@ -690,6 +780,12 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 </code></pre>
 </div>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> Unpack the corners: <code>(x1, y1), (x2, y2) = rect1</code> and similarly for rect2. Then check if the x-ranges overlap AND the y-ranges overlap.</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> Return <code>are_lines_touching_or_overlapping(x1, x2, x3, x4) and are_lines_touching_or_overlapping(y1, y2, y3, y4)</code>.</p>
+</div>
 
         </div>
       </section>
@@ -717,7 +813,7 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
 
       <section>
-        <h3>Dimension Decomposition</h3>
+        <h3>Quick Check 6.1 — Dimension Decomposition</h3>
         <div class="slide-content">
 
         <p>To check if two rectangles intersect in 2D, you checked whether their projections overlap on BOTH axes. What happens if you only check one axis?</p>
@@ -731,6 +827,9 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
         <p><strong>D.</strong> It works fine for 2D — one axis is enough</p>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Answer: B.</strong> Picture two rectangles that are at the same height but far apart left-to-right. Their y-ranges overlap, but they do not touch. You need BOTH axes to overlap for an actual intersection.</p>
+</div>
 
         </div>
       </section>
@@ -761,8 +860,14 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 <li>Impurity should be <strong>maximum</strong> when <code>c1 == c2</code>.</li>
 </ol>
 
-<p>There's no single right answer — invent a formula, test it against the three conditions, and adjust if it doesn't satisfy them. (One possible formula: <code>(2 * min(c1, c2)) / (c1 + c2)</code>.)</p>
+<p>There's no single right answer — invent a formula, test it against the three conditions, and adjust if it doesn't satisfy them.</p>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint 1:</strong> Think about what changes when the two classes are balanced versus when one dominates. What fraction or ratio captures that?</p>
+</div>
+<div class="fragment" data-fragment-index="1">
+<p><strong>Hint 2:</strong> One possible formula: <code>(2 * min(c1, c2)) / (c1 + c2)</code>. This equals 0 when one count is 0 and equals 1 when the counts are equal.</p>
+</div>
 
         </div>
       </section>
@@ -777,11 +882,42 @@ print(rectangles_intersect((0,0,5,5), (1,1,2,2)))  # True  (one inside the other
 
 <p>A 3D box is <code>((x1, y1, z1), (x2, y2, z2))</code> — its two opposite corners. Write <code>are_boxes_intersecting(box1, box2)</code> by reusing <code>are_lines_touching_or_overlapping</code> <strong>three</strong> times — once per axis.</p>
 
+<div class="fragment" data-fragment-index="0">
+<p><strong>Hint:</strong> It is exactly the same pattern as <code>are_rectangles_intersecting</code>, but with a third call for the z-coordinates: <code>are_lines_touching_or_overlapping(...) and are_lines_touching_or_overlapping(...) and are_lines_touching_or_overlapping(...)</code>.</p>
+</div>
 
         </div>
       </section>
 
 
+
+
+
+      <section>
+        <h3>What You Just Invented</h3>
+        <div class="slide-content">
+        <table style="margin:0.5em auto; font-size:0.95em;">
+          <tr><th style="padding:0.2em 0.8em;">What you built</th>
+              <th style="padding:0.2em 0.8em;">Its real name</th></tr>
+          <tr><td><code>if</code>/<code>else</code> to pick between two outcomes</td>
+              <td><strong>Two-way branching (conditional)</strong></td></tr>
+          <tr><td><code>if</code>/<code>elif</code>/<code>else</code> for three or more outcomes</td>
+              <td><strong>Multi-way branching</strong></td></tr>
+          <tr><td>Compare squared distances instead of real distances</td>
+              <td><strong>Nearest-neighbour classification</strong> (1-NN for two classes)</td></tr>
+          <tr><td>Check if a number is between two others</td>
+              <td><strong>Range check / interval membership</strong></td></tr>
+          <tr><td>Check separation, then negate</td>
+              <td><strong>Negation-based overlap test</strong></td></tr>
+          <tr><td>Split a 2D question into two 1D questions</td>
+              <td><strong>Axis-aligned decomposition (Separating Axis Theorem)</strong></td></tr>
+          <tr><td>Reuse 1D functions for 2D and 3D</td>
+              <td><strong>Dimension-independent algorithm design</strong></td></tr>
+          <tr><td>A number measuring how "mixed" two classes are</td>
+              <td><strong>Impurity measure</strong> (used in decision trees)</td></tr>
+        </table>
+        </div>
+      </section>
 
 
 
