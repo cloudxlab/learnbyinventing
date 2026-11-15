@@ -105,8 +105,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <section>
         <h1>Backtracking — Exhaustive Search, Done Right</h1>
 
-        <div class="slide-content slide-title">Some problems have no formula. Nobody can <em>compute</em> the solution of a Sudoku puzzle —
-
+        <div class="slide-content slide-title"><p>Some problems have no formula. Nobody can <em>compute</em> the solution of a Sudoku puzzle —
 you have to <strong>try possibilities</strong>. The art is in trying them systematically:</p>
 
 <ol>
@@ -119,7 +118,7 @@ you have to <strong>try possibilities</strong>. The art is in trying them system
 tried both branches and gave up on the ones that failed. In this chapter you build
 the technique up from tiny exercises until you can solve any Sudoku board.</p>
 
-<p><strong>Prerequisite:</strong> the Recursion chapter.</div>
+<p><strong>Prerequisite:</strong> the Recursion chapter.</p></div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -186,6 +185,24 @@ A pair should appear once: if <code>("A", "B")</code> is in the list, <code>("B"
 <p><strong>Think:</strong> for <code>n</code> people, how many handshakes will there be? Test your formula
 with the last assertion.</p>
 
+<details><summary>Hint 1</summary>
+<p>Use a nested loop. The trick is making sure each pair appears only once — the inner loop should not start from 0.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>If the outer index is <code>i</code>, the inner index <code>j</code> should start at <code>i + 1</code>. This way <code>(A, B)</code> appears but <code>(B, A)</code> never does.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def handshakes(people):
+    result = []
+    for i in range(len(people)):
+        for j in range(i + 1, len(people)):
+            result.append((people[i], people[j]))
+    return result</code></pre>
+<p>The count formula is <code>n * (n - 1) / 2</code>.</p>
+</details>
+
 
         </div>
       </section>
@@ -226,6 +243,26 @@ What about <code>[2, 2, 2]</code>? Where does the "carrying" start, and when doe
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Start from the rightmost digit (index <code>len(arr) - 1</code>). Add 1 to it. If it reaches <code>m</code>, reset it to 0 and move one position left — that is the "carry".</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Use a while loop that walks leftward. Stop when the digit you incremented is less than <code>m</code> (no carry). If you walk past index 0 and still have a carry, every digit was maxed — return <code>False</code>.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def next_numb(arr, m):
+    pos = len(arr) - 1
+    while pos >= 0:
+        arr[pos] += 1
+        if arr[pos] < m:
+            return True
+        arr[pos] = 0
+        pos -= 1
+    return False</code></pre>
+</details>
+
 
         </div>
       </section>
@@ -244,6 +281,19 @@ returns <code>False</code>, collecting each state as a string.</p>
 <pre><span></span><code><span class="n">generate</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>   <span class="c1"># [&quot;00&quot;, &quot;01&quot;, &quot;10&quot;, &quot;11&quot;]</span>
 </code></pre>
 </div>
+
+<details><summary>Hint 1</summary>
+<p>Create <code>arr = [0] * n</code>. Collect <code>"".join(map(str, arr))</code> before each call to <code>next_numb</code>. Keep looping while <code>next_numb</code> returns <code>True</code>.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def generate(n, m):
+    arr = [0] * n
+    result = ["".join(map(str, arr))]
+    while next_numb(arr, m):
+        result.append("".join(map(str, arr)))
+    return result</code></pre>
+</details>
 
 
         </div>
@@ -272,6 +322,21 @@ string in <code>generate_rec(n - 1, m)</code>.</li>
 formula in the very first chapter (<em>Learning to Count</em>): d digits in base B
 represent B^d numbers. Enumeration and counting are the same tree — one walks it,
 one measures it.</p>
+
+<details><summary>Hint 1</summary>
+<p>The base case is <code>n == 0</code>: return <code>[""]</code>. For the recursive case, loop <code>d</code> from 0 to <code>m-1</code> and prepend <code>str(d)</code> to every string returned by <code>generate_rec(n - 1, m)</code>.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def generate_rec(n, m):
+    if n == 0:
+        return [""]
+    result = []
+    for d in range(m):
+        for s in generate_rec(n - 1, m):
+            result.append(str(d) + s)
+    return result</code></pre>
+</details>
 
 
         </div>
@@ -308,6 +373,26 @@ one measures it.</p>
 <p><strong>Think:</strong> how many permutations does a string of length n have? (Your name has
 7 distinct letters — expect 5040.)</p>
 
+<details><summary>Hint 1</summary>
+<p>Base case: <code>perms("")</code> returns <code>[""]</code>. For longer strings, loop over each index <code>i</code>, take <code>s[i]</code> as the first character, and recurse on the rest.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>"The rest" without index <code>i</code> is <code>s[:i] + s[i+1:]</code>. Prepend <code>s[i]</code> to every permutation of that shorter string.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def perms(s):
+    if len(s) == 0:
+        return [""]
+    result = []
+    for i in range(len(s)):
+        for p in perms(s[:i] + s[i+1:]):
+            result.append(s[i] + p)
+    return result</code></pre>
+<p>The count is <code>n!</code> (n factorial). For n = 4: 4! = 24. For n = 7: 7! = 5040.</p>
+</details>
+
 
         </div>
       </section>
@@ -329,6 +414,9 @@ one measures it.</p>
 
         <p><strong>D.</strong> 256</p>
 
+        <div class="fragment">
+        <p><strong>Answer: C.</strong> 4! = 4 x 3 x 2 x 1 = 24. Each position has fewer choices than the last because you cannot reuse an element.</p>
+        </div>
 
         </div>
       </section>
@@ -356,7 +444,7 @@ one measures it.</p>
         <p>Write <code>are_valid(s)</code> for a string of <code>()</code>, <code>[]</code>, <code>{}</code> characters. It is valid when
 every opener is closed by the matching closer, in the right order.</p>
 
-<p><strong>Hint:</strong> as you scan left to right, you need to remember which openers are still
+<p><strong>Before coding:</strong> as you scan left to right, you need to remember which openers are still
 waiting for their closers. What data structure naturally handles "most recent first"?</p>
 
 <div class="codehilite">
@@ -364,6 +452,27 @@ waiting for their closers. What data structure naturally handles "most recent fi
 <span class="n">are_valid</span><span class="p">(</span><span class="s2">&quot;}{&quot;</span><span class="p">)</span>       <span class="c1"># False — closes before opening</span>
 </code></pre>
 </div>
+
+<details><summary>Hint 1</summary>
+<p>Use a list as a <strong>stack</strong> (a data structure where you add and remove from the same end — like a stack of plates). Push openers onto it; when you see a closer, check the top of the stack.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Create a dictionary mapping each closer to its opener: <code>{')':'(', ']':'[', '}':'{'}</code>. When you see a closer, pop the stack and check whether the popped opener matches. If the stack is empty when you try to pop, the string is invalid.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def are_valid(s):
+    stack = []
+    match = {')': '(', ']': '[', '}': '{'}
+    for ch in s:
+        if ch in '([{':
+            stack.append(ch)
+        else:
+            if not stack or stack.pop() != match[ch]:
+                return False
+    return len(stack) == 0</code></pre>
+</details>
 
 
         </div>
@@ -396,6 +505,19 @@ some digits (the <em>clues</em>); you fill the rest.</p>
 returns the <code>(row, col)</code> of the first <code>0</code>. If the board has no empty cell, return
 <code>(None, None)</code> — that will be our signal that the puzzle is solved.</p>
 
+<details><summary>Hint 1</summary>
+<p>Nested loop: outer over rows, inner over columns. Return the indices as soon as you find a cell equal to <code>0</code>.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def find_first_empty_space(board):
+    for r in range(len(board)):
+        for c in range(len(board[r])):
+            if board[r][c] == 0:
+                return (r, c)
+    return (None, None)</code></pre>
+</details>
+
 
         </div>
       </section>
@@ -409,12 +531,37 @@ returns the <code>(row, col)</code> of the first <code>0</code>. If the board ha
         <p>The checker. Write <code>can_place(i, row, col, board)</code> — may digit <code>i</code> legally go into
 cell <code>(row, col)</code>?</p>
 
+<p><strong>Before coding:</strong> a Sudoku has three constraints — row, column, and 3x3 block. How would you find the top-left corner of the 3x3 block that contains cell <code>(row, col)</code>?</p>
+
 <ol>
 <li>If <code>i</code> already appears anywhere in that <strong>row</strong> — <code>False</code>.</li>
 <li>If <code>i</code> already appears anywhere in that <strong>column</strong> — <code>False</code>.</li>
 <li>If <code>i</code> already appears in the cell's <strong>3×3 block</strong> — <code>False</code>.</li>
 <li>Otherwise <code>True</code>.</li>
 </ol>
+
+<details><summary>Hint 1</summary>
+<p>Row check: <code>i in board[row]</code>. Column check: loop over all 9 rows and check <code>board[r][col]</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>The top-left corner of the 3x3 block is <code>((row // 3) * 3, (col // 3) * 3)</code>. Integer division by 3 then multiply by 3 snaps to the nearest multiple of 3. Loop over the 3x3 square from there.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def can_place(i, row, col, board):
+    if i in board[row]:
+        return False
+    for r in range(9):
+        if board[r][col] == i:
+            return False
+    r0, c0 = (row // 3) * 3, (col // 3) * 3
+    for r in range(r0, r0 + 3):
+        for c in range(c0, c0 + 3):
+            if board[r][c] == i:
+                return False
+    return True</code></pre>
+</details>
 
 
         </div>
@@ -432,6 +579,28 @@ in place and returns <code>True</code>/<code>False</code>).</p>
 <p>You have <code>find_first_empty_space</code> and <code>can_place</code>. For each empty cell, you could
 try placing digits 1–9. If a placement leads to a dead end, what should you do?
 Think about the pattern from <code>generate_rec</code> and the <code>*</code> wildcard matcher.</p>
+
+<details><summary>Hint 1</summary>
+<p>Find the first empty cell. If there is none, the board is complete — return <code>True</code>. Otherwise, try digits 1 through 9: if <code>can_place</code> allows it, put the digit in and recurse.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>The "undo" step is the key to backtracking: if the recursive call returns <code>False</code>, set the cell back to <code>0</code> before trying the next digit. If no digit works, return <code>False</code> so the <em>caller</em> can undo <em>its</em> choice.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code class="language-python">def solve_sudoku(board):
+    row, col = find_first_empty_space(board)
+    if row is None:
+        return True          # no empty cell — solved!
+    for digit in range(1, 10):
+        if can_place(digit, row, col, board):
+            board[row][col] = digit   # try
+            if solve_sudoku(board):    # recurse
+                return True
+            board[row][col] = 0        # undo
+    return False</code></pre>
+</details>
 
 
         </div>
@@ -452,8 +621,11 @@ Think about the pattern from <code>generate_rec</code> and the <code>*</code> wi
 
         <p><strong>C.</strong> 50! (50 factorial)</p>
 
-        <p><strong>D.</strong> 81 × 9 = 729</p>
+        <p><strong>D.</strong> 81 x 9 = 729</p>
 
+        <div class="fragment">
+        <p><strong>Answer: B.</strong> Each of the 50 empty cells can hold any of 9 digits, so brute force would try 9 x 9 x ... x 9 (50 times) = 9^50. Backtracking avoids almost all of these by pruning bad branches early.</p>
+        </div>
 
         </div>
       </section>
@@ -462,7 +634,7 @@ Think about the pattern from <code>generate_rec</code> and the <code>*</code> wi
 
 
 
-      <!-- Part None: Think — Why Is This Fast? -->
+      <!-- Part 6: Think — Why Is This Fast? -->
       <section id="part6">
         <h2>Think — Why Is This Fast?</h2>
 
@@ -480,9 +652,9 @@ Enumeration provides completeness; checking provides the speed.</p>
 
 
 
-      <!-- Part None: Summary -->
+      <!-- Part 7: What You Just Invented -->
       <section id="part7">
-        <h2>Summary</h2>
+        <h2>What You Just Invented</h2>
 
       </section>
 
@@ -493,56 +665,57 @@ Enumeration provides completeness; checking provides the speed.</p>
         <div class="slide-content">
         <table>
           <tr>
-
-            <th>Function</th>
-
-            <th>Idea</th>
-
+            <th>Your Function</th>
+            <th>What It Does</th>
+            <th>Standard Name</th>
           </tr>
-
           <tr>
-
             <td><code>handshakes</code></td>
-
             <td>nested loops that never repeat a pair</td>
-
+            <td><strong>Combination enumeration</strong> (n choose 2)</td>
           </tr>
-
           <tr>
-
             <td><code>next_numb</code>, <code>generate</code></td>
-
             <td>the odometer — iterative enumeration</td>
-
+            <td><strong>Cartesian product</strong> (<code>itertools.product</code>)</td>
           </tr>
-
           <tr>
-
             <td><code>generate_rec</code>, <code>perms</code></td>
-
-            <td>recursive enumeration: choose a first element, recurse on the rest</td>
-
+            <td>recursive enumeration: choose first, recurse on the rest</td>
+            <td><strong>Recursive enumeration / Permutations</strong> (<code>itertools.permutations</code>)</td>
           </tr>
-
           <tr>
-
             <td><code>are_valid</code></td>
-
             <td>a stack as a fast validity checker</td>
-
+            <td><strong>Stack-based parsing</strong></td>
           </tr>
-
           <tr>
-
-            <td><code>find_first_empty_space</code>, <code>can_place</code>, <code>solve_sudoku</code></td>
-
-            <td><strong>backtracking: try → recurse → undo</strong></td>
-
+            <td><code>solve_sudoku</code></td>
+            <td>try a choice, recurse, undo if stuck</td>
+            <td><strong>Backtracking</strong> (constraint satisfaction)</td>
           </tr>
-
         </table>
         </div>
       </section>
+
+      <!-- Reflection -->
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to think about what you built:</p>
+
+        <ol>
+        <li>In your own words, what are the <strong>three steps</strong> of backtracking? Why is the "undo" step necessary?</li>
+        <li>How is <code>generate_rec</code> (enumeration) different from <code>solve_sudoku</code> (backtracking)? What extra ingredient does backtracking add?</li>
+        <li>Why does the Sudoku solver finish quickly even though the search space is astronomically large?</li>
+        <li>Can you think of another real-world problem where you would need to "try, check, and undo"? (Scheduling, maze-solving, puzzle games...)</li>
+        </ol>
+
+        </div>
+      </section>
+
+
 
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
@@ -555,7 +728,7 @@ Enumeration provides completeness; checking provides the speed.</p>
             <li><a href="#/part4">Part 4: Checking a State — Valid Parentheses</a></li>
             <li><a href="#/part5">Part 5: Sudoku</a></li>
             <li><a href="#/part6">Think — Why Is This Fast?</a></li>
-            <li><a href="#/part7">Summary</a></li>
+            <li><a href="#/part7">What You Just Invented</a></li>
           </ol>
         </div></div>
       </section>
