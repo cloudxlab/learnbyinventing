@@ -371,6 +371,16 @@ print(diff(g, 3))   # should print ≈ 6</code></pre>
 <pre><code>def diff(my_func, x):
     """Return the derivative of my_func at point x."""
     # your code here</code></pre>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Pick a tiny value for $h$ (like <code>1e-6</code>).
+      Compute <code>my_func(x + h)</code> and <code>my_func(x)</code>,
+      then divide the difference by $h$.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>return (my_func(x + h) - my_func(x)) / h</code></p>
+    </details>
   </div>
 </div>
 </div>
@@ -400,6 +410,26 @@ print(diff(g, 2))    # should be ≈ 4</code></pre>
       </section>
 
 
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Quick Check</strong></p>
+  <p>Your <code>diff</code> function computes the derivative by nudging $x$
+  a tiny amount $d$ and checking how $f$ changes. What happens if you make
+  $d$ extremely small, like $10^{-300}$?</p>
+  <ol style="list-style-type:upper-alpha;">
+    <li>The result gets more accurate</li>
+    <li>The result becomes exactly correct</li>
+    <li>The result becomes garbage due to floating-point errors</li>
+    <li>Python raises an error</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>C.</strong> When $d$ is too small, the computer can&rsquo;t
+    tell $f(x+d)$ from $f(x)$ &mdash; they round to the same number.
+    That&rsquo;s why we use $d = 10^{-5}$, not something tinier.</p>
+  </div>
+</div></div>
+      </section>
 
       <!-- Part 2: Algebraic Differentiation -->
       <section id="part2">
@@ -1123,6 +1153,25 @@ print(diffn(f4, [2, 5, 4, 1]))
       </section>
 
 
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Quick Check</strong></p>
+  <p>The gradient of $f(x, y, z) = x^2 + 3y + z^2$ is a list of partial derivatives.
+  How many numbers are in that gradient?</p>
+  <ol style="list-style-type:upper-alpha;">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>It depends on the values of $x$, $y$, $z$</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>C.</strong> Three inputs means three partial derivatives
+    &mdash; one per variable: $[2x,\; 3,\; 2z]$.
+    The gradient always has as many entries as there are inputs.</p>
+  </div>
+</div></div>
+      </section>
 
       <!-- Part 6: The Chain Rule -->
       <section id="part6">
@@ -2005,6 +2054,22 @@ print(d2fdx(5))    # ≈ 2</code></pre>
       </section>
 
 
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>Explain in your own words what a derivative measures.
+    Use an everyday analogy (speed, temperature, etc.).</li>
+    <li>Why does the numerical method (nudge and measure) sometimes
+    disagree with the algebraic method? When does it matter?</li>
+    <li>What is a partial derivative, and why is it useful when
+    a function has more than one input?</li>
+    <li>The chain rule says &ldquo;multiply derivatives along the chain.&rdquo;
+    Why is this so important for training neural networks?</li>
+  </ol>
+</div></div>
+      </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
