@@ -144,8 +144,8 @@ w, b = fit(X, y)
 
 
 
-      <!-- Part None: Introduction: Gradient Descent -->
-      <section id="part1">
+      <!-- Introduction: Gradient Descent -->
+      <section id="intro">
         <h2>Introduction: Gradient Descent</h2>
 
       </section>
@@ -185,7 +185,7 @@ w, b = fit(X, y)
 
 
       <!-- Part 1: Finding the Bottom of a Valley -->
-      <section id="part2">
+      <section id="part1">
         <h2>Part 1: Finding the Bottom of a Valley</h2>
 
       </section>
@@ -393,8 +393,29 @@ w, b = fit(X, y)
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Quick Check</strong></p>
+  <p>You&rsquo;re at a point on a curve and want to find the minimum.
+  You check <code>f(x - 0.01)</code> and <code>f(x + 0.01)</code>.
+  Both are larger than <code>f(x)</code>. What can you conclude?</p>
+  <ol style="list-style-type:upper-alpha;">
+    <li>You need to move left</li>
+    <li>You need to move right</li>
+    <li>You&rsquo;re at (or very near) the minimum</li>
+    <li>The function is not convex</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>C.</strong> If the function goes up on both sides,
+    you&rsquo;re at the bottom of the bowl.</p>
+  </div>
+</div></div>
+      </section>
+
+
+
       <!-- Part 2: Inventing Gradient Descent -->
-      <section id="part3">
+      <section id="part2">
         <h2>Part 2: Inventing Gradient Descent</h2>
 
       </section>
@@ -579,6 +600,13 @@ w, b = fit(X, y)
     return x, f(x)</code></pre>
       </div>
     </div>
+    <details class="fragment" data-fragment-index="1" style="font-size:0.8em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Loop up to <code>max_steps</code>. Each iteration:
+      compute the slope with <code>numerical_derivative</code>,
+      check if <code>abs(slope) &lt; epsilon</code> to stop,
+      then apply $x = x - \alpha \times \text{slope}$.</p>
+    </details>
   </div>
   <div class="fragment" data-fragment-index="3">
     <p style="font-size:0.9em; font-family:monospace;">
@@ -609,6 +637,14 @@ w, b = fit(X, y)
     Can you explain <em>why</em>?</p>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <table style="margin:0.5em auto; font-size:0.85em;">
+      <tr><th style="padding:0.2em 0.8em;">$\alpha$</th><th style="padding:0.2em 0.8em;">Result</th></tr>
+      <tr><td><code>0.01</code></td><td style="color:green;">Converges to $x \approx 1.0$, the minimum &mdash; <strong>just right</strong></td></tr>
+      <tr><td><code>1.0</code></td><td style="color:red;">Diverges! Steps are so large $x$ flies off to &plusmn;&infin;</td></tr>
+      <tr><td><code>0.000001</code></td><td style="color:#b8860b;">Barely moves &mdash; still far from the minimum after 100 000 steps</td></tr>
+    </table>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <p style="font-size:0.95em;">The <strong>learning rate</strong> $\alpha$ is the most important knob
     in gradient descent. Too large &rarr; overshoots and diverges.
     Too small &rarr; barely moves. Choosing it well is an art.</p>
@@ -619,10 +655,29 @@ w, b = fit(X, y)
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Quick Check</strong></p>
+  <p>In the gradient descent update rule $x_{\text{new}} = x - \alpha \times \text{slope}$,
+  what happens if the slope is <strong>negative</strong>?</p>
+  <ol style="list-style-type:upper-alpha;">
+    <li>$x$ decreases (moves left)</li>
+    <li>$x$ increases (moves right)</li>
+    <li>$x$ stays the same</li>
+    <li>The algorithm crashes</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>B.</strong> Subtracting a negative number <em>adds</em>,
+    so $x$ moves right &mdash; toward the minimum when the curve
+    slopes downward to the right.</p>
+  </div>
+</div></div>
+      </section>
+
 
 
       <!-- Part 3: Many Variables -->
-      <section id="part4">
+      <section id="part3">
         <h2>Part 3: Many Variables</h2>
 
       </section>
@@ -702,8 +757,21 @@ w, b = fit(X, y)
     return x, y, g(x, y)</code></pre>
       </div>
     </div>
+    <details class="fragment" data-fragment-index="0" style="font-size:0.8em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>It&rsquo;s the same loop as <code>find_minima_1d</code>,
+      but compute two partial derivatives (one for $x$, one for $y$)
+      and update both variables each step.</p>
+    </details>
+    <details class="fragment" data-fragment-index="0" style="font-size:0.8em; margin:0.3em 0;">
+      <summary>Hint 2</summary>
+      <p>Stop when the gradient <em>magnitude</em> is small:
+      <code>(dx**2 + dy**2)**0.5 &lt; epsilon</code>.</p>
+    </details>
   </div>
   <div class="fragment" data-fragment-index="2">
+    <p style="font-size:0.85em;">First, define <code>g</code> in Python:
+    <code>def g(x, y): return x**2 + y**2</code></p>
     <p style="font-size:0.85em; font-family:monospace;">
       find_minima_2d(g, 2.0, 3.0) &rarr; (0.0000, 0.0000, 0.0000) &check;
     </p>
@@ -770,6 +838,12 @@ w, b = fit(X, y)
     return variables, f(variables)</code></pre>
     </div>
   </div>
+  <details style="font-size:0.8em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>Same structure as <code>find_minima_1d</code>: loop, compute gradient
+    (now a list), check magnitude, then update each variable with
+    <code>variables[i] -= alpha * grad[i]</code>.</p>
+  </details>
 </div>
 </div>
       </section>
@@ -818,7 +892,7 @@ w, b = fit(X, y)
 
 
       <!-- Part 4: Fitting a Line to Data -->
-      <section id="part5">
+      <section id="part4">
         <h2>Part 4: Fitting a Line to Data</h2>
 
       </section>
@@ -918,6 +992,12 @@ w, b = fit(X, y)
     return total / len(X)</code></pre>
     </div>
   </div>
+  <details style="font-size:0.8em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>For each data point, predict $\hat{y}_i = m \cdot X_i + c$,
+    then square the error $(y_i - \hat{y}_i)^2$.
+    Sum all squared errors and divide by the number of points.</p>
+  </details>
   <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.9em;">Test: $X = [1, 2, 3]$, $y = [3, 5, 7]$
     &mdash; perfectly on the line $y = 2x + 1$:</p>
@@ -971,8 +1051,28 @@ w, b = fit(X, y)
 
 
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Quick Check</strong></p>
+  <p>A line $y = 3x + 2$ predicts $\hat{y} = 8$ for a point where the
+  true value is $y = 10$. What is this point&rsquo;s squared error?</p>
+  <ol style="list-style-type:upper-alpha;">
+    <li>2</li>
+    <li>4</li>
+    <li>&minus;4</li>
+    <li>18</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>B.</strong> Error = $10 - 8 = 2$.
+    Squared error = $2^2 = 4$.</p>
+  </div>
+</div></div>
+      </section>
+
+
+
       <!-- Part 5: The Payoff — Linear Regression -->
-      <section id="part6">
+      <section id="part5">
         <h2>Part 5: The Payoff — Linear Regression</h2>
 
       </section>
@@ -983,8 +1083,11 @@ w, b = fit(X, y)
         <div class="slide-content"><div style="font-size:1.3em;">
   <p><strong>Your turn:</strong> <code>find_minima</code> expects a function
   of a <strong>list</strong>. <code>mse</code> takes <code>(X, y, m, c)</code>.</p>
-  <p>Write a wrapper that bridges the two &mdash; it takes
-  <code>params = [m, c]</code> and calls <code>mse</code> with your data.
+  <p>First, set up a dataset (the true line is $y = 2.5x + 4$, plus noise):</p>
+<pre><code>X_data = [1, 2, 3, 4, 5, 6, 7, 8]
+y_data = [6.2, 9.3, 11.4, 14.1, 16.3, 19.5, 21.8, 24.2]</code></pre>
+  <p>Write a wrapper that takes
+  <code>params = [m, c]</code> and calls <code>mse</code> with this data.
   Then plug it into <code>find_minima</code> and run it.</p>
   <div class="code-stack" style="min-height:7em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
@@ -1004,8 +1107,16 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
     </div>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>The wrapper just unpacks: <code>m, c = params</code>, then returns
+      <code>mse(X_data, y_data, m, c)</code>. The data variables live
+      in the outer scope.</p>
+    </details>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <p style="font-size:0.95em; font-family:monospace;">
-      Found: &nbsp;m = 2.4970, &nbsp;c = 4.0189<br/>
+      Found: &nbsp;m &asymp; 2.50, &nbsp;c &asymp; 4.02<br/>
       True: &nbsp;&nbsp;m = 2.5, &nbsp;&nbsp;&nbsp;&nbsp;c = 4.0
     </p>
     <p style="margin-top:0.5em;"><strong>This is linear regression.</strong></p>
@@ -1048,7 +1159,7 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
 
 
       <!-- Part 6: Many Features -->
-      <section id="part7">
+      <section id="part6">
         <h2>Part 6: Many Features</h2>
 
       </section>
@@ -1079,10 +1190,56 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
     return total</code></pre>
     </div>
   </div>
+  <details style="font-size:0.8em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>Start with <code>total = c</code>, then loop over <code>zip(x, m)</code>
+    adding each <code>xi * mi</code> to the total.</p>
+  </details>
   <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.85em; font-family:monospace;">
       predict([1, 2], [2, 3], 1) &rarr; 9
       &nbsp;&nbsp;# 2&times;1 + 3&times;2 + 1
+    </p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p>Your earlier <code>mse</code> worked for one feature ($m$ and $c$).
+  Now you have <em>many</em> slopes.</p>
+  <p><strong>Your turn:</strong> Write <code>mse_multi</code> that takes
+  a dataset <code>X</code> (list of rows), targets <code>y</code>,
+  a list of slopes <code>m</code>, and intercept <code>c</code>.
+  Use your <code>predict</code> function inside it.</p>
+  <div class="code-stack" style="min-height:8em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def mse_multi(X, y, m, c):
+    """Mean Squared Error for multi-feature prediction."""
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def mse_multi(X, y, m, c):
+    total = 0.0
+    for i in range(len(X)):
+        predicted = predict(X[i], m, c)
+        total += (y[i] - predicted) ** 2
+    return total / len(X)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Loop over rows. For each row, call <code>predict(X[i], m, c)</code>
+      to get $\hat{y}_i$, then square $y_i - \hat{y}_i$. Average at the end.</p>
+    </details>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p style="font-size:0.85em; font-family:monospace;">
+      mse_multi([[1,2],[2,1]], [9,8], [2,3], 1) &rarr; 0.0 &check;
     </p>
   </div>
 </div>
@@ -1122,6 +1279,15 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
     </div>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Pack all weights and the intercept into one list:
+      <code>params = m + [c]</code>. Write a <code>loss(params)</code>
+      wrapper that unpacks and calls <code>mse_multi</code>.
+      Then pass it to <code>find_minima</code>.</p>
+    </details>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <p style="font-size:0.9em;">Test on $y = 2x_0 + 3x_1 + 1$:</p>
     <p style="font-size:0.85em; font-family:monospace;">
       X = [[1,2], [2,1], [3,4], [4,3]]<br/>
@@ -1176,15 +1342,20 @@ X2 = add_feature(X, lambda row: row[0]**2)
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.3em;">
-  <p><strong>What you built:</strong></p>
-  <table style="margin:0.3em auto; font-size:0.9em; text-align:left;">
-    <tr><td style="padding:0.2em 0.5em;">1.</td><td><code>numerical_derivative</code></td><td>&mdash; slope at a point</td></tr>
-    <tr><td style="padding:0.2em 0.5em;">2.</td><td><code>find_minima</code></td><td>&mdash; walk downhill to the bottom</td></tr>
-    <tr><td style="padding:0.2em 0.5em;">3.</td><td><code>mse</code></td><td>&mdash; measure how wrong a line is</td></tr>
-    <tr><td style="padding:0.2em 0.5em;">4.</td><td><code>find_minima(mse)</code></td><td>&mdash; <strong>linear regression!</strong></td></tr>
-    <tr><td style="padding:0.2em 0.5em;">5.</td><td><code>predict + fit</code></td><td>&mdash; many features, same algorithm</td></tr>
-    <tr><td style="padding:0.2em 0.5em;">6.</td><td><code>add_feature</code></td><td>&mdash; fit non-linear data</td></tr>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>What you just invented:</strong></p>
+  <table style="margin:0.3em auto; font-size:0.85em; text-align:left;">
+    <tr>
+      <th style="padding:0.3em 0.6em;">You wrote</th>
+      <th style="padding:0.3em 0.6em;">Standard name</th>
+    </tr>
+    <tr><td><code>numerical_derivative</code></td><td>Gradient computation</td></tr>
+    <tr><td><code>find_minima</code></td><td>Gradient descent optimizer</td></tr>
+    <tr><td><code>mse</code></td><td>Loss function (Mean Squared Error)</td></tr>
+    <tr><td><code>find_minima(mse)</code></td><td>Training &mdash; <strong>linear regression</strong></td></tr>
+    <tr><td><code>predict</code> + <code>fit</code></td><td>Model API (same pattern as <code>sklearn</code>)</td></tr>
+    <tr><td><code>add_feature</code></td><td>Feature engineering</td></tr>
+    <tr><td><code>alpha</code></td><td>Learning rate (hyperparameter)</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
     <p><strong>What&rsquo;s next?</strong></p>
@@ -1197,18 +1368,34 @@ X2 = add_feature(X, lambda row: row[0]**2)
 </div>
       </section>
 
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>In your own words, explain gradient descent to someone
+    who has never heard of it. Use an analogy.</li>
+    <li>Why does the update rule subtract $\alpha \times \text{slope}$
+    instead of adding it?</li>
+    <li>What role does the <strong>learning rate</strong> play?
+    What goes wrong if it&rsquo;s too large? Too small?</li>
+    <li>Why is gradient descent needed at all,
+    if <code>np.polyfit</code> can solve linear regression exactly?</li>
+  </ol>
+</div></div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
         <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Introduction: Gradient Descent</a></li>
-            <li><a href="#/part2">Part 1: Finding the Bottom of a Valley</a></li>
-            <li><a href="#/part3">Part 2: Inventing Gradient Descent</a></li>
-            <li><a href="#/part4">Part 3: Many Variables</a></li>
-            <li><a href="#/part5">Part 4: Fitting a Line to Data</a></li>
-            <li><a href="#/part6">Part 5: The Payoff — Linear Regression</a></li>
-            <li><a href="#/part7">Part 6: Many Features</a></li>
+            <li><a href="#/intro">Introduction: Gradient Descent</a></li>
+            <li><a href="#/part1">Part 1: Finding the Bottom of a Valley</a></li>
+            <li><a href="#/part2">Part 2: Inventing Gradient Descent</a></li>
+            <li><a href="#/part3">Part 3: Many Variables</a></li>
+            <li><a href="#/part4">Part 4: Fitting a Line to Data</a></li>
+            <li><a href="#/part5">Part 5: The Payoff — Linear Regression</a></li>
+            <li><a href="#/part6">Part 6: Many Features</a></li>
           </ol>
         </div></div>
       </section>
