@@ -217,6 +217,14 @@ positive, no pair will ever add up to -1 — this forces the function to check
 
 <p>Try the same for n = 5000 and n = 10000.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Create a list with <code>list(range(5000))</code> for the larger size. Wrap each function call with <code>time.time()</code> before and after, then subtract to get the elapsed time.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2</summary>
+          <p>When the input grows 5x (from 1,000 to 5,000), <code>sum_list</code> should take roughly 5x longer. But <code>has_pair_with_sum</code> should take roughly 25x longer. Why 25? Because 5 squared is 25.</p>
+        </details>
 
         </div>
       </section>
@@ -283,6 +291,14 @@ with the result.</p>
 
 <p>How does the count relate to n in each case?</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Add a variable <code>count = 0</code> at the top of each function. Inside the innermost loop, add <code>count += 1</code>. Return <code>count</code> along with the result.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2</summary>
+          <p>For <code>sum_list</code>, the count should equal exactly n. For <code>has_pair_with_sum</code>, the count should be close to n*(n-1)/2. Try dividing each count by n, then by n squared.</p>
+        </details>
 
         </div>
       </section>
@@ -368,6 +384,24 @@ How would <strong>you</strong> write "this algorithm grows like n²"?</p>
       </section>
 
 
+
+      <section>
+        <h3>Quick Check — Counting Steps</h3>
+        <div class="slide-content">
+
+        <p>A function has a single <code>for</code> loop that runs n times, and inside the loop it does 5 operations per iteration. How does the total number of operations grow as n gets larger?</p>
+
+        <p><strong>A.</strong> It grows like 5 (constant)</p>
+        <p><strong>B.</strong> It grows like n (linear)</p>
+        <p><strong>C.</strong> It grows like 5n (five times linear)</p>
+        <p><strong>D.</strong> It grows like n² (quadratic)</p>
+
+        <div class="fragment">
+          <p><strong>Answer: B.</strong> The total operations are 5n, but since 5 is just a constant multiplier, the growth rate is the same as n. Doubling n doubles the work, regardless of the constant.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -489,7 +523,10 @@ function grows this slowly?</p>
 
         <p>Grows like n²:</p>
 
-
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint</summary>
+          <p>Think about what the word describes: "constant" means it never changes, "linear" means a straight line, "quadratic" means involving a square. For log(n), think about what kind of search halves the range each time.</p>
+        </details>
 
         </div>
       </section>
@@ -535,7 +572,14 @@ $n^2 + 10n$ is basically just $n^2$ (the $+10n$ is negligible).</p>
 
         <p>3n·log(n) + 5n →</p>
 
-
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Step 1: Drop any constant multiplier (so 3n becomes n). Step 2: If there are multiple terms added together, keep only the one that grows fastest as n gets huge.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2</summary>
+          <p>For the last one: which grows faster, n·log(n) or n? Since n·log(n) is bigger for large n, that is the dominant term.</p>
+        </details>
 
         </div>
       </section>
@@ -655,7 +699,10 @@ how do you figure out its Big O without running it?</p>
 
         <p>Big O:</p>
 
-
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint</summary>
+          <p>The <code>for x in lst</code> loop visits every element once. The comparison runs once per element. So it runs n times total.</p>
+        </details>
 
         </div>
       </section>
@@ -858,6 +905,36 @@ do they usually mean?</p>
 
 
 
+      <section>
+        <h3>Quick Check — Reading Code Complexity</h3>
+        <div class="slide-content">
+
+        <p>What is the Big O of this function?</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="k">def</span> <span class="nf">mystery</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="k">return</span> <span class="n">total</span>
+</code></pre>
+</div>
+
+        <p><strong>A.</strong> O(n) — because the first loop is O(n)</p>
+        <p><strong>B.</strong> O(n + n²) — because there is an O(n) loop and an O(n²) nested loop</p>
+        <p><strong>C.</strong> O(n²) — because the nested loop dominates</p>
+        <p><strong>D.</strong> O(n³) — because there are three loops total</p>
+
+        <div class="fragment">
+          <p><strong>Answer: C.</strong> The first loop is O(n) and the nested pair is O(n²). Total is n + n² but we keep only the fastest-growing term, so the answer is O(n²).</p>
+        </div>
+
+        </div>
+      </section>
+
 
 
       <!-- Part 5: Memory Complexity -->
@@ -927,7 +1004,14 @@ allocates.</p>
 
         <p>Function C — new items created:</p>
 
-
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>For Function A, count the variables it creates beyond the input. <code>total</code> is just one number, no matter how big the list is.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2</summary>
+          <p>Function B builds a new list with one element per input element: n new items. Function C creates n rows, each with n items, so n times n = n² new items.</p>
+        </details>
 
         </div>
       </section>
@@ -997,7 +1081,14 @@ For matrices: how does the element count grow with n?</p>
 
         <p>Which is better and why:</p>
 
-
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Approach 1 has a loop inside a loop (nested). Approach 2 has a single loop plus a set. Checking <code>x in seen</code> for a set takes O(1) on average.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2</summary>
+          <p>Approach 1: O(n²) time, O(1) space. Approach 2: O(n) time, O(n) space. It uses more memory to get much faster. That is the tradeoff.</p>
+        </details>
 
         </div>
       </section>
@@ -1013,6 +1104,24 @@ algorithms that work in-place.</p>
       </section>
 
 
+
+      <section>
+        <h3>Quick Check — Space Complexity</h3>
+        <div class="slide-content">
+
+        <p>A function takes a list of n numbers and creates a new dictionary where each number maps to its square. What is the space complexity?</p>
+
+        <p><strong>A.</strong> O(1) — dictionaries are always constant space</p>
+        <p><strong>B.</strong> O(n) — the dictionary has one entry per input element</p>
+        <p><strong>C.</strong> O(n²) — dictionaries use more space than lists</p>
+        <p><strong>D.</strong> O(log n) — dictionaries use hashing, which is logarithmic</p>
+
+        <div class="fragment">
+          <p><strong>Answer: B.</strong> The dictionary stores n key-value pairs, one for each input element. The extra memory grows in direct proportion to n.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -1096,122 +1205,45 @@ hopeless?</p>
 
 
 
-      <!-- Part None: What You Invented -->
+      <!-- Part 7: What You Invented -->
       <section id="part7">
-        <h2>What You Invented</h2>
+        <h2>What You Just Invented</h2>
 
       </section>
 
 
 
       <section>
-
-        <h3>Your Journey</h3>
-
-        <div class="slide-content">
-        <table>
-          <tr>
-
-            <th>Exercise</th>
-
-            <th>What You Did</th>
-
-            <th>Concept</th>
-
-          </tr>
-
-          <tr>
-
-            <td>1.1–1.2</td>
-
-            <td>Timed two functions, plotted growth curves</td>
-
-            <td>Empirical performance measurement</td>
-
-          </tr>
-
-          <tr>
-
-            <td>2.1–2.3</td>
-
-            <td>Counted operations, discovered constants don't matter</td>
-
-            <td>Operation counting, growth rate</td>
-
-          </tr>
-
-          <tr>
-
-            <td>3.1–3.2</td>
-
-            <td>Discovered logarithmic growth, named the families</td>
-
-            <td>Growth families</td>
-
-          </tr>
-
-          <tr>
-
-            <td>3.3–3.4</td>
-
-            <td>Simplified expressions, invented a shorthand</td>
-
-            <td>Big O notation</td>
-
-          </tr>
-
-          <tr>
-
-            <td>3.5</td>
-
-            <td>Plotted the hierarchy</td>
-
-            <td>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</td>
-
-          </tr>
-
-          <tr>
-
-            <td>4.1–4.5</td>
-
-            <td>Analysed code snippets, predicted and verified Big O</td>
-
-            <td>Static analysis + verification</td>
-
-          </tr>
-
-          <tr>
-
-            <td>4.6</td>
-
-            <td>Explored best, worst, and average case</td>
-
-            <td>Worst-case analysis</td>
-
-          </tr>
-
-          <tr>
-
-            <td>5.1–5.3</td>
-
-            <td>Counted extra memory, discovered the time–space tradeoff</td>
-
-            <td>Space complexity</td>
-
-          </tr>
-
-          <tr>
-
-            <td>6.1</td>
-
-            <td>Computed real-world running times</td>
-
-            <td>Why Big O matters in practice</td>
-
-          </tr>
-
-        </table>
-        </div>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <h2 style="border:none; color:#333;">What You Just Invented</h2>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">What you built</th>
+        <th style="padding:0.2em 0.8em;">Its real name</th></tr>
+    <tr><td>Timed functions, plotted time vs input size</td>
+        <td><strong>Empirical complexity analysis</strong></td></tr>
+    <tr><td>Counted operations instead of timing</td>
+        <td><strong>Operation counting</strong></td></tr>
+    <tr><td>Dropped constants, kept only the growth family</td>
+        <td><strong>Asymptotic analysis</strong></td></tr>
+    <tr><td>Your shorthand for "grows like ___"</td>
+        <td><strong>Big O notation</strong></td></tr>
+    <tr><td>Read code to predict growth without running it</td>
+        <td><strong>Static complexity analysis</strong></td></tr>
+    <tr><td>Best, worst, and average input scenarios</td>
+        <td><strong>Worst-case analysis</strong></td></tr>
+    <tr><td>Counted extra memory an algorithm creates</td>
+        <td><strong>Space complexity</strong></td></tr>
+    <tr><td>Spending memory to save time (or vice versa)</td>
+        <td><strong>Time-space tradeoff</strong></td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Nobody taught you Big O — <strong>you derived it
+    yourself</strong>. The next time someone says "this algorithm
+    is O(n log n)," you know exactly what it means
+    and <em>why</em> it matters.</p>
+  </div>
+</div>
+</div>
       </section>
 
 
@@ -1220,8 +1252,8 @@ hopeless?</p>
         <div class="slide-content"><p><strong>Going further:</strong></p>
 
 <ul>
-<li><strong>O(2ⁿ) — exponential:</strong> The number of subsets of a set with n items. Algorithms
-that try every subset are O(2ⁿ) — feasible for n ≤ 20, impossible for n = 100.</li>
+<li><strong>O(2&#8319;) — exponential:</strong> The number of subsets of a set with n items. Algorithms
+that try every subset are O(2&#8319;) — feasible for n up to about 20, impossible for n = 100.</li>
 <li><strong>O(n!) — factorial:</strong> The number of permutations. Even worse than exponential.</li>
 <li><strong>Amortized analysis:</strong> Some operations are usually fast but occasionally slow
 (like appending to a Python list that needs to resize). Amortized analysis averages
@@ -1231,6 +1263,35 @@ where checking a solution is easy but <em>finding</em> one is fundamentally hard
 million-dollar prize awaits the answer.</li>
 </ul>
 </div>
+      </section>
+
+
+
+      <!-- Part 8: Reflection -->
+      <section id="part8">
+        <h2>Part 8: Reflection — What Did You Just Build?</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Answer these questions in your own words:</p>
+
+<ol>
+<li>Why do we count operations instead of measuring wall-clock time? What problems does timing have that counting avoids?</li>
+<li>Explain in your own words what O(n²) means. Why does an O(n²) algorithm become impractical much sooner than an O(n) algorithm?</li>
+<li>A friend says "my algorithm does 3n + 100 operations, so it is O(3n + 100)." What would you tell them, and why?</li>
+<li>Give a real-world example (outside of programming) where something grows linearly vs quadratically. For instance, what grows linearly and what grows quadratically when you invite more people to a party?</li>
+<li>You saw that using a set to check for duplicates trades O(n) memory for O(n) time (instead of O(n²) time). When might you choose the slower O(n²) approach on purpose?</li>
+<li>If you had to explain Big O notation to a friend who has never programmed, what analogy or everyday example would you use?</li>
+</ol>
+
+
+        </div>
       </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
@@ -1244,7 +1305,8 @@ million-dollar prize awaits the answer.</li>
             <li><a href="#/part4">Part 4: Analysing Real Code</a></li>
             <li><a href="#/part5">Part 5: Memory Complexity</a></li>
             <li><a href="#/part6">Part 6: Why It Matters</a></li>
-            <li><a href="#/part7">What You Invented</a></li>
+            <li><a href="#/part7">What You Just Invented</a></li>
+            <li><a href="#/part8">Part 8: Reflection</a></li>
           </ol>
         </div></div>
       </section>
