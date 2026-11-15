@@ -123,7 +123,13 @@ models using ROC curves and AUC.</div>
         <div class="slide-content"><div style="font-size:1.3em;">
 <div style="font-size:1.3em;">
 <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-<p>Given true labels and predicted probabilities, write <code>best_threshold(y_true, y_prob)</code>. It should sweep candidate thresholds and compute the confusion matrix, precision, recall and F1 at each one. It should return the threshold with the highest F1, along with the model's ROC AUC. Don't use sklearn.</p>
+<p>A <strong>binary classifier</strong> is a model that looks at some input and
+predicts one of two labels &mdash; for example &ldquo;spam&rdquo; or &ldquo;not spam&rdquo;,
+&ldquo;sick&rdquo; or &ldquo;healthy&rdquo;. Given true labels and predicted probabilities,
+write <code>best_threshold(y_true, y_prob)</code>. It should try different
+cutoff values and compute the confusion matrix, precision, recall
+and F1 at each one. It should return the cutoff with the highest F1,
+along with the model&rsquo;s ROC AUC. Don&rsquo;t use sklearn.</p>
 <pre><code>def best_threshold(y_true, y_prob):
     # returns (best_t, best_f1, auc)
     ...</code></pre>
@@ -148,8 +154,11 @@ best_threshold(y_true, y_prob)
 
       <section>
         <div class="slide-content"><div style="font-size:1.5em;">
-  <p>Here are two arrays &mdash; one containing the <strong>actual</strong> labels and the other
-  the <strong>predicted</strong> labels from a binary classifier:</p>
+  <p>Imagine a model that looks at medical test results and predicts
+  &ldquo;sick&rdquo; (1) or &ldquo;healthy&rdquo; (0) for each patient. We call this a
+  <strong>binary classifier</strong> &mdash; &ldquo;binary&rdquo; because there are exactly two
+  possible answers.</p>
+  <p>Here are the <strong>actual</strong> labels and the model&rsquo;s <strong>predictions</strong>:</p>
   <p style="font-family:monospace; font-size:0.85em;">
     actual &nbsp;&nbsp;&nbsp;= [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]<br/>
     predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
@@ -276,6 +285,19 @@ best_threshold(y_true, y_prob)
     """Return (tp, tn, fp, fn)."""
     # your code here</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Start four counters at zero. Loop through both lists at the same time
+      using <code>zip(actual, predicted)</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2</summary>
+      <p>Inside the loop, check the four cases with <code>if</code>/<code>elif</code>:
+      actual=1 and predicted=1 is TP, actual=0 and predicted=0 is TN,
+      actual=0 and predicted=1 is FP, actual=1 and predicted=0 is FN.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def confusion_matrix(actual, predicted):
     tp, tn, fp, fn = 0, 0, 0, 0
     for a, p in zip(actual, predicted):
@@ -284,6 +306,7 @@ best_threshold(y_true, y_prob)
         elif a == 0 and p == 1: fp += 1
         elif a == 1 and p == 0: fn += 1
     return tp, tn, fp, fn</code></pre>
+    </details>
     <p style="font-size:0.85em; font-family:monospace;">
       confusion_matrix(actual, predicted) &rarr; (4, 4, 1, 1)
     </p>
@@ -293,6 +316,24 @@ best_threshold(y_true, y_prob)
       </section>
 
 
+
+      <!-- Quick Check 1 -->
+      <section>
+        <h3>Quick Check 1 &mdash; Reading the Confusion Matrix</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>A model predicts &ldquo;spam&rdquo; for 100 emails. Of those, 80 actually <em>are</em>
+  spam and 20 are legitimate. What are the <strong>False Positives</strong> (FP)?</p>
+  <p><strong>A.</strong> 80</p>
+  <p><strong>B.</strong> 20</p>
+  <p><strong>C.</strong> 100</p>
+  <p><strong>D.</strong> 0</p>
+  <div class="fragment">
+    <p style="color:#2e7d32;"><strong>Answer: B.</strong> The 20 legitimate emails that the model
+    incorrectly called &ldquo;spam&rdquo; are False Positives &mdash; the prediction
+    was Positive but it was wrong (False).</p>
+  </div>
+</div></div>
+      </section>
 
 
 
@@ -329,14 +370,18 @@ best_threshold(y_true, y_prob)
         <div class="slide-content"><div style="font-size:1.3em;">
   <p>Can we combine precision and recall into <strong>one number</strong>?</p>
   <div class="fragment" data-fragment-index="0">
-    <p><strong>F1 Score</strong> = 2PR / (P + R) &mdash; the harmonic mean, not (P+R)/2,
-    because the arithmetic mean lets one bad metric hide behind a good one
-    (e.g. P=1.0, R=0.0 &rarr; average 0.5 but F1&nbsp;=&nbsp;0)</p>
+    <p><strong>F1 Score</strong> = 2PR / (P + R)</p>
+    <p style="font-size:0.9em;">Why not just average them with (P+R)/2? Because a simple average
+    lets one bad score hide behind a good one. For example, if P=1.0
+    and R=0.0, the simple average gives 0.5 &mdash; sounds decent. But
+    F1&nbsp;=&nbsp;0 because the formula punishes you when <em>either</em> metric
+    is near zero. (This kind of average, called a <strong>harmonic mean</strong>,
+    stays low unless <em>both</em> inputs are high.)</p>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.95em;">A few more metrics you&rsquo;ll need:</p>
     <table style="margin:0.3em auto; text-align:left; font-size:0.9em;">
-      <tr><td><strong>Accuracy</strong></td><td style="padding:0 0.5em;">(TP+TN) / Total</td><td>Overall correctness (misleading if imbalanced)</td></tr>
+      <tr><td><strong>Accuracy</strong></td><td style="padding:0 0.5em;">(TP+TN) / Total</td><td>Overall correctness (can be misleading)</td></tr>
       <tr><td><strong>TPR</strong></td><td style="padding:0 0.5em;">TP / (TP+FN)</td><td>Same as recall &mdash; used in ROC curves</td></tr>
       <tr><td><strong>FPR</strong></td><td style="padding:0 0.5em;">FP / (FP+TN)</td><td>&ldquo;Of all negatives, how many did I falsely flag?&rdquo;</td></tr>
     </table>
@@ -399,7 +444,7 @@ best_threshold(y_true, y_prob)
   <div class="fragment" data-fragment-index="1">
     <p style="font-size:0.9em;">TP&nbsp;=&nbsp;0, FN&nbsp;=&nbsp;10 &rarr; <strong>Recall&nbsp;=&nbsp;0%</strong> &mdash;
     the model missed every sick patient.</p>
-    <p>Accuracy is misleading when classes are imbalanced.<br/>
+    <p>Accuracy is misleading when one class vastly outnumbers the other.<br/>
     <strong>That&rsquo;s why we need precision and recall.</strong></p>
   </div>
 </div>
@@ -426,6 +471,13 @@ def true_positive_rate(tp, fn):
 def false_positive_rate(fp, tn):
     # return ?</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Each function is a single division. Look back at the formula table
+      a few slides ago &mdash; just translate each formula into Python.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def precision(tp, fp):
     return tp / (tp + fp)
 
@@ -440,12 +492,31 @@ def true_positive_rate(tp, fn):
 
 def false_positive_rate(fp, tn):
     return fp / (fp + tn)</code></pre>
+    </details>
   </div>
 </div>
 </div>
       </section>
 
 
+
+      <!-- Quick Check 2 -->
+      <section>
+        <h3>Quick Check 2 &mdash; When Accuracy Lies</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>In the hospital example, the lazy model says &ldquo;nobody is sick&rdquo; and
+  gets 99% accuracy. What is its <strong>F1 score</strong>?</p>
+  <p><strong>A.</strong> 0.99</p>
+  <p><strong>B.</strong> 0.50</p>
+  <p><strong>C.</strong> 0.00</p>
+  <p><strong>D.</strong> Cannot be calculated</p>
+  <div class="fragment">
+    <p style="color:#2e7d32;"><strong>Answer: C.</strong> With TP&nbsp;=&nbsp;0, both precision and
+    recall are 0, so F1&nbsp;=&nbsp;0. High accuracy can hide a completely
+    useless model when one group is much larger than the other.</p>
+  </div>
+</div></div>
+      </section>
 
 
 
@@ -459,17 +530,28 @@ def false_positive_rate(fp, tn):
 
       <section>
         <div class="slide-content"><div style="font-size:1.4em;">
-  <p>A model doesn&rsquo;t always output 0 or 1 &mdash; it often outputs a <strong>probability</strong>:</p>
+  <p>A model doesn&rsquo;t always output 0 or 1 &mdash; it often outputs a
+  <strong>probability</strong> (a number between 0 and 1 indicating how confident
+  it is):</p>
   <p style="font-family:monospace; font-size:0.85em;">
     outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35]<br/>
     actual &nbsp;= [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]
   </p>
-  <p>Write a function that converts outputs to 0s and 1s using a threshold:</p>
+  <p>Write a function that converts these probabilities to 0s and 1s
+  using a <strong>threshold</strong> (cutoff value) &mdash; if the output is at or above the
+  threshold, predict 1; otherwise predict 0:</p>
 <pre><code>def apply_threshold(outputs, threshold):
     # return list of 0s and 1s</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Use a list comprehension: <code>[1 if o >= threshold else 0 for o in outputs]</code></p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def apply_threshold(outputs, threshold):
     return [1 if o >= threshold else 0 for o in outputs]</code></pre>
+    </details>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p style="font-family:monospace; font-size:0.85em;">
@@ -518,10 +600,19 @@ def false_positive_rate(fp, tn):
     # use apply_threshold, confusion_matrix, precision</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Call <code>apply_threshold</code> to get predictions, then
+      <code>confusion_matrix</code> to get TP/FP, then <code>precision</code>.
+      Watch out for division by zero when TP+FP is 0.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def precision_at_threshold(actual, outputs, t):
     pred = apply_threshold(outputs, t)
     tp, tn, fp, fn = confusion_matrix(actual, pred)
     return precision(tp, fp) if (tp + fp) > 0 else 0</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -559,10 +650,18 @@ def false_positive_rate(fp, tn):
     # use apply_threshold, confusion_matrix, recall</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Same pattern as <code>precision_at_threshold</code>, but call
+      <code>recall(tp, fn)</code> instead. Guard against TP+FN being 0.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def recall_at_threshold(actual, outputs, t):
     pred = apply_threshold(outputs, t)
     tp, tn, fp, fn = confusion_matrix(actual, pred)
     return recall(tp, fn) if (tp + fn) > 0 else 0</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -600,10 +699,18 @@ def false_positive_rate(fp, tn):
     # use precision_at_threshold, recall_at_threshold, f1_score</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Call your two <code>_at_threshold</code> functions for P and R, then
+      pass them to <code>f1_score</code>. Return 0 if both P and R are 0.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def f1_at_threshold(actual, outputs, t):
     p = precision_at_threshold(actual, outputs, t)
     r = recall_at_threshold(actual, outputs, t)
     return f1_score(p, r) if (p + r) > 0 else 0</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -653,11 +760,19 @@ def false_positive_rate(fp, tn):
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>Plot Precision, Recall, and F1 vs Threshold to visualize the tradeoff:</p>
+  <p>Plot Precision, Recall, and F1 vs Threshold to see the tradeoff visually:</p>
 <pre><code>def plot_metrics_vs_threshold(actual, outputs, thresholds):
     # Reuse your _at_threshold functions!
     # Plot precision, recall, F1 vs threshold</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Build three lists (one for precision, one for recall, one for F1)
+      by looping over thresholds and calling your <code>_at_threshold</code>
+      functions. Then plot all three using <code>plt.plot</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>import matplotlib.pyplot as plt
 
 def plot_metrics_vs_threshold(actual, outputs, thresholds):
@@ -669,6 +784,7 @@ def plot_metrics_vs_threshold(actual, outputs, thresholds):
     plt.plot(thresholds, f1s, label='F1')
     plt.xlabel('Threshold'); plt.ylabel('Score')
     plt.legend(); plt.show()</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -678,17 +794,22 @@ def plot_metrics_vs_threshold(actual, outputs, thresholds):
 
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
-  <p>Now apply this to a real dataset &mdash; logistic regression on Iris
-  (virginica vs. rest):</p>
+  <p>Now apply this to a real dataset. We&rsquo;ll use the <strong>Iris dataset</strong>
+  &mdash; a classic collection of 150 flower measurements (petal length,
+  petal width, etc.) with three species. We&rsquo;ll pick two species and
+  ask a model to tell them apart.</p>
+  <p style="font-size:0.9em;"><code>sklearn</code> (scikit-learn) is a popular Python library for machine
+  learning. Here <code>LogisticRegression</code> is a model that outputs
+  probabilities &mdash; exactly the kind of output we&rsquo;ve been working with:</p>
 <pre><code>from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import numpy as np
 
 iris = load_iris()
-mask = iris.target != 0
+mask = iris.target != 0          # keep only 2 species
 X = iris.data[mask]
-y = (iris.target[mask] == 2).astype(int)
+y = (iris.target[mask] == 2).astype(int)  # 1 = virginica, 0 = versicolor
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42)
@@ -696,7 +817,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 
-outputs = model.predict_proba(X_test)[:, 1]
+outputs = model.predict_proba(X_test)[:, 1]  # probabilities for class 1
 actual = y_test</code></pre>
   <div class="fragment" data-fragment-index="0">
     <p>Use your plotting function:</p>
@@ -709,11 +830,30 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
 
 
 
+      <!-- Quick Check 3 -->
+      <section>
+        <h3>Quick Check 3 &mdash; Threshold Tradeoff</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>A spam filter lowers its threshold from 0.8 to 0.3.
+  What typically happens?</p>
+  <p><strong>A.</strong> Both precision and recall increase</p>
+  <p><strong>B.</strong> Precision increases, recall decreases</p>
+  <p><strong>C.</strong> Precision decreases, recall increases</p>
+  <p><strong>D.</strong> Both precision and recall decrease</p>
+  <div class="fragment">
+    <p style="color:#2e7d32;"><strong>Answer: C.</strong> A lower threshold means
+    more emails are flagged as spam. That catches more real spam
+    (recall goes up) but also catches more legitimate emails by
+    mistake (precision goes down).</p>
+  </div>
+</div></div>
+      </section>
+
 
 
       <!-- Part 4: ROC Curve & AUC -->
       <section id="part4">
-        <h2>Part 4: ROC Curve & AUC</h2>
+        <h2>Part 4: ROC Curve &amp; AUC</h2>
 
       </section>
 
@@ -730,7 +870,11 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
       <div style="flex:1; min-width:0; font-size:0.9em;">
         <p>A perfect model hits <strong>TPR=1, FPR=0</strong> &mdash; the top-left corner.</p>
         <p>Random guessing follows the diagonal (TPR&nbsp;&asymp;&nbsp;FPR at every threshold).</p>
-        <p>This plot is called the <strong>ROC curve</strong> (Receiver Operating Characteristic).</p>
+        <p>This plot is called the <strong>ROC curve</strong>.
+        (The name &ldquo;Receiver Operating Characteristic&rdquo; comes from
+        World War II radar engineers who used it to measure how well
+        their equipment could tell real planes from noise.
+        Today it&rsquo;s used everywhere in machine learning.)</p>
       </div>
       <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="max-width:180px; flex-shrink:0;">
         <line x1="30" y1="170" x2="190" y2="170" stroke="#999" stroke-width="1"/>
@@ -758,6 +902,15 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
     # For each threshold: compute TPR, FPR
     # Plot TPR vs FPR + diagonal</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>Loop over thresholds. For each one, call <code>apply_threshold</code>
+      and <code>confusion_matrix</code>, then compute TPR and FPR.
+      Collect them into two lists and <code>plt.plot(fprs, tprs)</code>.
+      Draw the random-guess diagonal with <code>plt.plot([0,1],[0,1],'--')</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def plot_roc(actual, outputs, thresholds):
     tprs, fprs = [], []
     for t in thresholds:
@@ -770,6 +923,7 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
     plt.xlabel('FPR'); plt.ylabel('TPR')
     plt.title('ROC Curve'); plt.show()
     return fprs, tprs</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -802,7 +956,7 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
     </svg>
   </div>
   <div class="fragment" data-fragment-index="0">
-    <p style="margin-top:0.5em;">This is a <strong>trapezoid</strong>!</p>
+    <p style="margin-top:0.5em;">This is a <strong>trapezoid</strong> (a four-sided shape with one pair of parallel sides)!</p>
     <p>Area = width &times; average height<br/>
     = (7 &minus; 5) &times; (6 + 10) / 2<br/>
     = 2 &times; 8 = <strong>16</strong></p>
@@ -868,6 +1022,19 @@ plot_metrics_vs_threshold(actual, outputs, thresholds)</code></pre>
 <pre><code>assert area_under_curve([5, 7], [6, 10]) == 16
 assert area_under_curve([2, 5, 8], [3, 7, 4]) == 31.5</code></pre>
   <div class="fragment" data-fragment-index="0">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Loop from index 1 to the end. At each step, the width is
+      <code>xs[i] - xs[i-1]</code> and the average height is
+      <code>(ys[i] + ys[i-1]) / 2</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2</summary>
+      <p>Accumulate <code>width * avg_height</code> into a running total
+      and return it.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def area_under_curve(xs, ys):
     area = 0
     for i in range(1, len(xs)):
@@ -875,6 +1042,7 @@ assert area_under_curve([2, 5, 8], [3, 7, 4]) == 31.5</code></pre>
         avg_height = (ys[i] + ys[i-1]) / 2
         area += width * avg_height
     return area</code></pre>
+    </details>
   </div>
 </div>
 </div>
@@ -897,11 +1065,20 @@ assert area_under_curve([2, 5, 8], [3, 7, 4]) == 31.5</code></pre>
     # Sort by FPR, then use area_under_curve</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint</summary>
+      <p>The FPR/TPR pairs might not be in order. Pair them with
+      <code>zip</code>, sort by FPR, unpack, and call
+      <code>area_under_curve</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def compute_auc(fprs, tprs):
     pairs = sorted(zip(fprs, tprs))
     sorted_fprs = [p[0] for p in pairs]
     sorted_tprs = [p[1] for p in pairs]
     return area_under_curve(sorted_fprs, sorted_tprs)</code></pre>
+    </details>
     <p style="font-size:0.85em;">The higher the AUC, the better the model separates the two classes &mdash;
     regardless of which threshold you pick.</p>
   </div>
@@ -913,15 +1090,18 @@ assert area_under_curve([2, 5, 8], [3, 7, 4]) == 31.5</code></pre>
 
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
-  <p>Train two models on the same Iris data and compare:</p>
+  <p>Train two models on the same Iris data and compare.
+  <code>DecisionTreeClassifier(max_depth=1)</code> is a very simple model
+  that makes only one yes/no split &mdash; we want to see if the more
+  sophisticated model scores a higher AUC:</p>
 <pre><code>from sklearn.tree import DecisionTreeClassifier
 
-# Model 1: Logistic Regression
+# Model 1: Logistic Regression (from previous slide)
 model1 = LogisticRegression(max_iter=200)
 model1.fit(X_train, y_train)
 outputs1 = model1.predict_proba(X_test)[:, 1]
 
-# Model 2: Shallow Decision Tree
+# Model 2: Shallow Decision Tree (one split only)
 model2 = DecisionTreeClassifier(max_depth=1, random_state=42)
 model2.fit(X_train, y_train)
 outputs2 = model2.predict_proba(X_test)[:, 1]</code></pre>
@@ -948,7 +1128,8 @@ print("AUC Model 2:", compute_auc(fprs2, tprs2))</code></pre>
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p>You just built from scratch what sklearn provides:</p>
+  <p>You just built from scratch what <code>sklearn</code> (scikit-learn) provides
+  as ready-made functions:</p>
 <pre><code>from sklearn.metrics import (
     confusion_matrix, precision_score, recall_score,
     f1_score, roc_auc_score
@@ -968,6 +1149,67 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
 </div>
       </section>
 
+
+
+      <!-- Part 5: What You Just Invented -->
+      <section id="part5">
+        <h2>Part 5: What You Just Invented</h2>
+
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>What you just invented:</strong></p>
+  <table style="margin:0.5em auto; font-size:0.9em;">
+    <tr><th style="padding:0.3em 1em;">You built</th><th style="padding:0.3em 1em;">Real name</th></tr>
+    <tr><td>Counting correct/wrong predictions by type</td><td>Confusion Matrix</td></tr>
+    <tr><td>&ldquo;Of my positive predictions, how many were right?&rdquo;</td><td>Precision</td></tr>
+    <tr><td>&ldquo;Of all real positives, how many did I find?&rdquo;</td><td>Recall (Sensitivity, TPR)</td></tr>
+    <tr><td>A single score that stays low unless both P and R are high</td><td>F1 Score (harmonic mean)</td></tr>
+    <tr><td>Converting probabilities to 0/1 using a cutoff</td><td>Thresholding</td></tr>
+    <tr><td>Plotting TPR vs FPR at every threshold</td><td>ROC Curve</td></tr>
+    <tr><td>Summing trapezoids under the ROC curve</td><td>AUC (Area Under Curve)</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>You didn&rsquo;t learn classification metrics. <strong>You invented them.</strong></p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <!-- Part 6: Reflection -->
+      <section id="part6">
+        <h2>Part 6: Reflection</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Take a moment to answer these questions in your own words:</p>
+  <ol style="font-size:0.9em;">
+    <li>Why is accuracy a poor metric when one class vastly outnumbers
+    the other? Give a concrete example beyond the hospital one.</li>
+    <li>A friend says &ldquo;my model has perfect precision.&rdquo; Should you be
+    impressed? What could still be wrong?</li>
+    <li>Explain in one sentence what AUC measures, without using the
+    words &ldquo;area,&rdquo; &ldquo;curve,&rdquo; or &ldquo;ROC.&rdquo;</li>
+    <li>You used the <strong>trapezoid rule</strong> to compute AUC. Where else
+    might you use this technique? (Hint: think beyond classification.)</li>
+    <li>If you were building a model to detect fraudulent credit-card
+    transactions, would you optimize for precision or recall? Why?</li>
+  </ol>
+</div></div>
+      </section>
+
+
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
@@ -976,14 +1218,12 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
             <li><a href="#/part1">Part 1: Confusion Matrix</a></li>
             <li><a href="#/part2">Part 2: Classification Metrics</a></li>
             <li><a href="#/part3">Part 3: Choosing the Right Threshold</a></li>
-            <li><a href="#/part4">Part 4: ROC Curve & AUC</a></li>
+            <li><a href="#/part4">Part 4: ROC Curve &amp; AUC</a></li>
+            <li><a href="#/part5">Part 5: What You Just Invented</a></li>
+            <li><a href="#/part6">Part 6: Reflection</a></li>
           </ol>
         </div></div>
       </section>
-
-
-
-
 
 
 
@@ -1011,25 +1251,6 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
     Reveal.on('ready', function() { updateProgress(); });
   </script>
 <div class="chapter-footer">
-
-  <p><em><p>You started with two arrays and a question: "how good is this classifier?"
-You invented the confusion matrix, derived precision, recall, and F1,
-learned to tune thresholds, and compared models with AUC&nbsp;ROC.
-These tools are the foundation of every classification evaluation
-in machine learning.</p>
-
-<p><strong>Going further:</strong></p>
-
-<ul>
-<li><strong>Multi-class metrics:</strong> What if there are more than two classes?
-Extend confusion matrices to N×N and use macro/micro averaging.</li>
-<li><strong>Imbalanced data:</strong> When 99% of samples are negative, accuracy
-is useless. Precision-recall curves become essential.</li>
-<li><strong>Cost-sensitive thresholds:</strong> In practice, the cost of a false
-positive and false negative are rarely equal — your threshold
-should reflect the real-world cost.</li>
-</ul></em></p>
-
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>

@@ -7,8 +7,8 @@
   },
   {
     "slide_index": 1,
-    "content_id": "9f5029595f",
-    "slide_text": "Challenge (skip ahead if you can): Given true labels and predicted probabilities, write . It should sweep candidate thresholds and compute the confusion matrix, precision, recall and F1 at each one. It should return the threshold with the highest F1, along with the model's ROC AUC. Don't use sklearn. [code block] [code block] Already got it? The next slides will guide you step by step.",
+    "content_id": "d72c71f4fe",
+    "slide_text": "Challenge (skip ahead if you can): A binary classifier is a model that looks at some input and predicts one of two labels for example spam or not spam , sick or healthy . Given true labels and predicted probabilities, write . It should try different cutoff values and compute the confusion matrix, precision, recall and F1 at each one. It should return the cutoff with the highest F1, along with the model s ROC AUC. Don t use sklearn. [code block] [code block] Already got it? The next slides will guide you step by step.",
     "fragments": []
   },
   {
@@ -19,12 +19,12 @@
   },
   {
     "slide_index": 3,
-    "content_id": "157a0dd33d",
-    "slide_text": "Here are two arrays one containing the actual labels and the other the predicted labels from a binary classifier: actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] Index 0 1 2 3 4 5 6 7 8 9 Actual 1 0 1 1 0 1 0 0 1 0 Predicted 1 0 0 1 0 1 1 0 1 0",
+    "content_id": "97b0849206",
+    "slide_text": "Imagine a model that looks at medical test results and predicts sick (1) or healthy (0) for each patient. We call this a binary classifier binary because there are exactly two possible answers. Here are the actual labels and the model s predictions : actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] Index 0 1 2 3 4 5 6 7 8 9 Actual 1 0 1 1 0 1 0 0 1 0 Predicted 1 0 0 1 0 1 1 0 1 0",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "9b8e2d478e",
+        "content_id": "462e038ebe",
         "text": "Some predictions match, some don t. Can we organize these errors into a structured summary?"
       }
     ]
@@ -55,24 +55,30 @@
   },
   {
     "slide_index": 6,
-    "content_id": "9edb88a97c",
+    "content_id": "31fda65a2b",
     "slide_text": "Write a function that computes the confusion matrix: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "2455709388",
-        "text": "[code block] confusion_matrix(actual, predicted) (4, 4, 1, 1)"
+        "content_id": "a0195531ac",
+        "text": "Hint 1 Start four counters at zero. Loop through both lists at the same time using . Hint 2 Inside the loop, check the four cases with /: actual=1 and predicted=1 is TP, actual=0 and predicted=0 is TN, actual=0 and predicted=1 is FP, actual=1 and predicted=0 is FN. Solution [code block] confusion_matrix(actual, predicted) (4, 4, 1, 1)"
       }
     ]
   },
   {
     "slide_index": 7,
+    "content_id": "6d3253d97f",
+    "slide_text": "Quick Check 1 Reading the Confusion Matrix A model predicts spam for 100 emails. Of those, 80 actually are spam and 20 are legitimate. What are the False Positives (FP)? A. 80 B. 20 C. 100 D. 0 Answer: B. The 20 legitimate emails that the model incorrectly called spam are False Positives the prediction was Positive but it was wrong (False).",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
     "content_id": "a4b76021c8",
     "slide_text": "Part 2: Classification Metrics",
     "fragments": []
   },
   {
-    "slide_index": 8,
+    "slide_index": 9,
     "content_id": "ee3d2b7e71",
     "slide_text": "Now that we have TP=4, TN=4, FP=1, FN=1 what should we measure? The model made 5 positive predictions (TP + FP). What fraction of those were actually positive?",
     "fragments": [
@@ -89,24 +95,24 @@
     ]
   },
   {
-    "slide_index": 9,
-    "content_id": "073610b059",
+    "slide_index": 10,
+    "content_id": "8829e75a8a",
     "slide_text": "Can we combine precision and recall into one number ?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "038c336601",
-        "text": "F1 Score = 2PR / (P + R) the harmonic mean, not (P+R)/2, because the arithmetic mean lets one bad metric hide behind a good one (e.g. P=1.0, R=0.0 average 0.5 but F1 = 0)"
+        "content_id": "88ab85404c",
+        "text": "F1 Score = 2PR / (P + R) Why not just average them with (P+R)/2? Because a simple average lets one bad score hide behind a good one. For example, if P=1.0 and R=0.0, the simple average gives 0.5 sounds decent. But F1 = 0 because the formula punishes you when either metric is near zero. (This kind of average, called a harmonic mean , stays low unless both inputs are high.)"
       },
       {
         "fragment_index": 1,
-        "content_id": "1a4b7ce344",
-        "text": "A few more metrics you ll need: Accuracy (TP+TN) / Total Overall correctness (misleading if imbalanced) TPR TP / (TP+FN) Same as recall used in ROC curves FPR FP / (FP+TN) Of all negatives, how many did I falsely flag?"
+        "content_id": "51b3310c51",
+        "text": "A few more metrics you ll need: Accuracy (TP+TN) / Total Overall correctness (can be misleading) TPR TP / (TP+FN) Same as recall used in ROC curves FPR FP / (FP+TN) Of all negatives, how many did I falsely flag?"
       }
     ]
   },
   {
-    "slide_index": 10,
+    "slide_index": 11,
     "content_id": "55623e7bd7",
     "slide_text": "Given TP = 4, TN = 4, FP = 1, FN = 1 , calculate each metric:",
     "fragments": [
@@ -118,59 +124,65 @@
     ]
   },
   {
-    "slide_index": 11,
-    "content_id": "a786aedfe7",
+    "slide_index": 12,
+    "content_id": "227bb08b2c",
     "slide_text": "Accuracy looks great at 0.80. But consider this: A hospital tests 1000 patients for a rare disease. Only 10 actually have it. A lazy model says: Nobody is sick. What is its accuracy?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "f0543d4121",
+        "content_id": "b471b6b24d",
         "text": "Accuracy = 990 / 1000 = 99%! But what are precision, recall, and F1?"
       },
       {
         "fragment_index": 1,
-        "content_id": "f18da9ec13",
-        "text": "TP = 0, FN = 10 Recall = 0% the model missed every sick patient. Accuracy is misleading when classes are imbalanced. That s why we need precision and recall."
-      }
-    ]
-  },
-  {
-    "slide_index": 12,
-    "content_id": "ffe96a6922",
-    "slide_text": "Write functions for each metric: [code block]",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "9deeb312f3",
-        "text": "[code block]"
+        "content_id": "f5917d4525",
+        "text": "TP = 0, FN = 10 Recall = 0% the model missed every sick patient. Accuracy is misleading when one class vastly outnumbers the other. That s why we need precision and recall."
       }
     ]
   },
   {
     "slide_index": 13,
+    "content_id": "2514a17299",
+    "slide_text": "Write functions for each metric: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7ce9e2a634",
+        "text": "Hint Each function is a single division. Look back at the formula table a few slides ago just translate each formula into Python. Solution [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "content_id": "ddcf24f752",
+    "slide_text": "Quick Check 2 When Accuracy Lies In the hospital example, the lazy model says nobody is sick and gets 99% accuracy. What is its F1 score ? A. 0.99 B. 0.50 C. 0.00 D. Cannot be calculated Answer: C. With TP = 0, both precision and recall are 0, so F1 = 0. High accuracy can hide a completely useless model when one group is much larger than the other.",
+    "fragments": []
+  },
+  {
+    "slide_index": 15,
     "content_id": "9723a2c8ea",
     "slide_text": "Part 3: Choosing the Right Threshold",
     "fragments": []
   },
   {
-    "slide_index": 14,
-    "content_id": "c178404310",
-    "slide_text": "A model doesn t always output 0 or 1 it often outputs a probability : outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35] actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] Write a function that converts outputs to 0s and 1s using a threshold: [code block]",
+    "slide_index": 16,
+    "content_id": "2091cf96d5",
+    "slide_text": "A model doesn t always output 0 or 1 it often outputs a probability (a number between 0 and 1 indicating how confident it is): outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35] actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0] Write a function that converts these probabilities to 0s and 1s using a threshold (cutoff value) if the output is at or above the threshold, predict 1; otherwise predict 0: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "be4862fddb",
-        "text": "[code block]"
+        "content_id": "35fa9fe47f",
+        "text": "Hint Use a list comprehension: Solution [code block]"
       },
       {
         "fragment_index": 1,
-        "content_id": "a8e00d85b1",
+        "content_id": "03eb3e5308",
         "text": "apply_threshold(outputs, 0.5) [1, 0, 0, 1, 0, 1, 1, 0, 1, 0] That s our original array!"
       }
     ]
   },
   {
-    "slide_index": 15,
+    "slide_index": 17,
     "content_id": "6e481c5b72",
     "slide_text": "Question is how do we decide on this threshold?",
     "fragments": [
@@ -187,24 +199,24 @@
     ]
   },
   {
-    "slide_index": 16,
-    "content_id": "a6926254f7",
+    "slide_index": 18,
+    "content_id": "6cb5c76d21",
     "slide_text": "For threshold t = 0.5 , what is the precision? outputs = [0.9, 0.3, 0.4, 0.8, 0.2, 0.7, 0.55, 0.1, 0.85, 0.35] actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "57af49f3c9",
+        "content_id": "21f4dddbc9",
         "text": "apply_threshold [1,0,0,1,0,1,1,0,1,0] TP=4, FP=1 Precision = 0.80 Now write a function that computes precision for any threshold: [code block]"
       },
       {
         "fragment_index": 1,
-        "content_id": "f8de113eb8",
-        "text": "[code block]"
+        "content_id": "61cc47e47a",
+        "text": "Hint Call to get predictions, then to get TP/FP, then . Watch out for division by zero when TP+FP is 0. Solution [code block]"
       }
     ]
   },
   {
-    "slide_index": 17,
+    "slide_index": 19,
     "content_id": "4c28e08e5b",
     "slide_text": "Run for each threshold: [code block]",
     "fragments": [
@@ -216,24 +228,24 @@
     ]
   },
   {
-    "slide_index": 18,
-    "content_id": "1789ae5dfc",
+    "slide_index": 20,
+    "content_id": "f04d7d7754",
     "slide_text": "Now do the same for recall . For t = 0.5 , what is the recall?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "cdd90edca3",
+        "content_id": "c383021e1f",
         "text": "Same predictions: TP=4, FN=1 Recall = 0.80 Write a similar function for recall: [code block]"
       },
       {
         "fragment_index": 1,
-        "content_id": "9b303e207f",
-        "text": "[code block]"
+        "content_id": "defc3466e1",
+        "text": "Hint Same pattern as , but call instead. Guard against TP+FN being 0. Solution [code block]"
       }
     ]
   },
   {
-    "slide_index": 19,
+    "slide_index": 21,
     "content_id": "9655637f04",
     "slide_text": "Run for each threshold: [code block]",
     "fragments": [
@@ -245,24 +257,24 @@
     ]
   },
   {
-    "slide_index": 20,
-    "content_id": "18005c9eb7",
+    "slide_index": 22,
+    "content_id": "39206b99be",
     "slide_text": "For threshold t = 0.5 , what is the F1 Score? You already know: Precision = 0.80, Recall = 0.80",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "bf95e226f5",
+        "content_id": "fa32b13500",
         "text": "F1 = 2 0.8 0.8 / (0.8 + 0.8) = 0.80 Write a function for F1 at any threshold: [code block]"
       },
       {
         "fragment_index": 1,
-        "content_id": "114593042d",
-        "text": "[code block]"
+        "content_id": "71d37d93ac",
+        "text": "Hint Call your two functions for P and R, then pass them to . Return 0 if both P and R are 0. Solution [code block]"
       }
     ]
   },
   {
-    "slide_index": 21,
+    "slide_index": 23,
     "content_id": "e33ef43def",
     "slide_text": "Run for each threshold: [code block]",
     "fragments": [
@@ -274,7 +286,7 @@
     ]
   },
   {
-    "slide_index": 22,
+    "slide_index": 24,
     "content_id": "0451d0872a",
     "slide_text": "Which metric would you optimize? Scenario 1: You re screening patients for cancer. Missing a sick patient (FN) could be fatal. Optimize ___? Scenario 2: You re filtering spam emails. Blocking a real email (FP) is very annoying. Optimize ___?",
     "fragments": [
@@ -286,73 +298,79 @@
     ]
   },
   {
-    "slide_index": 23,
-    "content_id": "f5bb0b54fb",
-    "slide_text": "Plot Precision, Recall, and F1 vs Threshold to visualize the tradeoff: [code block]",
+    "slide_index": 25,
+    "content_id": "d08efc6a9c",
+    "slide_text": "Plot Precision, Recall, and F1 vs Threshold to see the tradeoff visually: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "77c3b346a7",
-        "text": "[code block]"
+        "content_id": "2ef166efc9",
+        "text": "Hint Build three lists (one for precision, one for recall, one for F1) by looping over thresholds and calling your functions. Then plot all three using . Solution [code block]"
       }
     ]
   },
   {
-    "slide_index": 24,
-    "content_id": "0237b8273c",
-    "slide_text": "Now apply this to a real dataset logistic regression on Iris (virginica vs. rest): [code block]",
+    "slide_index": 26,
+    "content_id": "4fcec5e59e",
+    "slide_text": "Now apply this to a real dataset. We ll use the Iris dataset a classic collection of 150 flower measurements (petal length, petal width, etc.) with three species. We ll pick two species and ask a model to tell them apart. (scikit-learn) is a popular Python library for machine learning. Here is a model that outputs probabilities exactly the kind of output we ve been working with: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "d9269849bc",
+        "content_id": "0d417b9396",
         "text": "Use your plotting function: [code block]"
       }
     ]
   },
   {
-    "slide_index": 25,
-    "content_id": "8a991e5085",
-    "slide_text": "Part 4: ROC Curve & AUC",
+    "slide_index": 27,
+    "content_id": "7adebab463",
+    "slide_text": "Quick Check 3 Threshold Tradeoff A spam filter lowers its threshold from 0.8 to 0.3. What typically happens? A. Both precision and recall increase B. Precision increases, recall decreases C. Precision decreases, recall increases D. Both precision and recall decrease Answer: C. A lower threshold means more emails are flagged as spam. That catches more real spam (recall goes up) but also catches more legitimate emails by mistake (precision goes down).",
     "fragments": []
   },
   {
-    "slide_index": 26,
-    "content_id": "7ee52abdc8",
+    "slide_index": 28,
+    "content_id": "669bd39f60",
+    "slide_text": "Part 4: ROC Curve AUC",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "content_id": "07455d2f49",
     "slide_text": "You ve been plotting metrics against threshold. What if you plotted TPR vs FPR instead one point per threshold? Think: what would a perfect model look like? What about random guessing ?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "94d7af911f",
-        "text": "A perfect model hits TPR=1, FPR=0 the top-left corner. Random guessing follows the diagonal (TPR FPR at every threshold). This plot is called the ROC curve (Receiver Operating Characteristic)."
+        "content_id": "ca223a76bd",
+        "text": "A perfect model hits TPR=1, FPR=0 the top-left corner. Random guessing follows the diagonal (TPR FPR at every threshold). This plot is called the ROC curve . (The name Receiver Operating Characteristic comes from World War II radar engineers who used it to measure how well their equipment could tell real planes from noise. Today it s used everywhere in machine learning.)"
       }
     ]
   },
   {
-    "slide_index": 27,
-    "content_id": "53d8d916ed",
+    "slide_index": 30,
+    "content_id": "e3fb91a567",
     "slide_text": "Write a function to compute and plot the ROC curve: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "3cdd5e86ca",
-        "text": "[code block]"
+        "content_id": "2987b8013f",
+        "text": "Hint Loop over thresholds. For each one, call and , then compute TPR and FPR. Collect them into two lists and . Draw the random-guess diagonal with . Solution [code block]"
       }
     ]
   },
   {
-    "slide_index": 28,
-    "content_id": "5deb21e69e",
+    "slide_index": 31,
+    "content_id": "10a04b20b3",
     "slide_text": "What is the area under the line connecting these two points? (5, 6) and (7, 10)",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "5560b37a58",
-        "text": "This is a trapezoid ! Area = width average height = (7 5) (6 + 10) / 2 = 2 8 = 16"
+        "content_id": "9bb75eb116",
+        "text": "This is a trapezoid (a four-sided shape with one pair of parallel sides)! Area = width average height = (7 5) (6 + 10) / 2 = 2 8 = 16"
       }
     ]
   },
   {
-    "slide_index": 29,
+    "slide_index": 32,
     "content_id": "578dfaa6ac",
     "slide_text": "Now three points: (2, 3), (5, 7), (8, 4) What is the total area under the curve?",
     "fragments": [
@@ -364,67 +382,97 @@
     ]
   },
   {
-    "slide_index": 30,
-    "content_id": "d1f4b515a4",
+    "slide_index": 33,
+    "content_id": "ccaa4845cd",
     "slide_text": "Write a function to compute the area under any curve given x and y values: [code block] Test cases: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "b4c8f8e4e3",
-        "text": "[code block]"
-      }
-    ]
-  },
-  {
-    "slide_index": 31,
-    "content_id": "020d07e309",
-    "slide_text": "The Area Under the ROC Curve (AUC) summarizes model quality in a single number. A perfect model s curve covers the entire square. What is its AUC? A random model follows the diagonal. What area is that?",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "8bf5fd39a7",
-        "text": "AUC = 1.0 entire square (perfect) AUC = 0.5 triangle under diagonal (random) AUC 0.5 worse than random! You already have . Apply it to the ROC points: [code block]"
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "d326658476",
-        "text": "[code block] The higher the AUC, the better the model separates the two classes regardless of which threshold you pick."
-      }
-    ]
-  },
-  {
-    "slide_index": 32,
-    "content_id": "f888051e6e",
-    "slide_text": "Train two models on the same Iris data and compare: [code block]",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "e35394f2e2",
-        "text": "Plot both ROC curves and compute AUC for each: [code block] The model with the higher AUC is the better classifier!"
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "b4ff08e9ec",
-        "text": "Expected: Logistic Regression AUC 0.99 Decision Stump AUC 0.85"
-      }
-    ]
-  },
-  {
-    "slide_index": 33,
-    "content_id": "1c76fb6ea8",
-    "slide_text": "You just built from scratch what sklearn provides: [code block]",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "f7da2010fe",
-        "text": "Compare with your implementations the numbers should match! Now you know exactly what these functions do under the hood."
+        "content_id": "1d407d28aa",
+        "text": "Hint 1 Loop from index 1 to the end. At each step, the width is and the average height is . Hint 2 Accumulate into a running total and return it. Solution [code block]"
       }
     ]
   },
   {
     "slide_index": 34,
-    "content_id": "608e52434e",
-    "slide_text": "Index Part 1: Confusion Matrix Part 2: Classification Metrics Part 3: Choosing the Right Threshold Part 4: ROC Curve & AUC",
+    "content_id": "affce855fd",
+    "slide_text": "The Area Under the ROC Curve (AUC) summarizes model quality in a single number. A perfect model s curve covers the entire square. What is its AUC? A random model follows the diagonal. What area is that?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "61756a0c57",
+        "text": "AUC = 1.0 entire square (perfect) AUC = 0.5 triangle under diagonal (random) AUC 0.5 worse than random! You already have . Apply it to the ROC points: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d245f6ff82",
+        "text": "Hint The FPR/TPR pairs might not be in order. Pair them with , sort by FPR, unpack, and call . Solution [code block] The higher the AUC, the better the model separates the two classes regardless of which threshold you pick."
+      }
+    ]
+  },
+  {
+    "slide_index": 35,
+    "content_id": "80e88f0c46",
+    "slide_text": "Train two models on the same Iris data and compare. is a very simple model that makes only one yes/no split we want to see if the more sophisticated model scores a higher AUC: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2b33d3702b",
+        "text": "Plot both ROC curves and compute AUC for each: [code block] The model with the higher AUC is the better classifier!"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "107c22bbc4",
+        "text": "Expected: Logistic Regression AUC 0.99 Decision Stump AUC 0.85"
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "content_id": "1c4f0a71df",
+    "slide_text": "You just built from scratch what (scikit-learn) provides as ready-made functions: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "27aea41197",
+        "text": "Compare with your implementations the numbers should match! Now you know exactly what these functions do under the hood."
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "ec5fb0785e",
+    "slide_text": "Part 5: What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 38,
+    "content_id": "9ba7b1b2e2",
+    "slide_text": "What you just invented: You built Real name Counting correct/wrong predictions by type Confusion Matrix Of my positive predictions, how many were right? Precision Of all real positives, how many did I find? Recall (Sensitivity, TPR) A single score that stays low unless both P and R are high F1 Score (harmonic mean) Converting probabilities to 0/1 using a cutoff Thresholding Plotting TPR vs FPR at every threshold ROC Curve Summing trapezoids under the ROC curve AUC (Area Under Curve)",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "573af9eb44",
+        "text": "You didn t learn classification metrics. You invented them."
+      }
+    ]
+  },
+  {
+    "slide_index": 39,
+    "content_id": "006545f5f8",
+    "slide_text": "Part 6: Reflection",
+    "fragments": []
+  },
+  {
+    "slide_index": 40,
+    "content_id": "ae7487ec03",
+    "slide_text": "Reflection Take a moment to answer these questions in your own words: Why is accuracy a poor metric when one class vastly outnumbers the other? Give a concrete example beyond the hospital one. A friend says my model has perfect precision. Should you be impressed? What could still be wrong? Explain in one sentence what AUC measures, without using the words area, curve, or ROC. You used the trapezoid rule to compute AUC. Where else might you use this technique? (Hint: think beyond classification.) If you were building a model to detect fraudulent credit-card transactions, would you optimize for precision or recall? Why?",
+    "fragments": []
+  },
+  {
+    "slide_index": 41,
+    "content_id": "8b66277937",
+    "slide_text": "Index Part 1: Confusion Matrix Part 2: Classification Metrics Part 3: Choosing the Right Threshold Part 4: ROC Curve AUC Part 5: What You Just Invented Part 6: Reflection",
     "fragments": []
   }
 ]
