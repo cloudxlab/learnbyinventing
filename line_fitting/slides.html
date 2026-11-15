@@ -123,14 +123,7 @@ build your way to fitting lines and curves to anything.</div>
 
 
 
-      <!-- Part 1: The Prediction Problem -->
-      <section id="part1">
-        <h2>Part 1: The Prediction Problem</h2>
-
-      </section>
-
-
-
+      <!-- Chapter-level challenge -->
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
@@ -150,6 +143,14 @@ print(predict(a, b, 3))   # should print 11</code></pre>
   step by step.</p>
 </div>
 </div>
+      </section>
+
+
+
+      <!-- Part 1: The Prediction Problem -->
+      <section id="part1">
+        <h2>Part 1: The Prediction Problem</h2>
+
       </section>
 
 
@@ -389,6 +390,24 @@ print(predict(a, b, 3))   # should print 11</code></pre>
 
 
 
+      <!-- Quick Check 1 -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p><strong>Quick Check:</strong> For the line y&nbsp;=&nbsp;4x&nbsp;&minus;&nbsp;1, what does the number <strong>4</strong> tell you?</p>
+  <ol type="A">
+    <li>The starting value of y when x&nbsp;=&nbsp;0</li>
+    <li>How much y changes when x goes up by 1</li>
+    <li>The total number of data points</li>
+    <li>The value of x when y&nbsp;=&nbsp;0</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>Answer: B.</strong> When x goes up by 1, y goes up by 4. That number is the <em>slope</em> of the line. The &minus;1 is the <em>intercept</em> &mdash; the value of y when x&nbsp;=&nbsp;0.</p>
+  </div>
+</div></div>
+      </section>
+
+
+
       <section>
         <div class="slide-content"><div style="font-size:1.5em;">
   <div style="text-align:center; margin-bottom:0.5em;">
@@ -459,6 +478,15 @@ print(predict(a, b, 3))   # should print 11</code></pre>
 
 def predict(a, b, x):
     # return y</code></pre>
+  <details style="margin-top:0.5em; font-size:0.85em;"><summary>Hint 1</summary>
+    <p><code>predict</code> is the easy one: just plug x into y&nbsp;=&nbsp;ax&nbsp;+&nbsp;b.</p>
+  </details>
+  <details style="font-size:0.85em;"><summary>Hint 2</summary>
+    <p>For <code>fit</code>, subtract the two equations to eliminate b. That gives you a&nbsp;=&nbsp;(y2&nbsp;&minus;&nbsp;y1)&nbsp;/&nbsp;(x2&nbsp;&minus;&nbsp;x1).</p>
+  </details>
+  <details style="font-size:0.85em;"><summary>Hint 3 (near-giveaway)</summary>
+    <p>Once you have a, plug back into either equation: b&nbsp;=&nbsp;y1&nbsp;&minus;&nbsp;a&nbsp;*&nbsp;x1.</p>
+  </details>
 </div>
 </div>
       </section>
@@ -568,6 +596,52 @@ def predict(a, b, x):
   </div>
 </div>
 </div>
+      </section>
+
+
+
+      <!-- MSE Exercise -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.5em;">
+  <p><strong>Exercise:</strong> Write a function that computes the MSE for a line y&nbsp;=&nbsp;ax&nbsp;+&nbsp;b against a list of points:</p>
+<pre><code>def mse(a, b, xs, ys):
+    """Return the Mean Squared Error."""
+    # your code here</code></pre>
+  <p style="font-size:0.9em;">Test: <code>mse(3, -1, [1,2,3], [2,5,7])</code> should return roughly <strong>0.33</strong></p>
+  <details style="margin-top:0.5em; font-size:0.85em;"><summary>Hint 1</summary>
+    <p>For each point, compute predicted&nbsp;=&nbsp;a*x&nbsp;+&nbsp;b, then error&nbsp;=&nbsp;actual&nbsp;&minus;&nbsp;predicted.</p>
+  </details>
+  <details style="font-size:0.85em;"><summary>Hint 2</summary>
+    <p>Square each error, sum them up, and divide by the number of points.</p>
+  </details>
+  <details style="font-size:0.85em;"><summary>Solution</summary>
+<pre><code>def mse(a, b, xs, ys):
+    total = 0
+    for x, y in zip(xs, ys):
+        error = y - (a * x + b)
+        total += error ** 2
+    return total / len(xs)</code></pre>
+  </details>
+</div>
+</div>
+      </section>
+
+
+
+      <!-- Quick Check 2 -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p><strong>Quick Check:</strong> Line A has MSE&nbsp;=&nbsp;2.5 and Line B has MSE&nbsp;=&nbsp;0.8. Which line fits the data better?</p>
+  <ol type="A">
+    <li>Line A, because 2.5 is bigger</li>
+    <li>Line B, because lower MSE means less error</li>
+    <li>They fit equally well</li>
+    <li>Cannot tell without seeing the data</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>Answer: B.</strong> MSE measures how far off the predictions are on average (squared). Lower is better &mdash; Line B's predictions are closer to the actual values.</p>
+  </div>
+</div></div>
       </section>
 
 
@@ -700,6 +774,57 @@ def predict(a, b, x):
       </section>
 
 
+
+
+      <!-- Quick Check 3 -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <p><strong>Quick Check:</strong> A model has the equation y&nbsp;=&nbsp;ax&sup2;&nbsp;+&nbsp;bx&nbsp;+&nbsp;c. How many data points do you need <em>at minimum</em> to solve for a,&nbsp;b, and c?</p>
+  <ol type="A">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>Answer: C.</strong> Three unknowns need three equations. Each data point gives one equation, so you need at least three points.</p>
+  </div>
+</div></div>
+      </section>
+
+
+
+      <!-- What You Just Invented -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <h3>What You Just Invented</h3>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th>What you did</th><th>Official name</th></tr>
+    <tr><td>Found a and b from two points</td><td><strong>Line fitting</strong> (two-point form)</td></tr>
+    <tr><td>Used y&nbsp;=&nbsp;ax&nbsp;+&nbsp;b to predict new values</td><td><strong>Linear model / inference</strong></td></tr>
+    <tr><td>Measured how far off predictions are</td><td><strong>Mean Squared Error (MSE)</strong></td></tr>
+    <tr><td>Chose the line with lowest error</td><td><strong>Least-squares regression</strong></td></tr>
+    <tr><td>Used ax&sup2;&nbsp;+&nbsp;bx&nbsp;+&nbsp;c for curved data</td><td><strong>Polynomial regression</strong></td></tr>
+    <tr><td>Worried about too many parameters</td><td><strong>Overfitting</strong></td></tr>
+  </table>
+  <p>Every machine learning model &mdash; from a tiny line to a billion-parameter LLM &mdash; follows the same loop: <strong>fit parameters to data, then predict on new inputs</strong>.</p>
+</div></div>
+      </section>
+
+
+
+      <!-- Reflection -->
+      <section>
+        <div class="slide-content"><div style="font-size:1.4em;">
+  <h3>Reflection</h3>
+  <ol>
+    <li>In your own words, what is the difference between <em>training</em> and <em>inference</em>?</li>
+    <li class="fragment" data-fragment-index="0">Why do we square the errors instead of just adding them up?</li>
+    <li class="fragment" data-fragment-index="1">If you had 100 data points and a line only has 2 parameters (a and b), how does the model decide the best values?</li>
+    <li class="fragment" data-fragment-index="2">When would a straight line <em>not</em> be enough? Can you think of a real-world example?</li>
+  </ol>
+</div></div>
+      </section>
 
 
 
