@@ -1,7 +1,7 @@
 [
   {
     "slide_index": 0,
-    "content_id": "fbd92047de",
+    "content_id": "5c4f407770",
     "slide_text": "The Encoder-Decoder Pipeline — A Real Data Engineering Problem You are handed a real task at work: We bought a recommendation engine . It reads a CSV file with three columns — — and writes its recommendations to another CSV with columns . It only accepts integers for . Our data, however, identifies users by email address : [code block] Make it work. And when the engine answers, translate its output back to emails. You cannot change the engine. So you will wrap it: [code block] The Encoder and Decoder are separate programs that communicate only through files — so the mapping between emails and integers must itself be saved to a file. This pattern (encode → black box → decode) is everywhere: ML pipelines call it label encoding , and you already met its purest form in the Information Theory chapter. Navigate: press or Space to advance | to go back",
     "fragments": []
   },
@@ -19,104 +19,134 @@
   },
   {
     "slide_index": 3,
-    "content_id": "5ecced8bcf",
-    "slide_text": "Parse One Line The lines are messy: spaces after commas, a newline at the end. Write that returns a clean tuple with the right types: , , . [code block]",
+    "content_id": "1fc06c7ef1",
+    "slide_text": "Parse One Line The lines are messy: spaces after commas, a newline at the end. Write that returns a clean tuple with the right types: , , . [code block] Hint 1 Python's removes whitespace (including newlines) from both ends of a string. breaks a string into a list of pieces at each comma. Hint 2 After splitting, each piece is still a string. Call on each piece to remove extra spaces, then use and to convert the second and third pieces to the right types. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 4,
-    "content_id": "4f993c6325",
-    "slide_text": "Read the Whole File Write that opens the file and returns a list of parsed tuples, skipping any blank lines. [code block]",
+    "content_id": "347a0686ec",
+    "slide_text": "Read the Whole File Write that opens the file and returns a list of parsed tuples, skipping any blank lines. [code block] Hint 1 Open the file with and loop through each line. Use to skip blank lines. Hint 2 Build a list and for each non-blank line. You already wrote — just call it here. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 5,
+    "content_id": "f93e747e78",
+    "slide_text": "Quick Check 1.1 — Why Strip? The line has spaces after commas and a newline at the end. What would happen if you skipped and tried ? A. It works fine — ignores whitespace automatically B. It crashes with a because of the space C. It returns the string unchanged D. It returns Answer: A — Python's actually handles leading/trailing spaces. But is still good practice because other functions (like comparing strings) are not so forgiving. The user name with a space would not match without it!",
+    "fragments": []
+  },
+  {
+    "slide_index": 6,
     "content_id": "fbda11adad",
     "slide_text": "Part 2: The Encoder",
     "fragments": []
   },
   {
-    "slide_index": 6,
-    "content_id": "83aabdeadd",
-    "slide_text": "Assign an Integer to Each Email Write that gives each distinct user an integer ID: 1 for the first user seen, 2 for the second new user, and so on. Users repeat in the data — they must keep the same ID. [code block]",
-    "fragments": []
-  },
-  {
     "slide_index": 7,
-    "content_id": "da1ddcf27b",
-    "slide_text": "Persist the Mapping The mapping file maps email → id. The decoder needs id → email. The Decoder is a separate program — it will not share memory with the Encoder. The mapping must survive as a file. Write (one line per user) and that reads it back — types intact (ids are ints). The test is the round trip: [code block]",
+    "content_id": "8cef7634f6",
+    "slide_text": "Assign an Integer to Each Email Write that gives each distinct user an integer ID: 1 for the first user seen, 2 for the second new user, and so on. Users repeat in the data — they must keep the same ID. [code block] Hint 1 Walk through the rows. Keep a dictionary. Each time you see a user for the first time, add them with the next integer as their ID. Hint 2 Check first. If they are new, assign as their ID — that gives you 1 for the first user, 2 for the second, and so on. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 8,
-    "content_id": "049ec9a8aa",
-    "slide_text": "The Complete Encoder Program Put it together. Write that reads the raw data, builds and saves the mapping, and writes the encoded CSV with emails replaced by their integer IDs. Expected for our data: [code block]",
+    "content_id": "e9cb415e0d",
+    "slide_text": "Persist the Mapping The mapping file maps email → id. The decoder needs id → email. The Decoder is a separate program — it will not share memory with the Encoder. The mapping must survive as a file. Write (one line per user) and that reads it back — types intact (ids are ints). The test is the round trip: [code block] Hint 1 To save: loop through the dictionary and write one line per entry — . To load: read each line, split on the comma, and rebuild the dictionary. Hint 2 When you read a line back from the file, the id is a string (everything in a text file is text). Convert it with so the round-trip test passes. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 9,
+    "content_id": "6d69ed7b95",
+    "slide_text": "The Complete Encoder Program Put it together. Write that reads the raw data, builds and saves the mapping, and writes the encoded CSV with emails replaced by their integer IDs. Expected for our data: [code block] Hint 1 You already have all the building blocks: , , . Call them in order, then write the encoded rows. Hint 2 For each row, look up the email in the mapping to get its integer ID, then write to the encoded file. Solution [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 10,
+    "content_id": "bde6e61d57",
+    "slide_text": "Quick Check 2.1 — What Does build_mapping Guarantee? Which of the following best describes what guarantees? A. Every email gets a random integer B. Every email gets a unique integer, and the same email always maps to the same integer C. Emails are sorted alphabetically before assigning IDs D. The mapping is stored in a file automatically Answer: B — The check means a user only gets an ID once, and it never changes. Every distinct user gets a different number. This one-to-one property is what makes the mapping safely invertible later.",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
     "content_id": "ed4d75a497",
     "slide_text": "Part 3: The Recommendation Engine (Black Box) Here is the engine you bought. You are not allowed to modify it — run the cell as-is. For each user it recommends the products they have not rated yet, scored by that product's average rating from other users. Notice it would crash on emails: it calls on the first column. That is exactly why you wrote the Encoder. Only one line came out: user should look at product . Makes sense — everyone else has already rated everything. But who is user 3? Time for the Decoder.",
     "fragments": []
   },
   {
-    "slide_index": 10,
+    "slide_index": 12,
     "content_id": "6a6ca2984c",
     "slide_text": "The Black-Box Recommender Run this provided cell as-is. Do not modify the recommender.",
     "fragments": []
   },
   {
-    "slide_index": 11,
+    "slide_index": 13,
     "content_id": "3c5666aba9",
     "slide_text": "Part 4: The Decoder",
     "fragments": []
   },
   {
-    "slide_index": 12,
-    "content_id": "45dc428f8d",
-    "slide_text": "Invert the Mapping The mapping file maps email → id. The decoder needs id → email. Write . (You built this in the Dictionaries chapter — rebuild it from memory.) Why is inversion safe here — what property must the mapping have? [code block]",
-    "fragments": []
-  },
-  {
-    "slide_index": 13,
-    "content_id": "e24f22bed6",
-    "slide_text": "The Complete Decoder Program Write that loads the mapping from its file, inverts it, reads the engine's recommendations, and writes the final CSV with integer IDs translated back to emails. [code block] So the mystery user 3 was subodh , and the pipeline recommends product 1 with score 1.5.",
-    "fragments": []
-  },
-  {
     "slide_index": 14,
-    "content_id": "0d82091c7d",
-    "slide_text": "Why Encode at All? The recommendation engine takes integer IDs instead of email addresses. Why is this encoding step necessary? A. Emails take too much memory — integers are smaller B. The recommendation algorithm works with numerical operations (similarity scores, matrix math) that require numbers, not strings C. Python can't compare strings, only numbers D. Encoding makes the data more secure by hiding email addresses",
+    "content_id": "33057cedef",
+    "slide_text": "Invert the Mapping The mapping file maps email → id. The decoder needs id → email. Write . (You built this in the Dictionaries chapter — rebuild it from memory.) Why is inversion safe here — what property must the mapping have? [code block] Hint 1 Create a new dictionary where each old value becomes a key and each old key becomes a value. In other words, flip every pair around. Hint 2 does it in one line. Inversion is safe when all values are unique — if two emails shared the same integer, one would overwrite the other. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 15,
+    "content_id": "23f3616a02",
+    "slide_text": "The Complete Decoder Program Write that loads the mapping from its file, inverts it, reads the engine's recommendations, and writes the final CSV with integer IDs translated back to emails. [code block] So the mystery user 3 was subodh , and the pipeline recommends product 1 with score 1.5. Hint 1 Load the mapping with , then call on it. Now you have a dictionary from integer IDs to emails. Hint 2 Read the recommendations file line by line. Split each line on commas. The first field is an integer ID — look it up in your inverted mapping to get the email, then write the email in its place. Solution [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "content_id": "3c0518b47c",
+    "slide_text": "Quick Check 4.1 — Why Encode at All? The recommendation engine takes integer IDs instead of email addresses. Why is this encoding step necessary? A. Emails take too much memory — integers are smaller B. The recommendation algorithm uses math operations (like computing averages and similarity scores) that require numbers, not text C. Python can't compare strings, only numbers D. Encoding makes the data more secure by hiding email addresses Answer: B — The engine does arithmetic on user IDs (averages, similarity scores). Strings cannot be added or averaged. Option A has a grain of truth but is not the reason the engine requires integers. C is false (Python compares strings just fine), and D is a side effect, not the purpose.",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
     "content_id": "e2d71801d0",
     "slide_text": "Part 5: Prove the Pipeline",
     "fragments": []
   },
   {
-    "slide_index": 16,
-    "content_id": "5a7f1a1ead",
-    "slide_text": "Round Trip on Bigger Data A pipeline you have run once works once. A pipeline you have tested works. The provided cell generates a bigger random dataset. Run your whole pipeline on it, then write that verifies: Every user in the final output existed in the original data (no invented users). No integer IDs leaked into the final output (every user field contains ). Think about: what could silently break if two different emails ever received the same ID? Which of your functions guarantees that cannot happen?",
-    "fragments": []
-  },
-  {
-    "slide_index": 17,
-    "content_id": "202701c0fe",
-    "slide_text": "Part 6: Summary The same encode → black box → decode shape appears when you one-hot-encode categories for a model, tokenize text for an LLM, or compress data before a network hop (your Huffman coder!). The black box changes; the wrapper pattern never does.",
-    "fragments": []
-  },
-  {
     "slide_index": 18,
-    "content_id": "391ed19f68",
-    "slide_text": "Piece What you built The general pattern , messy text → typed tuples every pipeline starts with parsing email → int, first-seen order label encoding — is exactly this , mapping as a file separate programs share state only through files the Encoder program adapt your data to their interface untouched black box you wrapped it instead of changing it , the Decoder program translate answers back into your domain end-to-end verification trust pipelines you have tested, not pipelines that ran",
+    "content_id": "20ce3a6ddc",
+    "slide_text": "Round Trip on Bigger Data A pipeline you have run once works once. A pipeline you have tested works. The provided cell generates a bigger random dataset. Run your whole pipeline on it, then write that verifies: Every user in the final output existed in the original data (no invented users). No integer IDs leaked into the final output (every user field contains ). Think about: what could silently break if two different emails ever received the same ID? Which of your functions guarantees that cannot happen? Hint 1 Read the original file and collect all emails into a set. Then read the final file and check that each user field appears in that set. Hint 2 To check for leaked integer IDs, verify that every user field in the final output contains an character. A bare number like would not have an . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 19,
-    "content_id": "eadf37085a",
-    "slide_text": "Index Part 1: Reading the Data Part 2: The Encoder Part 3: The Recommendation Engine (Black Box) Part 4: The Decoder Part 5: Prove the Pipeline Part 6: Summary",
+    "content_id": "f0325d3c0d",
+    "slide_text": "Quick Check 5.1 — What Could Go Wrong? If two different emails accidentally received the same integer ID, what would happen when you invert the mapping? A. Python would raise an error B. One email would silently overwrite the other — some recommendations would go to the wrong person C. The recommender would crash D. Nothing — duplicate IDs are fine Answer: B — When you invert a dictionary with duplicate values, the second key overwrites the first. So might become and Alice's recommendations would be lost. That is why 's one-to-one guarantee is so important.",
+    "fragments": []
+  },
+  {
+    "slide_index": 20,
+    "content_id": "4a07a591a9",
+    "slide_text": "Part 6: What You Just Invented The same encode → black box → decode shape appears everywhere in computing. Think of converting text to numbers before feeding a model, or compressing data before sending it over a network (your Huffman coder from the Information Theory chapter!). The black box changes; the wrapper pattern never does.",
+    "fragments": []
+  },
+  {
+    "slide_index": 21,
+    "content_id": "e590cf948b",
+    "slide_text": "What You Just Invented What you built Its real name , — messy text to clean data Data parsing — every pipeline starts here — email → integer, first-seen order Label encoding — does exactly this , — mapping saved as a file Serialization — separate programs share data only through files — the Encoder program Adapter / wrapper — reshape your data to fit someone else's tool — untouched black box Black-box integration — you wrapped it instead of changing it , — the Decoder program Decoding / inverse mapping — translate answers back to the original form — end-to-end verification Integration testing — trust pipelines you have tested, not just ones that ran",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "content_id": "7282cad671",
+    "slide_text": "Part 7: Reflection — What Did You Just Build?",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "content_id": "1947c792c1",
+    "slide_text": "Reflection Take a moment to answer these questions in your own words. Why can't the recommender just use email addresses directly? What does encoding actually solve? Why do the Encoder and Decoder need to save the mapping to a file, instead of just keeping it in a variable? What would go wrong if gave two different emails the same integer? How does your code prevent that? The pattern you built — encode, process, decode — shows up everywhere. Can you think of another example from everyday life where something gets converted to a different form, processed, and then converted back? (Think about languages, zip files, or even cooking recipes.) What is one thing you would add to to make it even more thorough?",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "content_id": "ed6b60eacb",
+    "slide_text": "Index Part 1: Reading the Data Part 2: The Encoder Part 3: The Recommendation Engine (Black Box) Part 4: The Decoder Part 5: Prove the Pipeline Part 6: What You Just Invented Part 7: Reflection",
     "fragments": []
   }
 ]
