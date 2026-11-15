@@ -170,6 +170,15 @@ match("a*b", "abc")          # False</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Think about the base cases first. When are two strings definitely equal? When are they definitely not? What if one is empty and the other is not?</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Base case 1: both strings are empty &rarr; return <code>True</code>. Base case 2: one is empty and the other is not &rarr; return <code>False</code>.</p>
+</details>
+<details><summary>Hint 3</summary>
+<p>Recursive case: if <code>pat[0] == text[0]</code>, return <code>match_exact(pat[1:], text[1:])</code>. Otherwise return <code>False</code>.</p>
+</details>
 
         </div>
       </section>
@@ -207,6 +216,15 @@ a?  does not match: a, abc
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Start from your <code>match_exact</code> code. You only need to add one new check: when <code>pat[0]</code> is <code>'?'</code>, what should happen?</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>When <code>pat[0] == '?'</code>, you do not need to check whether <code>pat[0] == text[0]</code> &mdash; the <code>?</code> matches any character. Just make sure the text is not empty, then recurse on the rest.</p>
+</details>
+<details><summary>Hint 3</summary>
+<p>If <code>pat[0] == '?'</code> and <code>len(text) > 0</code>: return <code>match_q(pat[1:], text[1:])</code>. All other cases stay the same as <code>match_exact</code>.</p>
+</details>
 
         </div>
       </section>
@@ -249,7 +267,12 @@ aa?b*  does not match: aab, ab
 
 <p>If <em>either</em> branch succeeds, the match succeeds. What is the base case when the text runs out but the pattern is <code>"*"</code>?</p>
 
-
+<details><summary>Hint 1</summary>
+<p>When you see <code>*</code> at <code>pat[0]</code>, use Python's <code>or</code> to try both branches: <code>match(pat[1:], text) or match(pat, text[1:])</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Be careful with the second branch &mdash; you can only swallow a character from text if text is not empty. So the second branch needs a guard: <code>len(text) > 0 and match(pat, text[1:])</code>.</p>
+</details>
 
 
         </div>
@@ -263,6 +286,25 @@ aa?b*  does not match: aab, ab
 
         <p>Write <code>match(pat, text)</code> supporting literals, <code>?</code>, and <code>*</code>.</p>
 
+<details><summary>Hint 1</summary>
+<p>Combine the logic from <code>match_exact</code>, <code>match_q</code>, and the <code>*</code> branching you just worked out. Handle <code>*</code> first, then <code>?</code>, then literal characters.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Base cases: (1) both empty &rarr; <code>True</code>. (2) pattern is only <code>*</code>s and text is empty &rarr; <code>True</code> (a star can match nothing). (3) pattern empty but text not &rarr; <code>False</code>.</p>
+</details>
+<details><summary>Hint 3 (near-giveaway)</summary>
+<pre><code>def match(pat, text):
+    if not pat:
+        return not text
+    if pat[0] == '*':
+        # star matches nothing OR one more char
+        return match(pat[1:], text) or (len(text) > 0 and match(pat, text[1:]))
+    if not text:
+        return False
+    if pat[0] == '?' or pat[0] == text[0]:
+        return match(pat[1:], text[1:])
+    return False</code></pre>
+</details>
 
         </div>
       </section>
@@ -285,6 +327,12 @@ aa?b*  does not match: aab, ab
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>This is a one-liner: loop through <code>names</code> and keep only those where <code>match(pattern, name)</code> returns <code>True</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Use a list comprehension: <code>[name for name in names if match(pattern, name)]</code>.</p>
+</details>
 
         </div>
       </section>
@@ -292,20 +340,23 @@ aa?b*  does not match: aab, ab
 
 
       <section>
-        <h3>Why `*` Needs Backtracking</h3>
+        <h3>Quick Check 3.1 -- Why `*` Needs Backtracking</h3>
         <div class="slide-content">
 
         <p>The pattern <code>a*b</code> is matched against the string <code>axxbyyb</code>. The <code>*</code> is greedy -- it first tries to consume as many characters as possible. Why does the matcher need backtracking to find the correct match?</p>
 
 
-        <p><strong>A.</strong> Because `*` can only match letters, not `x` or `y`</p>
+        <p><strong>A.</strong> Because <code>*</code> can only match letters, not <code>x</code> or <code>y</code></p>
 
-        <p><strong>B.</strong> The greedy `*` initially consumes `xxbyyb`, but then the final `b` in the pattern has nothing left to match -- so the matcher must back up and try consuming fewer characters</p>
+        <p><strong>B.</strong> The greedy <code>*</code> initially consumes <code>xxbyyb</code>, but then the final <code>b</code> in the pattern has nothing left to match -- so the matcher must back up and try consuming fewer characters</p>
 
-        <p><strong>C.</strong> Backtracking is needed because the string contains duplicate `b` characters</p>
+        <p><strong>C.</strong> Backtracking is needed because the string contains duplicate <code>b</code> characters</p>
 
-        <p><strong>D.</strong> The pattern is invalid -- `*` must be at the end</p>
+        <p><strong>D.</strong> The pattern is invalid -- <code>*</code> must be at the end</p>
 
+        <div class="fragment">
+          <p><strong>Answer: B.</strong> The <code>*</code> greedily eats everything, but then the <code>b</code> at the end of the pattern has no characters left to match. The matcher must "back up" (backtrack) and let the <code>*</code> consume fewer characters until the remaining pattern can match.</p>
+        </div>
 
         </div>
       </section>
@@ -351,8 +402,26 @@ aa?b*  does not match: aab, ab
         <h3>Quick Demo</h3>
         <div class="slide-content">
 
-        <p>Run this quick demo to see <code>re.search</code> and <code>re.findall</code> in action.</p>
+        <p>Try these in a Python shell to see <code>re.search</code> and <code>re.findall</code> in action:</p>
 
+<div class="codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="c1"># search returns the first match (or None)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">r"[0-9]+"</span><span class="p">,</span> <span class="s2">"I have 42 apples and 7 oranges"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>   <span class="c1"># "42"</span>
+
+<span class="c1"># findall returns every match as a list</span>
+<span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">r"[0-9]+"</span><span class="p">,</span> <span class="s2">"I have 42 apples and 7 oranges"</span><span class="p">)</span>
+<span class="c1"># ["42", "7"]</span>
+
+<span class="c1"># .  means any character;  +  means one or more of the previous thing</span>
+<span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">r"a.+e"</span><span class="p">,</span> <span class="s2">"apple and orange"</span><span class="p">)</span>
+<span class="c1"># ["apple and orange"]  -- the .+ is greedy!</span>
+</code></pre>
+</div>
+
+<p><code>r"..."</code> is a <strong>raw string</strong> -- it tells Python not to treat backslashes specially. Always use raw strings for regex patterns.</p>
 
         </div>
       </section>
@@ -374,6 +443,12 @@ aa?b*  does not match: aab, ab
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Two digits is <code>[0-9]{2}</code> (or <code>\d{2}</code>). Four digits is <code>[0-9]{4}</code>. A separator that is either <code>/</code> or <code>-</code> is the set <code>[/-]</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p><code>DATE_PATTERN = r"[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}"</code></p>
+</details>
 
         </div>
       </section>
@@ -405,6 +480,12 @@ aa?b*  does not match: aab, ab
 
 <p>(Don't chase February 30th -- even real-world validators leave calendar logic out of regex.)</p>
 
+<details><summary>Hint 1</summary>
+<p>Use <code>|</code> (or) inside parentheses to express alternatives. Day: <code>(0[1-9]|[12][0-9]|3[01])</code>. Now do the same for month (01--12).</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Month: <code>(0[1-9]|1[0-2])</code>. Glue them together with a separator <code>[/-]</code> and a four-digit year <code>[0-9]{4}</code>. Use <code>^</code> and <code>$</code> anchors so the entire string must match.</p>
+</details>
 
         </div>
       </section>
@@ -425,8 +506,12 @@ aa?b*  does not match: aab, ab
 </code></pre>
 </div>
 
-<p><strong>Hint:</strong> a group-plus-separator is <code>[0-9]{4}[- ]?</code> -- how many times does it repeat?</p>
-
+<details><summary>Hint 1</summary>
+<p>A group-plus-separator is <code>[0-9]{4}[- ]?</code> (4 digits followed by an optional space or dash). How many times does that repeat before the last group?</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Three groups with an optional separator, then a final group of 4 digits: <code>r"[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}"</code>. Use <code>re.findall</code> to collect all matches.</p>
+</details>
 
         </div>
       </section>
@@ -447,6 +532,12 @@ aa?b*  does not match: aab, ab
 
 <p>(A regex that matches <em>every</em> legal email is famously monstrous -- the pragmatic version you are writing is what real codebases actually use.)</p>
 
+<details><summary>Hint 1</summary>
+<p>"Word characters" in regex are <code>[a-zA-Z0-9._]</code> (or you can use <code>[\w.]</code>). The <code>@</code> is a literal. The domain has letters, digits, dots, and dashes.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Try: <code>r"[\w.]+@[\w.-]+\.[a-zA-Z]{2,}"</code>. The <code>\.[a-zA-Z]{2,}</code> at the end ensures at least one dot in the domain with a two-or-more-letter ending (like <code>.com</code> or <code>.org</code>).</p>
+</details>
 
         </div>
       </section>
@@ -470,6 +561,12 @@ aa?b*  does not match: aab, ab
 
 <p>Write <code>domain_counts(urls)</code> that extracts the domain from each URL and counts how many times each domain appears.</p>
 
+<details><summary>Hint 1 (find_urls)</summary>
+<p>A URL starts with <code>http://</code> or <code>https://</code> and continues until whitespace, a quote, or a closing parenthesis. Try: <code>r"https?://[^\s\"')]+</code>".</p>
+</details>
+<details><summary>Hint 2 (domain_counts)</summary>
+<p>Split each URL on <code>/</code> and take the third piece (index 2) to get the domain. Then count with a dictionary, just like word-counting from the Dictionaries chapter.</p>
+</details>
 
         </div>
       </section>
@@ -477,20 +574,23 @@ aa?b*  does not match: aab, ab
 
 
       <section>
-        <h3>Greedy vs Non-Greedy Matching</h3>
+        <h3>Quick Check 4.1 -- Greedy vs Non-Greedy Matching</h3>
         <div class="slide-content">
 
         <p>Given the HTML string <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code>, what does the regex <code>&lt;b&gt;.*&lt;/b&gt;</code> match?</p>
 
 
-        <p><strong>A.</strong> Just `<b>hello</b>`</p>
+        <p><strong>A.</strong> Just <code>&lt;b&gt;hello&lt;/b&gt;</code></p>
 
-        <p><strong>B.</strong> Both `<b>hello</b>` and `<b>world</b>` as two separate matches</p>
+        <p><strong>B.</strong> Both <code>&lt;b&gt;hello&lt;/b&gt;</code> and <code>&lt;b&gt;world&lt;/b&gt;</code> as two separate matches</p>
 
-        <p><strong>C.</strong> The entire string `<b>hello</b> and <b>world</b>` as one match, because `.*` is greedy</p>
+        <p><strong>C.</strong> The entire string <code>&lt;b&gt;hello&lt;/b&gt; and &lt;b&gt;world&lt;/b&gt;</code> as one match, because <code>.*</code> is greedy</p>
 
         <p><strong>D.</strong> Nothing -- the regex is invalid</p>
 
+        <div class="fragment">
+          <p><strong>Answer: C.</strong> The <code>.*</code> is greedy -- it eats as many characters as possible, so it stretches all the way from the first <code>&lt;b&gt;</code> to the <em>last</em> <code>&lt;/b&gt;</code>. To match each bold section separately, use <code>.*?</code> (non-greedy): the <code>?</code> after <code>*</code> means "match as <em>few</em> characters as possible."</p>
+        </div>
 
         </div>
       </section>
@@ -498,16 +598,16 @@ aa?b*  does not match: aab, ab
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
 
-            <th>Stage</th>
+            <th>Your concept</th>
 
             <th>What you built</th>
 
-            <th>The idea</th>
+            <th>Standard name / idea</th>
 
           </tr>
 
@@ -517,7 +617,7 @@ aa?b*  does not match: aab, ab
 
             <td><code>match_exact</code></td>
 
-            <td>compare char by char, recurse on the rest</td>
+            <td>String comparison / recursive decomposition</td>
 
           </tr>
 
@@ -527,7 +627,7 @@ aa?b*  does not match: aab, ab
 
             <td><code>match_q</code></td>
 
-            <td>one pattern char can stand for any text char</td>
+            <td>Single-character wildcard (glob <code>?</code>, regex <code>.</code>)</td>
 
           </tr>
 
@@ -537,7 +637,7 @@ aa?b*  does not match: aab, ab
 
             <td><code>match</code></td>
 
-            <td><em>don't decide how much to swallow -- recurse on both options</em></td>
+            <td>Star wildcard / backtracking search</td>
 
           </tr>
 
@@ -547,17 +647,17 @@ aa?b*  does not match: aab, ab
 
             <td><code>find_matching</code></td>
 
-            <td>your matcher is what shells use for <code>*.txt</code></td>
+            <td>Shell glob expansion (<code>fnmatch</code>)</td>
 
           </tr>
 
           <tr>
 
-            <td>Regex</td>
+            <td>Regex patterns</td>
 
             <td><code>re.search</code> / <code>re.findall</code></td>
 
-            <td>the same engine, richer language: sets <code>[..]</code>, repeats <code>{4}</code> <code>+</code>, alternatives <code>|</code></td>
+            <td>Regular expressions (Python <code>re</code> module)</td>
 
           </tr>
 
@@ -567,7 +667,7 @@ aa?b*  does not match: aab, ab
 
             <td><code>find_urls</code>, <code>domain_counts</code></td>
 
-            <td>patterns + dictionaries = real data extraction</td>
+            <td>Text extraction / data wrangling</td>
 
           </tr>
 
@@ -582,6 +682,36 @@ aa?b*  does not match: aab, ab
 </div>
       </section>
 
+
+
+      <!-- Part 5: Reflection -->
+      <section id="part5">
+        <h2>Part 5: Reflection -- What Did You Just Build?</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>Your <code>match_exact</code> function compares strings character by character using recursion. Why did we build it this way instead of just using <code>==</code>? What does this approach make possible that <code>==</code> cannot do?</li>
+<li>When you added the <code>*</code> wildcard, you had to try two options at every step: "the star swallows nothing" and "the star swallows one more character." Why can't you just decide up front how many characters the star should eat?</li>
+<li>Your glob-style <code>*</code> means "match anything." In regex, <code>*</code> means "repeat the previous thing zero or more times." Why is the regex version more precise? Give an example where the difference matters.</li>
+<li>In the server-log exercise, you combined regex (<code>find_urls</code>) with dictionary counting (<code>domain_counts</code>). How would you explain this two-step approach to a friend: "first _____, then _____"?</li>
+<li>Where else in everyday life do you see pattern matching? Think of at least two examples outside of programming.</li>
+</ol>
+
+
+
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
@@ -590,7 +720,8 @@ aa?b*  does not match: aab, ab
             <li><a href="#/part1">Part 1: Exact Match</a></li>
             <li><a href="#/part2">Part 2: The `?` Wildcard</a></li>
             <li><a href="#/part3">Part 3: The `*` Wildcard</a></li>
-            <li><a href="#/part4">Part 4: Regular Expressions — The Professional Version</a></li>
+            <li><a href="#/part4">Part 4: Regular Expressions -- The Professional Version</a></li>
+            <li><a href="#/part5">Part 5: Reflection -- What Did You Just Build?</a></li>
           </ol>
         </div></div>
       </section>
