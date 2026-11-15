@@ -305,6 +305,29 @@ my_log(20, 3)     # 2.7268</code></pre>
 
 
 
+      <section>
+        <h3>Quick Check — What Does "Log" Mean?</h3>
+        <div class="slide-content">
+
+        <p>Your friend says: "log<sub>10</sub>(10000) = 4." What does that mean?</p>
+
+        <p><strong>A.</strong> 10000 divided by 10 equals 4</p>
+
+        <p><strong>B.</strong> 10 to the power of 4 equals 10000</p>
+
+        <p><strong>C.</strong> 10000 has 4 digits</p>
+
+        <p><strong>D.</strong> 4 multiplied by 10 equals 10000</p>
+
+        <div class="fragment" style="margin-top:1em; padding:0.5em; background:#f0f8f0; border-radius:5px;">
+          <p style="color:#2a7a2a;"><strong>Answer: B.</strong> A logarithm answers the question "base to the power of <em>what</em> gives this number?" Since 10<sup>4</sup> = 10000, log<sub>10</sub>(10000) = 4.</p>
+        </div>
+
+        </div>
+      </section>
+
+
+
       <!-- Part 3: The Guessing Game -->
       <section id="part3">
         <h2>Part 3: The Guessing Game</h2>
@@ -561,6 +584,29 @@ print(f"math.log10(500): {math.log10(500)}")</code></pre>
 
 
 
+      <section>
+        <h3>Quick Check — How Binary Search Narrows Down</h3>
+        <div class="slide-content">
+
+        <p>You are using binary search to find log<sub>10</sub>(500). Your current range is [2.6, 2.8]. You guess the midpoint 2.7 and find that 10<sup>2.7</sup> = 501.19, which is <em>too high</em>. What should you do next?</p>
+
+        <p><strong>A.</strong> Set <code>lo = 2.7</code>, keep <code>hi = 2.8</code></p>
+
+        <p><strong>B.</strong> Set <code>hi = 2.7</code>, keep <code>lo = 2.6</code></p>
+
+        <p><strong>C.</strong> Start over with <code>lo = 0</code>, <code>hi = 10</code></p>
+
+        <p><strong>D.</strong> The answer is exactly 2.7, so stop</p>
+
+        <div class="fragment" style="margin-top:1em; padding:0.5em; background:#f0f8f0; border-radius:5px;">
+          <p style="color:#2a7a2a;"><strong>Answer: B.</strong> Since 10<sup>2.7</sup> is too high, the real answer must be <em>below</em> 2.7. So bring the ceiling down: <code>hi = 2.7</code>. The new range becomes [2.6, 2.7].</p>
+        </div>
+
+        </div>
+      </section>
+
+
+
       <!-- Part 5: Build Your Own Log Function -->
       <section id="part5">
         <h2>Part 5: Build Your Own Log Function</h2>
@@ -578,8 +624,6 @@ packages it so you can call it with any input.</p>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p>Consolidate your for-loop and if-else into one function.
   <strong>Fill in the two missing lines:</strong></p>
-  <div class="code-stack" style="min-height:13em;">
-    <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def my_log(value, base, lo, hi, iterations):
     for i in range(iterations):
         guess = (lo + hi) / 2
@@ -588,24 +632,26 @@ packages it so you can call it with any input.</p>
         else:
             pass   # Your code goes here
     return guess</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="0">
+  <div style="font-size:0.85em; margin-top:0.5em;">
+    <details style="margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Think about what happened in Part 3: when <code>10**guess</code> was too big, which end of the range did you move?</p>
+    </details>
+    <details style="margin:0.3em 0;">
+      <summary>Hint 2</summary>
+      <p>If the guess is too high, the answer is <em>below</em> the guess &mdash; so the ceiling (<code>hi</code>) should come down. If the guess is too low, the floor (<code>lo</code>) should go up.</p>
+    </details>
+    <details style="margin:0.3em 0;">
+      <summary>Solution</summary>
 <pre><code>def my_log(value, base, lo, hi, iterations):
     for i in range(iterations):
         guess = (lo + hi) / 2
         if base**guess > value:
-            hi = guess
+            hi = guess       # too high — bring ceiling down
         else:
-            lo = guess
+            lo = guess       # too low — raise the floor
     return guess</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>When <code>base**guess > value</code> (too high),
-    bring the ceiling down: <code>hi = guess</code>.</p>
-    <p>When too low, raise the floor: <code>lo = guess</code>.</p>
-    <p style="font-size:0.9em;">Same logic you&rsquo;ve been doing all along
-    &mdash; now packaged as a reusable function.</p>
+    </details>
   </div>
 </div>
 </div>
@@ -814,6 +860,29 @@ because the base is about to change.</p>
 
 
 
+      <section>
+        <h3>Quick Check — Logs in Different Bases</h3>
+        <div class="slide-content">
+
+        <p>What is log<sub>5</sub>(1)?</p>
+
+        <p><strong>A.</strong> 1</p>
+
+        <p><strong>B.</strong> 5</p>
+
+        <p><strong>C.</strong> 0</p>
+
+        <p><strong>D.</strong> Undefined &mdash; you cannot take the log of 1</p>
+
+        <div class="fragment" style="margin-top:1em; padding:0.5em; background:#f0f8f0; border-radius:5px;">
+          <p style="color:#2a7a2a;"><strong>Answer: C.</strong> The log of 1 is <em>always</em> 0, no matter what the base is. That is because any number to the power of 0 equals 1: 5<sup>0</sup> = 1, 10<sup>0</sup> = 1, 2<sup>0</sup> = 1.</p>
+        </div>
+
+        </div>
+      </section>
+
+
+
       <!-- Part 7: The Change of Base Formula -->
       <section id="part7">
         <h2>Part 7: The Change of Base Formula</h2>
@@ -902,6 +971,35 @@ def log_base(value, base):
 </div>
       </section>
 
+      <!-- Part 8: Reflection — What Did You Just Build? -->
+      <section id="part8">
+        <h2>Part 8: Reflection &mdash; What Did You Just Build?</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>In your own words, what is a logarithm? If a friend asked you &ldquo;what does log mean?&rdquo;, how would you explain it without using the word &ldquo;logarithm&rdquo;?</li>
+<li>Why does <strong>log(1) = 0</strong> for every base? Explain it using the &ldquo;base to the power of what&rdquo; idea.</li>
+<li>You used binary search to compute logarithms. Could you use the same guessing strategy to find a square root? What would you change?</li>
+<li>The change of base formula says you can compute any log using only log<sub>10</sub>. Why is that useful &mdash; when would you need a log in a base other than 10?</li>
+<li>Computers use base 2 (binary). If a computer has 16 bits of memory, how many different values can it store? (Hint: think about 2<sup>16</sup>.) What is log<sub>2</sub> of that number?</li>
+</ol>
+
+
+
+
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
@@ -914,6 +1012,7 @@ def log_base(value, base):
             <li><a href="#/part5">Part 5: Build Your Own Log Function</a></li>
             <li><a href="#/part6">Part 6: Beyond Base 10</a></li>
             <li><a href="#/part7">Part 7: The Change of Base Formula</a></li>
+            <li><a href="#/part8">Part 8: Reflection &mdash; What Did You Just Build?</a></li>
           </ol>
         </div></div>
       </section>
@@ -950,7 +1049,7 @@ def log_base(value, base):
 <div class="chapter-footer">
 
   <p><em><p>You started by counting zeros. You ended with a function that
-computes logarithms to arbitrary precision using binary search.
+computes logarithms to any level of accuracy using binary search.
 Every time you see &ldquo;log&rdquo;, just ask:
 &ldquo;base to the power of <em>what</em> gives this number?&rdquo;
 That&rsquo;s all there is to it.</p>
