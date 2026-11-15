@@ -148,7 +148,7 @@ log_base(5, 25)      # ≈ 0.5  (careful: the answer is not an integer, and x &l
 
 
       <!-- Part 0: The Core Idea -->
-      <section id="part1">
+      <section id="part0">
         <h2>Part 0: The Core Idea</h2>
 
       </section>
@@ -188,7 +188,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 1: Square Root via Binary Search -->
-      <section id="part2">
+      <section id="part1">
         <h2>Part 1: Square Root via Binary Search</h2>
 
         <div class="slide-content"><p>The square root of <code>n</code> is the number <code>x</code> such that <code>x * x = n</code>. For example, sqrt(25) = 5 because 5 * 5 = 25.</p>
@@ -227,6 +227,16 @@ count_halvings(16)    # 4
 <li>When does the loop stop?</li>
 </ul>
 
+<details><summary>Hint 1</summary>
+<p>Start with <code>low = 0</code> and <code>high = max(1, n)</code>.
+Compute <code>mid = (low + high) / 2</code> each iteration.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>If <code>mid * mid &lt; n</code>, the answer is in the upper half: set <code>low = mid</code>.
+If <code>mid * mid &gt; n</code>, set <code>high = mid</code>.
+Stop when <code>abs(mid * mid - n) &lt; precision</code>.</p>
+</details>
+
 
         </div>
       </section>
@@ -248,7 +258,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 2: Cube Root via Binary Search -->
-      <section id="part3">
+      <section id="part2">
         <h2>Part 2: Cube Root via Binary Search</h2>
 
         <div class="slide-content"><p>The cube root of <code>n</code> is the number <code>x</code> such that <code>x * x * x = n</code>. For example, cuberoot(27) = 3 because 3 * 3 * 3 = 27.</p>
@@ -300,7 +310,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 3: Nth Root via Binary Search -->
-      <section id="part4">
+      <section id="part3">
         <h2>Part 3: Nth Root via Binary Search</h2>
 
         <div class="slide-content"><p>You just wrote <code>sqrt_binary_search</code> and <code>cuberoot_binary_search</code>. Look at them side by side. The only thing that changes is the <strong>check function</strong>:</p>
@@ -374,16 +384,22 @@ count_halvings(16)    # 4
         <h3>When Binary Search Applies</h3>
         <div class="slide-content">
 
+        <p><strong>Quick Check</strong></p>
         <p>Binary search works for square root, cube root, and nth root. What property of these functions makes binary search possible?</p>
-
 
         <p><strong>A.</strong> They all use exponents</p>
 
-        <p><strong>B.</strong> They are all monotonically increasing — a larger input always gives a larger output, so the midpoint test tells you which half to keep</p>
+        <p><strong>B.</strong> They are all monotonically increasing &mdash; a larger input always gives a larger output, so the midpoint test tells you which half to keep</p>
 
         <p><strong>C.</strong> They all return values between 0 and 1</p>
 
         <p><strong>D.</strong> They can all be computed without importing any library</p>
+
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>B.</strong> Monotonicity is the key. Because the function always increases,
+          checking whether <code>f(mid)</code> is above or below the target tells you
+          exactly which half contains the answer.</p>
+        </div>
 
 
         </div>
@@ -394,7 +410,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 4: Log Base 10 via Binary Search -->
-      <section id="part5">
+      <section id="part4">
         <h2>Part 4: Log Base 10 via Binary Search</h2>
 
         <div class="slide-content"><p>So far you searched for a VALUE <code>x</code> such that <code>x**n == target</code>. Now flip the problem: search for an <strong>EXPONENT</strong> <code>y</code> such that <code>10**y == x</code>.</p>
@@ -420,7 +436,17 @@ count_halvings(16)    # 4
 
         <p>Write <code>log10_binary_search(x, tol=1e-7)</code>.</p>
 
-<p>You have already built binary search for roots — this is the same idea applied to exponents. The new challenge is figuring out the initial search bracket, since the exponent could be any real number.</p>
+<p>You have already built binary search for roots &mdash; this is the same idea applied to exponents. The new challenge is figuring out the initial search bracket, since the exponent could be any real number.</p>
+
+<details><summary>Hint 1</summary>
+<p>Start with <code>low = 0, high = 1</code>. Double <code>high</code> until <code>10**high &gt;= x</code>.
+For <code>x &lt; 1</code>, halve <code>low</code> (make it more negative) until <code>10**low &lt;= x</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Once you have the bracket, the loop is the same: <code>mid = (low + high) / 2</code>.
+If <code>10**mid &lt; x</code>, set <code>low = mid</code>; otherwise <code>high = mid</code>.
+Stop when <code>abs(10**mid - x) &lt; tol</code>.</p>
+</details>
 
 
         </div>
@@ -443,7 +469,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 5: Log Base N via Binary Search -->
-      <section id="part6">
+      <section id="part5">
         <h2>Part 5: Log Base N via Binary Search</h2>
 
         <div class="slide-content"><p>Now generalise: instead of searching for <code>y</code> such that <code>10**y == x</code>, search for <code>y</code> such that <code>n**y == x</code> for any base <code>n</code>.</p>
@@ -510,7 +536,7 @@ count_halvings(16)    # 4
 
 
       <!-- Part 6: Bonus — Binary Search on Sorted Arrays -->
-      <section id="part7">
+      <section id="part6">
         <h2>Part 6: Bonus — Binary Search on Sorted Arrays</h2>
 
         <div class="slide-content"><p>Everything so far searched a <strong>continuous range</strong> of numbers. But the same halving idea works on a <strong>sorted array</strong> — and this is the version you will meet everywhere, from databases to <code>bisect</code> in the standard library.</p>
@@ -613,8 +639,8 @@ count_halvings(16)    # 4
         <h3>Binary Search Complexity</h3>
         <div class="slide-content">
 
-        <p>A sorted list has 1,000,000 elements. What is the maximum number of comparisons binary search needs to find an element (or confirm it's missing)?</p>
-
+        <p><strong>Quick Check</strong></p>
+        <p>A sorted list has 1,000,000 elements. What is the maximum number of comparisons binary search needs to find an element (or confirm it&rsquo;s missing)?</p>
 
         <p><strong>A.</strong> 1,000,000</p>
 
@@ -624,6 +650,11 @@ count_halvings(16)    # 4
 
         <p><strong>D.</strong> About 500,000</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>C.</strong> Each comparison halves the search space.
+          $\log_2(1{,}000{,}000) \approx 20$, so about 20 comparisons suffice.</p>
+        </div>
+
 
         </div>
       </section>
@@ -632,8 +663,8 @@ count_halvings(16)    # 4
 
 
 
-      <!-- Part None: Summary -->
-      <section id="part8">
+      <!-- Summary -->
+      <section id="summary">
         <h2>Summary</h2>
 
       </section>
@@ -641,71 +672,43 @@ count_halvings(16)    # 4
 
 
       <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>What you just invented:</strong></p>
+  <table style="margin:0.3em auto; font-size:0.85em; text-align:left;">
+    <tr>
+      <th style="padding:0.3em 0.6em;">You wrote</th>
+      <th style="padding:0.3em 0.6em;">Standard name</th>
+    </tr>
+    <tr><td><code>count_halvings</code></td><td>$\lfloor \log_2 n \rfloor$ &mdash; the foundation of $O(\log n)$ complexity</td></tr>
+    <tr><td><code>sqrt_binary_search</code></td><td>Numerical square root via bisection method</td></tr>
+    <tr><td><code>nth_root</code></td><td>General root finding (same as <code>x ** (1/n)</code>)</td></tr>
+    <tr><td><code>log_base_n</code></td><td>Logarithm via bisection &mdash; searching for an <em>exponent</em></td></tr>
+    <tr><td><code>contains / find_first / find_last</code></td><td>Binary search on sorted arrays (<code>bisect</code> module)</td></tr>
+    <tr><td><code>find_min_convex</code></td><td>Ternary / gradient-style search &mdash; same idea behind gradient descent</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p style="font-size:0.9em;">One idea &mdash; <strong>halve the search space</strong> &mdash; solved
+    six different problems. Whenever a function is monotone or
+    a dataset is sorted, binary search applies.</p>
+  </div>
+</div></div>
+      </section>
 
-        <div class="slide-content">
-        <table>
-          <tr>
-
-            <th>Function</th>
-
-            <th>Searching for</th>
-
-            <th>Check condition</th>
-
-          </tr>
-
-          <tr>
-
-            <td><code>sqrt_binary_search(n, p)</code></td>
-
-            <td>x such that x² = n</td>
-
-            <td><code>mid*mid</code> vs <code>n</code></td>
-
-          </tr>
-
-          <tr>
-
-            <td><code>cuberoot_binary_search(n, p)</code></td>
-
-            <td>x such that x³ = n</td>
-
-            <td><code>mid**3</code> vs <code>n</code> (handle sign)</td>
-
-          </tr>
-
-          <tr>
-
-            <td><code>nth_root(x, n, p)</code></td>
-
-            <td>x such that x^n = target</td>
-
-            <td><code>mid**n</code> vs <code>target</code></td>
-
-          </tr>
-
-          <tr>
-
-            <td><code>log10_binary_search(x, tol)</code></td>
-
-            <td>y such that 10^y = x</td>
-
-            <td><code>10**mid</code> vs <code>x</code></td>
-
-          </tr>
-
-          <tr>
-
-            <td><code>log_base_n(x, n, tol)</code></td>
-
-            <td>y such that n^y = x</td>
-
-            <td><code>n**mid</code> vs <code>x</code> (flip if n&lt;1)</td>
-
-          </tr>
-
-        </table>
-        </div>
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>In your own words, explain why binary search is $O(\log n)$
+    instead of $O(n)$.</li>
+    <li>Why does binary search require the function to be
+    <strong>monotone</strong> (or the array to be sorted)?
+    What goes wrong if it isn&rsquo;t?</li>
+    <li>You built <code>sqrt</code>, <code>nth_root</code>, and <code>log</code>
+    from scratch. What was the <em>only</em> thing that changed between them?</li>
+    <li>How is <code>find_min_convex</code> different from the other searches?
+    Why does it still work?</li>
+  </ol>
+</div></div>
       </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
@@ -713,14 +716,14 @@ count_halvings(16)    # 4
         <h2>Index</h2>
         <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Part 0: The Core Idea</a></li>
-            <li><a href="#/part2">Part 1: Square Root via Binary Search</a></li>
-            <li><a href="#/part3">Part 2: Cube Root via Binary Search</a></li>
-            <li><a href="#/part4">Part 3: Nth Root via Binary Search</a></li>
-            <li><a href="#/part5">Part 4: Log Base 10 via Binary Search</a></li>
-            <li><a href="#/part6">Part 5: Log Base N via Binary Search</a></li>
-            <li><a href="#/part7">Part 6: Bonus — Binary Search on Sorted Arrays</a></li>
-            <li><a href="#/part8">Summary</a></li>
+            <li><a href="#/part0">Part 0: The Core Idea</a></li>
+            <li><a href="#/part1">Part 1: Square Root via Binary Search</a></li>
+            <li><a href="#/part2">Part 2: Cube Root via Binary Search</a></li>
+            <li><a href="#/part3">Part 3: Nth Root via Binary Search</a></li>
+            <li><a href="#/part4">Part 4: Log Base 10 via Binary Search</a></li>
+            <li><a href="#/part5">Part 5: Log Base N via Binary Search</a></li>
+            <li><a href="#/part6">Part 6: Bonus — Binary Search on Sorted Arrays</a></li>
+            <li><a href="#/summary">Summary</a></li>
           </ol>
         </div></div>
       </section>
