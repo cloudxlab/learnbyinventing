@@ -27,9 +27,15 @@
     '@keyframes narration-bar1 { 0%,100%{height:4px} 50%{height:14px} }' +
     '@keyframes narration-bar2 { 0%,100%{height:6px} 50%{height:16px} }' +
     '@keyframes narration-bar3 { 0%,100%{height:8px} 50%{height:12px} }' +
+    '@keyframes narration-spin { to{transform:rotate(360deg)} }' +
     '#narration-controls.playing #narration-mute { animation: narration-pulse 2s ease-in-out infinite; }' +
+    '#narration-controls.buffering #narration-mute { animation: none; }' +
+    '#narration-spinner { display:none;position:absolute;top:0;left:0;width:36px;height:36px;pointer-events:none; }' +
+    '#narration-controls.buffering #narration-spinner { display:block; }' +
+    '#narration-spinner svg { animation:narration-spin 1s linear infinite; }' +
     '.narration-bars { display:none; align-items:center; gap:2px; height:18px; margin-left:6px; }' +
     '#narration-controls.playing .narration-bars { display:flex; }' +
+    '#narration-controls.buffering .narration-bars { display:none; }' +
     '.narration-bars span { display:block; width:3px; background:#3b82f6; border-radius:1px; }' +
     '.narration-bars span:nth-child(1) { animation:narration-bar1 0.8s ease-in-out infinite; }' +
     '.narration-bars span:nth-child(2) { animation:narration-bar2 0.6s ease-in-out infinite 0.1s; }' +
@@ -77,7 +83,17 @@
     '<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
 
   var muteBtn = makeBtn('narration-mute', 'Mute/Unmute', muted ? SVG_MUTED : SVG_UNMUTED);
+  muteBtn.style.position = 'relative';
   var replayBtn = makeBtn('narration-replay', 'Replay', SVG_REPLAY);
+
+  var spinner = document.createElement('div');
+  spinner.id = 'narration-spinner';
+  spinner.innerHTML =
+    '<svg width="36" height="36" viewBox="0 0 36 36">' +
+    '<circle cx="18" cy="18" r="15" fill="none" stroke="rgba(59,130,246,0.3)" stroke-width="3"/>' +
+    '<path d="M18 3a15 15 0 0 1 15 15" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>' +
+    '</svg>';
+  muteBtn.appendChild(spinner);
 
   var bars = document.createElement('div');
   bars.className = 'narration-bars';
@@ -97,9 +113,20 @@
     }
   }
 
+  function setBuffering(isBuffering) {
+    if (isBuffering) {
+      container.classList.add('buffering');
+    } else {
+      container.classList.remove('buffering');
+    }
+  }
+
   audio.addEventListener('play', function () { setPlaying(true); });
-  audio.addEventListener('pause', function () { setPlaying(false); });
-  audio.addEventListener('ended', function () { setPlaying(false); });
+  audio.addEventListener('pause', function () { setPlaying(false); setBuffering(false); });
+  audio.addEventListener('ended', function () { setPlaying(false); setBuffering(false); });
+  audio.addEventListener('waiting', function () { setBuffering(true); });
+  audio.addEventListener('canplay', function () { setBuffering(false); });
+  audio.addEventListener('playing', function () { setBuffering(false); });
 
   // ── Button handlers ─────────────────────────────────────────────────
 
@@ -169,13 +196,15 @@
   function playFile(path) {
     audio.pause();
     currentFile = path;
-    if (muted) return;
+    if (muted) { setBuffering(false); return; }
     if (!userHasInteracted) {
       pendingPlay = path;
       return;
     }
+    setBuffering(true);
     audio.src = path;
     audio.play().catch(function (err) {
+      setBuffering(false);
       console.log('[narration] play blocked:', err.message);
     });
   }
