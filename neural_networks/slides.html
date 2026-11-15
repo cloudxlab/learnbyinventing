@@ -185,6 +185,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p><strong>Your task:</strong> Implement <code>step_function(z)</code>.</p>
 
+<details><summary>Hint 1</summary>
+<p>You only need a single comparison: check if <code>z</code> is greater than or equal to zero.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Use a simple <code>if/else</code>, or for a one-liner: <code>return 1 if z >= 0 else 0</code>.</p>
+</details>
 
         </div>
       </section>
@@ -210,6 +217,17 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>After implementing, run the provided plotting code to compare the step and sigmoid side by side.</p>
 
+<details><summary>Hint 1</summary>
+<p>At <code>z = 0</code>: <code>exp(0) = 1</code>, so the denominator is 2. What does <code>1/2</code> give you?</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For very large <code>z</code>, <code>exp(-z)</code> is practically 0 — the output approaches 1. For very negative <code>z</code>, <code>exp(-z)</code> is huge — the output approaches 0.</p>
+</details>
+
+<details><summary>Hint 3</summary>
+<p>Use <code>np.exp</code> instead of <code>math.exp</code> so your function works on numpy arrays: <code>def sigmoid(z): return 1 / (1 + np.exp(-z))</code>.</p>
+</details>
 
         </div>
       </section>
@@ -224,6 +242,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Write <code>sigmoid_error(m, c, x, y)</code> — the mean squared error between <code>sigmoid(m*x + c)</code> and the true labels. This is your familiar MSE with a sigmoid inside; numpy broadcasting handles the whole array at once.</p>
 
+<details><summary>Hint 1</summary>
+<p>MSE formula: average of <code>(prediction - actual)^2</code>. Your prediction is <code>sigmoid(m*x + c)</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p><code>np.mean((sigmoid(m * x + c) - y) ** 2)</code> — that is the entire body of the function.</p>
+</details>
 
         </div>
       </section>
@@ -242,6 +267,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Before moving on, diagnose it. Print <code>sigmoid(0.12 * 171 + 0.3)</code>. That's <code>sigmoid(20.8)</code> — which is <code>0.99999999...</code>. Every prediction is glued to 1.0 on sigmoid's flat plateau, where the slope is essentially zero. Zero slope means zero gradient means zero learning. This is called <strong>saturation</strong>, and it is the single most classic failure mode in neural networks.</p>
 
+<details><summary>Hint 1</summary>
+<p>Use the finite-difference method to compute the gradient: nudge one parameter by a small <code>h</code>, measure how the error changes, and divide by <code>h</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Each epoch: <code>dm = (sigmoid_error(m+h,c,x,y) - sigmoid_error(m,c,x,y))/h</code>, same for <code>dc</code>. Then <code>m -= lr*dm</code>, <code>c -= lr*dc</code>.</p>
+</details>
 
         </div>
       </section>
@@ -256,6 +288,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Subtract 165 from the heights (so they become <code>[6, 8, -2, -3, -5]</code>), train again from the same start with <code>learning_rate=0.5, epochs=2000</code>, and this time build the actual classifier: <code>classify(x_centered)</code> returns 1 when <code>sigmoid(m*x + c) &gt;= 0.5</code>.</p>
 
+<details><summary>Hint 1</summary>
+<p>Center first: <code>x_centered = heights - 165</code>. Then call your <code>train</code> function on the centered values.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For <code>classify</code>: <code>return (sigmoid(m * x_centered + c) >= 0.5).astype(int)</code>. The threshold 0.5 corresponds to the point where <code>m*x + c = 0</code>.</p>
+</details>
 
         </div>
       </section>
@@ -270,11 +309,10 @@ predict(30)  # ≈ 4.0</code></pre>
 
 
       <section>
-        <h3>Sigmoid saturation</h3>
+        <h3>Quick Check — Sigmoid Saturation</h3>
         <div class="slide-content">
 
         <p>In Exercise 1.4, the sigmoid neuron "refused to learn" when given large input values. What caused this?</p>
-
 
         <p><strong>A.</strong> Large values cause Python to crash with overflow errors</p>
 
@@ -284,6 +322,9 @@ predict(30)  # ≈ 4.0</code></pre>
 
         <p><strong>D.</strong> The sigmoid can only handle inputs between 0 and 1</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p style="color:#2a7; font-weight:bold;">Answer: B. Sigmoid's output is nearly flat for large positive or negative inputs — the derivative is practically zero, so gradient descent has no signal to follow. This is called <em>saturation</em>.</p>
+        </div>
 
         </div>
       </section>
@@ -321,6 +362,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Work the first test by hand before coding: with all weights 1 and <code>x = 2</code>, <code>y1 = step(3) = 1</code>, <code>y2 = sigmoid(2) ≈ 0.8808</code>, <code>y3 ≈ 1.7616</code>, <code>y ≈ 2.7616</code>.</p>
 
+<details><summary>Hint 1</summary>
+<p>This is just four lines of arithmetic. Each <code>y</code> feeds into the next. Translate the math directly into code.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Return the final <code>y</code>. Check: <code>compute_graph(2, 1,1, 1,1, 1,1)</code> should be about <code>2.76</code>.</p>
+</details>
 
         </div>
       </section>
@@ -348,11 +396,10 @@ predict(30)  # ≈ 4.0</code></pre>
 
 
       <section>
-        <h3>Why multiple neurons?</h3>
+        <h3>Quick Check — Why Multiple Neurons?</h3>
         <div class="slide-content">
 
         <p>A single sigmoid neuron can fit a smooth S-shaped curve. Why do we need multiple neurons?</p>
-
 
         <p><strong>A.</strong> Multiple neurons run faster on modern hardware</p>
 
@@ -362,6 +409,9 @@ predict(30)  # ≈ 4.0</code></pre>
 
         <p><strong>D.</strong> Multiple neurons are needed only for classification, not regression</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p style="color:#2a7; font-weight:bold;">Answer: B. One sigmoid gives you one smooth transition. Real data has kinks, bumps, and multiple boundaries — you need to combine several neurons to approximate those shapes.</p>
+        </div>
 
         </div>
       </section>
@@ -408,6 +458,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Plot the line against the data to see the mismatch.</p>
 
+<details><summary>Hint 1</summary>
+<p><code>np.polyfit(x, y, 1)</code> returns <code>[slope, intercept]</code>. Use them to compute predictions and RMSE.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>RMSE = <code>np.sqrt(np.mean((y_pred - y)**2))</code>. Check the prediction at <code>x = 0.3</code> (income 3000) — it should be negative.</p>
+</details>
 
         </div>
       </section>
@@ -424,6 +481,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>Create <code>is_taxable = (tax &gt; 0).astype(int)</code> and train a sigmoid classifier <code>sigmoid(m*x + c)</code> on <code>(x, is_taxable)</code> — your <code>train</code> from Exercise 1.4 works unchanged (inputs are already scaled; use <code>learning_rate=2.0, epochs=3000</code>, starting from <code>m=1, c=0</code>). Report the accuracy of thresholding at 0.5, and print where the decision boundary sits: <code>-c/m</code> (in scaled income; multiply by 10000 to see it in currency — it should land near 5000).</p>
 
+<details><summary>Hint 1</summary>
+<p>Your <code>train</code> function from Part 1 takes <code>(m, c, x, y, lr, epochs)</code>. Just pass <code>is_taxable</code> as <code>y</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>The decision boundary is where <code>sigmoid(m*x+c) = 0.5</code>, which means <code>m*x+c = 0</code>, so <code>x = -c/m</code>. Multiply by 10000 to convert back to currency.</p>
+</details>
 
         </div>
       </section>
@@ -447,6 +511,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p><strong>What you invented:</strong> a <em>gated</em> model — one network deciding which expert handles the input. Scaled up, this idea is called a <strong>mixture of experts</strong>, and it's inside several frontier LLMs. It's also the honest answer to "how do I put an <code>if</code> inside a machine-learning model."</p>
 
+<details><summary>Hint 1</summary>
+<p>Use <code>np.polyfit</code> on only the taxable rows: <code>mask = is_taxable == 1</code>, then <code>np.polyfit(x[mask], y[mask], 1)</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p><code>predict_tax(xi)</code>: if <code>sigmoid(m_cls*xi + c_cls) >= 0.5</code> return <code>slope*xi + intercept</code>, else return <code>0.0</code>.</p>
+</details>
 
         </div>
       </section>
@@ -469,6 +540,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p>The tests expect an honest middle result: clearly better than the line (RMSE ≈ 0.05 vs 0.14), clearly worse than the pipeline. Look at the plot to see why — sigmoid rises and then <strong>flattens</strong>, but real tax keeps climbing. A smooth step times a constant can imitate a kink, not a ramp.</p>
 
+<details><summary>Hint 1</summary>
+<p>The general <code>fit_net</code> loop: each epoch, for each parameter index <code>i</code>, make a copy of <code>params</code>, add <code>h</code> to entry <code>i</code>, compute the gradient as <code>(err(nudged) - err(params))/h</code>, then subtract <code>lr * gradient</code> from <code>params[i]</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For the two-neuron model: <code>params = [m, c, w1, w0]</code>. Predict as <code>w1 * sigmoid(m*x + c) + w0</code>. Error is <code>np.mean((pred - y)**2)</code>.</p>
+</details>
 
         </div>
       </section>
@@ -489,6 +567,13 @@ predict(30)  # ≈ 4.0</code></pre>
 
 <p><strong>The reveal:</strong> ReLU — the <em>rectified linear unit</em> — is the default activation of modern deep learning, powering nearly every large model. Sigmoid saturates at both ends (you met that plateau in Exercise 1.4); ReLU never saturates on the positive side, and stacks of ReLU neurons build arbitrary piecewise-linear shapes — kinks upon kinks, like the one you just fit with a single neuron.</p>
 
+<details><summary>Hint 1</summary>
+<p><code>relu(z)</code> is just <code>np.maximum(0, z)</code> — zero for negatives, identity for positives.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Replace <code>sigmoid</code> with <code>relu</code> in your <code>net_error</code> function: <code>w1 * relu(m*x + c) + w0</code>. Everything else stays the same.</p>
+</details>
 
         </div>
       </section>
@@ -514,11 +599,10 @@ predict(30)  # ≈ 4.0</code></pre>
 
 
       <section>
-        <h3>ReLU advantage</h3>
+        <h3>Quick Check — ReLU Advantage</h3>
         <div class="slide-content">
 
         <p>ReLU (max(0, z)) is simpler than sigmoid. What is its main practical advantage for training neural networks?</p>
-
 
         <p><strong>A.</strong> ReLU outputs larger numbers, making predictions more accurate</p>
 
@@ -528,6 +612,9 @@ predict(30)  # ≈ 4.0</code></pre>
 
         <p><strong>D.</strong> ReLU can only be used in the output layer</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p style="color:#2a7; font-weight:bold;">Answer: B. For positive inputs, ReLU's derivative is always 1 — the gradient never vanishes. Sigmoid's derivative shrinks toward zero for large inputs (saturation), stalling learning.</p>
+        </div>
 
         </div>
       </section>
@@ -535,7 +622,7 @@ predict(30)  # ≈ 4.0</code></pre>
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
@@ -603,6 +690,19 @@ predict(30)  # ≈ 4.0</code></pre>
           </tr>
 
         </table>
+        </div>
+      </section>
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+        <p>Take a moment to think about what you built in this chapter:</p>
+        <ol>
+          <li>You started with a blunt step function and discovered it could not learn. What made sigmoid better, and what was its fatal weakness?</li>
+          <li>Why did centering the inputs fix the "stuck at 0.6 error" problem? Could you explain the saturation trap to a friend?</li>
+          <li>The tax problem needed a <em>kink</em> that no straight line can produce. You solved it three ways — pipeline, sigmoid net, ReLU net. Which was most satisfying, and why?</li>
+          <li>A neural network is "just" a computation graph with tunable weights trained by gradient descent. Does that feel simpler or more complicated than you expected before this chapter?</li>
+        </ol>
         </div>
       </section>
 

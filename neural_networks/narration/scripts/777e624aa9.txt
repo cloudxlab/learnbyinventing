@@ -1,0 +1,6 @@
+# ON SCREEN:
+# The fix: feed the neuron small numbers The plateau problem came from m*x being huge, because heights are ~170. Keep the inputs near zero and sigmoid operates on its steep middle section, where gradients live. Subtract 165 from the heights, train again, and build the actual classifier.
+# ---
+The fix is surprisingly simple. The problem was that m times x produced huge numbers, because the heights are around 170. That lands you on sigmoid's flat plateau where the gradient is basically zero.
+
+The solution? Keep the inputs near zero. Subtract 165 from the heights, so they become small numbers like 6, 8, negative 2, negative 3, negative 5. Now sigmoid operates on its steep middle section where gradients actually exist. Train again with these centered values, and this time build the actual classifier that says "adult" when the sigmoid output is at least 0.5.
