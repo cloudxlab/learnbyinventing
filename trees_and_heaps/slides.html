@@ -197,6 +197,13 @@ see your code (Python, SQL, C++ -- everything is parsed into trees).</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Check whether <code>node.val</code> is numeric (a leaf). If so, return it directly. Otherwise, recursively evaluate the left and right children first, then apply the operator stored in <code>node.val</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+Use <code>isinstance(node.val, (int, float))</code> to detect leaves. For operators, compute <code>l = evaluate(node.left)</code> and <code>r = evaluate(node.right)</code>, then branch on <code>node.val</code> being <code>"+"</code>, <code>"-"</code>, <code>"*"</code>, or <code>"/"</code>.
+</details>
 
         </div>
       </section>
@@ -212,6 +219,13 @@ see your code (Python, SQL, C++ -- everything is parsed into trees).</p>
 
 <p>Notice: the tree needs <strong>no parentheses</strong>. The structure <em>is</em> the precedence.</p>
 
+<details><summary>Hint 1</summary>
+The root is <code>"*"</code>. Its left child is <code>"+"</code> with children <code>2</code> and <code>3</code>. Its right child is <code>"-"</code> with children <code>10</code> and <code>4</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+<code>expr2 = Node("*", Node("+", Node(2), Node(3)), Node("-", Node(10), Node(4)))</code>
+</details>
 
         </div>
       </section>
@@ -264,6 +278,9 @@ Insert it there and reattach: <code>node.left = insert(node.left, val)</code>.</
 
 <p>Compare the printed tree with what the animation showed you.</p>
 
+<details><summary>Hint 1</summary>
+Base case: if <code>node is None</code>, return <code>Node(val)</code>. Recursive case: if <code>val &lt; node.val</code>, recurse left; otherwise recurse right. Always return <code>node</code> at the end so the parent can reattach.
+</details>
 
         </div>
       </section>
@@ -286,6 +303,9 @@ That is why find is O(log n)... <em>if</em> the tree is balanced (more on that s
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Base case: if <code>node is None</code>, return <code>False</code>. If <code>val == node.val</code>, return <code>True</code>. Otherwise go left or right depending on whether <code>val</code> is smaller or larger.
+</details>
 
         </div>
       </section>
@@ -307,6 +327,9 @@ first everything in the left subtree, then the node itself, then the right subtr
 <p>Run it. <strong>Look carefully at the output.</strong> What did you just get for free?
 (You have invented <em>tree sort</em>: insert n values, walk once, sorted output.)</p>
 
+<details><summary>Hint 1</summary>
+Base case: if <code>node is None</code>, return an empty list <code>[]</code>. Recursive case: <code>return in_order(node.left) + [node.val] + in_order(node.right)</code>.
+</details>
 
         </div>
       </section>
@@ -327,6 +350,9 @@ No comparisons needed -- just walking.</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+The minimum is the leftmost node. Keep going left until there is no left child: <code>while node.left: node = node.left</code>. Return <code>node.val</code>.
+</details>
 
         </div>
       </section>
@@ -341,6 +367,9 @@ No comparisons needed -- just walking.</p>
 no comparisons, just walk. Both of these run in O(height): on a balanced tree
 of a million values, about 20 steps to either extreme.</p>
 
+<details><summary>Hint 1</summary>
+Mirror of <code>find_min</code>: keep going right until there is no right child.
+</details>
 
         </div>
       </section>
@@ -371,6 +400,13 @@ property? (Hint: you just wrote <code>find_min</code>.)</li>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+First, search for the node as in <code>contains</code>. When you find it, handle the three cases. For the two-children case: <code>node.val = find_min(node.right)</code>, then <code>node.right = delete(node.right, node.val)</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+For the leaf case, return <code>None</code>. For one child, return whichever child exists (left or right). The successor is guaranteed to have at most one child because it is the <em>leftmost</em> node in the right subtree -- it cannot have a left child.
+</details>
 
         </div>
       </section>
@@ -415,6 +451,9 @@ and watch it stay shallow. (Databases use B-Trees -- the same idea, made disk-fr
 
         <p><strong>D.</strong> The BST refuses to insert sorted data</p>
 
+        <div class="fragment">
+        <p><strong>Answer: B.</strong> Each value is larger than the last, so every insert goes right. The tree becomes a straight chain (1 &rarr; 2 &rarr; 3 &rarr; 4 &rarr; 5). Finding 5 means walking the entire chain -- 5 comparisons, not log(5). This is why balanced trees matter.</p>
+        </div>
 
         </div>
       </section>
@@ -523,6 +562,9 @@ need Node objects at all -- we can store it in a <strong>plain list</strong>:</p
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Try the formulas on the picture. For 0-indexed arrays: <code>parent(i) = (i - 1) // 2</code>, <code>left_child(i) = 2*i + 1</code>, <code>right_child(i) = 2*i + 2</code>.
+</details>
 
         </div>
       </section>
@@ -549,6 +591,9 @@ parent. How would you fix this?</p>
 <p>How many swaps can a push cost at most, for a heap of n items?
 (The tree has $\log_2(n)$ levels -- that is the whole point.)</p>
 
+<details><summary>Hint 1</summary>
+Append the value, then set <code>i = len(heap) - 1</code>. While <code>i &gt; 0</code> and <code>heap[i] &lt; heap[parent(i)]</code>, swap them and set <code>i = parent(i)</code>.
+</details>
 
         </div>
       </section>
@@ -576,6 +621,13 @@ What if a node has only a left child?</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Save <code>heap[0]</code> as the result. Move the last element to position 0 (<code>heap[0] = heap.pop()</code>). Then sink: start at <code>i = 0</code>, find the smaller child, swap if needed, repeat.
+</details>
+
+<details><summary>Hint 2</summary>
+Be careful with the edge case: if the heap has only one element, just <code>return heap.pop()</code>. When sinking, check that <code>left_child(i) &lt; len(heap)</code> before accessing children. If only a left child exists (no right child), compare only with the left child.
+</details>
 
         </div>
       </section>
@@ -599,6 +651,9 @@ in execution order.</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Push each task tuple into the heap. When you pop, you get <code>(time, name)</code>. Collect the <code>name</code> part from each popped tuple into a result list.
+</details>
 
         </div>
       </section>
@@ -624,6 +679,9 @@ Verify your heap agrees with it.</li>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Create an empty heap, push all values from <code>lst</code>, then pop them all into a result list. The result is sorted because the heap always gives you the minimum.
+</details>
 
         </div>
       </section>
@@ -645,6 +703,9 @@ Verify your heap agrees with it.</li>
 
         <p><strong>D.</strong> The smallest element is always at the bottom-left</p>
 
+        <div class="fragment">
+        <p><strong>Answer: B.</strong> The heap rule only says each parent &le; its children. Siblings have no ordering guarantee -- left can be bigger than right or vice versa. The root, being smaller than everything below it (transitively), is the overall minimum.</p>
+        </div>
 
         </div>
       </section>
@@ -666,6 +727,9 @@ Verify your heap agrees with it.</li>
 
         <p><strong>D.</strong> When the data contains duplicates</p>
 
+        <div class="fragment">
+        <p><strong>Answer: B.</strong> A heap gives you the min (or max) in O(1) and removes it in O(log n), but searching for an arbitrary value requires scanning the whole thing -- O(n). A BST supports general search in O(log n). Pick a heap when all you need is "give me the next most urgent item" -- that is exactly what priority queues and schedulers do.</p>
+        </div>
 
         </div>
       </section>
@@ -699,6 +763,9 @@ is not magic -- it's just a stack that Python manages for you. Prove it.</p>
 the current node are exhausted.</li>
 </ol>
 
+<details><summary>Hint 1</summary>
+Initialize <code>stack = []</code> and <code>current = node</code>. Loop while <code>current is not None or stack</code>. Inner loop: while <code>current</code>, push it and go left. Then pop, record the value, and set <code>current = popped.right</code>.
+</details>
 
         </div>
       </section>
@@ -726,6 +793,13 @@ right sub-expression, expect <code>')'</code> -- that's an operator <code>Node</
 <p>A recursive helper that takes the current position <code>i</code> and returns
 <code>(node, next_position)</code> works beautifully.</p>
 
+<details><summary>Hint 1</summary>
+Write a helper <code>_parse(s, i)</code> that returns <code>(node, next_i)</code>. If <code>s[i]</code> is a digit, read all consecutive digits to form the number. If <code>s[i] == '('</code>, skip it, parse left, read the operator, parse right, skip <code>')'</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+To read a multi-digit number: <code>start = i; while i &lt; len(s) and s[i].isdigit(): i += 1</code>, then <code>num = int(s[start:i])</code>. The main <code>parse(s)</code> function calls <code>_parse(s, 0)</code> and returns just the node.
+</details>
 
         </div>
       </section>
@@ -733,7 +807,7 @@ right sub-expression, expect <code>')'</code> -- that's an operator <code>Node</
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
@@ -742,7 +816,7 @@ right sub-expression, expect <code>')'</code> -- that's an operator <code>Node</
 
             <th>You built</th>
 
-            <th>Sweet spot</th>
+            <th>Standard name / sweet spot</th>
 
           </tr>
 
@@ -800,15 +874,44 @@ manage yourself, and <code>parse</code> turned a string into an expression tree 
 </div>
       </section>
 
+
+
+      <!-- Part 5: Reflection -->
+      <section id="part5">
+        <h2>Part 5: Reflection -- What Did You Just Build?</h2>
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>A BST and a min-heap both store numbers in a tree shape. What is the key difference in their rules, and how does that difference affect what each structure is good at?</li>
+<li>Why does inserting sorted numbers (like 1, 2, 3, 4, 5) into a plain BST destroy its speed? What would you need to fix it?</li>
+<li>In a min-heap stored as a list, why can we use simple index arithmetic (<code>2*i+1</code>, <code>2*i+2</code>) instead of actual node objects with pointers? What property of the heap makes that work?</li>
+<li>You built <code>heap_sort</code> from <code>heap_push</code> and <code>heap_pop</code>. How does its time complexity compare to the sorting algorithms you built in the Sorting chapter? What are the trade-offs?</li>
+<li>The chapter's main insight is: <strong>"Choose a data structure by paying only for the promises you actually use."</strong> Give an example of a real-world problem where a heap is better than a BST, and one where a BST is better than a heap.</li>
+</ol>
+
+
+
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
         <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Part 1: Warm-Up — Trees That Compute</a></li>
+            <li><a href="#/part1">Part 1: Warm-Up -- Trees That Compute</a></li>
             <li><a href="#/part2">Part 2: The Binary Search Tree</a></li>
             <li><a href="#/part3">Part 3: The Scheduler Problem & The Heap</a></li>
             <li><a href="#/part4">Part 4: Two More Tree Tricks</a></li>
+            <li><a href="#/part5">Part 5: Reflection -- What Did You Just Build?</a></li>
           </ol>
         </div></div>
       </section>
