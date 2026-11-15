@@ -270,7 +270,7 @@ def blur3x3(gray):
 <ol>
 <li>Convert both images to NumPy arrays. Store them as <code>color_arr</code> and <code>gray_arr</code>.</li>
 <li>Print <code>color_arr.shape</code> and <code>gray_arr.shape</code>. What are the dimensions?</li>
-<li>Print <code>color_arr.dtype</code> and <code>gray_arr.dtype</code>. What is the data type of each pixel?</li>
+<li>Print <code>color_arr.dtype</code> and <code>gray_arr.dtype</code>. What is the data type of each pixel? (You should see <code>uint8</code> &mdash; that just means "unsigned 8-bit integer", which stores whole numbers from 0 to 255.)</li>
 <li>What is the range of values? Print <code>color_arr.min()</code> and <code>color_arr.max()</code>.</li>
 <li>Print just the first 5x5 block of the grayscale array. What do the numbers represent?</li>
 <li>Print <code>color_arr[0, 0]</code>. What does this value represent? What about <code>color_arr[0, 0, 0]</code>?</li>
@@ -411,6 +411,20 @@ def blur3x3(gray):
 <li><strong>Extra:</strong> Do the same for the Green and Blue channels. Display all three side by side using colormaps <code>['Reds', 'Greens', 'Blues']</code>.</li>
 </ol>
 
+<details><summary>Hint 1</summary>
+<p>First, figure out the height and width from the color array's shape: <code>height = color_arr.shape[0]</code>, <code>width = color_arr.shape[1]</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Use two nested <code>for</code> loops: the outer loop goes over rows (<code>for r in range(height)</code>), the inner over columns (<code>for c in range(width)</code>). Inside the inner loop, copy one value: <code>red[r, c] = color_arr[r, c, 0]</code>.</p>
+</details>
+<details><summary>Hint 3 (near-solution)</summary>
+<pre><code>height, width = color_arr.shape[0], color_arr.shape[1]
+red = np.zeros((height, width), dtype=np.uint8)
+for r in range(height):
+    for c in range(width):
+        red[r, c] = color_arr[r, c, 0]  # 0 = Red channel
+show_images([red], titles=['Red channel'], cmap_list=['gray'])</code></pre>
+</details>
 
         </div>
       </section>
@@ -524,7 +538,7 @@ def blur3x3(gray):
   <td>$\frac{\max(R,G,B) + \min(R,G,B)}{2}$</td>
 </tr>
 <tr>
-  <td>Luminosity (ITU-R BT.601)</td>
+  <td>Luminosity (the TV standard formula)</td>
   <td>$0.299 R + 0.587 G + 0.114 B$</td>
 </tr>
 <tr>
@@ -535,9 +549,25 @@ def blur3x3(gray):
 </table>
 
 <blockquote>
-  <p><strong>Tip on <code>uint8</code>:</strong> When you compute a float result, convert it back to <code>uint8</code> by wrapping in <code>int(...)</code> and clamping: <code>max(0, min(255, value))</code>.</p>
+  <p><strong>Tip on <code>uint8</code>:</strong> <code>uint8</code> just means "an integer between 0 and 255" &mdash; the kind of number each pixel is stored as. When you compute a float result, convert it back by wrapping in <code>int(...)</code> and clamping: <code>max(0, min(255, value))</code>.</p>
 </blockquote>
 
+<details><summary>Hint 1</summary>
+<p>Each function should loop over every pixel with two nested <code>for</code> loops. Inside the loop, read <code>R = arr[r, c, 0]</code>, <code>G = arr[r, c, 1]</code>, <code>B = arr[r, c, 2]</code>, then compute one gray value from those three numbers.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>For the Average method: <code>gray_val = (R + G + B) / 3</code>. For Lightness: <code>gray_val = (max(R, G, B) + min(R, G, B)) / 2</code>. Remember to convert the result to an integer and clamp it between 0 and 255.</p>
+</details>
+<details><summary>Hint 3 (near-solution for Average method)</summary>
+<pre><code>def rgb_to_gray_average(color_array):
+    H, W = color_array.shape[0], color_array.shape[1]
+    gray = np.zeros((H, W), dtype=np.uint8)
+    for r in range(H):
+        for c in range(W):
+            R, G, B = int(color_array[r,c,0]), int(color_array[r,c,1]), int(color_array[r,c,2])
+            gray[r, c] = max(0, min(255, int((R + G + B) / 3)))
+    return gray</code></pre>
+</details>
 
         </div>
       </section>
@@ -592,6 +622,11 @@ def blur3x3(gray):
 
         <p><strong>D.</strong> No, but only because Python deletes the original data</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p style="margin-top:1em; padding:0.5em; background:#f5f3ef; border-left:4px solid #c8a96e;">
+            <strong>Answer: B.</strong> Once you collapse three numbers (R, G, B) into one brightness value, there is no way to know what the original red, green, and blue values were. Many different color combinations produce the same gray value &mdash; the information is permanently lost.
+          </p>
+        </div>
 
         </div>
       </section>
@@ -668,6 +703,24 @@ For each output pixel <code>(r, c)</code>, take the <strong>maximum</strong> of 
 <p><strong>Method D — Your own!</strong>
 Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weighted average (give corners less weight).</p>
 
+<details><summary>Hint 1</summary>
+<p>The output image is 50&times;50. Create it with <code>np.zeros((50, 50), dtype=np.uint8)</code>. Then loop <code>for r in range(50)</code> and <code>for c in range(50)</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>For Method A (nearest neighbor), the mapping is simple: <code>out[r, c] = img[2*r, 2*c]</code>. For Method B (average), read four pixels at positions <code>(2*r, 2*c)</code>, <code>(2*r, 2*c+1)</code>, <code>(2*r+1, 2*c)</code>, <code>(2*r+1, 2*c+1)</code> and take their average.</p>
+</details>
+<details><summary>Hint 3 (near-solution for average pooling)</summary>
+<pre><code>def downsample_avg(img):
+    out = np.zeros((50, 50), dtype=np.uint8)
+    for r in range(50):
+        for c in range(50):
+            a = int(img[2*r,   2*c])
+            b = int(img[2*r,   2*c+1])
+            c2 = int(img[2*r+1, 2*c])
+            d = int(img[2*r+1, 2*c+1])
+            out[r, c] = (a + b + c2 + d) // 4
+    return out</code></pre>
+</details>
 
         </div>
       </section>
@@ -701,6 +754,29 @@ Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weig
       </section>
 
 
+
+      <section>
+        <h3>Quick Check — Pooling Methods</h3>
+        <div class="slide-content">
+
+        <p>You shrink a 100&times;100 image to 50&times;50 using average pooling (averaging each 2&times;2 block). A particular 2&times;2 block has pixel values 10, 20, 200, 210. What value does average pooling assign to that output pixel?</p>
+
+        <p><strong>A.</strong> 200 &mdash; the max value in the block</p>
+
+        <p><strong>B.</strong> 110 &mdash; the average of all four values</p>
+
+        <p><strong>C.</strong> 10 &mdash; the top-left value (nearest neighbor)</p>
+
+        <p><strong>D.</strong> 115 &mdash; the median of the four values</p>
+
+        <div class="fragment" data-fragment-index="0">
+          <p style="margin-top:1em; padding:0.5em; background:#f5f3ef; border-left:4px solid #c8a96e;">
+            <strong>Answer: B.</strong> Average pooling adds all values in the block and divides by the count: (10 + 20 + 200 + 210) / 4 = 440 / 4 = 110. This smooths out sharp differences within the block.
+          </p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -754,11 +830,11 @@ Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weig
 Each output pixel <code>(r, c)</code> copies from input pixel <code>(r//2, c//2)</code>. Every input pixel gets "stretched" into a 2x2 block.</p>
 
 <p><strong>Method B — Bilinear Interpolation (1D first, then 2D)</strong>
-This one is harder. Let's build it up:</p>
+This one is harder. Let's build it up. The idea of "interpolation" is simple: if you are between two known values, blend them smoothly. The closer you are to one side, the more weight that side gets.</p>
 
 <ul>
-<li>First, implement <strong>linear interpolation</strong> between two values:
-<code>lerp(a, b, t) = a + t * (b - a)</code> where <code>t</code> is between 0 and 1.</li>
+<li>First, implement <strong>linear interpolation</strong> (blending) between two values:
+<code>lerp(a, b, t) = a + t * (b - a)</code> where <code>t</code> is a fraction between 0 and 1. When <code>t = 0</code> you get <code>a</code>; when <code>t = 1</code> you get <code>b</code>; when <code>t = 0.5</code> you get the average.</li>
 <li>For upsampling 2x: output pixel <code>(r, c)</code> maps to input position <code>(r/2, c/2)</code>.</li>
 <li>If <code>r/2 = 1.5</code>, you interpolate between row 1 and row 2 with weight 0.5.</li>
 <li>Do this for both row and column directions.</li>
@@ -767,6 +843,28 @@ This one is harder. Let's build it up:</p>
 <p><strong>Method C — Your own!</strong>
 Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of.</p>
 
+<details><summary>Hint 1</summary>
+<p>For nearest neighbor, the output is 100&times;100. Each output pixel <code>(r, c)</code> simply copies from input pixel <code>(r // 2, c // 2)</code>. The <code>//</code> operator does integer division (rounds down).</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>For bilinear: compute the source position as a decimal: <code>src_r = r / 2.0</code>. Split it into an integer part (<code>r0 = int(src_r)</code>) and a fractional part (<code>fr = src_r - r0</code>). The fractional part tells you how much to blend between row <code>r0</code> and row <code>r0 + 1</code>. Do the same for columns. Be careful at the edges: if <code>r0 + 1</code> would go past the last row, clamp it.</p>
+</details>
+<details><summary>Hint 3 (near-solution for bilinear)</summary>
+<pre><code>def upsample_bilinear(img):
+    H, W = img.shape
+    out = np.zeros((H * 2, W * 2), dtype=np.uint8)
+    for r in range(H * 2):
+        for c in range(W * 2):
+            src_r, src_c = r / 2.0, c / 2.0
+            r0, c0 = int(src_r), int(src_c)
+            fr, fc = src_r - r0, src_c - c0
+            r1 = min(r0 + 1, H - 1)
+            c1 = min(c0 + 1, W - 1)
+            top    = img[r0, c0] * (1 - fc) + img[r0, c1] * fc
+            bottom = img[r1, c0] * (1 - fc) + img[r1, c1] * fc
+            out[r, c] = int(top * (1 - fr) + bottom * fr)
+    return out</code></pre>
+</details>
 
         </div>
       </section>
@@ -810,6 +908,11 @@ Which method is closest to the original? Does this surprise you?</li>
 
         <p><strong>D.</strong> Neither is smooth — you need at least 4x scaling for smooth results</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p style="margin-top:1em; padding:0.5em; background:#f5f3ef; border-left:4px solid #c8a96e;">
+            <strong>Answer: B.</strong> Nearest-neighbor just copies each pixel into a 2&times;2 block, creating sharp jumps between blocks. Bilinear interpolation smoothly blends between neighboring pixels, so the output has gradual transitions instead of blocky squares.
+          </p>
+        </div>
 
         </div>
       </section>
@@ -910,7 +1013,7 @@ w[1,0]  w[1,1]  w[1,2]
 w[2,0]  w[2,1]  w[2,2]
 </code></pre>
 
-<p>The <strong>convolution output</strong> at pixel <code>(r, c)</code> is the <strong>sum of element-wise products</strong>. Write a mathematical expression for <code>out[r, c]</code> in terms of the image pixels and filter weights. Use summation notation if you can.</p>
+<p>The <strong>convolution output</strong> at pixel <code>(r, c)</code> is computed by: multiply each image value by the weight at the same position, then add all those products together. In other words, it is the <strong>sum of element-wise products</strong> (you multiply matching pairs, then sum). Try writing a mathematical expression for <code>out[r, c]</code> in terms of the image pixels and filter weights.</p>
 
 <p><strong>Before coding</strong>, think:</p>
 
@@ -945,14 +1048,36 @@ w[2,0]  w[2,1]  w[2,2]
         <p>Implement <code>conv(image, weights)</code> where:</p>
 
 <ul>
-<li><code>image</code> is a 2D numpy array of shape <code>(H, W)</code></li>
-<li><code>weights</code> is a 2D numpy array of shape <code>(K, K)</code> where <code>K</code> is odd (3, 5, 7, ...)</li>
-<li>Output is a 2D numpy array</li>
+<li><code>image</code> is a 2D array of numbers with shape <code>(H, W)</code> &mdash; one number per pixel</li>
+<li><code>weights</code> is a small 2D array of shape <code>(K, K)</code> where <code>K</code> is odd (3, 5, 7, ...) &mdash; this is the "filter" or "kernel"</li>
+<li>Output is a 2D array of numbers</li>
 </ul>
 
-<p><strong>Boundary strategy — "valid" mode:</strong> Only compute output where the kernel fits fully inside the image. For a 3x3 kernel on an HxW image, the output will be <code>(H-2) x (W-2)</code>. In general, for a KxK kernel the output is <code>(H-K+1) x (W-K+1)</code>.</p>
+<p><strong>Boundary strategy — "valid" mode:</strong> Only compute output where the kernel fits fully inside the image. For a 3&times;3 kernel on an H&times;W image, the output will be <code>(H-2) x (W-2)</code>. In general, for a K&times;K kernel the output is <code>(H-K+1) x (W-K+1)</code>.</p>
 
-<p>For each output position <code>(r, c)</code>, you need to combine the KxK neighborhood of the image starting at <code>(r, c)</code> with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1.</p>
+<p>For each output position <code>(r, c)</code>, you need to combine the K&times;K neighborhood of the image starting at <code>(r, c)</code> with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1.</p>
+
+<details><summary>Hint 1</summary>
+<p>You need three nested loops: the outer two loop over every output position <code>(r, c)</code>, and the inner two loop over every position <code>(i, j)</code> inside the K&times;K kernel. At each kernel position, multiply the image value by the weight value and add it to a running total.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>The image pixel that lines up with kernel position <code>(i, j)</code> when the output is at <code>(r, c)</code> is <code>image[r + i, c + j]</code>. The output value is the sum of <code>image[r+i, c+j] * weights[i, j]</code> for all <code>i</code> and <code>j</code> from 0 to K-1.</p>
+</details>
+<details><summary>Hint 3 (near-solution)</summary>
+<pre><code>def conv(image, weights):
+    H, W = image.shape
+    K = weights.shape[0]
+    out_h, out_w = H - K + 1, W - K + 1
+    out = np.zeros((out_h, out_w), dtype=np.float64)
+    for r in range(out_h):
+        for c in range(out_w):
+            total = 0.0
+            for i in range(K):
+                for j in range(K):
+                    total += image[r+i, c+j] * weights[i, j]
+            out[r, c] = total
+    return out</code></pre>
+</details>
 
 <blockquote>
   <p><strong>Note:</strong> The output can have values outside <code>[0, 255]</code> — don't clamp yet. Use <code>float</code> arrays for the output and we'll handle display separately.</p>
@@ -1110,12 +1235,18 @@ w[2,0]  w[2,1]  w[2,2]
 <p><strong>Tasks:</strong></p>
 
 <ol>
-<li>Implement <code>pad_image(img, pad_size)</code> that returns a new array with <code>pad_size</code> rows/columns of zeros added on all sides. Use loops — no <code>np.pad</code>!</li>
+<li>Implement <code>pad_image(img, pad_size)</code> that returns a new array with <code>pad_size</code> rows/columns of zeros added on all sides. Use loops &mdash; no <code>np.pad</code>!</li>
 <li>Implement <code>conv_same(image, weights)</code> that uses <code>pad_image</code> internally, so the output is the same size as the input.</li>
 <li>Apply <code>conv_same</code> with Kernel A to <code>img_100</code>. Verify the output shape is <code>(100, 100)</code>.</li>
 <li>Apply <code>conv_same</code> with Kernels C and D. Notice that now edges near the image boundary are included in the output.</li>
 </ol>
 
+<details><summary>Hint 1</summary>
+<p>The padded image is larger: <code>(H + 2*pad, W + 2*pad)</code>. Create it as all zeros, then copy the original pixels into the middle region, starting at position <code>(pad, pad)</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>For <code>conv_same</code>: compute <code>pad_size = (K - 1) // 2</code>, pad the image, then call your existing <code>conv</code> function on the padded image. The output will be exactly H&times;W.</p>
+</details>
 
         </div>
       </section>
@@ -1142,7 +1273,7 @@ w[2,0]  w[2,1]  w[2,2]
 <li>Returns a <code>(H, W, 3)</code> float array</li>
 </ul></li>
 <li>Apply it to <code>color_arr</code> with Kernel A. Display the result.</li>
-<li>Apply it with the Sobel horizontal kernel. What do you get?</li>
+<li>Apply it with Kernel D from earlier (this pattern is called the "Sobel" kernel, named after its inventor &mdash; it is a standard edge-detection filter). What do you get?</li>
 <li><strong>Think:</strong> What is a case where you'd want <em>different</em> kernels for different channels?</li>
 </ol>
 
@@ -1167,6 +1298,11 @@ w[2,0]  w[2,1]  w[2,2]
 
         <p><strong>D.</strong> It inverts the colors of the image</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p style="margin-top:1em; padding:0.5em; background:#f5f3ef; border-left:4px solid #c8a96e;">
+            <strong>Answer: B.</strong> The top row is all negative and the bottom row is all positive. In a flat region (no edge), the top and bottom cancel out and the result is near zero. At a horizontal edge where brightness suddenly changes from top to bottom, the filter gives a large positive or negative value &mdash; that is how it highlights horizontal edges.
+          </p>
+        </div>
 
         </div>
       </section>
@@ -1199,8 +1335,14 @@ w[2,0]  w[2,1]  w[2,2]
 <li>Display each step side by side</li>
 </ol>
 
-<p>Use <strong>your own implementations</strong> of each step — no library functions for the image processing.</p>
+<p>Use <strong>your own implementations</strong> of each step &mdash; no library functions for the image processing.</p>
 
+<details><summary>Hint 1</summary>
+<p>You already have all the functions! Call them in sequence: <code>rgb_to_gray_luminosity</code> &rarr; <code>downsample_avg</code> (or your resize function) &rarr; <code>conv_same</code> with a blur kernel &rarr; <code>conv_same</code> with Sobel kernels C and D, then combine with <code>sqrt(C**2 + D**2)</code>.</p>
+</details>
+<details><summary>Hint 2</summary>
+<p>Store each intermediate result in a variable (<code>gray</code>, <code>small</code>, <code>blurred</code>, <code>edges</code>) and display them all at the end with <code>show_images</code>. Use <code>cmap_list=['gray', 'gray', 'gray', 'gray']</code> since all results are single-channel.</p>
+</details>
 
         </div>
       </section>
@@ -1271,6 +1413,33 @@ w[2,0]  w[2,1]  w[2,2]
       <section id="part9">
         <h2>Part 9: Final Reflection</h2>
 
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>What you just invented:</strong></p>
+  <table style="margin:0.5em auto; font-size:0.9em;">
+    <tr><th style="padding:0.3em 1em;">You built</th><th style="padding:0.3em 1em;">Real name</th></tr>
+    <tr><td>Grid of numbers from an image</td><td>Image tensor / NumPy array</td></tr>
+    <tr><td>Pulling out R, G, or B values</td><td>Channel extraction / slicing</td></tr>
+    <tr><td>Weighted average of R, G, B (0.299, 0.587, 0.114)</td><td>Luminosity grayscale (ITU-R BT.601)</td></tr>
+    <tr><td>Skip every other pixel to shrink</td><td>Nearest-neighbor downsampling</td></tr>
+    <tr><td>Average a 2&times;2 block to shrink</td><td>Average pooling</td></tr>
+    <tr><td>Take the max of a 2&times;2 block</td><td>Max pooling (used in CNNs)</td></tr>
+    <tr><td>Copy closest pixel to grow</td><td>Nearest-neighbor upsampling</td></tr>
+    <tr><td>Blend between neighbors to grow</td><td>Bilinear interpolation</td></tr>
+    <tr><td>3&times;3 weighted neighborhood sum</td><td><strong>2D convolution</strong></td></tr>
+    <tr><td>All-equal weights (1/9 each)</td><td>Box blur / mean filter</td></tr>
+    <tr><td>Kernels C and D for edges</td><td>Sobel edge detector</td></tr>
+    <tr><td>Add zeros around the border</td><td>Zero-padding (&ldquo;same&rdquo; convolution)</td></tr>
+    <tr><td>Pipeline: gray &rarr; resize &rarr; blur &rarr; edges</td><td>CNN feature extraction pipeline</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>You didn&rsquo;t learn convolutions. <strong>You invented them.</strong></p>
+  </div>
+</div></div>
       </section>
 
 

@@ -25,8 +25,8 @@
   },
   {
     "slide_index": 4,
-    "content_id": "fa92f9b1fe",
-    "slide_text": "Peek Inside: Images as Numbers An image is just a grid of numbers. Let's prove it. A PIL Image can be converted to a NumPy array using . Tasks: Convert both images to NumPy arrays. Store them as and . Print and . What are the dimensions? Print and . What is the data type of each pixel? What is the range of values? Print and . Print just the first 5x5 block of the grayscale array. What do the numbers represent? Print . What does this value represent? What about ? Write down your answers: A color image has shape . The third dimension is... because... A grayscale image has shape . There is no third dimension because... The numbers in the array range from ___ to ___. This makes sense because... gives — this means the pixel at row 0, column 0 has Red=___, Green=___, Blue=___.",
+    "content_id": "640aea9ce0",
+    "slide_text": "Peek Inside: Images as Numbers An image is just a grid of numbers. Let's prove it. A PIL Image can be converted to a NumPy array using . Tasks: Convert both images to NumPy arrays. Store them as and . Print and . What are the dimensions? Print and . What is the data type of each pixel? (You should see that just means \"unsigned 8-bit integer\", which stores whole numbers from 0 to 255.) What is the range of values? Print and . Print just the first 5x5 block of the grayscale array. What do the numbers represent? Print . What does this value represent? What about ? Write down your answers: A color image has shape . The third dimension is... because... A grayscale image has shape . There is no third dimension because... The numbers in the array range from ___ to ___. This makes sense because... gives — this means the pixel at row 0, column 0 has Red=___, Green=___, Blue=___.",
     "fragments": []
   },
   {
@@ -55,8 +55,8 @@
   },
   {
     "slide_index": 9,
-    "content_id": "e5a9b93fc9",
-    "slide_text": "Extract the Red Channel Using Loops Your job is to extract only the Red channel from the color image. The result should be a 2D array (H x W) of numbers — just the red values. Rules for this exercise: No NumPy slicing tricks like No , no , no fancy indexing Use plain Python loops and index access Tasks: Create an empty 2D array of the right size using . Loop over every pixel and copy the Red value into your new array. Display the result using with . What do bright areas in the red channel mean? What do dark areas mean? Extra: Do the same for the Green and Blue channels. Display all three side by side using colormaps .",
+    "content_id": "938f92a75a",
+    "slide_text": "Extract the Red Channel Using Loops Your job is to extract only the Red channel from the color image. The result should be a 2D array (H x W) of numbers — just the red values. Rules for this exercise: No NumPy slicing tricks like No , no , no fancy indexing Use plain Python loops and index access Tasks: Create an empty 2D array of the right size using . Loop over every pixel and copy the Red value into your new array. Display the result using with . What do bright areas in the red channel mean? What do dark areas mean? Extra: Do the same for the Green and Blue channels. Display all three side by side using colormaps . Hint 1 First, figure out the height and width from the color array's shape: , . Hint 2 Use two nested loops: the outer loop goes over rows (), the inner over columns (). Inside the inner loop, copy one value: . Hint 3 (near-solution) [code block]",
     "fragments": []
   },
   {
@@ -79,8 +79,8 @@
   },
   {
     "slide_index": 13,
-    "content_id": "8923433b31",
-    "slide_text": "Implement Your Formulas For each formula you invented (and the ones below), write a function that: Takes a numpy array Returns a numpy array of type Uses only Python loops and arithmetic — no , no slicing across channels Formulas to implement: Method Formula Average [math] Lightness [math] Luminosity (ITU-R BT.601) [math] Your own idea (whatever you came up with above) Tip on : When you compute a float result, convert it back to by wrapping in and clamping: .",
+    "content_id": "e78b7b7b87",
+    "slide_text": "Implement Your Formulas For each formula you invented (and the ones below), write a function that: Takes a numpy array Returns a numpy array of type Uses only Python loops and arithmetic — no , no slicing across channels Formulas to implement: Method Formula Average [math] Lightness [math] Luminosity (the TV standard formula) [math] Your own idea (whatever you came up with above) Tip on : just means \"an integer between 0 and 255\" the kind of number each pixel is stored as. When you compute a float result, convert it back by wrapping in and clamping: . Hint 1 Each function should loop over every pixel with two nested loops. Inside the loop, read , , , then compute one gray value from those three numbers. Hint 2 For the Average method: . For Lightness: . Remember to convert the result to an integer and clamp it between 0 and 255. Hint 3 (near-solution for Average method) [code block]",
     "fragments": []
   },
   {
@@ -91,9 +91,15 @@
   },
   {
     "slide_index": 15,
-    "content_id": "200a6f5276",
+    "content_id": "26c895c952",
     "slide_text": "Quick Check — Why Grayscale Loses Information After converting a color image to grayscale, can you recover the original colors? A. Yes — the grayscale values contain enough information to reconstruct RGB B. No — grayscale combines three channels (R, G, B) into one number, permanently losing which colors contributed to that brightness C. Yes, but only if you used the averaging method D. No, but only because Python deletes the original data",
-    "fragments": []
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "4ab5e8de9a",
+        "text": "Answer: B. Once you collapse three numbers (R, G, B) into one brightness value, there is no way to know what the original red, green, and blue values were. Many different color combinations produce the same gray value the information is permanently lost."
+      }
+    ]
   },
   {
     "slide_index": 16,
@@ -109,8 +115,8 @@
   },
   {
     "slide_index": 18,
-    "content_id": "2d8083c0e8",
-    "slide_text": "Implement Three Downsampling Methods Rules: Use only Python loops. No , no PIL , no over blocks. Method A — Nearest Neighbor (Subsampling) For each output pixel , simply copy the value from input pixel . Method B — Average Pooling For each output pixel , take the average of the 2x2 block: , , , Method C — Max Pooling For each output pixel , take the maximum of the same 2x2 block. Method D — Your own! Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weighted average (give corners less weight).",
+    "content_id": "48188d54fc",
+    "slide_text": "Implement Three Downsampling Methods Rules: Use only Python loops. No , no PIL , no over blocks. Method A — Nearest Neighbor (Subsampling) For each output pixel , simply copy the value from input pixel . Method B — Average Pooling For each output pixel , take the average of the 2x2 block: , , , Method C — Max Pooling For each output pixel , take the maximum of the same 2x2 block. Method D — Your own! Invent a fourth method. Some ideas: min pooling, median of the 4 values, or weighted average (give corners less weight). Hint 1 The output image is 50 50. Create it with . Then loop and . Hint 2 For Method A (nearest neighbor), the mapping is simple: . For Method B (average), read four pixels at positions , , , and take their average. Hint 3 (near-solution for average pooling) [code block]",
     "fragments": []
   },
   {
@@ -121,144 +127,180 @@
   },
   {
     "slide_index": 20,
+    "content_id": "bec42e93e9",
+    "slide_text": "Quick Check — Pooling Methods You shrink a 100 100 image to 50 50 using average pooling (averaging each 2 2 block). A particular 2 2 block has pixel values 10, 20, 200, 210. What value does average pooling assign to that output pixel? A. 200 the max value in the block B. 110 the average of all four values C. 10 the top-left value (nearest neighbor) D. 115 the median of the four values",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b17633d07c",
+        "text": "Answer: B. Average pooling adds all values in the block and divides by the count: (10 + 20 + 200 + 210) / 4 = 440 / 4 = 110. This smooths out sharp differences within the block."
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
     "content_id": "565cda8d84",
     "slide_text": "Part 5: Growing an Image — Upsampling to 100x100",
     "fragments": []
   },
   {
-    "slide_index": 21,
+    "slide_index": 22,
     "content_id": "99022439d4",
     "slide_text": "The Reverse Problem Now you have a 50x50 image (use from Part 4). You want to produce a 100x100 image. This is the reverse of downsampling, but it's harder: you need to invent information that wasn't there. Before coding, think: Each output pixel in the 100x100 image comes from which input pixel(s) in the 50x50 image? What happens when falls exactly between two input pixels — e.g., output pixel lands between input and ? Write down two different strategies. Your strategies before coding: Strategy A: ... Strategy B: ...",
     "fragments": []
   },
   {
-    "slide_index": 22,
-    "content_id": "1326a0084d",
-    "slide_text": "Implement Three Upsampling Methods Rules: Use only Python loops. No , no PIL . Method A — Nearest Neighbor Replication Each output pixel copies from input pixel . Every input pixel gets \"stretched\" into a 2x2 block. Method B — Bilinear Interpolation (1D first, then 2D) This one is harder. Let's build it up: First, implement linear interpolation between two values: where is between 0 and 1. For upsampling 2x: output pixel maps to input position . If , you interpolate between row 1 and row 2 with weight 0.5. Do this for both row and column directions. Method C — Your own! Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of.",
+    "slide_index": 23,
+    "content_id": "2210cb6619",
+    "slide_text": "Implement Three Upsampling Methods Rules: Use only Python loops. No , no PIL . Method A — Nearest Neighbor Replication Each output pixel copies from input pixel . Every input pixel gets \"stretched\" into a 2x2 block. Method B — Bilinear Interpolation (1D first, then 2D) This one is harder. Let's build it up. The idea of \"interpolation\" is simple: if you are between two known values, blend them smoothly. The closer you are to one side, the more weight that side gets. First, implement linear interpolation (blending) between two values: where is a fraction between 0 and 1. When you get ; when you get ; when you get the average. For upsampling 2x: output pixel maps to input position . If , you interpolate between row 1 and row 2 with weight 0.5. Do this for both row and column directions. Method C — Your own! Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of. Hint 1 For nearest neighbor, the output is 100 100. Each output pixel simply copies from input pixel . The operator does integer division (rounds down). Hint 2 For bilinear: compute the source position as a decimal: . Split it into an integer part () and a fractional part (). The fractional part tells you how much to blend between row and row . Do the same for columns. Be careful at the edges: if would go past the last row, clamp it. Hint 3 (near-solution for bilinear) [code block]",
     "fragments": []
   },
   {
-    "slide_index": 23,
+    "slide_index": 24,
     "content_id": "0a771411f6",
     "slide_text": "Compare and Analyze Tasks: Apply all three methods. Display results next to the original 100x100 image. Nearest neighbor will look \"blocky\" — why? What visual artifact does it create? Bilinear should look smoother — why? What is the trade-off? Compute the pixel-wise error between the upsampled image and the original : Which method is closest to the original? Does this surprise you? Compute the mean absolute error (you built this in the Loops Arrays chapter) between each upsampled image and the original .",
     "fragments": []
   },
   {
-    "slide_index": 24,
-    "content_id": "6110f26ea0",
+    "slide_index": 25,
+    "content_id": "358737f4a0",
     "slide_text": "Quick Check — Nearest Neighbor vs Bilinear Upsampling When upsampling a 50x50 image to 100x100, nearest-neighbor repeats each pixel while bilinear interpolation blends neighboring pixels. Which produces a smoother result, and why? A. Nearest-neighbor is smoother because it preserves the original pixel values exactly B. Bilinear interpolation is smoother — it creates gradual transitions between pixels by computing weighted averages, while nearest-neighbor creates visible blocky squares C. Both produce identical results at 2x scaling D. Neither is smooth — you need at least 4x scaling for smooth results",
-    "fragments": []
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "f2475f6037",
+        "text": "Answer: B. Nearest-neighbor just copies each pixel into a 2 2 block, creating sharp jumps between blocks. Bilinear interpolation smoothly blends between neighboring pixels, so the output has gradual transitions instead of blocky squares."
+      }
+    ]
   },
   {
-    "slide_index": 25,
+    "slide_index": 26,
     "content_id": "781169abc0",
     "slide_text": "Part 6: Upsampling to a Non-Integer Scale — 50x50 to 150x150",
     "fragments": []
   },
   {
-    "slide_index": 26,
+    "slide_index": 27,
     "content_id": "56f6068da3",
     "slide_text": "A New Challenge So far you've doubled the image (50→100). Now go from 50x50 to 150x150 — a scale factor of 3 . Nearest neighbor is easy: output pixel maps to input . Bilinear is similar: output maps to input coordinates . But here's a deeper challenge: what about going from 50x50 to 75x75 ? The scale factor is 1.5 — not an integer. Output pixel maps to input position . This is a fractional coordinate — you must interpolate. The key insight: Your bilinear implementation already handles this! The formula works for any scale — integer or fractional. Tasks: Generalize your and to accept an arbitrary instead of a fixed scale. Implement and . Resize to 150x150 using both methods. Resize to 75x75 using both methods. Display and compare results.",
     "fragments": []
   },
   {
-    "slide_index": 27,
+    "slide_index": 28,
     "content_id": "5478d46690",
     "slide_text": "Extreme Upsampling Now let's push your implementation further. Tasks: Take a tiny 10x10 patch from (top-left corner): . Upsample it to 200x200 using both nearest and bilinear. Display all three (original 10x10 patch, nearest 200x200, bilinear 200x200). The nearest result should look very blocky — you'll see the \"pixels\". The bilinear should be blurry. Why? Design question: Is there a way to upsample that preserves sharp edges? Describe your idea (no code needed — just think and write).",
     "fragments": []
   },
   {
-    "slide_index": 28,
+    "slide_index": 29,
     "content_id": "b07929ec3f",
     "slide_text": "Part 7: Neighborhood Operations",
     "fragments": []
   },
   {
-    "slide_index": 29,
-    "content_id": "c9d5889483",
-    "slide_text": "The Neighborhood Idea You've learned that a pixel is a single number. Now let's think differently: a pixel together with its neighbors tells you something about local structure. Consider a grayscale image. Look at a 3x3 patch around any pixel : [code block] A filter (also called a kernel or weight matrix ) is a small grid of numbers, also 3x3: [code block] The convolution output at pixel is the sum of element-wise products . Write a mathematical expression for in terms of the image pixels and filter weights. Use summation notation if you can. Before coding , think: What happens at the edges of the image? (There are no neighbors outside the boundary.) What does the output represent? Is it still an image? What size is it? What would happen if all weights were ? What computation would that be? What would happen if the center weight is and all others are ? Your answers before coding: Edge problem: ... Output: ... All weights = 1/9: ... Center weight = 1, rest = 0: ...",
-    "fragments": []
-  },
-  {
     "slide_index": 30,
-    "content_id": "142bc61ac9",
-    "slide_text": "Apply Weights to a Neighborhood Implement where: is a 2D numpy array of shape is a 2D numpy array of shape where is odd (3, 5, 7, ...) Output is a 2D numpy array Boundary strategy — \"valid\" mode: Only compute output where the kernel fits fully inside the image. For a 3x3 kernel on an HxW image, the output will be . In general, for a KxK kernel the output is . For each output position , you need to combine the KxK neighborhood of the image starting at with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1. Note: The output can have values outside — don't clamp yet. Use arrays for the output and we'll handle display separately. Sanity check: Use the identity filter to verify your implementation: [code block]",
+    "content_id": "abdce4211d",
+    "slide_text": "The Neighborhood Idea You've learned that a pixel is a single number. Now let's think differently: a pixel together with its neighbors tells you something about local structure. Consider a grayscale image. Look at a 3x3 patch around any pixel : [code block] A filter (also called a kernel or weight matrix ) is a small grid of numbers, also 3x3: [code block] The convolution output at pixel is computed by: multiply each image value by the weight at the same position, then add all those products together. In other words, it is the sum of element-wise products (you multiply matching pairs, then sum). Try writing a mathematical expression for in terms of the image pixels and filter weights. Before coding , think: What happens at the edges of the image? (There are no neighbors outside the boundary.) What does the output represent? Is it still an image? What size is it? What would happen if all weights were ? What computation would that be? What would happen if the center weight is and all others are ? Your answers before coding: Edge problem: ... Output: ... All weights = 1/9: ... Center weight = 1, rest = 0: ...",
     "fragments": []
   },
   {
     "slide_index": 31,
+    "content_id": "11d064513c",
+    "slide_text": "Apply Weights to a Neighborhood Implement where: is a 2D array of numbers with shape one number per pixel is a small 2D array of shape where is odd (3, 5, 7, ...) this is the \"filter\" or \"kernel\" Output is a 2D array of numbers Boundary strategy — \"valid\" mode: Only compute output where the kernel fits fully inside the image. For a 3 3 kernel on an H W image, the output will be . In general, for a K K kernel the output is . For each output position , you need to combine the K K neighborhood of the image starting at with the weight grid. Figure out how to compute the output value using what you learned in Exercise 7.1. Hint 1 You need three nested loops: the outer two loop over every output position , and the inner two loop over every position inside the K K kernel. At each kernel position, multiply the image value by the weight value and add it to a running total. Hint 2 The image pixel that lines up with kernel position when the output is at is . The output value is the sum of for all and from 0 to K-1. Hint 3 (near-solution) [code block] Note: The output can have values outside — don't clamp yet. Use arrays for the output and we'll handle display separately. Sanity check: Use the identity filter to verify your implementation: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
     "content_id": "d8ec52afa8",
     "slide_text": "Helper for Displaying Convolution Output The output of convolution may have negative values or values 255. We need a helper to normalize and display it. Run this cell to make the helper available.",
     "fragments": []
   },
   {
-    "slide_index": 32,
+    "slide_index": 33,
     "content_id": "67e3029a41",
     "slide_text": "Discover What Filters Do Now the fun part. Apply your function with different kernels and discover what each one does to the image. Rules: You must apply each kernel, display the result, and describe what you see before reading the reveal below. Kernel A [code block] Kernel B [code block] Kernel C [code block] Kernel D [code block] Tasks: Apply each kernel to . For each result, write down what you observe before reading the reveal. For Kernels C and D: can you combine the two output maps? Try: [code block] (Implement with a loop.) Your observations (fill in before reading the reveal): Kernel A: I see... Kernel B: I see... Kernel C: I see... Kernel D: I see... Combined C + D magnitude: I see...",
     "fragments": []
   },
   {
-    "slide_index": 33,
+    "slide_index": 34,
     "content_id": "1775ab2a8e",
     "slide_text": "Invent Your Own Filter Now you know what a convolution filter does. Design your own. Tasks: Invent a 3x3 filter that does something interesting. Apply it and display the result. Experiment with a 5x5 blur kernel. A 5x5 blur has all weights = . Apply it. Compare to the 3x3 blur. Which is blurrier? Why? Gaussian blur idea: Instead of equal weights, what if the center gets more weight and edges get less? Design a 3x3 kernel where the center = 4, direct neighbors = 2, corners = 1 (then normalize so they sum to 1). [code block] Apply it. How does it compare to the flat blur? Try applying the blur filter multiple times in a row (chain: ). What happens? Apply it 3 times, 5 times.",
     "fragments": []
   },
   {
-    "slide_index": 34,
-    "content_id": "519e2c6f4d",
-    "slide_text": "Add Padding You may have noticed that each convolution slightly shrinks the image (98x98 from a 100x100 image with a 3x3 kernel). A common fix is zero-padding : surround the image with a border of zeros before convolving, so the output stays the same size as the input. For a 3x3 kernel, add 1 pixel of zeros on all sides. For a 5x5 kernel, add 2 pixels. Formula: Tasks: Implement that returns a new array with rows/columns of zeros added on all sides. Use loops — no ! Implement that uses internally, so the output is the same size as the input. Apply with Kernel A to . Verify the output shape is . Apply with Kernels C and D. Notice that now edges near the image boundary are included in the output.",
-    "fragments": []
-  },
-  {
     "slide_index": 35,
-    "content_id": "40caf2ffe6",
-    "slide_text": "Convolution on a Color Image So far, works on grayscale (2D). But real images are color (3D: H x W x 3). How should convolution work on a color image? Approach 1 — Per-channel: Apply the same kernel independently to each of R, G, B. Stack the three results back into a color image. Tasks: Implement that: Takes a array and a kernel Applies to each channel separately Returns a float array Apply it to with Kernel A. Display the result. Apply it with the Sobel horizontal kernel. What do you get? Think: What is a case where you'd want different kernels for different channels?",
+    "content_id": "be66064fa4",
+    "slide_text": "Add Padding You may have noticed that each convolution slightly shrinks the image (98x98 from a 100x100 image with a 3x3 kernel). A common fix is zero-padding : surround the image with a border of zeros before convolving, so the output stays the same size as the input. For a 3x3 kernel, add 1 pixel of zeros on all sides. For a 5x5 kernel, add 2 pixels. Formula: Tasks: Implement that returns a new array with rows/columns of zeros added on all sides. Use loops no ! Implement that uses internally, so the output is the same size as the input. Apply with Kernel A to . Verify the output shape is . Apply with Kernels C and D. Notice that now edges near the image boundary are included in the output. Hint 1 The padded image is larger: . Create it as all zeros, then copy the original pixels into the middle region, starting at position . Hint 2 For : compute , pad the image, then call your existing function on the padded image. The output will be exactly H W.",
     "fragments": []
   },
   {
     "slide_index": 36,
-    "content_id": "10e3c4e443",
-    "slide_text": "Quick Check — Edge Detection Filters A 3x3 convolution filter has the values . What does this filter detect? A. It blurs the image by averaging neighbors B. It detects horizontal edges — it responds strongly where pixel values change rapidly from top to bottom C. It detects vertical edges D. It inverts the colors of the image",
+    "content_id": "291d29403d",
+    "slide_text": "Convolution on a Color Image So far, works on grayscale (2D). But real images are color (3D: H x W x 3). How should convolution work on a color image? Approach 1 — Per-channel: Apply the same kernel independently to each of R, G, B. Stack the three results back into a color image. Tasks: Implement that: Takes a array and a kernel Applies to each channel separately Returns a float array Apply it to with Kernel A. Display the result. Apply it with Kernel D from earlier (this pattern is called the \"Sobel\" kernel, named after its inventor it is a standard edge-detection filter). What do you get? Think: What is a case where you'd want different kernels for different channels?",
     "fragments": []
   },
   {
     "slide_index": 37,
+    "content_id": "b93390e985",
+    "slide_text": "Quick Check — Edge Detection Filters A 3x3 convolution filter has the values . What does this filter detect? A. It blurs the image by averaging neighbors B. It detects horizontal edges — it responds strongly where pixel values change rapidly from top to bottom C. It detects vertical edges D. It inverts the colors of the image",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b0af16b3c6",
+        "text": "Answer: B. The top row is all negative and the bottom row is all positive. In a flat region (no edge), the top and bottom cancel out and the result is near zero. At a horizontal edge where brightness suddenly changes from top to bottom, the filter gives a large positive or negative value that is how it highlights horizontal edges."
+      }
+    ]
+  },
+  {
+    "slide_index": 38,
     "content_id": "520c673e23",
     "slide_text": "Part 8: Pulling It All Together",
     "fragments": []
   },
   {
-    "slide_index": 38,
-    "content_id": "3325194a18",
-    "slide_text": "Build a Mini Image Processing Pipeline You now have all the building blocks. Let's build a real pipeline. Goal: Given the original color image: Convert to grayscale (using luminosity method) Resize to 50x50 Apply a blur filter Apply a Sobel edge detector (both H and V, then combine) Display each step side by side Use your own implementations of each step — no library functions for the image processing.",
+    "slide_index": 39,
+    "content_id": "7c7778b7fc",
+    "slide_text": "Build a Mini Image Processing Pipeline You now have all the building blocks. Let's build a real pipeline. Goal: Given the original color image: Convert to grayscale (using luminosity method) Resize to 50x50 Apply a blur filter Apply a Sobel edge detector (both H and V, then combine) Display each step side by side Use your own implementations of each step no library functions for the image processing. Hint 1 You already have all the functions! Call them in sequence: (or your resize function) with a blur kernel with Sobel kernels C and D, then combine with . Hint 2 Store each intermediate result in a variable (, , , ) and display them all at the end with . Use since all results are single-channel.",
     "fragments": []
   },
   {
-    "slide_index": 39,
+    "slide_index": 40,
     "content_id": "6adcef7157",
     "slide_text": "Bonus: Design a Filter by Intuition Here is a challenge with no given formula — you must invent the filter. Goal: Design a 3x3 kernel — experiment with different weight patterns and observe what each one does to the image. Think: You've seen kernels where all weights are equal, kernels with a large center weight and negative neighbors, and kernels with positive values on one side and negative on the other. What other patterns can you create? What happens if you put opposite signs on diagonal corners? What if only the corners have non-zero weights? Try at least 3 different kernels of your own design. Tasks: Design a 3x3 kernel, sketch it on paper, predict what it will do, then apply it to and check. Design a second kernel with a very different weight pattern. Apply and compare. Design a third kernel. Can you find one that highlights features the previous kernels missed? For each kernel, write down what you predicted vs. what you observed.",
     "fragments": []
   },
   {
-    "slide_index": 40,
+    "slide_index": 41,
     "content_id": "54a8c99dfe",
     "slide_text": "Bonus: What Does Repeated Convolution Do? Tasks: Apply Kernel B 10 times in a row. Display the result after 1, 3, 5, 10 applications. Apply Kernel A 20 times. What happens? Apply Kernel C to an image, then apply Kernel A to the result. What does that produce? Think: In a neural network, many convolution layers are stacked. Each layer has learned kernels. Based on what you've seen, what might the first, second, and deeper layers be detecting? Your thoughts on stacked layers: Layer 1 (close to input) likely detects... Layer 2 detects... Deeper layers likely detect...",
     "fragments": []
   },
   {
-    "slide_index": 41,
+    "slide_index": 42,
     "content_id": "ce14f06803",
     "slide_text": "Part 9: Final Reflection",
     "fragments": []
   },
   {
-    "slide_index": 42,
+    "slide_index": 43,
+    "content_id": "7522f21344",
+    "slide_text": "What you just invented: You built Real name Grid of numbers from an image Image tensor / NumPy array Pulling out R, G, or B values Channel extraction / slicing Weighted average of R, G, B (0.299, 0.587, 0.114) Luminosity grayscale (ITU-R BT.601) Skip every other pixel to shrink Nearest-neighbor downsampling Average a 2 2 block to shrink Average pooling Take the max of a 2 2 block Max pooling (used in CNNs) Copy closest pixel to grow Nearest-neighbor upsampling Blend between neighbors to grow Bilinear interpolation 3 3 weighted neighborhood sum 2D convolution All-equal weights (1/9 each) Box blur / mean filter Kernels C and D for edges Sobel edge detector Add zeros around the border Zero-padding ( same convolution) Pipeline: gray resize blur edges CNN feature extraction pipeline",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "862a32430a",
+        "text": "You didn t learn convolutions. You invented them."
+      }
+    ]
+  },
+  {
+    "slide_index": 44,
     "content_id": "ee12a4332d",
     "slide_text": "Reflection Answer these questions in your own words: What is an image? Describe it as a data structure, not visually. What is a convolution? Explain in 3 sentences without using the word \"filter\". What is the difference between downsampling and upsampling? Which one loses information permanently? Can you recover from either? Why does the blur kernel make the image blurry? Explain using the math — what operation does it actually perform at each pixel? Why does the Sobel kernel detect edges? Think about what happens when you apply it to a flat region vs. a sharp edge. In a Convolutional Neural Network (CNN) , the kernels are not hand-designed — they are learned from data using gradient descent. Based on what you've built, what does \"learning a kernel\" mean? What is being optimized?",
     "fragments": []
   },
   {
-    "slide_index": 43,
+    "slide_index": 45,
     "content_id": "8c5eea3eb3",
     "slide_text": "Index Part 1: What Is an Image? Part 2: Extracting a Color Channel Part 3: Converting Color to Grayscale Part 4: Shrinking an Image — Downsampling Part 5: Growing an Image — Upsampling to 100x100 Part 6: Upsampling to a Non-Integer Scale — 50x50 to 150x150 Part 7: Neighborhood Operations Part 8: Pulling It All Together Part 9: Final Reflection",
     "fragments": []
