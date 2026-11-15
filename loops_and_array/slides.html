@@ -110,7 +110,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <section>
         <h1>Loops and Arrays</h1>
 
-        <div class="slide-content slide-title">In this chapter you build a toolkit of functions that operate on lists of numbers. Eight thematic parts, each building on the last.</div>
+        <div class="slide-content slide-title">In this chapter you build a toolkit of functions that operate on lists of numbers. Nine thematic parts, each building on the last.</div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -167,6 +167,14 @@ find_min_max([7, 7, 7, 7])       # (7, 7)
 find_min_max([-3, 0, 3])         # (-3, 3)
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Start by assuming the first number is both the minimum and the maximum. Then loop through the rest, updating whenever you find something smaller or larger.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>current_min = numbers[0]</code>. For each <code>n</code> in <code>numbers</code>: if <code>n &lt; current_min</code>, update. Do the same for max. Return <code>(current_min, current_max)</code>.</p>
+    </details>
 
         </div>
       </section>
@@ -228,6 +236,14 @@ compute_sd([10, 10, 10, 10])           # 0.0
 compute_sd([0, 6])                     # 3.0
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Break the formula into three steps: (1) compute the mean, (2) for each number, compute <code>(x - mean)**2</code> and add them up, (3) divide by the count and take the square root.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>mean = compute_mean(numbers)</code>. Sum up <code>(x - mean)**2</code> for each <code>x</code>. Divide that sum by <code>len(numbers)</code>. Return <code>result ** 0.5</code>.</p>
+    </details>
 
         </div>
       </section>
@@ -345,6 +361,14 @@ compute_rmse([1, 2, 3], [1, 2, 3])  # 0.0
 
 <p><strong>Bonus:</strong> What is <code>compute_rmse([2, 3, 4], [3, 1, 7])</code>?</p>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Follow the four steps in order. Use a loop over the indices: <code>for i in range(len(actual))</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p>Accumulate <code>(actual[i] - predicted[i])**2</code> in a running total. Divide by <code>len(actual)</code>, then return <code>result ** 0.5</code>.</p>
+    </details>
 
         </div>
       </section>
@@ -415,20 +439,21 @@ compute_huber_loss([1,2,3],[1,2,3],1)                              # 0.0
 
 
       <section>
-        <h3>RMSE vs MAE</h3>
+        <h3>Quick Check: RMSE vs MAE</h3>
         <div class="slide-content">
 
         <p>Your model's predictions for 5 data points have errors: [1, 1, 1, 1, 20]. Which error metric will be affected MORE by the single large error of 20?</p>
 
+        <ol style="list-style-type:upper-alpha;">
+          <li>MAE (Mean Absolute Error)</li>
+          <li>RMSE (Root Mean Square Error)</li>
+          <li>Both are affected equally</li>
+          <li>Neither &mdash; both ignore outliers</li>
+        </ol>
 
-        <p><strong>A.</strong> MAE (Mean Absolute Error)</p>
-
-        <p><strong>B.</strong> RMSE (Root Mean Square Error)</p>
-
-        <p><strong>C.</strong> Both are affected equally</p>
-
-        <p><strong>D.</strong> Neither — both ignore outliers</p>
-
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>B.</strong> RMSE squares each error before averaging, so the 20 becomes 400 &mdash; much bigger than the 1s. MAE just averages the absolute values (1+1+1+1+20)/5 = 4.8, while RMSE = &radic;((1+1+1+1+400)/5) &asymp; 9.0. Squaring amplifies large errors.</p>
+        </div>
 
         </div>
       </section>
@@ -481,6 +506,14 @@ closer_point([15, 15], [2, 2], [20, 20])       # "B"
 find_nearest_1d([1, 4, 10, 20], 15)  # 10
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>This is similar to <code>find_min_max</code>, but instead of tracking the smallest number, track the number with the smallest distance to the target.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p>Keep <code>best = numbers[0]</code> and <code>best_dist = abs(numbers[0] - target)</code>. Loop through the rest; if <code>abs(n - target) &lt; best_dist</code>, update both.</p>
+    </details>
 
         </div>
       </section>
@@ -564,20 +597,21 @@ find_nearest_neighbour([1,2,3], [[5,5,5],[0,0,0],[2,2,2]],
 
 
       <section>
-        <h3>When to Normalize</h3>
+        <h3>Quick Check: When to Normalize</h3>
         <div class="slide-content">
 
-        <p>A dataset has two features: age (range 0–100) and salary (range 20,000–200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?</p>
+        <p>A dataset has two features: age (range 0&ndash;100) and salary (range 20,000&ndash;200,000). You want to find the nearest neighbor using Euclidean distance. What happens if you DON'T normalize the features first?</p>
 
+        <ol style="list-style-type:upper-alpha;">
+          <li>The algorithm won't run &mdash; Python will throw an error</li>
+          <li>Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant</li>
+          <li>Age will dominate because it has a smaller range</li>
+          <li>It makes no difference &mdash; Euclidean distance handles different scales automatically</li>
+        </ol>
 
-        <p><strong>A.</strong> The algorithm won't run — Python will throw an error</p>
-
-        <p><strong>B.</strong> Salary will dominate the distance calculation because its numbers are much larger, making age nearly irrelevant</p>
-
-        <p><strong>C.</strong> Age will dominate because it has a smaller range</p>
-
-        <p><strong>D.</strong> It makes no difference — Euclidean distance handles different scales automatically</p>
-
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>B.</strong> Euclidean distance squares the differences. A salary difference of 10,000 contributes 100,000,000 to the sum, while an age difference of 10 contributes only 100. Salary completely drowns out age. That is why we normalize first &mdash; put both on the same scale.</p>
+        </div>
 
         </div>
       </section>
@@ -637,6 +671,14 @@ add_polynomials([5, 2], [3])                   # [5, 5]
 add_polynomials([1], [1])                      # [2]
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>The constant term (rightmost) always lines up. If one list is shorter, pad it on the <em>left</em> with zeros until both are the same length.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p>Pad the shorter list: <code>p1 = [0]*(len(p2)-len(p1)) + p1</code> (and vice versa). Then add element by element.</p>
+    </details>
 
         </div>
       </section>
@@ -705,6 +747,10 @@ multiply_polynomials([1], [5])               # [5]
 solve_for_first_variable([2, 5, 7], [4])          # -6.5
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>The right-hand side is <code>equation[-1]</code>. Subtract each known variable's contribution: <code>rhs -= equation[i+1] * vars[i]</code>. Then divide by the first coefficient.</p>
+    </details>
 
         </div>
       </section>
@@ -811,7 +857,7 @@ solve_equations([[1,1,1,6],[0,2,5,-4],[2,5,-1,27]])
       <section id="part6">
         <h2>Part 6: Probability and Sampling</h2>
 
-        <div class="slide-content"><p>Random processes underlie stochastic gradient descent, Monte Carlo methods, and many more ML algorithms. You will build from a simple coin toss up to a temperature-scaled weighted sampler.</p>
+        <div class="slide-content"><p>Randomness is everywhere in machine learning &mdash; from shuffling training data to making predictions under uncertainty. You will build from a simple coin toss up to a temperature-scaled weighted sampler, the same tool used in chatbots and recommendation systems.</p>
 </div>
 
       </section>
@@ -958,6 +1004,14 @@ softmax([2, 2, 2])   # [0.333, 0.333, 0.333]
 sum(softmax([1, 2, 3])) == 1.0  # True (up to floating point)
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Two steps: (1) apply <code>math.exp(x)</code> to every value, (2) normalize the resulting list so it sums to 1 &mdash; reuse <code>normalize_to_probabilities</code>.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>exps = [math.exp(v) for v in values]</code>, then <code>total = sum(exps)</code>, then return <code>[e / total for e in exps]</code>.</p>
+    </details>
 
         </div>
       </section>
@@ -1058,20 +1112,21 @@ softmax_with_temperature([1, 2, 3], 2)    # flatter
 
 
       <section>
-        <h3>Softmax Temperature</h3>
+        <h3>Quick Check: Softmax Temperature</h3>
         <div class="slide-content">
 
         <p>In softmax with temperature, what happens as the temperature T approaches 0?</p>
 
+        <ol style="list-style-type:upper-alpha;">
+          <li>All outputs become equal (uniform distribution)</li>
+          <li>The output with the highest input gets nearly all the probability &mdash; the distribution becomes "sharper"</li>
+          <li>All outputs become 0</li>
+          <li>The function becomes undefined</li>
+        </ol>
 
-        <p><strong>A.</strong> All outputs become equal (uniform distribution)</p>
-
-        <p><strong>B.</strong> The output with the highest input gets nearly all the probability — the distribution becomes "sharper"</p>
-
-        <p><strong>C.</strong> All outputs become 0</p>
-
-        <p><strong>D.</strong> The function becomes undefined</p>
-
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>B.</strong> Dividing by a very small $T$ makes the inputs huge, so softmax pushes almost all the probability to the largest value. At $T \to 0$ the result is like picking the maximum. At $T \to \infty$ it flattens to a uniform distribution (option A is the opposite extreme).</p>
+        </div>
 
         </div>
       </section>
@@ -1083,6 +1138,9 @@ softmax_with_temperature([1, 2, 3], 2)    # flatter
       <!-- Part 7: Recursion on Nested Structures -->
       <section id="part7">
         <h2>Part 7: Recursion on Nested Structures</h2>
+
+        <div class="slide-content"><p>Lists can contain other lists, which can contain more lists, as deep as you like. Recursion &mdash; a function calling itself &mdash; is the natural way to walk through these nested structures.</p>
+</div>
 
       </section>
 
@@ -1112,6 +1170,14 @@ flatten_list([1, 2, 3])              # [1, 2, 3]
 flatten_list([[[]]])                 # []
 </code></pre>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Create an empty <code>result</code> list. Loop through each element: if it is a list, recursively flatten it and <code>extend</code> the result; otherwise, <code>append</code> the element.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>for item in nested_list: if isinstance(item, list): result.extend(flatten_list(item)) else: result.append(item)</code></p>
+    </details>
 
         </div>
       </section>
@@ -1167,7 +1233,7 @@ solve_expression(["-", ["*", ["/", 100, 10], 5], 15])  # 35
 
 <ul>
 <li>New operators: <code>"sqrt"</code> (use <code>x ** 0.5</code>) and <code>"log"</code> (base 10 — <code>math.log10</code>).</li>
-<li><strong>Arity rules:</strong> <code>+</code> and <code>*</code> accept <strong>two or more</strong> operands; <code>-</code> and <code>/</code> accept <strong>exactly two</strong>; <code>sqrt</code> and <code>log</code> accept <strong>exactly one</strong>. Wrong count → <code>raise ValueError</code> with a message naming the operator.</li>
+<li><strong>How many inputs?</strong> <code>+</code> and <code>*</code> accept <strong>two or more</strong> operands; <code>-</code> and <code>/</code> accept <strong>exactly two</strong>; <code>sqrt</code> and <code>log</code> accept <strong>exactly one</strong>. If someone passes the wrong number of inputs, <code>raise ValueError</code> with a message naming the operator.</li>
 <li>Unknown operator → <code>ValueError</code> too.</li>
 <li>Operands may be numbers or nested expressions, as before.</li>
 </ul>
@@ -1255,8 +1321,16 @@ print(flatten_list(nested))     # [1, 2, 3, 4, 5]
         <h3>Reverse, In Place</h3>
         <div class="slide-content">
 
-        <p>Write <code>reverse_in_place(arr)</code> that reverses the list <strong>without creating a new list</strong> — no <code>arr[::-1]</code>, no <code>reversed()</code>, no second list. Walk two indices toward each other from the ends, swapping as you go. The function should modify <code>arr</code> and return nothing.</p>
+        <p>Write <code>reverse_in_place(arr)</code> that reverses the list <strong>without creating a new list</strong> &mdash; no <code>arr[::-1]</code>, no <code>reversed()</code>, no second list. Walk two indices toward each other from the ends, swapping as you go. The function should modify <code>arr</code> and return nothing.</p>
 
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 1</summary>
+      <p>Use two pointers: <code>left = 0</code> and <code>right = len(arr) - 1</code>. Swap <code>arr[left]</code> and <code>arr[right]</code>, then move them toward each other. Stop when they meet.</p>
+    </details>
+    <details style="font-size:0.85em; margin:0.3em 0;">
+      <summary>Hint 2 (near-giveaway)</summary>
+      <p><code>while left &lt; right: arr[left], arr[right] = arr[right], arr[left]; left += 1; right -= 1</code></p>
+    </details>
 
         </div>
       </section>
@@ -1422,91 +1496,72 @@ print(flatten_list(nested))     # [1, 2, 3, 4, 5]
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
-
-            <th>Part</th>
-
-            <th>Functions</th>
-
+            <th>What you built</th>
+            <th>Standard name in ML / CS</th>
           </tr>
-
           <tr>
-
-            <td>1 Statistics</td>
-
-            <td><code>find_min_max</code>, <code>min_max_normalize</code>, <code>compute_mean</code>, <code>compute_sd</code>, <code>find_outliers</code>, <code>compute_iqr</code>, <code>standardize</code></td>
-
+            <td><code>find_min_max</code>, <code>compute_mean</code>, <code>compute_sd</code>, <code>compute_iqr</code></td>
+            <td>Descriptive statistics (NumPy / Pandas)</td>
           </tr>
-
           <tr>
-
-            <td>2 Error Metrics</td>
-
+            <td><code>min_max_normalize</code>, <code>standardize</code></td>
+            <td>Feature scaling (sklearn <code>MinMaxScaler</code>, <code>StandardScaler</code>)</td>
+          </tr>
+          <tr>
+            <td><code>find_outliers</code></td>
+            <td>Z-score outlier detection</td>
+          </tr>
+          <tr>
             <td><code>compute_rmse</code>, <code>compute_mae</code>, <code>compute_huber_loss</code></td>
-
+            <td>Loss / error functions (sklearn <code>mean_squared_error</code>, <code>mean_absolute_error</code>)</td>
           </tr>
-
           <tr>
-
-            <td>3 Nearest Neighbor</td>
-
-            <td><code>closer_point</code>, <code>find_nearest_1d/2d/nd</code>, <code>find_nearest_neighbour</code></td>
-
+            <td><code>find_nearest_1d</code> &rarr; <code>find_nearest_nd</code></td>
+            <td>k-Nearest Neighbors (k-NN) classifier / regressor</td>
           </tr>
-
           <tr>
-
-            <td>4 Polynomials</td>
-
-            <td><code>multiply_polynomial</code>, <code>add_polynomials</code>, <code>multiply_polynomials</code></td>
-
+            <td><code>softmax</code>, <code>softmax_with_temperature</code></td>
+            <td>Softmax activation (used in neural networks, language models)</td>
           </tr>
-
           <tr>
-
-            <td>5 Linear Equations</td>
-
-            <td><code>solve_for_first_variable</code>, <code>eliminate_variable_pair</code>, <code>eliminate_variable</code>, <code>solve_equations</code></td>
-
+            <td><code>solve_equations</code></td>
+            <td>Gaussian elimination (linear algebra solver)</td>
           </tr>
-
           <tr>
-
-            <td>6 Probability</td>
-
-            <td><code>fair_coin_toss</code>, <code>biased_coin_toss</code>, <code>weighted_choice</code>, <code>normalize_to_probabilities</code>, <code>softmax</code>, <code>softmax_with_temperature</code>, <code>weighted_choice_with_temperature</code></td>
-
+            <td><code>flatten_list</code>, <code>solve_expression</code></td>
+            <td>Recursive tree traversal (expression evaluation, AST)</td>
           </tr>
-
           <tr>
-
-            <td>7 Nested Structures</td>
-
-            <td><code>flatten_list</code>, <code>solve_expression</code>, <code>calculate</code></td>
-
+            <td><code>mymapper</code>, <code>myreducer</code></td>
+            <td>Python built-ins <code>map()</code> and <code>functools.reduce()</code>; MapReduce paradigm</td>
           </tr>
-
           <tr>
-
-            <td>8 In-Place Moves</td>
-
-            <td><code>xors</code>, <code>reverse_in_place</code>, <code>shift_left</code>, <code>shift_left_k</code></td>
-
+            <td><code>shift_left_k</code> (triple reversal)</td>
+            <td>Array rotation &mdash; a classic O(n) in-place algorithm</td>
           </tr>
-
-          <tr>
-
-            <td>9 Loop Explorations</td>
-
-            <td><code>all_digits</code>, <code>mymapper</code>, <code>myreducer</code></td>
-
-          </tr>
-
         </table>
+        <div class="fragment" data-fragment-index="0">
+          <p>Nobody taught you these &mdash; <strong>you derived them yourself</strong>. Every time you see these names in a textbook or library, you will know exactly what is happening under the hood.</p>
         </div>
+        </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>You wrote <code>compute_sd</code> and <code>standardize</code>. In your own words, why would you standardize data before finding nearest neighbors?</li>
+    <li>RMSE punishes big errors more than MAE. When would you prefer MAE over RMSE, and vice versa? Think of a real-world example for each.</li>
+    <li>You built softmax with temperature. How is this related to how a chatbot chooses its next word &mdash; sometimes creative, sometimes predictable?</li>
+    <li>You solved linear equations by eliminating one variable at a time. What happens if two equations are actually the same line in disguise? How would your code behave?</li>
+  </ol>
+</div></div>
       </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
