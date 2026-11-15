@@ -140,9 +140,9 @@ The chapter footer MUST be hidden in slide mode:
 <div id="top-progress"><div id="top-progress-bar"></div></div>
 ```
 
-### 3.3 Bottom Copyright with Index Link (REQUIRED)
+### 3.3 Bottom Copyright with Index and Report a Bug Links (REQUIRED)
 ```html
-<div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
+<div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="https://github.com/cloudxlab/learnbyinventing/issues/new?template=bug_report.md" target="_blank">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
 ```
 
 ### 3.4 Title Slide (REQUIRED)
@@ -239,7 +239,7 @@ Reveal.on('ready', function() { updateProgress(); });
 | 3 | `.chapter-footer { display: none; }` (not visible styling) | YES |
 | 4 | `.reveal .progress { display: none !important; }` | YES |
 | 5 | Top progress bar (`#top-progress`) | YES |
-| 6 | Bottom copyright with Index link | YES |
+| 6 | Bottom copyright with Index + Report a Bug links | YES |
 | 7 | Top nav bar (`slides-topnav`) | YES |
 | 8 | Google Analytics tag (G-9TZCPED97E) | YES |
 | 9 | Title slide with `<h1>`, subtitle, navigation instructions | YES |
