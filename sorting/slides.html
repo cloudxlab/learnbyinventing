@@ -125,7 +125,6 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-<div style="font-size:1.3em;">
 <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
 <p>Write <code>my_sort(arr)</code> that sorts a list of numbers in ascending order <em>without</em> using <code>sorted()</code> or <code>.sort()</code>. It must run in <strong>O(n·log n)</strong> time, so it should handle 100,000 numbers in well under a second or two. Bubble sort won't make the cut.</p>
 <p>Bonus: when you know the values are small whole numbers (like ages 0–120), you can beat O(n·log n) by never comparing elements at all.</p>
@@ -136,14 +135,13 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 my_sort([])                   # []
 my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 <p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
-</div>
 </div></div>
       </section>
 
 
 
       <!-- Part 0: Warm-Up -->
-      <section id="part1">
+      <section id="part0">
         <h2>Part 0: Warm-Up</h2>
 
       </section>
@@ -166,6 +164,12 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Loop through indices 0 to <code>len(lst) - 2</code>. Compare <code>lst[i]</code> with <code>lst[i+1]</code>.
+</details>
+<details><summary>Hint 2</summary>
+If any pair is out of order (<code>lst[i] &gt; lst[i+1]</code>), return <code>False</code> immediately. If you finish the loop, return <code>True</code>.
+</details>
 
         </div>
       </section>
@@ -187,6 +191,9 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint</summary>
+Python lets you swap two variables in one line: <code>a, b = b, a</code>. Apply the same idea to <code>lst[i]</code> and <code>lst[j]</code>.
+</details>
 
         </div>
       </section>
@@ -196,7 +203,7 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 
       <!-- Part 1: Comparing Neighbors -->
-      <section id="part2">
+      <section id="part1">
         <h2>Part 1: Comparing Neighbors</h2>
 
         <div class="slide-content"><p>The idea: walk through the list comparing <strong>neighbors</strong>. Whenever the left neighbor is bigger, swap them. What happens to the largest value after one full pass?</p>
@@ -221,6 +228,9 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint</summary>
+Loop <code>i</code> from 0 to <code>len(lst) - 2</code>. If <code>lst[i] &gt; lst[i+1]</code>, swap them. The largest element will "bubble" to the end because it wins every comparison.
+</details>
 
         </div>
       </section>
@@ -249,6 +259,12 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Call <code>bubble_pass</code> repeatedly. You need at most <code>len(lst) - 1</code> passes.
+</details>
+<details><summary>Hint 2</summary>
+Track whether any swaps happened during a pass. If a pass makes zero swaps, the list is already sorted and you can stop early.
+</details>
 
         </div>
       </section>
@@ -300,16 +316,40 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 <p>This is why we need better ideas.</p>
 
+<details><summary>Hint</summary>
+Add a counter variable that starts at 0. Increment it every time you compare two elements. Return it at the end.
+</details>
 
         </div>
       </section>
 
 
 
+      <section>
+        <h3>Quick Check — Bubble Sort Complexity</h3>
+        <div class="slide-content">
+
+        <p>If bubble sort takes about 50 seconds to sort 10,000 numbers, roughly how long would it take to sort 100,000 numbers (10x more)?</p>
+
+        <p><strong>A.</strong> About 500 seconds (10x longer)</p>
+
+        <p><strong>B.</strong> About 5,000 seconds (100x longer)</p>
+
+        <p><strong>C.</strong> About 50,000 seconds (1000x longer)</p>
+
+        <p><strong>D.</strong> About the same — 50 seconds</p>
+
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>Answer: B.</strong> Bubble sort is O(n²). When n grows 10x, the time grows 10² = 100x. So 50 × 100 = 5,000 seconds — over an hour.</p>
+        </div>
+
+        </div>
+      </section>
+
 
 
       <!-- Part 2: Sorting Like Playing Cards -->
-      <section id="part3">
+      <section id="part2">
         <h2>Part 2: Sorting Like Playing Cards</h2>
 
         <div class="slide-content"><p>Think about how you sort playing cards in your hand: you pick up cards one at a time, and <strong>insert</strong> each new card into its correct place among the cards you already hold — which are always sorted.</p>
@@ -334,6 +374,12 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Start at position <code>k</code>. While the element to the left is larger, swap and move one position left.
+</details>
+<details><summary>Hint 2</summary>
+Use a <code>while</code> loop: <code>while j &gt; 0 and lst[j-1] &gt; lst[j]: swap(lst, j-1, j); j -= 1</code>.
+</details>
 
         </div>
       </section>
@@ -355,6 +401,9 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint</summary>
+Loop <code>k</code> from 1 to <code>len(lst) - 1</code>, calling <code>insert_card(lst, k)</code> each time. After each call, <code>lst[0:k+1]</code> is sorted.
+</details>
 
         </div>
       </section>
@@ -374,6 +423,9 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 <p>Insertion sort is O(n²) in the worst case, but <strong>O(n) when the data is nearly sorted</strong> — which is why real-world sorts (like Python's Timsort) use it as a building block.</p>
 
+<details><summary>Hint</summary>
+When the list is already sorted, each new card is already in the right place, so the inner while loop does zero swaps — just one comparison per card, giving roughly n comparisons total.
+</details>
 
         </div>
       </section>
@@ -381,7 +433,7 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 
       <section>
-        <h3>Stability in Sorting</h3>
+        <h3>Quick Check — Stability in Sorting</h3>
         <div class="slide-content">
 
         <p>Two students both scored 85: Alice (entered first) and Bob (entered second). After sorting by score, a <em>stable</em> sort guarantees Alice still appears before Bob. Which of the following is true?</p>
@@ -395,6 +447,9 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
         <p><strong>D.</strong> Quicksort is stable but bubble sort is not</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>Answer: A.</strong> Bubble sort and insertion sort only swap adjacent elements and never swap equal elements past each other, so they preserve the original order of ties. Quicksort's partitioning can move equal elements across each other, making it unstable.</p>
+        </div>
 
         </div>
       </section>
@@ -404,7 +459,7 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 
       <!-- Part 3: Split, Sort, Combine -->
-      <section id="part4">
+      <section id="part3">
         <h2>Part 3: Split, Sort, Combine</h2>
 
         <div class="slide-content"><p>Here is a completely different idea, and it comes from a question: <em>If I hand you <strong>two already-sorted lists</strong>, can you combine them into one sorted list faster than sorting from scratch?</em></p>
@@ -431,6 +486,12 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 
 <p>How many comparisons did merging cost, roughly, for lists of total length n?</p>
 
+<details><summary>Hint 1</summary>
+Use two index variables, one for each list. Compare the front elements; append the smaller one to the result and advance that index.
+</details>
+<details><summary>Hint 2</summary>
+When one list runs out, append the entire remainder of the other list. Total comparisons are at most n - 1.
+</details>
 
         </div>
       </section>
@@ -455,6 +516,12 @@ my_sort([3, -1, 2, -7])       # [-7, -1, 2, 3]</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Base case: if the list has 0 or 1 elements, return it as-is (it is already sorted).
+</details>
+<details><summary>Hint 2</summary>
+Split at <code>mid = len(lst) // 2</code>. Recursively sort <code>lst[:mid]</code> and <code>lst[mid:]</code>, then <code>merge</code> the two results.
+</details>
 
         </div>
       </section>
@@ -499,7 +566,7 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <!-- Part 4: Sort by Splitting Smarter -->
-      <section id="part5">
+      <section id="part4">
         <h2>Part 4: Sort by Splitting Smarter</h2>
 
         <div class="slide-content"><p>Part 3 splits blindly down the middle, then does its work while merging. What if you did the work <strong>while splitting</strong>, so no merge is needed?</p>
@@ -526,6 +593,12 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 <p>Write <code>partition_01(lst)</code> that rearranges in place. (Order <em>within</em> the 0-group and 1-group may end up anything.)</p>
 
+<details><summary>Hint 1</summary>
+Use two pointers: <code>left</code> starts at 0, <code>right</code> starts at the end. Move <code>left</code> forward past 0s, <code>right</code> backward past 1s.
+</details>
+<details><summary>Hint 2</summary>
+When <code>left</code> points to a 1 and <code>right</code> points to a 0 (and <code>left &lt; right</code>), swap them and continue.
+</details>
 
         </div>
       </section>
@@ -554,6 +627,12 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+The pivot is <code>lst[hi]</code>. Scan from <code>lo</code> to <code>hi - 1</code>. Maintain a boundary <code>store_index</code> that separates small elements (left) from large ones (right).
+</details>
+<details><summary>Hint 2</summary>
+For each element <code>&lt; pivot</code>, swap it to <code>store_index</code> and increment <code>store_index</code>. After the loop, swap the pivot (<code>lst[hi]</code>) to <code>store_index</code>. Return <code>store_index</code>.
+</details>
 
         </div>
       </section>
@@ -577,6 +656,12 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 <p><strong>Think about:</strong> merge sort needed extra memory for merging. How much extra memory does quick sort need?</p>
 
+<details><summary>Hint 1</summary>
+Base case: if <code>lo &gt;= hi</code>, return (0 or 1 elements are already sorted).
+</details>
+<details><summary>Hint 2</summary>
+Call <code>partition(lst, lo, hi)</code> to get pivot index <code>p</code>. Then recursively sort <code>pivot_sort(lst, lo, p - 1)</code> and <code>pivot_sort(lst, p + 1, hi)</code>.
+</details>
 
         </div>
       </section>
@@ -584,7 +669,7 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <section>
-        <h3>Quicksort Worst Case</h3>
+        <h3>Quick Check — Quicksort Worst Case</h3>
         <div class="slide-content">
 
         <p>Quicksort is O(n·log n) on average, but what input causes its worst-case O(n²) performance when always picking the first element as pivot?</p>
@@ -598,6 +683,9 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
         <p><strong>D.</strong> A very short list (fewer than 5 elements)</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>Answer: B.</strong> When the list is already sorted and you always pick the first element as pivot, every partition puts 0 elements on one side and n-1 on the other. You get n levels of recursion instead of log(n), making it O(n²).</p>
+        </div>
 
         </div>
       </section>
@@ -607,7 +695,7 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <!-- Part 5: Sorting Without Comparing -->
-      <section id="part6">
+      <section id="part5">
         <h2>Part 5: Sorting Without Comparing</h2>
 
         <div class="slide-content"><p>A puzzle: You must sort the <strong>ages of a billion people</strong>. Ages are whole numbers between 0 and 200. Your Part 3 algorithm would need ~30 billion comparisons. Can you sort them with <strong>zero comparisons between elements</strong>?</p>
@@ -630,6 +718,9 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 </code></pre>
 </div>
 
+<details><summary>Hint</summary>
+Create a list of zeros with length <code>max_value + 1</code>. Loop through <code>ages</code> and increment <code>counts[age]</code> for each element.
+</details>
 
         </div>
       </section>
@@ -656,6 +747,9 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 <li>Why can't you use this trick to sort arbitrary floats or strings?</li>
 </ul>
 
+<details><summary>Hint</summary>
+Loop <code>v</code> from 0 to <code>max_value</code>. Append <code>v</code> to the result list <code>counts[v]</code> times (e.g., <code>result.extend([v] * counts[v])</code>).
+</details>
 
         </div>
       </section>
@@ -663,7 +757,7 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <section>
-        <h3>When O(n) Sorting Is Possible</h3>
+        <h3>Quick Check — When O(n) Sorting Is Possible</h3>
         <div class="slide-content">
 
         <p>Counting sort can sort a billion ages in O(n) time. Why can't we always use it instead of O(n·log n) algorithms like merge sort?</p>
@@ -677,6 +771,9 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
         <p><strong>D.</strong> Counting sort uses too much memory for any list larger than 1,000 elements</p>
 
+        <div class="fragment" data-fragment-index="0">
+          <p><strong>Answer: B.</strong> Counting sort needs an array of size k (the range of values). For ages 0-200, that is just 201 slots. But for arbitrary floats, the "range" is effectively infinite — you cannot create a counts array large enough. That is why comparison-based O(n·log n) sorts remain essential.</p>
+        </div>
 
         </div>
       </section>
@@ -686,7 +783,7 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <!-- Part 6: The Race -->
-      <section id="part7">
+      <section id="part6">
         <h2>Part 6: The Race</h2>
 
         <div class="slide-content"><p>Time to put every algorithm you invented on the same track.</p>
@@ -729,10 +826,8 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
 
-
-
       <!-- Part 7: Summary -->
-      <section id="part8">
+      <section id="part7">
         <h2>Part 7: Summary</h2>
 
       </section>
@@ -740,78 +835,78 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
 
-            <th>Algorithm</th>
+            <th>You built</th>
 
-            <th>Idea you discovered</th>
+            <th>Real name</th>
 
             <th>Time</th>
 
-            <th>Notes</th>
+            <th>Key idea you discovered</th>
 
           </tr>
 
           <tr>
+
+            <td><code>pass_sort</code></td>
 
             <td>Bubble sort</td>
 
-            <td>swap out-of-order neighbors, repeat</td>
-
             <td>O(n²)</td>
 
-            <td>largest bubbles to the end each pass</td>
+            <td>swap out-of-order neighbors, repeat; largest bubbles to end each pass</td>
 
           </tr>
 
           <tr>
+
+            <td><code>card_sort</code></td>
 
             <td>Insertion sort</td>
 
-            <td>insert each card into a sorted hand</td>
-
             <td>O(n²), <strong>O(n) if nearly sorted</strong></td>
 
-            <td>building block of Timsort</td>
+            <td>insert each card into a sorted hand; building block of Timsort</td>
 
           </tr>
 
           <tr>
+
+            <td><code>split_sort</code></td>
 
             <td>Merge sort</td>
 
-            <td>sort halves recursively, merge</td>
-
             <td>O(n·log n)</td>
 
-            <td>needs extra memory for merging</td>
+            <td>sort halves recursively, merge; needs extra memory</td>
 
           </tr>
 
           <tr>
+
+            <td><code>pivot_sort</code></td>
 
             <td>Quick sort</td>
 
-            <td>partition around a pivot, recurse</td>
-
             <td>O(n·log n) average</td>
 
-            <td>in place; partition puts pivot in final spot</td>
+            <td>partition around a pivot, recurse; in place</td>
 
           </tr>
 
           <tr>
 
-            <td>Counting sort</td>
+            <td><code>tally_sort</code></td>
 
-            <td>count values, rebuild</td>
+            <td>Counting sort</td>
 
             <td>O(n + k)</td>
 
-            <td>no comparisons — only for small integer ranges</td>
+            <td>count values, rebuild; no comparisons — only for small integer ranges</td>
 
           </tr>
 
@@ -826,23 +921,51 @@ level 2:     [n/4] [n/4]    [n/4] [n/4]              -&gt; merged with ~n compar
 </div>
       </section>
 
+
+
+      <!-- Part 8: Reflection — What Did You Just Build? -->
+      <section id="part8">
+        <h2>Part 8: Reflection — What Did You Just Build?</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>You invented five sorting algorithms. In one sentence each, what is the core idea behind bubble sort, insertion sort, and merge sort?</li>
+<li>Why is O(n·log n) so much faster than O(n²) for large lists? What makes the divide-and-conquer approach (merge sort, quick sort) achieve this speedup?</li>
+<li>Insertion sort is O(n²) in the worst case but O(n) when data is nearly sorted. Why does this matter in practice?</li>
+<li>Counting sort bypasses the O(n·log n) barrier by not comparing elements at all. What assumption does it need, and when does that assumption break down?</li>
+<li>If you had to sort a million names alphabetically, which of your five algorithms would you pick, and why?</li>
+</ol>
+
+
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
         <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Part 0: Warm-Up</a></li>
-            <li><a href="#/part2">Part 1: Comparing Neighbors</a></li>
-            <li><a href="#/part3">Part 2: Sorting Like Playing Cards</a></li>
-            <li><a href="#/part4">Part 3: Split, Sort, Combine</a></li>
-            <li><a href="#/part5">Part 4: Sort by Splitting Smarter</a></li>
-            <li><a href="#/part6">Part 5: Sorting Without Comparing</a></li>
-            <li><a href="#/part7">Part 6: The Race</a></li>
-            <li><a href="#/part8">Part 7: Summary</a></li>
+            <li><a href="#/part0">Part 0: Warm-Up</a></li>
+            <li><a href="#/part1">Part 1: Comparing Neighbors</a></li>
+            <li><a href="#/part2">Part 2: Sorting Like Playing Cards</a></li>
+            <li><a href="#/part3">Part 3: Split, Sort, Combine</a></li>
+            <li><a href="#/part4">Part 4: Sort by Splitting Smarter</a></li>
+            <li><a href="#/part5">Part 5: Sorting Without Comparing</a></li>
+            <li><a href="#/part6">Part 6: The Race</a></li>
+            <li><a href="#/part7">Part 7: Summary</a></li>
+            <li><a href="#/part8">Part 8: Reflection — What Did You Just Build?</a></li>
           </ol>
         </div></div>
       </section>
-
 
 
 
