@@ -31,9 +31,15 @@
   },
   {
     "slide_index": 5,
-    "content_id": "fa7cbc1973",
-    "slide_text": "Prior Probability P(Play = Yes) = 9/14. In probability and machine learning, this is called a \"prior\" probability. Why is it called \"prior\"? A. Because it was computed before computers existed B. Because it uses the first column of the data C. It's what you'd predict *before* looking at any features — your default belief based only on past outcomes D. It always equals 0.5",
-    "fragments": []
+    "content_id": "c77867266d",
+    "slide_text": "Quick Check — Prior Probability P(Play = Yes) = 9/14. In probability and machine learning, this is called a \"prior\" probability. Why is it called \"prior\"? A. Because it was computed before computers existed B. Because it uses the first column of the data C. It's what you'd predict *before* looking at any features — your default belief based only on past outcomes D. It always equals 0.5",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2c514dbde4",
+        "text": "Answer: C. \"Prior\" means before seeing any evidence . It is your baseline belief, computed purely from how often each label appears in the data."
+      }
+    ]
   },
   {
     "slide_index": 6,
@@ -61,20 +67,20 @@
   },
   {
     "slide_index": 10,
-    "content_id": "da08cb8ef6",
-    "slide_text": "Code It: `count_where` Now let's automate the counting. Write a function that counts how many rows match a set of conditions. [code block]",
+    "content_id": "d063c62369",
+    "slide_text": "Code It: `count_where` Now let's automate the counting. Write a function that counts how many rows match a set of conditions. [code block] Hint 1 Loop through every row in . For each row, check whether all key-value pairs in match the row. Hint 2 Use Python's built-in: . If that is , increment your counter. Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 11,
-    "content_id": "3d55baa814",
-    "slide_text": "Code It: `probability` Write a function that computes a conditional probability using . [code block]",
+    "content_id": "8981316e4b",
+    "slide_text": "Code It: `probability` Write a function that computes a conditional probability using . [code block] Hint 1 P(event | given) = (count of rows matching both event and given) / (count of rows matching given). You already have . Hint 2 Merge the two dicts: gives a single conditions dict for the numerator. The denominator is just . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 12,
-    "content_id": "bf442a2241",
-    "slide_text": "Predict with One Feature Write a function that predicts the class using a single feature: [code block]",
+    "content_id": "5907ffce60",
+    "slide_text": "Predict with One Feature Write a function that predicts the class using a single feature: [code block] Hint 1 Loop over each label. For each, compute P(feature_value | label) using your function, and P(label) = count_where(data, {label_col: label}) / len(data). Hint 2 Store each label's score in a dict. Then return the label with the maximum score: . Solution [code block]",
     "fragments": []
   },
   {
@@ -97,14 +103,20 @@
   },
   {
     "slide_index": 16,
-    "content_id": "d8633bc350",
-    "slide_text": "The Big Assumption In Exercise 3.1, you multiplied P(Sunny | Yes) × P(Hot | Yes). This multiplication is only mathematically valid under a specific assumption. What is it? A. Outlook and Temperature must have the same number of possible values B. Outlook and Temperature are *independent* given the label — knowing one doesn't tell you about the other (once you already know whether we played) C. The dataset must have at least 100 rows D. All feature probabilities must be greater than 0.5",
-    "fragments": []
+    "content_id": "a8d215fe9c",
+    "slide_text": "Quick Check — The Big Assumption In Exercise 3.1, you multiplied P(Sunny | Yes) × P(Hot | Yes). This multiplication is only mathematically valid under a specific assumption. What is it? A. Outlook and Temperature must have the same number of possible values B. Outlook and Temperature are *independent* given the label — knowing one doesn't tell you about the other (once you already know whether we played) C. The dataset must have at least 100 rows D. All feature probabilities must be greater than 0.5",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "d475e02f8a",
+        "text": "Answer: B. This is the naive in Naive Bayes. We assume features are conditionally independent given the class label, so the joint probability factors into a product of individual probabilities. In reality features are often correlated, but the classifier works surprisingly well anyway."
+      }
+    ]
   },
   {
     "slide_index": 17,
-    "content_id": "1d75f5de2c",
-    "slide_text": "Code It: `predict_two_features` Write a function that predicts using two features: [code block]",
+    "content_id": "138d3b9ae0",
+    "slide_text": "Code It: `predict_two_features` Write a function that predicts using two features: [code block] Hint 1 This is almost identical to — you just multiply two conditional probabilities instead of one before multiplying by the prior. Solution [code block]",
     "fragments": []
   },
   {
@@ -121,8 +133,8 @@
   },
   {
     "slide_index": 20,
-    "content_id": "ca1b38d4d3",
-    "slide_text": "Generalize to N Features You've seen the pattern: for each label, multiply the prior by the conditional probability of each feature. Now write the general version: [code block]",
+    "content_id": "795810df2b",
+    "slide_text": "Generalize to N Features You've seen the pattern: for each label, multiply the prior by the conditional probability of each feature. Now write the general version: [code block] Hint 1 Start with . Then loop over the features dict: for each pair, multiply score by . Hint 2 This is just your code with a loop replacing the two hard-coded feature lookups. Solution [code block]",
     "fragments": []
   },
   {
@@ -133,92 +145,128 @@
   },
   {
     "slide_index": 22,
+    "content_id": "1080bdd977",
+    "slide_text": "Quick Check — The General Formula Your function computes, for each class [math]: [math]. What does the [math] symbol mean in plain English? A. Add up all the feature probabilities B. Take the average of all the feature probabilities C. Multiply all the feature probabilities together D. Pick the largest feature probability",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "5cc577cacc",
+        "text": "Answer: C. The big-pi symbol [math] means \"product\" — multiply every term together, just like [math] means \"sum.\" Each feature's conditional probability is multiplied into the running score."
+      }
+    ]
+  },
+  {
+    "slide_index": 23,
     "content_id": "0176f0a06e",
     "slide_text": "Part 5: The Zero-Frequency Problem Your algorithm has a fatal flaw. Let's find it and fix it.",
     "fragments": []
   },
   {
-    "slide_index": 23,
+    "slide_index": 24,
     "content_id": "05982ee9b3",
     "slide_text": "Break Your Code Look at the data: Outlook = Overcast appears on days 3, 7, 12, 13. What is the Play label for all of those days? Now answer: What is P(Overcast | No)? If you try to predict for a new day with Outlook = Overcast and any other features, what happens to Score(No)? Is this a reasonable prediction? What if you had Overcast + Strong Wind + High Humidity — conditions that historically lean toward No?",
     "fragments": []
   },
   {
-    "slide_index": 24,
-    "content_id": "13cf81b7a4",
-    "slide_text": "Fix It: Laplace Smoothing The fix is beautifully simple: pretend you've seen every combination at least once. The idea: Instead of computing P(Overcast | No) = 0/5, add 1 to the numerator (pretend you saw one extra Overcast-No day) and add k to the denominator (where k is the number of possible values for that feature). For Outlook, k = 3 (Sunny, Overcast, Rainy). So: P_smooth(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125 Tasks: Compute P_smooth(Sunny | No) with k=3. Compare to the unsmoothed version. Write : [code block]",
-    "fragments": []
-  },
-  {
     "slide_index": 25,
-    "content_id": "b6ca9bcda0",
-    "slide_text": "Update Your Predict Function Write — like your from Part 4, but using instead of . You'll need to know k (number of possible values) for each feature. Compute this from the data. [code block]",
+    "content_id": "bf71ad5abf",
+    "slide_text": "Fix It: Laplace Smoothing The fix is beautifully simple: pretend you've seen every combination at least once. The idea: Instead of computing P(Overcast | No) = 0/5, add 1 to the numerator (pretend you saw one extra Overcast-No day) and add k to the denominator (where k is the number of possible values for that feature). For Outlook, k = 3 (Sunny, Overcast, Rainy). So: P_smooth(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125 Tasks: Compute P_smooth(Sunny | No) with k=3. Compare to the unsmoothed version. Write : [code block] Hint 1 The numerator is . The denominator is . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 26,
-    "content_id": "524b88bb70",
-    "slide_text": "Why Smoothing Works Laplace smoothing adds 1 to every count. What would happen if you added 1000 instead of 1? A. The classifier would become more accurate because it has more \"data\" B. Nothing would change — the relative ordering of scores stays the same C. All smoothed probabilities would approach 1/k (uniform) — the fake counts would overwhelm the real data, and the classifier would ignore the actual evidence D. Python would crash with an overflow error",
+    "content_id": "c502d9e501",
+    "slide_text": "Update Your Predict Function Write — like your from Part 4, but using instead of . You'll need to know k (number of possible values) for each feature. Compute this from the data. [code block] Hint 1 To find k for a feature, collect all distinct values: . Then call instead of . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 27,
+    "content_id": "7a8c619cef",
+    "slide_text": "Quick Check — Why Smoothing Works Laplace smoothing adds 1 to every count. What would happen if you added 1000 instead of 1? A. The classifier would become more accurate because it has more \"data\" B. Nothing would change — the relative ordering of scores stays the same C. All smoothed probabilities would approach 1/k (uniform) — the fake counts would overwhelm the real data, and the classifier would ignore the actual evidence D. Python would crash with an overflow error",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "0646d171cc",
+        "text": "Answer: C. With a huge smoothing value, the added fake counts dwarf the real counts, making every conditional probability close to 1/k. The classifier effectively forgets the training data. That is why the smoothing parameter (often called alpha) is typically kept small, like 1."
+      }
+    ]
+  },
+  {
+    "slide_index": 28,
     "content_id": "c1706b97f6",
     "slide_text": "Part 6: The NaiveBayes Class You have all the pieces. Now wrap them into a reusable class with the standard ML interface: and .",
     "fragments": []
   },
   {
-    "slide_index": 28,
+    "slide_index": 29,
     "content_id": "bf0eb533fb",
     "slide_text": "Design the Interface Before writing code, think about what needs to compute and store so that can work later without re-scanning all the training data. Think about: What are the possible labels? (e.g., Yes and No) For each label, how many training examples had that label? (the priors) For each label AND each feature AND each feature value, how many times did that combination appear? (the conditional counts) For each feature, how many distinct values does it have? (needed for smoothing) Your design: After , should contain: self.labels = ... self.label_counts = ... self.feature_counts = ... self.feature_values = ... self.total = ...",
     "fragments": []
   },
   {
-    "slide_index": 29,
-    "content_id": "ce19c18073",
-    "slide_text": "Implement `NaiveBayes` Implement the full class: [code block]",
+    "slide_index": 30,
+    "content_id": "346318c6db",
+    "slide_text": "Implement `NaiveBayes` Implement the full class: [code block] Hint 1 In , just store . The heavy work happens in . Hint 2 In , loop once through and together. Count how many times each label appears (), and for each label + feature + value, increment a nested dict (). Also collect every distinct value per feature (). Return so can be chained. Hint 3 In , for each row compute each label's score = (label_count / total) * product of smoothed conditional probabilities. Smoothed P = (count + smoothing) / (label_count + smoothing * k).",
     "fragments": []
   },
   {
-    "slide_index": 30,
+    "slide_index": 31,
     "content_id": "a1f3c58074",
     "slide_text": "A Bigger Dataset Test your class on a spam detection problem. Each email is represented by the presence/absence of certain words: Tasks: Train your on this dataset. Compute training accuracy. Predict on these new emails: [code block] Do the predictions match your intuition?",
     "fragments": []
   },
   {
-    "slide_index": 31,
+    "slide_index": 32,
     "content_id": "3d541d1d55",
     "slide_text": "Part 7: Bonus Challenges",
     "fragments": []
   },
   {
-    "slide_index": 32,
-    "content_id": "5a6a85680c",
-    "slide_text": "Predict Probabilities Right now, returns just the winning label. Add a method that returns the probability of each class. To convert scores to probabilities, divide each score by the sum of all scores: For example, if Score(Yes) = 0.03 and Score(No) = 0.07, then: P(Yes) = 0.03 / (0.03 + 0.07) = 0.3 P(No) = 0.07 / (0.03 + 0.07) = 0.7 [code block] Test: The probabilities for each row should sum to 1.0.",
+    "slide_index": 33,
+    "content_id": "408586e776",
+    "slide_text": "Predict Probabilities Right now, returns just the winning label. Add a method that returns the probability of each class. To convert scores to probabilities, divide each score by the sum of all scores: For example, if Score(Yes) = 0.03 and Score(No) = 0.07, then: P(Yes) = 0.03 / (0.03 + 0.07) = 0.3 P(No) = 0.07 / (0.03 + 0.07) = 0.7 [code block] Test: The probabilities for each row should sum to 1.0. Hint Reuse the scoring logic from , but instead of returning the max, divide each score by the total of all scores: .",
     "fragments": []
   },
   {
-    "slide_index": 33,
+    "slide_index": 34,
     "content_id": "758f5bb4f4",
     "slide_text": "Compare with scikit-learn Scikit-learn has a built-in . Compare your results: [code block] Do the predictions match? If not, investigate why.",
     "fragments": []
   },
   {
-    "slide_index": 34,
+    "slide_index": 35,
     "content_id": "187e5c487b",
     "slide_text": "What About Continuous Features? Your classifier works with categorical features (Sunny, Rainy, etc.). But what if a feature is a number, like actual temperature (72°F, 85°F, etc.)? Why can't you directly count P(Temperature=72.3 | Yes)? (How many training rows have that exact value?) One approach: assume numerical features follow a bell curve (Gaussian distribution) within each class. Instead of counting, you'd compute the mean and standard deviation per class, then use the bell curve to get the probability. Another approach: bin the numbers into categories (e.g., Cold: 60, Mild: 60-80, Hot: 80) and use your existing categorical classifier. Try the binning approach on a dataset of your choice.",
     "fragments": []
   },
   {
-    "slide_index": 35,
-    "content_id": "93c06ac425",
-    "slide_text": "What you just built: You started by counting rows in a table. From there, you: Discovered that prior probability (just counting labels) gives a baseline prediction. Found that conditional probabilities (counting features within each class) improve predictions. Learned to combine multiple features by multiplying their conditional probabilities — under the naive independence assumption . Discovered and fixed the zero-frequency problem with Laplace smoothing. Wrapped it all in a reusable class with and . This is the Naive Bayes classifier — one of the oldest and most practical algorithms in machine learning. Despite its \"naive\" assumption, it excels at text classification (spam detection, sentiment analysis), medical diagnosis, and any problem with many categorical features. The mathematical name for what you computed is Bayes' theorem : updating a prior belief using evidence. You invented it from scratch.",
+    "slide_index": 36,
+    "content_id": "6c4f244b5a",
+    "slide_text": "What You Just Invented What you built Its real name Count labels, pick the majority Prior probability (base rate) P(feature | class) from counting rows Conditional / likelihood probability Prior likelihood pick highest Bayes' theorem (MAP decision rule) Multiply per-feature likelihoods independently Naive independence assumption Add 1 to every count to avoid zeros Laplace smoothing (additive smoothing) + Categorical Naive Bayes classifier Normalize scores to sum to 1 Posterior probability ()",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "bbacf950aa",
+        "text": "Nobody taught you these you derived them yourself . The next time you see \"Naive Bayes\", \"prior\", or \"Laplace smoothing\", you ll know exactly what s happening under the hood."
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "ba6bc3323c",
+    "slide_text": "Part 8: Reflection — What Did You Just Build?",
     "fragments": []
   },
   {
-    "slide_index": 36,
-    "content_id": "053f428975",
-    "slide_text": "Index Part 1: Counting and Probability Part 2: One Feature — Does Weather Help? Part 3: Two Features — Combining Evidence Part 4: N Features — The General Algorithm Part 5: The Zero-Frequency Problem Part 6: The NaiveBayes Class Part 7: Bonus Challenges",
+    "slide_index": 38,
+    "content_id": "408ccfa4c9",
+    "slide_text": "Reflection Answer these questions in your own words: What is a prior probability? Why is it useful even before you look at any features? What does \"naive\" mean in Naive Bayes? Is the assumption literally true for our weather data? Does it matter? Why does multiplying many small probabilities together still produce a useful prediction? What matters — the absolute values or the relative ordering? What would happen without Laplace smoothing? Give a concrete example from the tennis dataset. How is different from ? Which one looks at training data, and which one uses the stored counts? Where else could Naive Bayes be useful? Think of a problem from your own life where you classify something based on several independent clues.",
+    "fragments": []
+  },
+  {
+    "slide_index": 39,
+    "content_id": "52581a7462",
+    "slide_text": "Index Part 1: Counting and Probability Part 2: One Feature — Does Weather Help? Part 3: Two Features — Combining Evidence Part 4: N Features — The General Algorithm Part 5: The Zero-Frequency Problem Part 6: The NaiveBayes Class Part 7: Bonus Challenges Part 8: Reflection — What Did You Just Build?",
     "fragments": []
   }
 ]
