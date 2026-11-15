@@ -234,6 +234,14 @@ Reveal.on('ready', function() { updateProgress(); });
 <script src="narration-player.js"></script>
 ```
 
+The narration player (`tools/narration/narration-player.js`, copied to each chapter directory) provides:
+- **Mute/unmute button** (top-right, remembers preference in localStorage)
+- **Replay button**
+- **Equalizer bars** — animated bars shown while audio is playing
+- **Buffering indicator** — spinning ring around the mute button while audio is loading (uses `waiting`/`canplay`/`playing` audio events); equalizer bars are hidden during buffering
+- **Autoplay unlock** — queues audio until first user interaction (click/key/touch)
+- **Fragment support** — plays separate audio for Reveal.js fragments (`slide-NN-frag-N.mp3`)
+
 ---
 
 ## 5. Summary Checklist
