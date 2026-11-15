@@ -13,8 +13,8 @@
   },
   {
     "slide_index": 2,
-    "content_id": "2d4ccbbce4",
-    "slide_text": "Part 1: The Prediction Error Problem Imagine you're building a model that predicts house prices (in lakhs) for 5 different houses at a time. You want to compute the overall error of this model — a single number — so that you can try tweaking each individual weight and see how that weight impacts the overall error.",
+    "content_id": "c896dc9d67",
+    "slide_text": "Part 1: The Prediction Error Problem Imagine you are building a model that predicts house prices (in lakhs) for 5 different houses at a time. You want to compute the overall error of this model — a single number — so that you can try tweaking each individual weight and see how that weight affects the overall error.",
     "fragments": []
   },
   {
@@ -25,14 +25,14 @@
   },
   {
     "slide_index": 4,
-    "content_id": "45a09b31e6",
-    "slide_text": "Can We Just Sum the Differences? The simplest idea: for each house, compute , then add them all up. Try it. What number do you get? Does that number accurately reflect how wrong the predictions are?",
+    "content_id": "bb72f87b54",
+    "slide_text": "Exercise 1.1 — Can We Just Sum the Differences? The simplest idea: for each house, compute , then add them all up. Try it. What number do you get? Does that number accurately reflect how wrong the predictions are? Hint 1 Compute each difference: 0.9 - 1.0 = -0.1, then 2.0 - 1.1 = 0.9, and so on for all five houses. Then add all five numbers. Hint 2 The sum is -0.5. But every single prediction is off by at least 0.1 — so the total error should be positive, not negative. Some positive and negative errors cancelled each other out.",
     "fragments": []
   },
   {
     "slide_index": 5,
-    "content_id": "d39ffd4116",
-    "slide_text": "Fix the Cancellation The problem is clear: positive and negative differences cancel each other out. Think of at least two different mathematical operations that would prevent this cancellation — operations that make every error contribute positively to the total, regardless of whether the prediction was too high or too low. Idea 1: Idea 2:",
+    "content_id": "0e81d439c3",
+    "slide_text": "Exercise 1.2 — Fix the Cancellation The problem is clear: positive and negative differences cancel each other out. Think of at least two different mathematical operations that would prevent this cancellation — operations that make every error contribute positively to the total, regardless of whether the prediction was too high or too low. Idea 1: Idea 2: Hint 1 What did you learn in maths class about making negative numbers positive? There are at least two common ways. Hint 2 One approach: take the absolute value of each difference (drop the sign). Another: square each difference (negative times negative gives positive).",
     "fragments": []
   },
   {
@@ -43,146 +43,206 @@
   },
   {
     "slide_index": 7,
+    "content_id": "b7ad157648",
+    "slide_text": "Quick Check 1 — Error Cancellation If your model's predictions are and the actual values are , what is the sum of the raw differences ()? A. 3.0 B. -1.0 C. 0.0 D. 1.0",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "377b883429",
+        "text": "Answer: B. The differences are +1.0, -2.0, and 0.0. Their sum is -1.0. The model is clearly wrong on two houses, yet the total hides that because positive and negative errors cancel."
+      }
+    ]
+  },
+  {
+    "slide_index": 8,
     "content_id": "20fcfdc225",
     "slide_text": "Part 2: Two Loss Functions",
     "fragments": []
   },
   {
-    "slide_index": 8,
-    "content_id": "a738733f5b",
-    "slide_text": "Let's give proper names and formulas to your two ideas. Mean Squared Error (MSE): $[math][math][math][math]y_i[math]\\hat{y}_i$ is the predicted value. Below are implementations of both. Study them — you'll use them to compare behavior.",
-    "fragments": []
-  },
-  {
     "slide_index": 9,
-    "content_id": "5b7bd28dc0",
-    "slide_text": "Compare on the House Data Compute MSE and MAE on the original house data. Then imagine house 5's prediction goes wildly wrong — say instead of . Compute both metrics again. Which metric changes more dramatically with the outlier? Why does that happen?",
+    "content_id": "2f714d3b47",
+    "slide_text": "Let's give proper names and formulas to your two ideas. Mean Squared Error (MSE): $[math][math][math][math]y_i[math]\\hat{y}_i$ is the predicted value. Below are implementations of both. Study them — you will use them to compare behaviour.",
     "fragments": []
   },
   {
     "slide_index": 10,
-    "content_id": "f2ff1f19d4",
-    "slide_text": "Drawbacks of Each You've just seen one drawback of MSE. Let's think more carefully: MSE problem: When a single prediction is very wrong (an outlier), what happens to the MSE? Is this good or bad for training a model? MAE — any issues? Think about the shape of as a function. Is there anything unusual about it at ? (We'll investigate this in the next part.) MSE drawback: Possible MAE issue:",
+    "content_id": "901b1c9132",
+    "slide_text": "Exercise 2.1 — Compare on the House Data Compute MSE and MAE on the original house data. Then imagine house 5's prediction goes wildly wrong — say instead of . Compute both metrics again. Which metric changes more dramatically with the outlier? Why does that happen? Hint 1 For the normal data, compute each squared error and each absolute error, then average. For the outlier scenario, only house 5 changes — its error jumps to 97. Hint 2 MSE squares each error before averaging. Squaring 97 gives 9409 — one enormous number that dominates the average. MAE just takes the absolute value (97), which is large but not nearly as extreme.",
     "fragments": []
   },
   {
     "slide_index": 11,
-    "content_id": "fdc82c3aa1",
-    "slide_text": "Part 3: Why Gradients Matter Remember why we wanted a loss function in the first place? We said: \"We need to tweak each individual weight and see how that weight impacts the overall error.\" That's exactly what differentiation does. The gradient of the loss with respect to a parameter tells you: if I nudge this parameter a tiny bit, how much does the loss change? Our training algorithm (gradient descent) depends on this. So our loss function must be differentiable — it must have a well-defined gradient everywhere. Let's check whether our two loss functions qualify.",
+    "content_id": "c1578f8427",
+    "slide_text": "Exercise 2.2 — Drawbacks of Each You have just seen one drawback of MSE. Let's think more carefully: MSE problem: When a single prediction is very wrong (an outlier), what happens to the MSE? Is this good or bad for training a model? MAE — any issues? Think about the shape of as a function. Is there anything unusual about it at ? (We will investigate this in the next part.) MSE drawback: Possible MAE issue: Hint 1 For MSE: a single huge error gets squared, making it dominate the entire loss. The model then focuses all its learning on that one outlier instead of improving on every house. Hint 2 For MAE: sketch the graph of . At the graph makes a sharp V-shape — there is no single smooth tangent line. This \"corner\" will cause problems when we need a gradient.",
     "fragments": []
   },
   {
     "slide_index": 12,
+    "content_id": "026bdec4c2",
+    "slide_text": "Quick Check 2 — Outlier Sensitivity One house has a prediction error of 10 and another has an error of 1. How many times larger is the squared error for the first house compared to the second? A. 10 times B. 100 times C. 2 times D. 50 times",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a8680ef997",
+        "text": "Answer: B. [math] and [math], so the squared error is 100 times larger. This is exactly why MSE is so sensitive to outliers — squaring amplifies big mistakes far more than small ones."
+      }
+    ]
+  },
+  {
+    "slide_index": 13,
+    "content_id": "d98c98fe82",
+    "slide_text": "Part 3: Why Gradients Matter Remember why we wanted a loss function in the first place? We said: \"We need to tweak each individual weight and see how that weight affects the overall error.\" That is exactly what differentiation does. The gradient of the loss with respect to a parameter tells you: if I nudge this parameter a tiny bit, how much does the loss change? Our training algorithm (gradient descent) depends on this. So our loss function must be differentiable — it must have a well-defined gradient everywhere. Let's check whether our two loss functions qualify.",
+    "fragments": []
+  },
+  {
+    "slide_index": 14,
     "content_id": "4a9566b17d",
     "slide_text": "To keep things simple, let's focus on a single prediction . Define: $[math][math]L_{\\text{sq}} = \\text{diff}^2[math]L_{\\text{abs}} = |\\text{diff}|[math]\\frac{dL}{d(\\text{diff})}$ for each — how the loss changes as the prediction error changes.",
     "fragments": []
   },
   {
-    "slide_index": 13,
-    "content_id": "e5520de1cd",
-    "slide_text": "Gradient of Squared Error For the squared loss [math], compute the gradient [math] using the power rule. Then verify your formula numerically: pick a few values of (e.g. -2, 0, 1, 3), compute the gradient using finite differences [math] with a small [math], and check that it matches your analytical formula.",
-    "fragments": []
-  },
-  {
-    "slide_index": 14,
-    "content_id": "7cc4799a17",
-    "slide_text": "Gradient of Absolute Error Now for the absolute loss [math], compute the gradient [math]. Think piecewise: When , what is ? What's its derivative? When , what is ? What's its derivative? Then verify numerically for values: -2, -0.5, 0.5, 3.",
-    "fragments": []
-  },
-  {
     "slide_index": 15,
-    "content_id": "94323579fb",
-    "slide_text": "The Problem at Zero You found that the gradient of is +1 when diff 0, and -1 when diff 0. But what is the gradient when exactly ? Is it -1 or +1? Try computing the numerical gradient at diff = 0. Then think about what the graph of looks like at . Is it smooth, or is there something unusual? Gradient of |diff| at diff = 0: What does the graph look like at that point?",
+    "content_id": "f3a3fefe0e",
+    "slide_text": "Exercise 3.1 — Gradient of Squared Error For the squared loss [math], compute the gradient [math] using the power rule. Then verify your formula numerically: pick a few values of (e.g. -2, 0, 1, 3), compute the gradient using finite differences [math] with a small [math], and check that it matches your analytical formula. Hint 1 The power rule says: the derivative of [math] is [math]. Apply it to [math]. Hint 2 The gradient is [math]. For , that gives 6. Check: [math]. Divide by [math] to get 6.0 — it matches.",
     "fragments": []
   },
   {
     "slide_index": 16,
-    "content_id": "0cf5b7641e",
-    "slide_text": "Why this matters: Our training algorithm (gradient descent) works by computing the gradient of the loss and using it to update weights. If the gradient doesn't exist at some point, the algorithm breaks down. MSE ([math]): Differentiable everywhere. Gradient = [math] — smooth, well-defined, no problems. But the gradient grows without bound for large errors, making training unstable with outliers. MAE ([math]): Not differentiable at diff = 0. The sharp corner means gradient descent has no direction to follow when the prediction is exactly right. So MSE has a problem with large errors, and MAE has a problem at zero error. Can we do better?",
+    "content_id": "71518d7ce6",
+    "slide_text": "Exercise 3.2 — Gradient of Absolute Error Now for the absolute loss [math], compute the gradient [math]. Think piecewise: When , what is ? What's its derivative? When , what is ? What's its derivative? Then verify numerically for values: -2, -0.5, 0.5, 3. Hint 1 When is positive, is just , so its derivative is +1. When is negative, equals , so its derivative is -1. Hint 2 The gradient is the sign of diff: +1 when diff 0, -1 when diff 0. Verify: for diff = -2, numerical gradient [math] -1.0; for diff = 0.5, numerical gradient [math] +1.0.",
     "fragments": []
   },
   {
     "slide_index": 17,
-    "content_id": "3d1117c77a",
-    "slide_text": "Part 4: The Best of Both Worlds Here's our situation: Small errors Large errors Squared ([math]) Smooth, differentiable Gradient explodes Absolute ([math]) Not differentiable at 0 Gradient stays bounded (±1) What if we could use the squared loss for small errors (where it's well-behaved) and the absolute loss for large errors (where it stays bounded)?",
+    "content_id": "4e428da9c7",
+    "slide_text": "Exercise 3.3 — The Problem at Zero You found that the gradient of is +1 when diff 0, and -1 when diff 0. But what is the gradient when exactly ? Is it -1 or +1? Try computing the numerical gradient at diff = 0. Then think about what the graph of looks like at . Is it smooth, or is there something unusual? Gradient of |diff| at diff = 0: What does the graph look like at that point? Hint 1 The numerical gradient at diff = 0 gives 0 (because the function is symmetric around 0). But is that really the slope? Sketch and look at the shape right at the origin. Hint 2 The graph of has a sharp V-shaped corner at . Coming from the left the slope is -1; from the right it is +1. There is no single tangent line, so the derivative does not exist at that point.",
     "fragments": []
   },
   {
     "slide_index": 18,
-    "content_id": "1f37cd8af3",
-    "slide_text": "The Naive Combination Here's the simplest idea. Pick some threshold [math] and define: $[math][math]d = 1[math]|\\text{diff}| = d = 1[math]d^2[math]|\\text{diff}| = d = 1[math]|d|[math]\\text{diff}^2[math]|\\text{diff}|$ at diff = 1? Are they equal? What's the problem? Value from squared formula at |diff|=1: Value from absolute formula at |diff|=1: Gradient from squared at diff=1: Gradient from absolute at diff=1: The problem:",
+    "content_id": "ec183e8a7b",
+    "slide_text": "Why this matters: Our training algorithm (gradient descent) works by computing the gradient of the loss and using it to update weights. If the gradient does not exist at some point, the algorithm breaks down. MSE ([math]): Differentiable everywhere. Gradient = [math] — smooth, well-defined, no problems. But the gradient grows without bound for large errors, making training unstable with outliers. MAE ([math]): Not differentiable at diff = 0. The sharp corner means gradient descent has no direction to follow when the prediction is exactly right. So MSE has a problem with large errors, and MAE has a problem at zero error. Can we do better?",
     "fragments": []
   },
   {
     "slide_index": 19,
-    "content_id": "844a757525",
-    "slide_text": "Visualize the Jump Plot the naive combined loss for [math] ranging from -3 to 3, using [math]. You should see a clear discontinuity (jump) at diff = 1 and diff = -1 where the two formulas switch. Also plot the individual squared and absolute losses on the same graph for comparison.",
-    "fragments": []
+    "content_id": "5e9b92eb5d",
+    "slide_text": "Quick Check 3 — Differentiability At which point is the absolute error function [math] not differentiable? A. diff = 1 B. diff = -1 C. diff = 0 D. It is differentiable everywhere",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "6848d0be9e",
+        "text": "Answer: C. The V-shape of [math] has a sharp corner at [math] where the slope from the left (-1) and slope from the right (+1) disagree. No single tangent line exists there."
+      }
+    ]
   },
   {
     "slide_index": 20,
-    "content_id": "958cd27ad5",
-    "slide_text": "The problem is clear: at the switchover point [math], the squared and absolute formulas disagree in both value and gradient . We can't change the squared part — it's what gives us smoothness near zero, which is the whole reason we want it. So let's keep [math] for [math] and modify the absolute part to connect seamlessly. Instead of plain [math], we'll use: $[math][math]A[math]B[math]|\\text{diff}| = d$, the two pieces agree in both value and gradient.",
+    "content_id": "7a606ace37",
+    "slide_text": "Part 4: The Best of Both Worlds Here is our situation: Small errors Large errors Squared ([math]) Smooth, differentiable Gradient explodes Absolute ([math]) Not differentiable at 0 Gradient stays bounded ( 1) What if we could use the squared loss for small errors (where it is well-behaved) and the absolute loss for large errors (where it stays bounded)?",
     "fragments": []
   },
   {
     "slide_index": 21,
-    "content_id": "65958ab4ac",
-    "slide_text": "Make It Smooth We keep [math] for [math]. For [math], we use [math]. At the boundary [math], we need two conditions: Values match: [math] Gradients match: the gradient of [math] at [math] must equal the gradient of [math] at [math]. This gives you two equations and two unknowns ([math] and [math]). Solve for [math] and [math] in terms of [math]. Then write a Python function using your values of [math] and [math], and plot it. Verify there's no jump or kink at [math].",
+    "content_id": "a6d3518262",
+    "slide_text": "Exercise 4.1 — The Naive Combination Here is the simplest idea. Pick some threshold [math] and define: $[math][math]d = 1[math]|\\text{diff}| = d = 1[math]d^2[math]|\\text{diff}| = d = 1[math]|d|[math]\\text{diff}^2[math]|\\text{diff}|[math]d = 1[math]d^2 = 1[math]|d| = 1[math]\\text{diff}^2[math]2 \\times 1 = 2[math]|\\text{diff}|$ at diff = 1 is 1. These do not match — the function has a sudden change of slope (a kink) at the switchover point, which breaks smoothness.",
     "fragments": []
   },
   {
     "slide_index": 22,
-    "content_id": "8dc29ad582",
-    "slide_text": "You just invented the Huber loss! The standard formulation divides everything by 2 for convenience (so the squared part's gradient is [math] instead of [math]): $[math]$ This is mathematically identical to yours — just scaled by ½. It was published by the statistician Peter Huber in 1964 and is built into every modern ML framework: , , 's . You derived it from scratch by asking three questions: How do we measure error without cancellation? → squared / absolute What are the problems with each? → outlier sensitivity / non-differentiability Can we combine them smoothly? → match value and gradient at the boundary → Huber loss",
+    "content_id": "e6908e11fa",
+    "slide_text": "Exercise 4.2 — Visualise the Kink Plot the naive combined loss for [math] ranging from -3 to 3, using [math]. You should see a clear kink (a sudden change of slope) at diff = 1 and diff = -1 where the two formulas switch. The values match, but the slopes do not — the curve is not smooth. Also plot the individual squared and absolute losses on the same graph for comparison. Hint 1 Use to create a range of diff values. For each, compute if , else . Hint 2 Plot all three curves: the squared parabola, the absolute V-shape, and the combined function. At [math] you will see the combined function bends sharply where it switches from one formula to the other.",
     "fragments": []
   },
   {
     "slide_index": 23,
-    "content_id": "13d3569084",
-    "slide_text": "Part 5: Putting It All Together Let's implement the standard (÷2) Huber loss and see how it compares to MSE and MAE on real data.",
+    "content_id": "7e7b7f09a7",
+    "slide_text": "The problem is clear: at the switchover point [math], the squared and absolute formulas disagree in gradient (even though the values match). We cannot change the squared part — it is what gives us smoothness near zero, which is the whole reason we want it. So let's keep [math] for [math] and modify the absolute part to connect seamlessly. Instead of plain [math], we will use: $[math][math]A[math]B[math]|\\text{diff}| = d$, the two pieces agree in both value and gradient.",
     "fragments": []
   },
   {
     "slide_index": 24,
-    "content_id": "335f7b4230",
-    "slide_text": "Implement Huber Loss Write a function that returns the average Huber loss over all pairs. Use the standard formulation (with the ½ factor): If [math]: loss [math] Else: loss [math] Test it: [code block]",
+    "content_id": "5d07becf9b",
+    "slide_text": "Exercise 4.3 — Make It Smooth We keep [math] for [math]. For [math], we use [math]. At the boundary [math], we need two conditions: Values match: [math] Gradients match: the gradient of [math] at [math] must equal the gradient of [math] at [math]. This gives you two equations and two unknowns ([math] and [math]). Solve for [math] and [math] in terms of [math]. Then write a Python function using your values of [math] and [math], and plot it. Verify there is no jump or kink at [math]. Hint 1 From condition 2: the gradient of [math] at diff = [math] is [math]. The gradient of [math] for diff 0 is just [math]. So [math]. Hint 2 Substitute [math] into condition 1: [math], so [math]. The outer piece is [math]. Hint 3 Your function: for [math], return [math]; otherwise return [math]. With [math]: at diff = 1, squared gives 1 and outer gives [math] — values match. Gradient: squared gives 2, outer gives [math] — they also match.",
     "fragments": []
   },
   {
     "slide_index": 25,
-    "content_id": "7e83b29482",
-    "slide_text": "The Final Comparison Plot all three loss functions — MSE, MAE, and Huber — for a single prediction as varies from -5 to 5. Use . Verify visually: Huber is smooth everywhere (no sharp corner at 0) Huber is quadratic near zero (matches MSE) Huber is linear in the tails (matches MAE) The transition at [math] is seamless",
+    "content_id": "028a5f148e",
+    "slide_text": "You just invented the Huber loss! The standard formulation divides everything by 2 for convenience (so the squared part's gradient is [math] instead of [math]): $[math]$ This is mathematically identical to yours — just scaled by half. It was published by the statistician Peter Huber in 1964 and is built into every modern ML framework: , , 's . You derived it from scratch by asking three questions: How do we measure error without cancellation? → squared / absolute What are the problems with each? → outlier sensitivity / non-differentiability Can we combine them smoothly? → match value and gradient at the boundary → Huber loss",
     "fragments": []
   },
   {
     "slide_index": 26,
-    "content_id": "b8d8dd7fc0",
-    "slide_text": "Back to the Houses Compute all three losses on the house price data — with and without the outlier. [code block] Use . Which loss function gives the most sensible numbers in both scenarios?",
-    "fragments": []
+    "content_id": "f2a4587d04",
+    "slide_text": "Quick Check 4 — Smooth Transitions The Huber loss uses squared error for small errors and linear error for large ones. What mathematical conditions make the transition smooth at the boundary? A. Only the values need to match B. Only the gradients need to match C. Both values and gradients must match D. Neither needs to match — any transition works",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "050dc2af2a",
+        "text": "Answer: C. Matching values prevents a jump in the function. Matching gradients prevents a kink (sudden change of slope). You need both for a truly smooth loss that gradient descent can use reliably."
+      }
+    ]
   },
   {
     "slide_index": 27,
+    "content_id": "1d365191fc",
+    "slide_text": "Part 5: Putting It All Together Let's implement the standard (divided by 2) Huber loss and see how it compares to MSE and MAE on real data.",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "content_id": "59689102f1",
+    "slide_text": "Exercise 5.1 — Implement Huber Loss Write a function that returns the average Huber loss over all pairs. Use the standard formulation (with the half factor): If [math]: loss [math] Else: loss [math] Test it: [code block] Hint 1 Loop over each pair. For each, compute . Check if is within delta. Apply the matching formula and add to a running total. Hint 2 After the loop, divide the running total by to get the mean. For the first test case: errors are -0.2, 0.5, and -3. The first two are within delta (so use [math]), the third is outside (so use [math]).",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "content_id": "c45d4d847d",
+    "slide_text": "Exercise 5.2 — The Final Comparison Plot all three loss functions — MSE, MAE, and Huber — for a single prediction as varies from -5 to 5. Use . Verify visually: Huber is smooth everywhere (no sharp corner at 0) Huber is quadratic near zero (matches MSE) Huber is linear in the tails (matches MAE) The transition at [math] is seamless Hint 1 Create diff values with . For MSE, compute . For MAE, compute . For Huber, use your function from Exercise 5.1 on each single value. Hint 2 Use for each curve with labels, then call . You should see the Huber curve hugging the MSE parabola near zero and then bending to match the MAE line beyond [math].",
+    "fragments": []
+  },
+  {
+    "slide_index": 30,
+    "content_id": "ca12ea74c1",
+    "slide_text": "Exercise 5.3 — Back to the Houses Compute all three losses on the house price data — with and without the outlier. [code block] Use . Which loss function gives the most sensible numbers in both scenarios? Hint 1 Call your MSE, MAE, and Huber functions on both (actual, normal) and (actual, outlier). Compare the six results in a small table. Hint 2 MSE will jump dramatically with the outlier (from around 0.4 to around 1882). MAE goes from about 0.6 to about 20. Huber increases the least — it caps the influence of the outlier because it treats large errors linearly rather than quadratically.",
+    "fragments": []
+  },
+  {
+    "slide_index": 31,
     "content_id": "a41cc0d2c8",
     "slide_text": "What You Invented",
     "fragments": []
   },
   {
-    "slide_index": 28,
-    "content_id": "4e42bd5401",
-    "slide_text": "Your Invention → Industry Name Exercise What You Did Industry Name 1.1 Discovered that plain differences cancel out The need for a loss function 1.2 Found two ways to fix cancellation Squared error / Absolute error 2.1–2.2 Compared MSE and MAE, found drawbacks Bias–variance tradeoff of losses 3.1 Computed gradient of squared error MSE gradient: 2·diff 3.2 Computed gradient of absolute error MAE gradient: sign(diff) 3.3 Found MAE is not differentiable at 0 Non-differentiability of L1 loss 4.1–4.2 Tried naive combination, spotted discontinuity Piecewise loss design 4.3 Solved for A and B to make it smooth Huber loss derivation 5.1–5.3 Implemented and compared all three Huber loss (Huber, 1964)",
+    "slide_index": 32,
+    "content_id": "9e4b69eba0",
+    "slide_text": "Your Invention → Industry Name Exercise What You Did Industry Name 1.1 Discovered that plain differences cancel out The need for a loss function 1.2 Found two ways to fix cancellation Squared error / Absolute error 2.1–2.2 Compared MSE and MAE, found drawbacks Bias–variance tradeoff of losses 3.1 Computed gradient of squared error MSE gradient: 2 * diff 3.2 Computed gradient of absolute error MAE gradient: sign(diff) 3.3 Found MAE is not differentiable at 0 Non-differentiability of L1 loss 4.1–4.2 Tried naive combination, spotted the kink Piecewise loss design 4.3 Solved for A and B to make it smooth Huber loss derivation 5.1–5.3 Implemented and compared all three Huber loss (Huber, 1964)",
     "fragments": []
   },
   {
-    "slide_index": 29,
-    "content_id": "09741d3857",
-    "slide_text": "Going further: Pseudo-Huber loss: A smooth approximation [math] that avoids even the (smooth) transition point. Quantile loss: If you care more about under-predictions vs over-predictions, you can weight the positive and negative sides differently. Log-cosh loss: [math] — another smooth alternative that's twice differentiable everywhere. Try different values of [math] in your Huber loss and see how the curve changes. What happens as [math]? As [math]?",
+    "slide_index": 33,
+    "content_id": "993cfb4a60",
+    "slide_text": "Going further: Pseudo-Huber loss: A smooth approximation [math] that avoids even the (smooth) transition point. Quantile loss: If you care more about under-predictions vs over-predictions, you can weight the positive and negative sides differently. Log-cosh loss: [math] — another smooth alternative that is twice differentiable everywhere. Try different values of [math] in your Huber loss and see how the curve changes. What happens as [math]? As [math]?",
     "fragments": []
   },
   {
-    "slide_index": 30,
-    "content_id": "b4cda050c7",
-    "slide_text": "Index Part 1: The Prediction Error Problem Part 2: Two Loss Functions Part 3: Why Gradients Matter Part 4: The Best of Both Worlds Part 5: Putting It All Together What You Invented",
+    "slide_index": 34,
+    "content_id": "993fabcbb8",
+    "slide_text": "Part 7: Reflection",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "content_id": "f4c1f5a127",
+    "slide_text": "Reflection Answer these questions in your own words: Why can't we just sum up raw differences to measure error? What goes wrong, and how did you fix it? What surprised you about how MSE and MAE behave differently? Which one reacts more to a single bad prediction, and why? Why does smoothness (differentiability) matter for a loss function? What goes wrong if the gradient does not exist at some point? If you were training a model on data that you knew had outliers (some houses were priced wildly wrong in the dataset), which loss function would you choose and why? The Huber loss has a parameter [math]. What happens to the Huber loss as [math] gets very large? Very small? When would you pick a big or small [math]?",
+    "fragments": []
+  },
+  {
+    "slide_index": 36,
+    "content_id": "01788f70fd",
+    "slide_text": "Index Part 1: The Prediction Error Problem Part 2: Two Loss Functions Part 3: Why Gradients Matter Part 4: The Best of Both Worlds Part 5: Putting It All Together What You Invented Reflection",
     "fragments": []
   }
 ]
