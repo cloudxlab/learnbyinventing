@@ -142,8 +142,14 @@ The chapter footer MUST be hidden in slide mode:
 
 ### 3.3 Bottom Copyright with Index and Report a Bug Links (REQUIRED)
 ```html
-<div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="https://github.com/cloudxlab/learnbyinventing/issues/new?template=bug_report.md" target="_blank">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
+<div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="#" id="bug-report-link">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
 ```
+
+Immediately after the copyright div, a `<script>` block that attaches a click handler to `#bug-report-link`. On click it:
+1. Reads the current slide number from `Reveal.getIndices().h + 1`
+2. Walks backward through `<section>` elements to find the nearest `id="partN"` and its `<h2>` text
+3. Extracts the chapter name from `location.pathname`
+4. Opens a new GitHub issue pre-filled with title `[Bug] <chapter> slide <N>` and body containing chapter, slide number, part name, and structured fields (what happened, expected, screenshots, device/browser)
 
 ### 3.4 Title Slide (REQUIRED)
 The first `<section>` must be the title slide containing:
@@ -239,7 +245,7 @@ Reveal.on('ready', function() { updateProgress(); });
 | 3 | `.chapter-footer { display: none; }` (not visible styling) | YES |
 | 4 | `.reveal .progress { display: none !important; }` | YES |
 | 5 | Top progress bar (`#top-progress`) | YES |
-| 6 | Bottom copyright with Index + Report a Bug links | YES |
+| 6 | Bottom copyright with Index + dynamic Report a Bug link (`#bug-report-link`) | YES |
 | 7 | Top nav bar (`slides-topnav`) | YES |
 | 8 | Google Analytics tag (G-9TZCPED97E) | YES |
 | 9 | Title slide with `<h1>`, subtitle, navigation instructions | YES |
