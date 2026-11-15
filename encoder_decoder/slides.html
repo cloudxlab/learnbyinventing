@@ -105,7 +105,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <section>
         <h1>The Encoder-Decoder Pipeline — A Real Data Engineering Problem</h1>
 
-        <div class="slide-content slide-title">You are handed a real task at work:</p>
+        <div class="slide-content slide-title"><p>You are handed a real task at work:</p>
 
 
 <blockquote>
@@ -113,7 +113,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
   <code>user_id, product_id, score</code> — and writes its recommendations to another CSV
   with columns <code>user_id, product_id, recommendation_score</code>.
   <strong>It only accepts integers</strong> for <code>user_id</code>.</p>
-  
+
   <p>Our data, however, identifies users by <strong>email address</strong>:</p>
 
 <pre><code>sandeep,1, 1.0
@@ -122,7 +122,7 @@ subodh, 2, 1.0
 sandeep, 2, 2.0
 nitin, 1, 2.0
 </code></pre>
-  
+
   <p>Make it work. And when the engine answers, translate its output <strong>back</strong> to emails.</p>
 </blockquote>
 
@@ -137,7 +137,7 @@ nitin, 1, 2.0
 <p>The Encoder and Decoder are <strong>separate programs</strong> that communicate only through
 files — so the mapping between emails and integers must itself be saved to a file.
 This pattern (encode → black box → decode) is everywhere: ML pipelines call it
-<em>label encoding</em>, and you already met its purest form in the Information Theory chapter.</div>
+<em>label encoding</em>, and you already met its purest form in the Information Theory chapter.</p></div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -199,6 +199,19 @@ with the right types: <code>str</code>, <code>int</code>, <code>float</code>.</p
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Python's <code>str.strip()</code> removes whitespace (including newlines) from both ends of a string. <code>str.split(",")</code> breaks a string into a list of pieces at each comma.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>After splitting, each piece is still a string. Call <code>.strip()</code> on each piece to remove extra spaces, then use <code>int()</code> and <code>float()</code> to convert the second and third pieces to the right types.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def parse_line(line):
+    parts = line.strip().split(",")
+    return (parts[0].strip(), int(parts[1].strip()), float(parts[2].strip()))</code></pre>
+</details>
 
         </div>
       </section>
@@ -219,12 +232,49 @@ tuples, skipping any blank lines.</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Open the file with <code>open(filename)</code> and loop through each line. Use <code>if line.strip():</code> to skip blank lines.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Build a list and <code>append(parse_line(line))</code> for each non-blank line. You already wrote <code>parse_line</code> — just call it here.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def read_data(filename):
+    rows = []
+    for line in open(filename):
+        if line.strip():
+            rows.append(parse_line(line))
+    return rows</code></pre>
+</details>
 
         </div>
       </section>
 
 
 
+      <!-- Quick Check 1.1 -->
+      <section>
+        <h3>Quick Check 1.1 — Why Strip?</h3>
+        <div class="slide-content">
+
+        <p>The line <code>"sandeep, 2, 2.0\n"</code> has spaces after commas and a newline at the end. What would happen if you skipped <code>.strip()</code> and tried <code>int(" 2")</code>?</p>
+
+        <p><strong>A.</strong> It works fine — <code>int()</code> ignores whitespace automatically</p>
+
+        <p><strong>B.</strong> It crashes with a <code>ValueError</code> because of the space</p>
+
+        <p><strong>C.</strong> It returns the string <code>" 2"</code> unchanged</p>
+
+        <p><strong>D.</strong> It returns <code>0</code></p>
+
+        <div class="fragment">
+        <p style="color:#2a7; font-weight:bold;">Answer: A — Python's <code>int()</code> actually handles leading/trailing spaces. But <code>.strip()</code> is still good practice because other functions (like comparing strings) are not so forgiving. The user name <code>" sandeep"</code> with a space would not match <code>"sandeep"</code> without it!</p>
+        </div>
+
+        </div>
+      </section>
 
 
       <!-- Part 2: The Encoder -->
@@ -248,6 +298,22 @@ Users repeat in the data — they must keep the same ID.</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Walk through the rows. Keep a dictionary. Each time you see a user for the <em>first</em> time, add them with the next integer as their ID.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Check <code>if user not in mapping:</code> first. If they are new, assign <code>len(mapping) + 1</code> as their ID — that gives you 1 for the first user, 2 for the second, and so on.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def build_mapping(rows):
+    mapping = {}
+    for user, product_id, score in rows:
+        if user not in mapping:
+            mapping[user] = len(mapping) + 1
+    return mapping</code></pre>
+</details>
 
         </div>
       </section>
@@ -273,6 +339,28 @@ The mapping must survive as a file.</p>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>To save: loop through the dictionary and write one line per entry — <code>f"{email},{id}\n"</code>. To load: read each line, split on the comma, and rebuild the dictionary.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>When you read a line back from the file, the id is a <em>string</em> (everything in a text file is text). Convert it with <code>int()</code> so the round-trip test passes.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def save_mapping(mapping, filename):
+    with open(filename, "w") as f:
+        for email, uid in mapping.items():
+            f.write(f"{email},{uid}\n")
+
+def load_mapping(filename):
+    mapping = {}
+    for line in open(filename):
+        if line.strip():
+            parts = line.strip().split(",")
+            mapping[parts[0]] = int(parts[1])
+    return mapping</code></pre>
+</details>
 
         </div>
       </section>
@@ -294,11 +382,50 @@ The mapping must survive as a file.</p>
 2,1,2.0
 </code></pre>
 
+<details><summary>Hint 1</summary>
+<p>You already have all the building blocks: <code>read_data</code>, <code>build_mapping</code>, <code>save_mapping</code>. Call them in order, then write the encoded rows.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For each row, look up the email in the mapping to get its integer ID, then write <code>f"{id},{product_id},{score}\n"</code> to the encoded file.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def encode_file(input_file, encoded_file, mapping_file):
+    rows = read_data(input_file)
+    mapping = build_mapping(rows)
+    save_mapping(mapping, mapping_file)
+    with open(encoded_file, "w") as f:
+        for user, product_id, score in rows:
+            f.write(f"{mapping[user]},{product_id},{score}\n")</code></pre>
+</details>
 
         </div>
       </section>
 
 
+
+      <!-- Quick Check 2.1 -->
+      <section>
+        <h3>Quick Check 2.1 — What Does build_mapping Guarantee?</h3>
+        <div class="slide-content">
+
+        <p>Which of the following best describes what <code>build_mapping</code> guarantees?</p>
+
+        <p><strong>A.</strong> Every email gets a random integer</p>
+
+        <p><strong>B.</strong> Every email gets a unique integer, and the same email always maps to the same integer</p>
+
+        <p><strong>C.</strong> Emails are sorted alphabetically before assigning IDs</p>
+
+        <p><strong>D.</strong> The mapping is stored in a file automatically</p>
+
+        <div class="fragment">
+        <p style="color:#2a7; font-weight:bold;">Answer: B — The <code>if user not in mapping</code> check means a user only gets an ID once, and it never changes. Every distinct user gets a different number. This one-to-one property is what makes the mapping safely invertible later.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -358,6 +485,18 @@ it from memory.) Why is inversion safe here — what property must the mapping h
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Create a new dictionary where each old <em>value</em> becomes a key and each old <em>key</em> becomes a value. In other words, flip every pair around.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p><code>{v: k for k, v in mapping.items()}</code> does it in one line. Inversion is safe when all values are unique — if two emails shared the same integer, one would overwrite the other.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def invert(mapping):
+    return {v: k for k, v in mapping.items()}</code></pre>
+</details>
 
         </div>
       </section>
@@ -379,6 +518,26 @@ it from memory.) Why is inversion safe here — what property must the mapping h
 <p>So the mystery user 3 was <strong>subodh</strong>, and the pipeline recommends product 1
 with score 1.5.</p>
 
+<details><summary>Hint 1</summary>
+<p>Load the mapping with <code>load_mapping</code>, then call <code>invert</code> on it. Now you have a dictionary from integer IDs to emails.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Read the recommendations file line by line. Split each line on commas. The first field is an integer ID — look it up in your inverted mapping to get the email, then write the email in its place.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def decode_file(recs_file, mapping_file, output_file):
+    mapping = load_mapping(mapping_file)
+    inv = invert(mapping)
+    with open(output_file, "w") as out:
+        for line in open(recs_file):
+            if line.strip():
+                parts = line.strip().split(",")
+                uid = int(parts[0].strip())
+                email = inv[uid]
+                out.write(f"{email},{parts[1].strip()},{parts[2].strip()}\n")</code></pre>
+</details>
 
         </div>
       </section>
@@ -386,7 +545,7 @@ with score 1.5.</p>
 
 
       <section>
-        <h3>Why Encode at All?</h3>
+        <h3>Quick Check 4.1 — Why Encode at All?</h3>
         <div class="slide-content">
 
         <p>The recommendation engine takes integer IDs instead of email addresses. Why is this encoding step necessary?</p>
@@ -394,12 +553,15 @@ with score 1.5.</p>
 
         <p><strong>A.</strong> Emails take too much memory — integers are smaller</p>
 
-        <p><strong>B.</strong> The recommendation algorithm works with numerical operations (similarity scores, matrix math) that require numbers, not strings</p>
+        <p><strong>B.</strong> The recommendation algorithm uses math operations (like computing averages and similarity scores) that require numbers, not text</p>
 
         <p><strong>C.</strong> Python can't compare strings, only numbers</p>
 
         <p><strong>D.</strong> Encoding makes the data more secure by hiding email addresses</p>
 
+        <div class="fragment">
+        <p style="color:#2a7; font-weight:bold;">Answer: B — The engine does arithmetic on user IDs (averages, similarity scores). Strings cannot be added or averaged. Option A has a grain of truth but is not the reason the engine <em>requires</em> integers. C is false (Python compares strings just fine), and D is a side effect, not the purpose.</p>
+        </div>
 
         </div>
       </section>
@@ -433,21 +595,65 @@ it, then write <code>check_pipeline(original_file, final_file)</code> that verif
 <p><strong>Think about:</strong> what could silently break if two different emails ever received
 the same ID? Which of your functions guarantees that cannot happen?</p>
 
+<details><summary>Hint 1</summary>
+<p>Read the original file and collect all emails into a set. Then read the final file and check that each user field appears in that set.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>To check for leaked integer IDs, verify that every user field in the final output contains an <code>"@"</code> character. A bare number like <code>"3"</code> would not have an <code>@</code>.</p>
+</details>
+
+<details><summary>Solution</summary>
+<pre><code>def check_pipeline(original_file, final_file):
+    orig_users = set()
+    for line in open(original_file):
+        if line.strip():
+            orig_users.add(line.strip().split(",")[0].strip())
+    for line in open(final_file):
+        if line.strip():
+            user = line.strip().split(",")[0].strip()
+            assert user in orig_users, f"Unknown user: {user}"
+            assert "@" in user, f"Leaked integer ID: {user}"
+    print("All checks passed!")</code></pre>
+</details>
 
         </div>
       </section>
 
 
 
+      <!-- Quick Check 5.1 -->
+      <section>
+        <h3>Quick Check 5.1 — What Could Go Wrong?</h3>
+        <div class="slide-content">
+
+        <p>If two different emails accidentally received the <em>same</em> integer ID, what would happen when you invert the mapping?</p>
+
+        <p><strong>A.</strong> Python would raise an error</p>
+
+        <p><strong>B.</strong> One email would silently overwrite the other — some recommendations would go to the wrong person</p>
+
+        <p><strong>C.</strong> The recommender would crash</p>
+
+        <p><strong>D.</strong> Nothing — duplicate IDs are fine</p>
+
+        <div class="fragment">
+        <p style="color:#2a7; font-weight:bold;">Answer: B — When you invert a dictionary with duplicate values, the second key overwrites the first. So <code>{1: "alice"}</code> might become <code>{1: "bob"}</code> and Alice's recommendations would be lost. That is why <code>build_mapping</code>'s one-to-one guarantee is so important.</p>
+        </div>
+
+        </div>
+      </section>
 
 
-      <!-- Part 6: Summary -->
+
+      <!-- Part 6: What You Just Invented -->
       <section id="part6">
-        <h2>Part 6: Summary</h2>
+        <h2>Part 6: What You Just Invented</h2>
 
-        <div class="slide-content"><p>The same encode → black box → decode shape appears when you one-hot-encode
-categories for a model, tokenize text for an LLM, or compress data before a
-network hop (your Huffman coder!). The black box changes; the wrapper pattern never does.</p>
+        <div class="slide-content"><p>The same encode → black box → decode shape appears everywhere in computing.
+Think of converting text to numbers before feeding a model, or compressing data
+before sending it over a network (your Huffman coder from the Information Theory chapter!).
+The black box changes; the wrapper pattern never does.</p>
 </div>
 
       </section>
@@ -457,88 +663,98 @@ network hop (your Huffman coder!). The black box changes; the wrapper pattern ne
       <section>
 
         <div class="slide-content">
+        <h2 style="border:none; color:#333;">What You Just Invented</h2>
         <table>
           <tr>
 
-            <th>Piece</th>
-
             <th>What you built</th>
 
-            <th>The general pattern</th>
+            <th>Its real name</th>
 
           </tr>
 
           <tr>
 
-            <td><code>parse_line</code>, <code>read_data</code></td>
+            <td><code>parse_line</code>, <code>read_data</code> — messy text to clean data</td>
 
-            <td>messy text → typed tuples</td>
-
-            <td>every pipeline starts with parsing</td>
+            <td><strong>Data parsing</strong> — every pipeline starts here</td>
 
           </tr>
 
           <tr>
 
-            <td><code>build_mapping</code></td>
+            <td><code>build_mapping</code> — email → integer, first-seen order</td>
 
-            <td>email → int, first-seen order</td>
-
-            <td><strong>label encoding</strong> — <code>sklearn.preprocessing.LabelEncoder</code> is exactly this</td>
+            <td><strong>Label encoding</strong> — <code>sklearn.preprocessing.LabelEncoder</code> does exactly this</td>
 
           </tr>
 
           <tr>
 
-            <td><code>save_mapping</code>, <code>load_mapping</code></td>
+            <td><code>save_mapping</code>, <code>load_mapping</code> — mapping saved as a file</td>
 
-            <td>mapping as a file</td>
-
-            <td>separate programs share state only through files</td>
+            <td><strong>Serialization</strong> — separate programs share data only through files</td>
 
           </tr>
 
           <tr>
 
-            <td><code>encode_file</code></td>
+            <td><code>encode_file</code> — the Encoder program</td>
 
-            <td>the Encoder program</td>
-
-            <td>adapt <em>your</em> data to <em>their</em> interface</td>
+            <td><strong>Adapter / wrapper</strong> — reshape your data to fit someone else's tool</td>
 
           </tr>
 
           <tr>
 
-            <td><code>run_recommender</code></td>
+            <td><code>run_recommender</code> — untouched black box</td>
 
-            <td>untouched black box</td>
-
-            <td>you wrapped it instead of changing it</td>
+            <td><strong>Black-box integration</strong> — you wrapped it instead of changing it</td>
 
           </tr>
 
           <tr>
 
-            <td><code>invert</code>, <code>decode_file</code></td>
+            <td><code>invert</code>, <code>decode_file</code> — the Decoder program</td>
 
-            <td>the Decoder program</td>
-
-            <td>translate answers back into your domain</td>
+            <td><strong>Decoding / inverse mapping</strong> — translate answers back to the original form</td>
 
           </tr>
 
           <tr>
 
-            <td><code>check_pipeline</code></td>
+            <td><code>check_pipeline</code> — end-to-end verification</td>
 
-            <td>end-to-end verification</td>
-
-            <td>trust pipelines you have tested, not pipelines that ran</td>
+            <td><strong>Integration testing</strong> — trust pipelines you have tested, not just ones that ran</td>
 
           </tr>
 
         </table>
+        </div>
+      </section>
+
+
+      <!-- Part 7: Reflection -->
+      <section id="part7">
+        <h2>Part 7: Reflection — What Did You Just Build?</h2>
+
+      </section>
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>Why can't the recommender just use email addresses directly? What does encoding actually solve?</li>
+<li>Why do the Encoder and Decoder need to save the mapping to a file, instead of just keeping it in a variable?</li>
+<li>What would go wrong if <code>build_mapping</code> gave two different emails the same integer? How does your code prevent that?</li>
+<li>The pattern you built — encode, process, decode — shows up everywhere. Can you think of another example from everyday life where something gets converted to a different form, processed, and then converted back? (Think about languages, zip files, or even cooking recipes.)</li>
+<li>What is one thing you would add to <code>check_pipeline</code> to make it even more thorough?</li>
+</ol>
+
+
         </div>
       </section>
 
@@ -552,13 +768,11 @@ network hop (your Huffman coder!). The black box changes; the wrapper pattern ne
             <li><a href="#/part3">Part 3: The Recommendation Engine (Black Box)</a></li>
             <li><a href="#/part4">Part 4: The Decoder</a></li>
             <li><a href="#/part5">Part 5: Prove the Pipeline</a></li>
-            <li><a href="#/part6">Part 6: Summary</a></li>
+            <li><a href="#/part6">Part 6: What You Just Invented</a></li>
+            <li><a href="#/part7">Part 7: Reflection</a></li>
           </ol>
         </div></div>
       </section>
-
-
-
 
 
 
