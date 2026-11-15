@@ -1,8 +1,6 @@
 # ON SCREEN:
-# The Naive Combination Here's the simplest idea. Pick some threshold [math] and define: $[math][math]d = 1[math]|\text{diff}| = d = 1[math]d^2[math]|\text{diff}| = d = 1[math]|d|[math]\text{diff}^2[math]|\text{diff}|$ at diff = 1? Are they equal? What's the problem? Value from squared formula at |diff|=1: Value from absolute formula at |diff|=1: Gradient from squared at diff=1: Gradient from absolute at diff=1: The problem:
+# Part 4: The Best of Both Worlds Here's our situation: Small errors Large errors Squared ([math]) Smooth, differentiable Gradient explodes Absolute ([math]) Not differentiable at 0 Gradient stays bounded (±1) What if we could use the squared loss for small errors (where it's well-behaved) and the absolute loss for large errors (where it stays bounded)?
 # ---
-Here's a simple idea for building our own loss function. Pick a cutoff, and call it d. When the error is small, use the squared formula. When it's big, switch to the absolute one. Easy, right?
+So here's where we've landed. Squared loss is smooth and easy to work with for small errors, but its gradient explodes when the error is large. Absolute loss keeps the gradient bounded, but it has that sharp corner at zero.
 
-Before we trust it, let's test it right at the switch point, where the error equals one. Work out the value from each formula there. Then work out the gradient from each. Are they equal?
-
-Try it on paper first. Then see if you can spot the problem.
+Each one is good exactly where the other struggles. So take a moment and think: what if we used squared loss near zero and absolute loss far away? How might you stitch the two together?

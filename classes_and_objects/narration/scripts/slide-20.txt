@@ -1,6 +1,4 @@
 # ON SCREEN:
-# Aside — Python's module can serialize almost any object in one line (), no needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via ), while model configs travel as JSON or YAML.
+# to_dict and from_dict — a leaf becomes , a leaf becomes , and an inner node becomes (children converted recursively). Hint: tells leaves apart. — the exact inverse, rebuilding real objects. The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.
 # ---
-You just saved your model to a JSON file and loaded it back. Here's a quick aside. Python has a built-in module called pickle that can save almost any object in a single line, with no extra conversion code needed. So why did we bother doing it by hand?
-
-Well, a pickle file only works in Python. People can't read it. And loading one from a source you don't trust can be unsafe. Your JSON file has none of those problems. Real machine learning tools make the same trade-off, and you'll see it everywhere.
+Now we're going to save our tree to disk and load it back. Think about it this way: every object needs a plain dictionary version of itself, and a way to rebuild from that dictionary. Try writing both directions yourself first. Then check that the reloaded tree gives exactly the same answers as the original.

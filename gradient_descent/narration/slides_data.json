@@ -6,11 +6,16 @@
   },
   {
     "slide_index": 1,
-    "slide_text": "Introduction: Gradient Descent",
+    "slide_text": "Challenge (skip ahead if you can): Build linear regression from scratch using gradient descent. Write that takes a feature matrix (n rows × d features) and targets . It should return the learned weights and bias that minimize the mean squared error. Use only NumPy, with no and no closed-form solution. [code block] [code block] Already got it? The next slides will guide you step by step.",
     "fragments": []
   },
   {
     "slide_index": 2,
+    "slide_text": "Introduction: Gradient Descent",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
     "slide_text": "What you ll invent today: The most important algorithm in machine learning The one that trains every neural network The one that powers GPT, image classifiers, and AlphaFold",
     "fragments": [
       {
@@ -20,22 +25,22 @@
     ]
   },
   {
-    "slide_index": 3,
+    "slide_index": 4,
     "slide_text": "How this works: Open a Python notebook side by side Code along don t just read Try before you peek at the answer",
     "fragments": []
   },
   {
-    "slide_index": 4,
+    "slide_index": 5,
     "slide_text": "Part 1: Finding the Bottom of a Valley",
     "fragments": []
   },
   {
-    "slide_index": 5,
+    "slide_index": 6,
     "slide_text": "Consider this function: [math] Go to desmos.com/calculator and plot it. Type in the expression box.",
     "fragments": []
   },
   {
-    "slide_index": 6,
+    "slide_index": 7,
     "slide_text": "Notice the shape it looks like a bowl . A function is convex if it curves upward everywhere. Visually: draw a straight line between any two points on the curve the curve always stays below that line.",
     "fragments": [
       {
@@ -49,7 +54,7 @@
     ]
   },
   {
-    "slide_index": 7,
+    "slide_index": 8,
     "slide_text": "Let s work with this in Python. Write a function that computes [math]:",
     "fragments": [
       {
@@ -59,7 +64,7 @@
     ]
   },
   {
-    "slide_index": 8,
+    "slide_index": 9,
     "slide_text": "Call your function: what are and ?",
     "fragments": [
       {
@@ -69,7 +74,7 @@
     ]
   },
   {
-    "slide_index": 9,
+    "slide_index": 10,
     "slide_text": "Find the minimum by hit and trial. Call for different values in your notebook. Keep narrowing down.",
     "fragments": [
       {
@@ -83,7 +88,7 @@
     ]
   },
   {
-    "slide_index": 10,
+    "slide_index": 11,
     "slide_text": "Now try another convex function: [math] Find its minimum using hit and trial in Python.",
     "fragments": [
       {
@@ -97,7 +102,7 @@
     ]
   },
   {
-    "slide_index": 11,
+    "slide_index": 12,
     "slide_text": "Convert your strategy into code: [code block]",
     "fragments": [
       {
@@ -115,12 +120,12 @@
     ]
   },
   {
-    "slide_index": 12,
+    "slide_index": 13,
     "slide_text": "Part 2: Inventing Gradient Descent",
     "fragments": []
   },
   {
-    "slide_index": 13,
+    "slide_index": 14,
     "slide_text": "At any point [math] on the curve, the slope tells you: Slope positive (uphill to the right) move left Slope negative (uphill to the left) move right Slope zero you re at the bottom !",
     "fragments": [
       {
@@ -130,7 +135,7 @@
     ]
   },
   {
-    "slide_index": 14,
+    "slide_index": 15,
     "slide_text": "Check your formula: you should have something like [math] where [math] is a tiny number like [math]. Now write it as a Python function:",
     "fragments": [
       {
@@ -144,7 +149,7 @@
     ]
   },
   {
-    "slide_index": 15,
+    "slide_index": 16,
     "slide_text": "Your turn: If the slope is positive, move left. If negative, move right. Keep going until the slope is near zero. Implement this naive approach move by a fixed step of 1 each time:",
     "fragments": [
       {
@@ -154,7 +159,7 @@
     ]
   },
   {
-    "slide_index": 16,
+    "slide_index": 17,
     "slide_text": "Let s trace through a simple example. Consider [math] which has its minimum at [math]. Start at [math].",
     "fragments": [
       {
@@ -176,7 +181,7 @@
     ]
   },
   {
-    "slide_index": 17,
+    "slide_index": 18,
     "slide_text": "Q3: Look at the slope values as we approach the minimum: [math] slope [math]slope[math] 2.0 4.0 4.0 1.0 2.0 2.0 0.5 1.0 1.0 0.1 0.2 0.2",
     "fragments": [
       {
@@ -190,7 +195,7 @@
     ]
   },
   {
-    "slide_index": 18,
+    "slide_index": 19,
     "slide_text": "",
     "fragments": [
       {
@@ -212,7 +217,7 @@
     ]
   },
   {
-    "slide_index": 19,
+    "slide_index": 20,
     "slide_text": "Experiment: Try running on [math] starting from [math] with these three values of [math]: [math] What happens? Try it and note the result Try it and note the result Try it and note the result",
     "fragments": [
       {
@@ -226,12 +231,12 @@
     ]
   },
   {
-    "slide_index": 20,
+    "slide_index": 21,
     "slide_text": "Part 3: Many Variables",
     "fragments": []
   },
   {
-    "slide_index": 21,
+    "slide_index": 22,
     "slide_text": "Now a function of two variables: [math] This is a bowl a 2D landscape with a single valley at [math].",
     "fragments": [
       {
@@ -245,7 +250,7 @@
     ]
   },
   {
-    "slide_index": 22,
+    "slide_index": 23,
     "slide_text": "You should arrive at formulas like these called partial derivatives : [math] [math]",
     "fragments": [
       {
@@ -263,7 +268,7 @@
     ]
   },
   {
-    "slide_index": 23,
+    "slide_index": 24,
     "slide_text": "Look at what you wrote for 1D and 2D side by side: Position Gradient 1D a number a number 2D a pair a pair ND ? ?",
     "fragments": [
       {
@@ -277,7 +282,7 @@
     ]
   },
   {
-    "slide_index": 24,
+    "slide_index": 25,
     "slide_text": "Your turn: Now write a single that works for any number of variables, using .",
     "fragments": [
       {
@@ -287,7 +292,7 @@
     ]
   },
   {
-    "slide_index": 25,
+    "slide_index": 26,
     "slide_text": "One algorithm, any number of dimensions: Function Start Found minimum [math] [2.0] [math] [2.0, 3.0] [math] [0, 0, 0]",
     "fragments": [
       {
@@ -301,12 +306,12 @@
     ]
   },
   {
-    "slide_index": 26,
+    "slide_index": 27,
     "slide_text": "Part 4: Fitting a Line to Data",
     "fragments": []
   },
   {
-    "slide_index": 27,
+    "slide_index": 28,
     "slide_text": "You have data points. You want a line [math] that fits them. Which line is best?",
     "fragments": [
       {
@@ -316,7 +321,7 @@
     ]
   },
   {
-    "slide_index": 28,
+    "slide_index": 29,
     "slide_text": "For each point, the line predicts [math]. The error is [math]. But some errors are positive and some negative they cancel if you just add them. How would you fix the cancellation problem? Think of at least one way to make all errors positive before adding them.",
     "fragments": [
       {
@@ -330,7 +335,7 @@
     ]
   },
   {
-    "slide_index": 29,
+    "slide_index": 30,
     "slide_text": "Write the function:",
     "fragments": [
       {
@@ -344,7 +349,7 @@
     ]
   },
   {
-    "slide_index": 30,
+    "slide_index": 31,
     "slide_text": "MSE is a function of [math] and [math]. What shape is its landscape?",
     "fragments": [
       {
@@ -354,12 +359,12 @@
     ]
   },
   {
-    "slide_index": 31,
+    "slide_index": 32,
     "slide_text": "Part 5: The Payoff — Linear Regression",
     "fragments": []
   },
   {
-    "slide_index": 32,
+    "slide_index": 33,
     "slide_text": "Your turn: expects a function of a list . takes . Write a wrapper that bridges the two it takes and calls with your data. Then plug it into and run it.",
     "fragments": [
       {
@@ -373,7 +378,7 @@
     ]
   },
   {
-    "slide_index": 33,
+    "slide_index": 34,
     "slide_text": "Try: . It gives the same answer but it uses an exact formula , not gradient descent.",
     "fragments": [
       {
@@ -387,12 +392,12 @@
     ]
   },
   {
-    "slide_index": 34,
+    "slide_index": 35,
     "slide_text": "Part 6: Many Features",
     "fragments": []
   },
   {
-    "slide_index": 35,
+    "slide_index": 36,
     "slide_text": "A house price depends on size and bedrooms and age. Give each feature its own slope: [math] Your turn: Write a function that takes a list of features , a list of slopes , and an intercept , and returns the prediction.",
     "fragments": [
       {
@@ -406,7 +411,7 @@
     ]
   },
   {
-    "slide_index": 36,
+    "slide_index": 37,
     "slide_text": "You already have which works on any number of variables. The weights [math] are just variables. Your turn: Write a function that finds the best weights. You can reuse (wrap MSE like before), or write the gradient descent loop yourself with .",
     "fragments": [
       {
@@ -420,7 +425,7 @@
     ]
   },
   {
-    "slide_index": 37,
+    "slide_index": 38,
     "slide_text": "What if the data follows [math]? A straight line can t fit a curve. Try it: X = [[1],[2],[3],[4],[5]], y = [1, 4, 9, 16, 25] fit(X, y) MSE 1 (stuck!)",
     "fragments": [
       {
@@ -438,7 +443,7 @@
     ]
   },
   {
-    "slide_index": 38,
+    "slide_index": 39,
     "slide_text": "What you built: 1. slope at a point 2. walk downhill to the bottom 3. measure how wrong a line is 4. linear regression! 5. many features, same algorithm 6. fit non-linear data",
     "fragments": [
       {
@@ -446,5 +451,10 @@
         "text": "What s next? Replace [math] with a neural network the gradient descent loop stays exactly the same, but the model becomes vastly more powerful. That s deep learning."
       }
     ]
+  },
+  {
+    "slide_index": 40,
+    "slide_text": "Index Introduction: Gradient Descent Part 1: Finding the Bottom of a Valley Part 2: Inventing Gradient Descent Part 3: Many Variables Part 4: Fitting a Line to Data Part 5: The Payoff — Linear Regression Part 6: Many Features",
+    "fragments": []
   }
 ]

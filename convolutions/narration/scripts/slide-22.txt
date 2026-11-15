@@ -1,8 +1,8 @@
 # ON SCREEN:
-# Compare and Analyze Tasks: Apply all three methods. Display results next to the original 100x100 image. Nearest neighbor will look "blocky" — why? What visual artifact does it create? Bilinear should look smoother — why? What is the trade-off? Compute the pixel-wise error between the upsampled image and the original : Which method is closest to the original? Does this surprise you? Compute the mean absolute error (you built this in the Loops Arrays chapter) between each upsampled image and the original .
+# Implement Three Upsampling Methods Rules: Use only Python loops. No , no PIL . Method A — Nearest Neighbor Replication Each output pixel copies from input pixel . Every input pixel gets "stretched" into a 2x2 block. Method B — Bilinear Interpolation (1D first, then 2D) This one is harder. Let's build it up: First, implement linear interpolation between two values: where is between 0 and 1. For upsampling 2x: output pixel maps to input position . If , you interpolate between row 1 and row 2 with weight 0.5. Do this for both row and column directions. Method C — Your own! Ideas: replicate rows/columns, use the average of neighbors, or anything you can think of.
 # ---
-Now it's time to put all three upsampling methods side by side. Run each one on your small image, then display the results next to the original hundred-by-hundred picture.
+Here's a challenge with three parts. You'll upsample an image to twice its size using only Python loops, so no NumPy shortcuts and no PIL.
 
-Before you look closely, make a prediction. Nearest neighbor should look blocky. Why is that? Think about what it's doing when it fills in a new pixel. Bilinear should look smoother, so ask yourself what it's trading away to get there.
+Start with nearest neighbor, where every pixel simply stretches into a little two-by-two block. Then try bilinear interpolation, which is trickier. Build the one-dimensional version first, blending two values by a weight between zero and one. Then apply it along both rows and columns.
 
-Then measure it. Compute the mean absolute error for each method against the original. Which one wins? Does the answer surprise you? Give it a try before moving on.
+For the third method, invent your own. Give it a real try before moving on.
