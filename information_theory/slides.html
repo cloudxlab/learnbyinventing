@@ -187,6 +187,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>For encoding: loop through each character. If it is <code>"A"</code>, append <code>"0"</code>; if <code>"B"</code>, append <code>"1"</code>. Join the pieces into one string.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For decoding: do the reverse. Loop through each bit character. If it is <code>"0"</code>, append <code>"A"</code>; if <code>"1"</code>, append <code>"B"</code>.</p>
+</details>
 
         </div>
       </section>
@@ -223,6 +230,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>You need to check every pair of codewords. For two codewords <code>x</code> and <code>y</code>, check whether <code>x</code> starts with <code>y</code> or <code>y</code> starts with <code>x</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Use Python's <code>str.startswith()</code>. Loop over all pairs: <code>for a in codes: for b in codes: if a != b and codes[a].startswith(codes[b]): return False</code>.</p>
+</details>
 
         </div>
       </section>
@@ -263,6 +277,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Create a dictionary: <code>{"A": "00", "B": "01", "C": "10"}</code>. Encoding is just looking up each character and joining the results.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For decoding, read exactly 2 bits at a time using a loop: <code>for i in range(0, len(bits), 2)</code>. Look up each 2-bit chunk in a reverse dictionary.</p>
+</details>
 
         </div>
       </section>
@@ -299,6 +320,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Encoding works exactly like the fixed scheme: look up each character in the code dictionary and concatenate.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>For decoding, you cannot read a fixed number of bits. Instead, build a reverse dict <code>{"0": "A", "10": "B", "11": "C"}</code>. Walk one bit at a time, accumulating into a buffer. When the buffer matches a codeword, emit the symbol and reset the buffer to empty.</p>
+</details>
 
         </div>
       </section>
@@ -334,11 +362,10 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 
 
       <section>
-        <h3>Why Prefix-Free Matters</h3>
+        <h3>Quick Check — Why Prefix-Free Matters</h3>
         <div class="slide-content">
 
         <p>In a prefix-free code, no codeword is a prefix of another. Why is this property essential for decoding?</p>
-
 
         <p><strong>A.</strong> It makes the codes shorter</p>
 
@@ -348,6 +375,7 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 
         <p><strong>D.</strong> It prevents errors during transmission</p>
 
+        <div class="fragment"><p><strong>Answer: B.</strong> Without the prefix-free property, the same bit string could be decoded in multiple ways. For example, with A=<code>"0"</code> and B=<code>"00"</code>, the bits <code>"000"</code> could mean "AAA", "AB", or "BA" — the decoder has no way to tell.</p></div>
 
         </div>
       </section>
@@ -423,6 +451,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>The operation that combines "how often" with "how many bits" is a <strong>weighted average</strong>: multiply each symbol's frequency by the length of its code, then add them all up.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p><code>return sum(frequencies[s] * len(scheme[s]) for s in scheme)</code></p>
+</details>
 
         </div>
       </section>
@@ -493,9 +528,9 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
         <div class="slide-content">
 
 
-        <p>Generate a random message of 1000 symbols according to the given frequencies, then measure how many bits each scheme actually produces.</p>
+        <p>Generate a random message of 1000 symbols using the given frequencies (A=50%, B=25%, C=20%, D=5%). Encode the message with each of the three schemes and count the total bits.</p>
 
-<p>Run the code above and observe which scheme produces the fewest bits on real data. Does it match the theoretical <code>avg_bits</code> you computed?</p>
+<p>Which scheme produces the fewest bits on real data? Does the result match the theoretical <code>avg_bits</code> you computed?</p>
 
 
 
@@ -550,8 +585,13 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Start by combining the two symbols with the <strong>lowest frequencies</strong>. Which two are smallest? D=5% and C=20%. Their combined frequency is 25%.</p>
+</details>
 
-
+<details><summary>Hint 2</summary>
+<p>After merging D and C into "DC" (25%), you have: A=50%, B=25%, DC=25%. Now merge the two smallest again: B and DC into "BDC" (50%). Finally merge A and BDC. The tree gives A a 1-bit code and D/C the longest codes.</p>
+</details>
 
         </div>
       </section>
@@ -584,6 +624,17 @@ sum(freqs[s]*len(codes[s]) for s in freqs)  # 190 bits minimum</code></pre>
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Start with a list of <code>(frequency, symbol)</code> pairs. Sort the list so the smallest frequencies come first.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Pop the first two items (the smallest). Combine them into a new item: <code>(freq1 + freq2, (node1, node2))</code>. Push it back into the list and sort again. Repeat until one item remains.</p>
+</details>
+
+<details><summary>Hint 3</summary>
+<p>The "node" in each pair starts as a string (like <code>"A"</code>) and later becomes a tuple of two children. When only one item is left, return <code>items[0][1]</code> (the tree part, not the frequency).</p>
+</details>
 
         </div>
       </section>
@@ -615,6 +666,13 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Base case: if <code>tree</code> is a string (a leaf), return <code>{tree: prefix}</code>. If prefix is empty (single symbol), return <code>{tree: "0"}</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Recursive case: <code>tree</code> is a tuple <code>(left, right)</code>. Call <code>assign_codes(left, prefix + "0")</code> and <code>assign_codes(right, prefix + "1")</code>. Merge the two dictionaries with <code>{**left_codes, **right_codes}</code>.</p>
+</details>
 
         </div>
       </section>
@@ -642,6 +700,9 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 <li><code>avg_bits</code> is ≤ 2.0 (the fixed-width baseline).</li>
 </ol>
 
+<details><summary>Hint</summary>
+<p>This is a one-liner: call <code>build_huffman_tree(frequencies)</code> to get the tree, then pass the tree to <code>assign_codes(tree)</code> and return the result.</p>
+</details>
 
         </div>
       </section>
@@ -672,6 +733,13 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>It is the same weighted average as <code>avg_bits</code>, but instead of using the actual code lengths, use the "ideal" length for each symbol: <code>log2(1/p)</code>, which is the same as <code>-log2(p)</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p><code>import math</code> and compute <code>sum(-p * math.log2(p) for p in frequencies.values() if p > 0)</code>. The <code>if p > 0</code> guard avoids taking log of zero.</p>
+</details>
 
         </div>
       </section>
@@ -694,11 +762,10 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 
 
       <section>
-        <h3>Huffman Optimality</h3>
+        <h3>Quick Check — Huffman Optimality</h3>
         <div class="slide-content">
 
         <p>Huffman coding assigns shorter codes to more frequent symbols. Is this always the most efficient possible prefix-free encoding?</p>
-
 
         <p><strong>A.</strong> No — there are always better encodings that Huffman misses</p>
 
@@ -708,6 +775,7 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 
         <p><strong>D.</strong> No — fixed-length codes are always more efficient</p>
 
+        <div class="fragment"><p><strong>Answer: B.</strong> Huffman's greedy algorithm (always merge the two rarest symbols) produces the best possible prefix-free code. No other way of assigning whole-number bit lengths to symbols can beat it.</p></div>
 
         </div>
       </section>
@@ -747,6 +815,13 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+<p>Call <code>huffman_scheme(frequencies)</code> to get the code table. Then encoding is just: <code>"".join(scheme[ch] for ch in data)</code>.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Return a tuple of <code>(encoded_bits, scheme)</code> so the caller can use the scheme for decoding.</p>
+</details>
 
         </div>
       </section>
@@ -773,6 +848,13 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 
 <p><strong>Before you code:</strong> Why does the prefix-free property guarantee this works? Could two different symbols ever produce the same accumulated prefix at the same step?</p>
 
+<details><summary>Hint 1</summary>
+<p>Build a reverse lookup: <code>reverse = {bits: symbol for symbol, bits in scheme.items()}</code>. Walk through <code>encoded_data</code> one bit at a time, building up a buffer string.</p>
+</details>
+
+<details><summary>Hint 2</summary>
+<p>Each time the buffer matches a key in the reverse dict, append the corresponding symbol to your result and reset the buffer to <code>""</code>. The prefix-free property guarantees there is only ever one match.</p>
+</details>
 
         </div>
       </section>
@@ -812,11 +894,10 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 
 
       <section>
-        <h3>Entropy as a Lower Bound</h3>
+        <h3>Quick Check — Entropy as a Lower Bound</h3>
         <div class="slide-content">
 
         <p>The entropy of an alphabet with frequencies {A: 50%, B: 25%, C: 12.5%, D: 12.5%} is exactly 1.75 bits per symbol. Your Huffman code achieves exactly 1.75 bits per symbol. Is it always possible to match the entropy exactly?</p>
-
 
         <p><strong>A.</strong> Yes — Huffman always matches entropy exactly</p>
 
@@ -826,6 +907,7 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 
         <p><strong>D.</strong> Yes, but only if you use more than 4 symbols</p>
 
+        <div class="fragment"><p><strong>Answer: B.</strong> When every frequency is an exact power of 1/2 (like 0.5, 0.25, 0.125), the ideal code length $\log_2(1/p)$ is a whole number, so Huffman can match entropy perfectly. Otherwise Huffman must round up to whole bits, so it gets close to entropy but cannot beat it.</p></div>
 
         </div>
       </section>
@@ -922,6 +1004,28 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
 </div>
       </section>
 
+      <!-- Part 6: Reflection -->
+      <section id="part6">
+        <h2>Part 6: Reflection</h2>
+      </section>
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Answer these questions in your own words:</p>
+
+<ol>
+<li><strong>Why must a code be prefix-free?</strong> Explain what goes wrong during decoding if a code is not prefix-free. Give a concrete example.</li>
+<li><strong>Why does giving shorter codes to more frequent symbols save bits?</strong> What would happen if you did the opposite?</li>
+<li><strong>Explain the Huffman tree-building process in plain English.</strong> Why do we always merge the two rarest symbols first?</li>
+<li><strong>What is entropy, and why can no lossless code beat it?</strong> In your own words, what does the entropy number actually tell you?</li>
+<li><strong>Where is Huffman coding used in the real world?</strong> Think about file formats, images, audio, or network protocols you use every day.</li>
+</ol>
+
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
@@ -932,6 +1036,7 @@ Handle the edge case where <code>prefix</code> is empty (single-symbol alphabet)
             <li><a href="#/part3">Part 3: Frequencies Matter (A, B, C, D)</a></li>
             <li><a href="#/part4">Part 4: Finding the Shortest Encoding</a></li>
             <li><a href="#/part5">Part 5: Generalized Encode and Decode</a></li>
+            <li><a href="#/part6">Part 6: Reflection</a></li>
           </ol>
         </div></div>
       </section>
