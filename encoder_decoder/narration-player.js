@@ -18,6 +18,7 @@
   var currentFile = null;
   var userHasInteracted = false;
   var pendingPlay = null;
+  var manifest = null;
 
   // ── CSS for animations ──────────────────────────────────────────────
 
@@ -173,11 +174,10 @@
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   function slideKey(flatIdx, fragIdx) {
-    var name = 'slide-' + pad(flatIdx);
     if (typeof fragIdx === 'number' && fragIdx >= 0) {
-      name += '-frag-' + fragIdx;
+      return flatIdx + '-frag-' + fragIdx;
     }
-    return name;
+    return '' + flatIdx;
   }
 
   function flatIndex(h, v) {
@@ -190,7 +190,17 @@
   }
 
   function audioPath(key) {
-    return 'narration/audio/' + key + '.mp3';
+    var name;
+    if (manifest && manifest[key]) {
+      name = manifest[key];
+    } else {
+      name = 'slide-' + pad(typeof key === 'string' && key.indexOf('-frag-') > -1
+        ? parseInt(key, 10) : parseInt(key, 10));
+      if (typeof key === 'string' && key.indexOf('-frag-') > -1) {
+        name += key.substring(key.indexOf('-frag-'));
+      }
+    }
+    return 'narration/audio/' + name + '.mp3';
   }
 
   function playFile(path) {
@@ -217,11 +227,30 @@
     playFile(audioPath(key));
   }
 
-  // ── Probe for audio files ───────────────────────────────────────────
+  // ── Load manifest and probe ─────────────────────────────────────────
+
+  function loadManifest(callback) {
+    var req = new XMLHttpRequest();
+    req.open('GET', 'narration/manifest.json', true);
+    req.onload = function () {
+      if (req.status >= 200 && req.status < 400) {
+        try {
+          manifest = JSON.parse(req.responseText);
+          console.log('[narration] Loaded manifest (' + Object.keys(manifest).length + ' entries)');
+        } catch (e) {
+          manifest = null;
+        }
+      }
+      callback();
+    };
+    req.onerror = function () { callback(); };
+    req.send();
+  }
 
   function probeNarration(callback) {
+    var firstPath = audioPath('0');
     var probe = new XMLHttpRequest();
-    probe.open('HEAD', audioPath('slide-00'), true);
+    probe.open('HEAD', firstPath, true);
     probe.onload = function () {
       callback(probe.status >= 200 && probe.status < 400);
     };
@@ -232,9 +261,10 @@
   // ── Init ────────────────────────────────────────────────────────────
 
   function init() {
+    loadManifest(function () {
     probeNarration(function (found) {
       if (!found) {
-        console.log('[narration] No audio files found at narration/audio/slide-00.mp3');
+        console.log('[narration] No audio files found');
         return;
       }
       console.log('[narration] Audio files found, player active');
@@ -270,6 +300,7 @@
       });
 
       playCurrentSlide();
+    });
     });
   }
 

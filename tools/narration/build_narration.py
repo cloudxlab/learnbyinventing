@@ -100,12 +100,15 @@ def main():
         stale_indices = []
         for slide in slides:
             idx = slide["slide_index"]
-            script_path = os.path.join(scripts_dir, f"slide-{idx:02d}.txt")
+            cid = slide.get("content_id")
+            script_name = f"{cid}.txt" if cid else f"slide-{idx:02d}.txt"
+            script_path = os.path.join(scripts_dir, script_name)
             if args.force or needs_rebuild(data_path, script_path):
                 stale_indices.append(idx)
             for frag in slide.get("fragments", []):
-                frag_script = os.path.join(scripts_dir,
-                    f"slide-{idx:02d}-frag-{frag['fragment_index']}.txt")
+                frag_cid = frag.get("content_id")
+                frag_name = f"{frag_cid}.txt" if frag_cid else f"slide-{idx:02d}-frag-{frag['fragment_index']}.txt"
+                frag_script = os.path.join(scripts_dir, frag_name)
                 if args.force or needs_rebuild(data_path, frag_script):
                     if idx not in stale_indices:
                         stale_indices.append(idx)
@@ -134,6 +137,26 @@ def main():
             cmd.append("--force")
         # Step 3 already has built-in timestamp checking
         run_step(cmd, "Step 3: Generating audio")
+
+    # ── Generate manifest.json ────────────────────────────────────────
+
+    if os.path.exists(data_path):
+        with open(data_path) as f:
+            slides = json.load(f)
+        manifest = {}
+        for slide in slides:
+            idx = slide["slide_index"]
+            cid = slide.get("content_id")
+            audio_name = cid if cid else f"slide-{idx:02d}"
+            manifest[str(idx)] = audio_name
+            for frag in slide.get("fragments", []):
+                frag_cid = frag.get("content_id")
+                frag_audio = frag_cid if frag_cid else f"slide-{idx:02d}-frag-{frag['fragment_index']}"
+                manifest[f"{idx}-frag-{frag['fragment_index']}"] = frag_audio
+        manifest_path = os.path.join(narration_dir, "manifest.json")
+        with open(manifest_path, "w") as f:
+            json.dump(manifest, f, indent=2)
+        print(f"\nGenerated manifest.json ({len(manifest)} entries)")
 
     # ── Copy player ────────────────────────────────────────────────────
 

@@ -24,6 +24,7 @@ import os
 import subprocess
 import argparse
 import glob
+import json
 import shutil
 import platform
 
@@ -330,6 +331,7 @@ def main():
     narration_dir = get_narration_dir(args.slides_html)
     scripts_dir = os.path.join(narration_dir, "scripts")
     audio_dir = os.path.join(narration_dir, "audio")
+    data_path = os.path.join(narration_dir, "slides_data.json")
 
     if not os.path.exists(scripts_dir):
         print(f"Error: {scripts_dir} not found. Run steps 1 and 2 first.")
@@ -337,7 +339,33 @@ def main():
 
     os.makedirs(audio_dir, exist_ok=True)
 
-    script_files = sorted(glob.glob(os.path.join(scripts_dir, "slide-*.txt")))
+    # Build script file list from slides_data.json (content_id) or fall back to glob
+    script_files = []
+    if os.path.exists(data_path):
+        with open(data_path) as f:
+            slides_data = json.load(f)
+        for slide in slides_data:
+            cid = slide.get("content_id")
+            if cid:
+                sp = os.path.join(scripts_dir, f"{cid}.txt")
+                if os.path.exists(sp):
+                    script_files.append(sp)
+            else:
+                sp = os.path.join(scripts_dir, f"slide-{slide['slide_index']:02d}.txt")
+                if os.path.exists(sp):
+                    script_files.append(sp)
+            for frag in slide.get("fragments", []):
+                frag_cid = frag.get("content_id")
+                if frag_cid:
+                    fp = os.path.join(scripts_dir, f"{frag_cid}.txt")
+                    if os.path.exists(fp):
+                        script_files.append(fp)
+                else:
+                    fp = os.path.join(scripts_dir, f"slide-{slide['slide_index']:02d}-frag-{frag['fragment_index']}.txt")
+                    if os.path.exists(fp):
+                        script_files.append(fp)
+    else:
+        script_files = sorted(glob.glob(os.path.join(scripts_dir, "slide-*.txt")))
 
     if args.only:
         only_names = set(args.only.split(","))

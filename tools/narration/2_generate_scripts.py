@@ -52,7 +52,11 @@ def get_narration_dir(slides_path):
     return os.path.join(chapter_dir, "narration")
 
 
-def script_filename(slide_index, frag_index=None):
+def script_filename(content_id):
+    return f"{content_id}.txt"
+
+
+def legacy_script_filename(slide_index, frag_index=None):
     if frag_index is not None:
         return f"slide-{slide_index:02d}-frag-{frag_index}.txt"
     return f"slide-{slide_index:02d}.txt"
@@ -162,17 +166,33 @@ def main():
     to_generate = []
     for slide in slides:
         idx = slide["slide_index"]
+        cid = slide.get("content_id")
         if only_indices and idx not in only_indices:
             continue
 
-        path = os.path.join(scripts_dir, script_filename(idx))
+        if cid:
+            path = os.path.join(scripts_dir, script_filename(cid))
+            legacy_path = os.path.join(scripts_dir, legacy_script_filename(idx))
+            if not os.path.exists(path) and os.path.exists(legacy_path):
+                os.rename(legacy_path, path)
+        else:
+            path = os.path.join(scripts_dir, legacy_script_filename(idx))
+
         if not args.force and read_existing_narration(path):
             pass
         else:
             to_generate.append(("slide", slide, None, path))
 
         for frag in slide["fragments"]:
-            fpath = os.path.join(scripts_dir, script_filename(idx, frag["fragment_index"]))
+            frag_cid = frag.get("content_id")
+            if frag_cid:
+                fpath = os.path.join(scripts_dir, script_filename(frag_cid))
+                legacy_fpath = os.path.join(scripts_dir, legacy_script_filename(idx, frag["fragment_index"]))
+                if not os.path.exists(fpath) and os.path.exists(legacy_fpath):
+                    os.rename(legacy_fpath, fpath)
+            else:
+                fpath = os.path.join(scripts_dir, legacy_script_filename(idx, frag["fragment_index"]))
+
             if not args.force and read_existing_narration(fpath):
                 pass
             else:

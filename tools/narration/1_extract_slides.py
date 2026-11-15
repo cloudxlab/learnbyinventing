@@ -21,7 +21,13 @@ Output JSON structure:
 import sys
 import json
 import re
+import hashlib
 from html.parser import HTMLParser
+
+
+def content_hash(text):
+    """Return a short stable hash of content for use as a filename."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:10]
 
 
 class SlideExtractor(HTMLParser):
@@ -135,6 +141,7 @@ def extract_slides_raw(html_content):
 
         slide = {
             "slide_index": section_count,
+            "content_id": content_hash(section_content),
             "slide_text": "",
             "fragments": [],
         }
@@ -178,8 +185,10 @@ def extract_slides_raw(html_content):
         for frag_idx in sorted(frag_texts.keys()):
             text = frag_texts[frag_idx].strip()
             if text:
+                frag_hash_input = section_content + f"::frag-{frag_idx}"
                 slide["fragments"].append({
                     "fragment_index": frag_idx,
+                    "content_id": content_hash(frag_hash_input),
                     "text": text,
                 })
 
