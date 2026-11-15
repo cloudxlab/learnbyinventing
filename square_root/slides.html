@@ -103,13 +103,12 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <section>
         <h1>Finding Square Roots</h1>
 
-        <div class="slide-content slide-title">You're going to find the square root of any number &mdash; without using
-
+        <div class="slide-content slide-title"><p>You're going to find the square root of any number &mdash; without using
 any built-in function. All you need is multiplication, a bit of guessing,
 and a clever trick that cuts your search in half every time.</p>
 
 <p>Along the way, you'll pick up Python basics: expressions, variables,
-if-else, loops, and functions &mdash; all by solving one real problem.</div>
+if-else, loops, and functions &mdash; all by solving one real problem.</p></div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -219,6 +218,22 @@ type an expression into a cell and press <strong>Shift+Enter</strong> to run it.
 
 
 
+
+
+      <section>
+        <h3>Quick Check 1.1 — Squares and Roots</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>If someone tells you that <code>x * x = 49</code>, what is <code>x</code>?</p>
+  <p><strong>A.</strong> 6</p>
+  <p><strong>B.</strong> 7</p>
+  <p><strong>C.</strong> 8</p>
+  <p><strong>D.</strong> 49</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>B.</strong> 7 &mdash; because 7 &times; 7 = 49.
+    The square root of 49 is 7.</p>
+  </div>
+</div></div>
+      </section>
 
 
       <!-- Part 2: The Guessing Game -->
@@ -477,6 +492,24 @@ print(f"math.sqrt(5): {math.sqrt(5)}")</code></pre>
 
 
 
+      <section>
+        <h3>Quick Check 3.1 — How Fast Does Binary Search Narrow Down?</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You start with a range of size 1 (e.g., from 2 to 3). After 10 guesses
+  using the halving method, roughly how big is the remaining range?</p>
+  <p><strong>A.</strong> 1/10 of the original (about 0.1)</p>
+  <p><strong>B.</strong> 1/100 of the original (about 0.01)</p>
+  <p><strong>C.</strong> 1/1024 of the original (about 0.001)</p>
+  <p><strong>D.</strong> 1/20 of the original (about 0.05)</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>C.</strong> Each guess cuts the range in half.
+    After 10 guesses: 1/2<sup>10</sup> = 1/1024 &mdash; about a thousandth
+    of the original range.</p>
+  </div>
+</div></div>
+      </section>
+
+
       <!-- Part 4: Build Your Own Function -->
       <section id="part4">
         <h2>Part 4: Build Your Own Function</h2>
@@ -556,67 +589,150 @@ print(mysqrt(2,  1, 2, 20))   # 1.4142135...</code></pre>
 
 
 
+      <!-- What You Just Invented -->
       <section>
-        <div class="slide-content"><div style="font-size:1.3em;">
-  <p><strong>Congratulations!</strong> In one sitting you learned:</p>
-  <table style="margin:0.5em auto; font-size:0.85em; text-align:left;">
-    <tr><th style="padding:0.2em 0.6em;">Step</th><th style="padding:0.2em 0.6em;">What you did</th><th style="padding:0.2em 0.6em;">Python concept</th></tr>
-    <tr><td>1</td><td>Computed squares (2&times;2, 3&times;3)</td><td><strong>Expressions</strong></td></tr>
-    <tr><td>2</td><td>Reversed the question (sqrt of 16, 25)</td><td>Thinking backwards</td></tr>
-    <tr><td>3</td><td>Guessed sqrt(5), checked by squaring</td><td><strong>Variables</strong></td></tr>
-    <tr><td>4</td><td>Tracked the range with lo and hi</td><td><strong>Variables</strong> (lo, hi)</td></tr>
-    <tr><td>5</td><td>Automated the high/low decision</td><td><strong>if / else</strong></td></tr>
-    <tr><td>6</td><td>Repeated the guessing 20 times</td><td><strong>for loop</strong></td></tr>
-    <tr><td>7</td><td>Packaged it as <code>mysqrt</code></td><td><strong>Functions</strong> (def)</td></tr>
+        <h2 style="border:none; color:#333;">What You Just Invented</h2>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th style="padding:0.2em 0.8em;">What you built</th>
+        <th style="padding:0.2em 0.8em;">Its real name</th></tr>
+    <tr><td>Guessing &amp; checking by squaring</td>
+        <td><strong>Trial and error / brute-force search</strong></td></tr>
+    <tr><td>Tracking <code>lo</code> and <code>hi</code>, always picking the midpoint</td>
+        <td><strong>Binary search</strong> (bisection method)</td></tr>
+    <tr><td>Cutting the range in half each step</td>
+        <td><strong>Logarithmic convergence</strong> (O(log n))</td></tr>
+    <tr><td>Wrapping the search in <code>mysqrt()</code></td>
+        <td><strong>Abstraction</strong> (functions)</td></tr>
+    <tr><td>Generalizing to <code>mynthroot()</code> for any power</td>
+        <td><strong>Parameterization / generalization</strong></td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
-    <p>The algorithm you built &mdash; <strong>binary search</strong> &mdash;
-    doesn&rsquo;t just work for square roots. It&rsquo;s one of the most
-    important algorithms in computer science.</p>
-    <p style="font-size:0.9em;"><strong>And you just invented it.</strong></p>
+    <p>Nobody taught you these &mdash; <strong>you derived them
+    yourself</strong>. Binary search is one of the most important
+    algorithms in computer science, and you just invented it by
+    trying to find the square root of 5.</p>
   </div>
-</div>
-</div>
+</div></div>
       </section>
 
 
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p><strong>Exercises:</strong> Your <code>mysqrt</code> checks
-  <code>guess * guess</code>. What if you change that one line?</p>
-  <p><strong>1. Cube root:</strong> Write <code>mycuberoot(num, lo, hi, iterations)</code>.
-  What would you check instead of <code>guess * guess > num</code>?</p>
-  <div class="fragment" data-fragment-index="0">
-    <p style="font-size:0.9em; color:#2a7a2a;">That&rsquo;s right! Just check
-    <code>guess * guess * guess > num</code> instead.</p>
-    <p style="font-size:0.85em;">Test: <code>mycuberoot(27, 2, 4, 20)</code>
-    should give 3.0, and <code>mycuberoot(8, 1, 3, 20)</code> should give 2.0.</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p><strong>2. Fourth root:</strong> Write <code>myfourthroot(num, lo, hi, iterations)</code>.
-    Same idea &mdash; what power do you check?</p>
-  </div>
-  <div class="fragment" data-fragment-index="2">
-    <p style="font-size:0.9em; color:#2a7a2a;">That&rsquo;s right! Check
-    <code>guess ** 4 > num</code>.</p>
-    <p style="font-size:0.85em;">Test: <code>myfourthroot(16, 1, 3, 20)</code>
-    should give 2.0, and <code>myfourthroot(81, 2, 4, 20)</code> should give 3.0.</p>
-  </div>
-  <div class="fragment" data-fragment-index="3">
-    <p><strong>3. Nth root:</strong> Can you write <em>one</em> function
-    <code>mynthroot(num, n, lo, hi, iterations)</code>
-    that works for <em>any</em> root &mdash; square, cube, 5th, 10th&hellip;?</p>
-  </div>
-  <div class="fragment" data-fragment-index="4">
-    <p style="font-size:0.9em; color:#2a7a2a;">That&rsquo;s right! Check
-    <code>guess ** n > num</code>. One function to rule them all!</p>
-    <p style="font-size:0.85em;">Test: <code>mynthroot(32, 5, 1, 3, 20)</code>
-    should give 2.0, because 2<sup>5</sup> = 32.</p>
-  </div>
-</div>
-</div>
+  <p><strong>Exercise 4.1 &mdash; Cube Root:</strong> Your <code>mysqrt</code> checks
+  <code>guess * guess &gt; num</code>. What if you need the
+  <strong>cube root</strong> instead?</p>
+  <p>Write <code>mycuberoot(num, lo, hi, iterations)</code>.
+  What condition would you check instead?</p>
+  <p style="font-size:0.85em;">Test: <code>mycuberoot(27, 2, 4, 20)</code>
+  should give 3.0, and <code>mycuberoot(8, 1, 3, 20)</code> should give 2.0.</p>
+  <details><summary>Hint 1</summary>
+    <p>The cube root of a number is the value that, when multiplied by itself
+    three times, gives that number. So you need to check whether your guess
+    cubed is too high or too low.</p>
+  </details>
+  <details><summary>Hint 2</summary>
+    <p>Replace <code>guess * guess &gt; num</code> with
+    <code>guess * guess * guess &gt; num</code>. Everything else stays the same.</p>
+  </details>
+  <details><summary>Solution</summary>
+<pre><code>def mycuberoot(num, lo, hi, iterations):
+    for i in range(iterations):
+        guess = (lo + hi) / 2
+        if guess * guess * guess > num:
+            hi = guess
+        else:
+            lo = guess
+    return guess</code></pre>
+  </details>
+</div></div>
       </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p><strong>Exercise 4.2 &mdash; Nth Root:</strong> You wrote separate functions
+  for square root and cube root. Can you write <em>one</em> function
+  <code>mynthroot(num, n, lo, hi, iterations)</code>
+  that works for <em>any</em> root &mdash; square, cube, 5th, 10th&hellip;?</p>
+  <p style="font-size:0.85em;">Test: <code>mynthroot(16, 4, 1, 3, 20)</code>
+  should give 2.0 (fourth root of 16), and <code>mynthroot(32, 5, 1, 3, 20)</code>
+  should give 2.0 (because 2<sup>5</sup>&nbsp;=&nbsp;32).</p>
+  <details><summary>Hint 1</summary>
+    <p>For cube root you checked <code>guess ** 3</code>. For fourth root
+    you&rsquo;d check <code>guess ** 4</code>. See the pattern?</p>
+  </details>
+  <details><summary>Hint 2</summary>
+    <p>Replace the fixed power with <code>guess ** n</code>, and pass
+    <code>n</code> as a parameter to the function.</p>
+  </details>
+  <details><summary>Solution</summary>
+<pre><code>def mynthroot(num, n, lo, hi, iterations):
+    for i in range(iterations):
+        guess = (lo + hi) / 2
+        if guess ** n > num:
+            hi = guess
+        else:
+            lo = guess
+    return guess</code></pre>
+    <p style="font-size:0.85em;">One function to rule them all!</p>
+  </details>
+</div></div>
+      </section>
+
+
+
+      <section>
+        <h3>Quick Check 4.1 &mdash; Handling Small Numbers</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>You try <code>mysqrt(0.25, 0, 0.25, 20)</code> and get 0.0 instead of 0.5.
+  What went wrong?</p>
+  <p><strong>A.</strong> Binary search does not work for numbers less than 1</p>
+  <p><strong>B.</strong> <code>hi</code> should be larger &mdash; because the square root of 0.25 is
+  <em>bigger</em> than 0.25</p>
+  <p><strong>C.</strong> You need more iterations</p>
+  <p><strong>D.</strong> The <code>if</code> condition should be flipped for small numbers</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="color:#2a7a2a;"><strong>B.</strong> For numbers between 0 and 1,
+    the square root is <em>larger</em> than the number itself
+    (0.5 &times; 0.5 = 0.25). So <code>hi</code> must be at least 1.
+    Try <code>mysqrt(0.25, 0, 1, 20)</code> &mdash; it returns 0.5.</p>
+  </div>
+</div></div>
+      </section>
+
+      <!-- Part 5: Reflection -->
+      <section id="part5">
+        <h2>Part 5: Reflection &mdash; What Did You Just Build?</h2>
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Take a moment to answer these questions in your own words.</p>
+  <ol>
+    <li>Why does the &ldquo;guess the midpoint&rdquo; strategy find the answer
+    so quickly? What would happen if you picked a random point in the
+    range instead of the midpoint?</li>
+    <li>Your <code>mysqrt</code> uses a fixed number of iterations.
+    How could you change it to stop <em>early</em> once the answer
+    is &ldquo;close enough&rdquo;? What does &ldquo;close enough&rdquo; mean?</li>
+    <li>The square root of 0.25 is 0.5 &mdash; bigger than the input!
+    Why does this happen for numbers between 0 and 1? How does this
+    affect your choice of <code>lo</code> and <code>hi</code>?</li>
+    <li>You generalized from square root to cube root to nth root.
+    What other problems could you solve with the same binary search
+    idea? (Hint: think about any function where bigger input gives
+    bigger output.)</li>
+  </ol>
+</div></div>
+      </section>
+
+
 
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
@@ -627,6 +743,7 @@ print(mysqrt(2,  1, 2, 20))   # 1.4142135...</code></pre>
             <li><a href="#/part2">Part 2: The Guessing Game</a></li>
             <li><a href="#/part3">Part 3: Let the Loop Do the Work</a></li>
             <li><a href="#/part4">Part 4: Build Your Own Function</a></li>
+            <li><a href="#/part5">Part 5: Reflection &mdash; What Did You Just Build?</a></li>
           </ol>
         </div></div>
       </section>
@@ -661,24 +778,6 @@ print(mysqrt(2,  1, 2, 20))   # 1.4142135...</code></pre>
     Reveal.on('ready', function() { updateProgress(); });
   </script>
 <div class="chapter-footer">
-
-  <p><em><p>You started by typing <code>2 * 2</code> into Python. You ended with a function
-that computes square roots to arbitrary precision using binary search.
-Every step was something you could reason about &mdash; no magic.</p>
-
-<p><strong>Going further:</strong></p>
-
-<ul>
-<li><strong>Cube roots:</strong> The same halving trick works &mdash; just check
-<code>guess * guess * guess</code>. Try writing
-<code>mycuberoot(num, lo, hi, iterations)</code>.</li>
-<li><strong>More precision:</strong> Instead of a fixed number of iterations, stop when
-<code>abs(guess * guess - num)</code> is smaller than some tiny number
-like <code>0.0000001</code>.</li>
-<li><strong>The full Binary Search chapter</strong> on this site applies the same idea
-to nth roots, logarithms, and searching sorted arrays.</li>
-</ul></em></p>
-
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
