@@ -119,9 +119,9 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 
 <p>Trip 1 says $3\beta_1 + \beta_0 = 6$; trip 2 says $5\beta_1 + \beta_0 = 8$. Subtract them: $2\beta_1 = 2$, so the price is 1 and parking is 3. Ten apples: <strong>13</strong>.</p>
 
-<p>That is the oldest prediction machine there is: <em>turn observations into equations, solve, extrapolate</em>. Long before gradient descent, this is how curves were fit --- and in this chapter you rebuild the whole machine, then push it to its breaking point (data that no curve passes through) and invent <strong>least squares</strong>.</p>
+<p>That is the oldest prediction machine there is: <em>turn observations into equations, solve, predict beyond them</em>. Long before gradient descent, this is how curves were fit — and in this chapter you rebuild the whole machine, then push it to its breaking point (data that no curve passes through) and invent <strong>least squares</strong>.</p>
 
-<p><strong>Prerequisite:</strong> the Loops and Arrays chapter --- you will reuse your <code>solve_equations</code> from its Part 5.</div>
+<p><strong>Prerequisite:</strong> the Loops and Arrays chapter — you will reuse your <code>solve_equations</code> from its Part 5.</div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -151,11 +151,11 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
 
-      <!-- Part 1: Vectors --- the Arithmetic of Prediction -->
+      <!-- Part 1: Vectors — the Arithmetic of Prediction -->
       <section id="part1">
-        <h2>Part 1: Vectors --- the Arithmetic of Prediction</h2>
+        <h2>Part 1: Vectors — the Arithmetic of Prediction</h2>
 
-        <div class="slide-content"><p>A fitted model is just a list of coefficients --- a <strong>vector</strong>. Evaluating it at a point is a <em>dot product</em>. Build that toolkit first.</p>
+        <div class="slide-content"><p>A fitted model is just a list of coefficients — a <strong>vector</strong>. Evaluating it at a point is a <em>dot product</em>. Build that toolkit first.</p>
 </div>
 
       </section>
@@ -182,6 +182,15 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Loop through both lists at the same time using <code>range(len(a))</code>. Multiply matching elements and keep a running total.
+</details>
+
+<details><summary>Hint 2</summary>
+<code>total = 0</code><br>
+<code>for i in range(len(a)): total += a[i] * b[i]</code><br>
+<code>return total</code>
+</details>
 
         </div>
       </section>
@@ -192,7 +201,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
         <h3>`vector_length` and `convert_to_unit`</h3>
         <div class="slide-content">
 
-        <p>The length of a vector is the distance formula in disguise: $\|v\| = \sqrt{v \cdot v}$ --- reuse your <code>dot_product</code>.</p>
+        <p>The length of a vector is the distance formula in disguise: $\|v\| = \sqrt{v \cdot v}$ — reuse your <code>dot_product</code>.</p>
 
 <p>A <strong>unit vector</strong> keeps the direction but has length 1: divide every component by the length. <code>convert_to_unit([3, 4])</code> -> <code>[0.6, 0.8]</code>.</p>
 
@@ -211,6 +220,13 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+For <code>vector_length</code>: the dot product of a vector with itself gives the square of its length. So <code>vector_length(v)</code> is <code>math.sqrt(dot_product(v, v))</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+For <code>convert_to_unit</code>: divide every element by the length. A list comprehension works well: <code>[x / vector_length(v) for x in v]</code>.
+</details>
 
         </div>
       </section>
@@ -229,7 +245,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 <li>opposite -> <code>-1.0</code></li>
 </ul>
 
-<p>This one number is how modern systems compare documents, faces and embeddings --- you will meet it again the moment you touch LLMs.</p>
+<p>This one number is how modern AI systems compare documents, images and other data represented as vectors — you will meet it again in later chapters.</p>
 
 <p><strong>Tasks:</strong></p>
 
@@ -245,6 +261,13 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+Convert both vectors to unit vectors first, then take their dot product. You already have both helper functions.
+</details>
+
+<details><summary>Hint 2</summary>
+<code>return dot_product(convert_to_unit(a), convert_to_unit(b))</code>
+</details>
 
         </div>
       </section>
@@ -258,8 +281,6 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
         <p>A matrix is a list of rows. In the product <code>C = A @ B</code>, entry <code>C[i][j]</code> is the dot product of <strong>row i of A</strong> with <strong>column j of B</strong>. An (n x k) matrix times a (k x m) matrix gives an (n x m) matrix.</p>
 
 <p>Write <code>matrix_mul(A, B)</code> using your <code>dot_product</code>.</p>
-
-<p><strong>Hint:</strong> column <code>j</code> of <code>B</code> is <code>[row[j] for row in B]</code>.</p>
 
 <p><strong>Verify:</strong></p>
 
@@ -277,6 +298,18 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </code></pre>
 </div>
 
+<details><summary>Hint 1</summary>
+You need column <code>j</code> of B. Extract it with <code>[row[j] for row in B]</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+For each row <code>i</code> of A and each column <code>j</code> of B, compute <code>dot_product(A[i], col_j)</code>. Collect the results into a list of lists (one inner list per row of A).
+</details>
+
+<details><summary>Hint 3</summary>
+<code>cols = len(B[0])</code><br>
+<code>return [[dot_product(row, [B_row[j] for B_row in B]) for j in range(cols)] for row in A]</code>
+</details>
 
         </div>
       </section>
@@ -284,20 +317,23 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
       <section>
-        <h3>Cosine Similarity Meaning</h3>
+        <h3>Quick Check: Cosine Similarity</h3>
         <div class="slide-content">
 
-        <p>Two vectors have a cosine similarity of 0. What does this tell you about their relationship?</p>
+        <p><strong>Quick Check:</strong> Two vectors have a cosine similarity of 0. What does this tell you about their relationship?</p>
 
 
         <p><strong>A.</strong> They are identical</p>
 
         <p><strong>B.</strong> They point in exactly opposite directions</p>
 
-        <p><strong>C.</strong> They are perpendicular (at 90 degrees) --- knowing one tells you nothing about the other</p>
+        <p><strong>C.</strong> They are perpendicular (at 90 degrees) — knowing one tells you nothing about the other</p>
 
         <p><strong>D.</strong> One of the vectors is all zeros</p>
 
+        <div class="fragment" style="margin-top:1em; padding:0.5em; background:#e8f5e9; border-radius:5px;">
+        <strong>Answer: C.</strong> A cosine similarity of 0 means the vectors are perpendicular — they share no component in each other's direction. Identical vectors give 1.0, opposite vectors give -1.0, and a zero vector is undefined (you cannot divide by zero length).
+        </div>
 
         </div>
       </section>
@@ -310,7 +346,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
       <section id="part2">
         <h2>Part 2: Bring Your Solver</h2>
 
-        <div class="slide-content"><p>We store the equation $a_1 x_1 + a_2 x_2 + \dots + a_n x_n = b$ as the list <code>[a1, a2, ..., an, b]</code>, and a system as a list of such lists --- exactly the representation you used in <strong>Loops and Arrays, Part 5</strong>.</p>
+        <div class="slide-content"><p>We store the equation $a_1 x_1 + a_2 x_2 + \dots + a_n x_n = b$ as the list <code>[a1, a2, ..., an, b]</code>, and a system as a list of such lists — exactly the representation you used in <strong>Loops and Arrays, Part 5</strong>.</p>
 </div>
 
       </section>
@@ -323,9 +359,9 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
         <p>Paste your <code>solve_equations</code> (with its helpers <code>solve_for_first_variable</code>, <code>eliminate_variable_pair</code>, <code>eliminate_variable</code>) into the code cell. The test must pass before you go on.</p>
 
-<p>(Skipped that chapter? Go invent it there first --- this whole chapter stands on it.)</p>
+<p>(Skipped that chapter? Go invent it there first — this whole chapter stands on it.)</p>
 
-<p><strong>Think:</strong> your solver eliminates one variable at a time, and each elimination touches every remaining equation, and each equation has that many coefficients --- three nested loops. Roughly how does the running time grow with <code>n</code> equations? If solving 4 equations takes 1 second, what would 8 take? Keep that number in mind --- it returns at the end of the chapter.</p>
+<p><strong>Think:</strong> your solver eliminates one variable at a time, and each elimination touches every remaining equation, and each equation has that many coefficients — three nested loops. Roughly how does the running time grow with <code>n</code> equations? If solving 4 equations takes 1 second, what would 8 take? Keep that number in mind — it returns at the end of the chapter.</p>
 
 
         </div>
@@ -355,6 +391,14 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 <li>Predict the 10-apple trip with <code>dot_product(beta, [10, 1])</code>.</li>
 </ol>
 
+<details><summary>Hint 1</summary>
+Trip 1: 3 apples cost 6 total, so the equation is <code>[3, 1, 6]</code> (3 times the price + 1 times parking = 6). Trip 2: 5 apples cost 8, so <code>[5, 1, 8]</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+<code>beta = solve_equations([[3, 1, 6], [5, 1, 8]])</code><br>
+<code>prediction = dot_product(beta, [10, 1])</code> — should give 13.
+</details>
 
         </div>
       </section>
@@ -390,7 +434,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </tbody>
 </table>
 
-<p>The growth is not linear (check the gaps: +6, +8). Assume a quadratic: $traffic = a t^2 + b t + c$. Each measurement is one equation in $(a, b, c)$ --- for $t=1$: $a + b + c = 6$, and so on.</p>
+<p>The growth is not linear (check the gaps: +6, +8). Assume a quadratic: $traffic = a t^2 + b t + c$. Each measurement is one equation in $(a, b, c)$ — for $t=1$: $a + b + c = 6$, and so on.</p>
 
 <p><strong>Tasks:</strong></p>
 
@@ -400,6 +444,13 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 <li>Predict the traffic at <code>t = 4</code>.</li>
 </ol>
 
+<details><summary>Hint 1</summary>
+For t=1: $a(1)^2 + b(1) + c = 6$, which gives the row <code>[1, 1, 1, 6]</code>. For t=2: <code>[4, 2, 1, 12]</code>. For t=3: <code>[9, 3, 1, 20]</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+After solving, predict at t=4 with <code>dot_product(coeffs, [16, 4, 1])</code> (since $4^2=16$, $4^1=4$, $4^0=1$).
+</details>
 
         </div>
       </section>
@@ -415,11 +466,22 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 <ul>
 <li><code>x</code> and <code>y</code> are <code>n</code> observed points; assume a polynomial of degree <code>n - 1</code>.</li>
 <li>For each point build the row <code>[x_i**(n-1), ..., x_i**2, x_i, 1, y_i]</code> and solve for the coefficients.</li>
-<li>Return the polynomial's value at <code>xp</code> --- a <code>dot_product</code> of the coefficients with the matching powers of <code>xp</code>.</li>
+<li>Return the polynomial's value at <code>xp</code> — a <code>dot_product</code> of the coefficients with the matching powers of <code>xp</code>.</li>
 </ul>
 
-<p><strong>Think:</strong> why do <code>n</code> points pin down exactly a degree-<code>(n-1)</code> polynomial --- what goes wrong with fewer coefficients, and what freedom is left with more?</p>
+<p><strong>Think:</strong> why do <code>n</code> points pin down exactly a degree-<code>(n-1)</code> polynomial — what goes wrong with fewer coefficients, and what freedom is left with more?</p>
 
+<details><summary>Hint 1</summary>
+For each data point, build a row: <code>[x_i**(n-1), x_i**(n-2), ..., x_i, 1, y_i]</code>. That is one equation per point.
+</details>
+
+<details><summary>Hint 2</summary>
+After solving for the coefficients, evaluate at <code>xp</code> with <code>dot_product(coeffs, [xp**(n-1), xp**(n-2), ..., xp, 1])</code>.
+</details>
+
+<details><summary>Hint 3</summary>
+Build powers in a loop: <code>row = [xi**p for p in range(n-1, -1, -1)] + [yi]</code>. The prediction row is the same without <code>yi</code>.
+</details>
 
         </div>
       </section>
@@ -461,7 +523,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 </tbody>
 </table>
 
-<p>Try a line through the first two points: slope 3, intercept 5 --- but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 --- but input 2 predicts 12, not 11. <strong>No line passes through all three points.</strong> Real measurements are noisy; perfect solving just broke.</p>
+<p>Try a line through the first two points: slope 3, intercept 5 — but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 — but input 2 predicts 12, not 11. <strong>No line passes through all three points.</strong> Real measurements are noisy; perfect solving just broke.</p>
 
 <p>New plan: accept an imperfect line, but pick the one that is <em>least wrong</em>. But how do you measure how wrong a line is? You'll figure that out in the next exercise.</p>
 </div>
@@ -474,12 +536,19 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
         <h3>`total_error`</h3>
         <div class="slide-content">
 
-        <p>For a candidate line $y = mx + c$, each data point $(x_i, y_i)$ has an error: the prediction $mx_i + c$ minus the actual $y_i$. But some errors are positive (prediction too high) and some are negative (prediction too low) --- if you just add them up, they cancel out.</p>
+        <p>For a candidate line $y = mx + c$, each data point $(x_i, y_i)$ has an error: the prediction $mx_i + c$ minus the actual $y_i$. But some errors are positive (prediction too high) and some are negative (prediction too low) — if you just add them up, they cancel out.</p>
 
 <p><strong>Think:</strong> How do you prevent cancellation? What operation makes all errors positive? Then how do you combine them into a single "total wrongness" score?</p>
 
 <p>Write <code>total_error(m, c, data)</code> where <code>data</code> is a list of <code>(x, y)</code> pairs.</p>
 
+<details><summary>Hint 1</summary>
+Square each error to make it positive: the error for one point is $(mx_i + c - y_i)^2$. Then add them all up.
+</details>
+
+<details><summary>Hint 2</summary>
+<code>return sum((m * xi + c - yi) ** 2 for xi, yi in data)</code>
+</details>
 
         </div>
       </section>
@@ -490,19 +559,30 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
         <h3>The Best Line, Without Guessing</h3>
         <div class="slide-content">
 
-        <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing --- both partial derivatives are zero.</p>
+        <p>At the minimum of $E$, nudging $m$ or $c$ changes nothing — both partial derivatives (the rate of change of $E$ when you tweak just one variable, holding the other fixed) are zero.</p>
 
 <p><strong>Your task:</strong></p>
 
 <ol>
-<li>Write the partial derivative $\frac{\partial E}{\partial m}$ --- differentiate each term of $E = \sum_i (mx_i + c - y_i)^2$ with respect to $m$.</li>
+<li>Write the partial derivative $\frac{\partial E}{\partial m}$ — differentiate each term of $E = \sum_i (mx_i + c - y_i)^2$ with respect to $m$ (treat $c$ as a constant).</li>
 <li>Set it to zero and simplify. You should get a linear equation in $m$ and $c$.</li>
 <li>Do the same for $\frac{\partial E}{\partial c}$.</li>
 <li>Plug in the factory data values and use <code>solve_equations</code> from Part 2 to find $m$ and $c$.</li>
 </ol>
 
-<p>Use <code>solve_equations</code> on the two equations you derived. The test also nudges your answer in every direction to confirm no neighbor does better --- the definition of a minimum.</p>
+<p>Use <code>solve_equations</code> on the two equations you derived. The test also nudges your answer in every direction to confirm no neighbor does better — the definition of a minimum.</p>
 
+<details><summary>Hint 1</summary>
+The derivative of $(mx_i + c - y_i)^2$ with respect to $m$ is $2 x_i (m x_i + c - y_i)$. Setting the sum to zero and dividing by 2: $m \sum x_i^2 + c \sum x_i = \sum x_i y_i$.
+</details>
+
+<details><summary>Hint 2</summary>
+The derivative with respect to $c$ is $2(m x_i + c - y_i)$. Setting the sum to zero: $m \sum x_i + c \cdot n = \sum y_i$, where $n$ is the number of data points.
+</details>
+
+<details><summary>Hint 3</summary>
+For the factory data (1,8), (2,11), (3,16): $\sum x^2 = 14$, $\sum x = 6$, $\sum xy = 78$, $\sum y = 35$, $n = 3$. The two equations are <code>[14, 6, 78]</code> and <code>[6, 3, 35]</code>.
+</details>
 
         </div>
       </section>
@@ -517,12 +597,19 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 <ol>
 <li>From the <code>(x, y)</code> pairs compute $\sum x^2$, $\sum x$, $\sum xy$, $\sum y$ and $n$.</li>
-<li>Build the two normal equations and <code>solve_equations</code>.</li>
+<li>Build the two normal equations (the equations you get after setting each derivative to zero — they are called "normal" because the error is perpendicular to the fit) and <code>solve_equations</code>.</li>
 <li>Return <code>(m, c)</code>.</li>
 </ol>
 
-<p>On data that <em>is</em> perfectly linear it must recover the exact line --- least squares contains exact fitting as a special case.</p>
+<p>On data that <em>is</em> perfectly linear it must recover the exact line — least squares contains exact fitting as a special case.</p>
 
+<details><summary>Hint 1</summary>
+Compute the sums from your data: <code>sum_x2 = sum(x**2 for x, y in data)</code>, <code>sum_x = sum(x for x, y in data)</code>, <code>sum_xy = sum(x*y for x, y in data)</code>, <code>sum_y = sum(y for x, y in data)</code>, <code>n = len(data)</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+The two equations (from the previous exercise) are <code>[sum_x2, sum_x, sum_xy]</code> and <code>[sum_x, n, sum_y]</code>. Pass them to <code>solve_equations</code> and return the result as <code>(m, c)</code>.
+</details>
 
         </div>
       </section>
@@ -530,20 +617,23 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
       <section>
-        <h3>Why Square the Errors</h3>
+        <h3>Quick Check: Why Square the Errors?</h3>
         <div class="slide-content">
 
-        <p>In the least squares method, you minimize the sum of <em>squared</em> errors. Why not just minimize the sum of raw errors (without squaring)?</p>
+        <p><strong>Quick Check:</strong> In the least squares method, you minimize the sum of <em>squared</em> errors. Why not just minimize the sum of raw errors (without squaring)?</p>
 
 
         <p><strong>A.</strong> Squaring makes the computation faster</p>
 
-        <p><strong>B.</strong> Raw errors can be positive or negative --- a prediction 10 too high and one 10 too low would cancel out, giving a total error of 0 even though both predictions are wrong</p>
+        <p><strong>B.</strong> Raw errors can be positive or negative — a prediction 10 too high and one 10 too low would cancel out, giving a total error of 0 even though both predictions are wrong</p>
 
-        <p><strong>C.</strong> Python can't handle negative numbers in sums</p>
+        <p><strong>C.</strong> Python cannot handle negative numbers in sums</p>
 
         <p><strong>D.</strong> Squaring is needed because the data might contain negative values</p>
 
+        <div class="fragment" style="margin-top:1em; padding:0.5em; background:#e8f5e9; border-radius:5px;">
+        <strong>Answer: B.</strong> Positive and negative errors cancel each other out. Squaring makes every error positive before you add them up. (Taking absolute values would also work, but squaring is smoother — its derivative is a clean formula, which matters when you want to find the minimum.)
+        </div>
 
         </div>
       </section>
@@ -552,13 +642,13 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
 
-      <!-- Part 5: Bonus --- Matrices That Move the World -->
+      <!-- Part 5: Bonus — Matrices That Move the World -->
       <section id="part5">
-        <h2>Part 5: Bonus --- Matrices That Move the World</h2>
+        <h2>Part 5: Bonus — Matrices That Move the World</h2>
 
         <div class="slide-content"><p>So far matrices held <em>data</em> (trips, prices). But <code>matrix_mul</code> has a second life: a matrix can be a <strong>machine that moves points</strong>. Every video game, every 3D animation, every graphics chip is built on this.</p>
 
-<p>Keep points as rows, <code>[x, y]</code>. Multiplying a stack of points by one 2x2 matrix moves <em>all</em> of them at once with your existing <code>matrix_mul</code> --- no new code needed.</p>
+<p>Keep points as rows, <code>[x, y]</code>. Multiplying a stack of points by one 2x2 matrix moves <em>all</em> of them at once with your existing <code>matrix_mul</code> — no new code needed.</p>
 </div>
 
       </section>
@@ -577,6 +667,13 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 <p><strong>Sanity checks worth predicting before you run:</strong> the point <code>[1, 0]</code> (due east) rotated 90 degrees should land at <code>[0, 1]</code> (due north). Rotated 180 degrees, at <code>[-1, 0]</code>.</p>
 
+<details><summary>Hint 1</summary>
+Convert degrees to radians: <code>r = math.radians(angle_degrees)</code>. Then compute <code>c = math.cos(r)</code> and <code>s = math.sin(r)</code>.
+</details>
+
+<details><summary>Hint 2</summary>
+Return <code>[[c, s], [-s, c]]</code>. To test, multiply a point (as a 1-row, 2-column matrix) by this matrix using <code>matrix_mul</code>.
+</details>
 
         </div>
       </section>
@@ -598,6 +695,11 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 <p>A deep property to verify while you're here: rotation moves points but never stretches them. The test checks every point stays the same distance from the origin.</p>
 
+<details><summary>Hint</summary>
+<code>R = rotation_matrix(45)</code><br>
+<code>turned = matrix_mul(kite, R)</code><br>
+That is it — <code>matrix_mul</code> handles all five points at once.
+</details>
 
         </div>
       </section>
@@ -613,7 +715,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 <p>Build one from random numbers, apply it to the kite with <code>matrix_mul</code>, and plot the result (reuse the plotting code above). Run it several times.</p>
 
-<p><strong>Observe, then answer:</strong> straight edges stay straight, and parallel edges stay parallel --- but lengths and angles change: the kite gets stretched, squashed, sheared, maybe flipped. Every 2x2 matrix is some such <em>linear transformation</em>, and rotations are exactly the ones that preserve all lengths. (When a neural network multiplies data by a learned weight matrix, this stretching and squashing of space is literally what it's doing.)</p>
+<p><strong>Observe, then answer:</strong> straight edges stay straight, and parallel edges stay parallel — but lengths and angles change: the kite gets stretched, squashed, sheared, maybe flipped. Every 2x2 matrix is some such <em>linear transformation</em>, and rotations are exactly the ones that preserve all lengths. (When a neural network multiplies data by a learned weight matrix, this stretching and squashing of space is literally what it's doing.)</p>
 
 
 
@@ -624,14 +726,14 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
       <section>
-
+        <h3>What You Just Invented</h3>
         <div class="slide-content">
         <table>
           <tr>
 
-            <th>You built</th>
+            <th>What you built</th>
 
-            <th>The secret</th>
+            <th>Its standard name</th>
 
           </tr>
 
@@ -663,7 +765,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
             <td><code>total_error</code>, normal equations, <code>best_line</code></td>
 
-            <td><strong>least squares</strong> --- when nothing fits, minimize the squared error</td>
+            <td><strong>least squares</strong> — when nothing fits, minimize the squared error</td>
 
           </tr>
 
@@ -674,10 +776,27 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
 
 
       <section>
-        <div class="slide-content"><p><strong>What you just derived</strong> is <strong>Ordinary Least Squares</strong>, the same closed-form answer <code>sklearn.linear_model.LinearRegression</code> computes.</p>
+        <div class="slide-content"><p><strong>What you just derived</strong> is <strong>Ordinary Least Squares</strong> (OLS), the same closed-form answer <code>sklearn.linear_model.LinearRegression</code> computes.</p>
 
-<p>So why does the next chapter exist? Two cracks in the ancient method: solving grows like $n^3$ (your Part 2 estimate), and the derive-set-to-zero trick needs a formula for the derivative --- which complicated models don't offer. <strong>Gradient Descent</strong> fixes both by <em>walking</em> toward the minimum instead of jumping to it.</p>
+<p>So why does the next chapter exist? Two cracks in the ancient method: solving grows like $n^3$ (your Part 2 estimate), and the derive-and-set-to-zero trick needs a formula for the derivative — which complicated models do not offer. <strong>Gradient Descent</strong> fixes both by <em>walking</em> toward the minimum instead of jumping to it.</p>
 </div>
+      </section>
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to think about what you built. Write a sentence or two for each question — there are no wrong answers.</p>
+
+        <ol>
+        <li>What was the key idea that let you predict the cost of a 10-apple trip? How is that different from just guessing?</li>
+        <li>Your <code>solve_poly</code> can fit any number of points exactly. Why, then, did you need to invent least squares? What changed?</li>
+        <li>You squared the errors before adding them. What would go wrong if you used raw (unsquared) errors instead? Can you think of another way to prevent cancellation?</li>
+        <li>The rotation matrix moved every point without stretching. A random matrix stretched and squashed. In one sentence, what is the difference between the two kinds of matrix?</li>
+        <li>The chapter mentioned that solving equations grows like $n^3$. If a real dataset has a million points, is that practical? What might you do instead?</li>
+        </ol>
+
+        </div>
       </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
@@ -725,7 +844,7 @@ fit_line([(1,2), (2,3), (3,5)])     # (1.5, 0.333...)  no exact fit, best compro
   </script>
 <div class="chapter-footer">
 
-  <p><em>You rebuilt the oldest prediction machine --- dot products, equation solving, polynomial fitting, and least squares --- from scratch. That is Ordinary Least Squares, the same thing <code>sklearn.linear_model.LinearRegression</code> computes.</em></p>
+  <p><em>You rebuilt the oldest prediction machine — dot products, equation solving, polynomial fitting, and least squares — from scratch. That is Ordinary Least Squares, the same thing <code>sklearn.linear_model.LinearRegression</code> computes.</em></p>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
