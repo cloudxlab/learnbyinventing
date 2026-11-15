@@ -174,6 +174,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 <li>This keyword check is brittle. In one sentence, describe <em>why</em> it will fail for most real questions.</li>
 </ol>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>For step 2, think about using an <code>if</code> statement that checks <code>"internal memo" in question</code> or <code>"Q3 2024" in question</code>. Return the fallback string early if either matches.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>For step 3, imagine someone asks about last quarter's revenue without using the exact words "internal memo" or "Q3 2024." Your check would miss it completely.</p>
+</details>
 
         </div>
       </section>
@@ -207,6 +215,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p>Test it with at least two different questions. Does it always pick the right document?</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>Use <code>question.lower().split()</code> to get individual words. Then for each doc, count how many of those words appear in <code>doc.lower()</code>.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>Use Python's built-in <code>max()</code> with a <code>key</code> argument: <code>max(docs, key=lambda doc: count_matches(question, doc))</code>.</p>
+</details>
 
         </div>
       </section>
@@ -216,11 +232,34 @@ agent("Where was Acme's CEO born?", docs, llm)
       <section>
         <div class="slide-content"><p>You have just reinvented keyword-based retrieval. It is fast and requires no ML. But try this question: <code>"What is the per-night accommodation limit?"</code> — the word "hotel" does not appear, and "accommodation" might not match "lodging." You would miss documents that mean the same thing but use different words.</p>
 
-<p><strong>What you invented:</strong> the idea of <em>retrieval as a preprocessing step</em> — only sending relevant context to the model. This is the skeleton of RAG. The next module fixes the keyword-matching weakness.</p>
+<p><strong>What you invented:</strong> the idea of <em>retrieval as a first step</em> — only sending relevant context to the model. This is the skeleton of RAG. The next part fixes the keyword-matching weakness.</p>
 </div>
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 1.1 — Why Keyword Matching Fails</h3>
+        <div class="slide-content">
+
+        <p>Your <code>find_relevant_docs</code> function uses keyword matching. A user asks: <em>"What is the per-night accommodation limit?"</em> but the relevant document says <em>"hotel expenses are capped at $200 per night."</em> Why does your function fail?</p>
+
+        <p><strong>A.</strong> The function is too slow to process the question</p>
+
+        <p><strong>B.</strong> The words "accommodation" and "hotel" mean the same thing but share no letters, so the keyword count is zero</p>
+
+        <p><strong>C.</strong> The function only works with questions shorter than 10 words</p>
+
+        <p><strong>D.</strong> Python's <code>split()</code> does not work on questions with punctuation</p>
+
+        <div class="fragment" style="margin-top:0.8em; padding:0.5em; background:#f5f3ef; border-radius:5px;">
+          <p><strong>Answer: B.</strong> Keyword matching compares exact words. "Accommodation" and "hotel" are different words that happen to mean similar things. This is exactly the problem that embeddings (Part 2) will solve.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -251,6 +290,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p>Do the accommodation and lodging sentences now rank above the Python sentence?</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>For the dot product, loop over both vectors at the same time: <code>total = 0; for i in range(len(a)): total += a[i] * b[i]</code>.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>For <code>semantic_search</code>, embed the query once, then compute the dot product with every corpus embedding. Use a list of <code>(score, sentence)</code> pairs and sort by score descending.</p>
+</details>
 
         </div>
       </section>
@@ -258,7 +305,7 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 
       <section>
-        <div class="slide-content"><p>You have just used <em>embeddings</em> — dense numerical representations of meaning. The dot product between two embedding vectors measures how semantically similar two pieces of text are. This is the engine inside every modern search system.</p>
+        <div class="slide-content"><p>You have just used <em>embeddings</em> — lists of numbers that capture what words and sentences mean. The dot product between two embedding vectors tells you how similar the meaning of two pieces of text is. This is the engine inside every modern search system.</p>
 
 <p><strong>What you invented:</strong> <em>semantic search using vector embeddings</em> — the retrieval backbone of production RAG systems.</p>
 </div>
@@ -280,6 +327,18 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p><strong>Step 3</strong> — If you had 1 million documents, computing a dot product with each one would be slow. In one or two sentences, describe what you might do to speed this up.</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>For <code>index_documents</code>, loop through each doc, embed its text, and append a <code>(doc, embedding)</code> tuple to a list.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>For <code>retrieve</code>, reuse your dot-product function from the previous exercise. Sort the results and slice with <code>[:top_k]</code>.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 3</summary>
+  <p>For Step 3: think about grouping similar documents together so you only compare the query against a small cluster, not all one million. This is the idea behind approximate nearest-neighbor search.</p>
+</details>
 
         </div>
       </section>
@@ -292,6 +351,29 @@ agent("Where was Acme's CEO born?", docs, llm)
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 2.1 — Embeddings and Dot Products</h3>
+        <div class="slide-content">
+
+        <p>You embed the query <em>"hotel policy"</em> and two documents. Document A (about hotel rules) has a dot product of 0.87 with the query. Document B (about Python loops) has a dot product of 0.12. Which document is more relevant, and why?</p>
+
+        <p><strong>A.</strong> Document B, because lower scores mean better matches</p>
+
+        <p><strong>B.</strong> Document A, because a higher dot product means the meanings are more similar</p>
+
+        <p><strong>C.</strong> Neither — dot products only work with numbers, not text</p>
+
+        <p><strong>D.</strong> You cannot tell without knowing the exact embedding vectors</p>
+
+        <div class="fragment" style="margin-top:0.8em; padding:0.5em; background:#f5f3ef; border-radius:5px;">
+          <p><strong>Answer: B.</strong> A higher dot product between two embedding vectors means the texts are more similar in meaning. Document A (about hotel rules) is clearly more relevant to a hotel policy query.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -321,6 +403,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 <li><strong>Add a confidence gate:</strong> after retrieval, check the top similarity score. If the best-matching document scores below <code>0.35</code>, skip the API call entirely and return the fallback string directly.</li>
 </ol>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>For the prompt improvement, add a system message or prepend instructions like: "You are a helpful assistant. Only answer using the context below. If the context does not contain the answer, say so."</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>For the confidence gate, your <code>retrieve</code> function should also return the similarity score. Check <code>if best_score &lt; 0.35: return "I cannot answer..."</code> before calling the API.</p>
+</details>
 
         </div>
       </section>
@@ -346,6 +436,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p>Then index the chunks and test retrieval with the provided questions. Finally, <strong>experiment</strong>: change <code>chunk_size</code> to 20 (very small) and then to 200 (very large). How does retrieval quality change?</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>Split the text into a list of words first: <code>words = text.split()</code>. Then use a loop that steps by <code>chunk_size - overlap</code> each time.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>Each chunk is <code>" ".join(words[start : start + chunk_size])</code>. Advance <code>start</code> by <code>chunk_size - overlap</code> so that <code>overlap</code> words repeat at the beginning of the next chunk.</p>
+</details>
 
         </div>
       </section>
@@ -353,11 +451,34 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 
       <section>
-        <div class="slide-content"><p><strong>What you invented:</strong> <em>document chunking with overlap</em> — a standard preprocessing step in all production RAG systems. The overlap prevents relevant sentences from being split across chunk boundaries.</p>
+        <div class="slide-content"><p><strong>What you invented:</strong> <em>document chunking with overlap</em> — a standard preparation step in all production RAG systems. The overlap prevents relevant sentences from being split across chunk boundaries.</p>
 </div>
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 3.1 — The RAG Pipeline</h3>
+        <div class="slide-content">
+
+        <p>In your RAG pipeline, the confidence gate checks whether the best-matching document's similarity score is above 0.35. What happens when a user asks <em>"What is the speed of light?"</em> and none of your company documents are about physics?</p>
+
+        <p><strong>A.</strong> The model answers correctly from its training data</p>
+
+        <p><strong>B.</strong> The model hallucinates a wrong answer using the closest document</p>
+
+        <p><strong>C.</strong> The confidence gate blocks the question because all similarity scores are below 0.35, and returns the fallback message</p>
+
+        <p><strong>D.</strong> The system crashes because no document matches</p>
+
+        <div class="fragment" style="margin-top:0.8em; padding:0.5em; background:#f5f3ef; border-radius:5px;">
+          <p><strong>Answer: C.</strong> The confidence gate catches this case. Since no document is relevant (all scores below 0.35), it returns the fallback string without calling the model at all. This prevents hallucination.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -376,7 +497,7 @@ agent("Where was Acme's CEO born?", docs, llm)
         <h3>The Model That Cannot Act</h3>
         <div class="slide-content">
 
-        <p>Ask the model things that require real-time actions (see the observe code). The time question fails — the model cannot check a clock. The calculator question might work for easy math but could fail on harder ones. The model is stateless and sandboxed: it cannot call your system clock, run a calculator, search the web, or write a file.</p>
+        <p>Ask the model things that require real-time actions (see the observe code). The time question fails — the model cannot check a clock. The calculator question might work for easy math but could fail on harder ones. The model has no memory between calls and cannot interact with the outside world: it cannot check a clock, run a calculator, search the web, or write a file.</p>
 
 <p><strong>Your task.</strong></p>
 
@@ -385,6 +506,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 <li><strong>Invent a simple protocol.</strong> Write a prompt that instructs the model to output tool calls as <code>TOOL: tool_name</code> / <code>INPUT: the input</code>, and final answers as <code>ANSWER: the final response</code>. Test it — does the model follow the protocol?</li>
 </ol>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>For the toolkit, <code>get_current_date()</code> can use <code>datetime.date.today()</code> and <code>calculate(expression)</code> can use <code>eval(expression)</code> (safe for simple math).</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>For the protocol prompt, tell the model: "You have these tools: [list them]. To use a tool, respond with exactly TOOL: name on one line and INPUT: value on the next. When you have the final answer, respond with ANSWER: your response."</p>
+</details>
 
         </div>
       </section>
@@ -417,6 +546,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p><strong>The limitation.</strong> Try: <code>"How many days from today until New Year's Day next year?"</code> — this requires <em>two</em> tool calls (<code>get_current_date</code> then <code>days_until</code>). Your one-step agent can only do one.</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>Use <code>parse_response</code> on the model's text output. It returns a tuple like <code>("tool", tool_name, tool_input)</code> or <code>("answer", text)</code>. Check which one you got.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>The full flow: call the model, parse the response, if it is a tool call then run the tool with <code>run_tool(name, input)</code>, print the result, and return it. If it is an answer, just return the text.</p>
+</details>
 
         </div>
       </section>
@@ -431,6 +568,29 @@ agent("Where was Acme's CEO born?", docs, llm)
       </section>
 
 
+
+
+
+      <section>
+        <h3>Quick Check 4.1 — Tool Use</h3>
+        <div class="slide-content">
+
+        <p>Your model outputs <code>TOOL: calculate</code> / <code>INPUT: 365 * 24</code>. Who actually runs the calculation?</p>
+
+        <p><strong>A.</strong> The language model runs it internally and returns the result</p>
+
+        <p><strong>B.</strong> Your Python code parses the model's text output, calls <code>calculate("365 * 24")</code>, and feeds the result back to the model</p>
+
+        <p><strong>C.</strong> The API automatically detects math expressions and evaluates them</p>
+
+        <p><strong>D.</strong> The user must manually copy the expression into a calculator</p>
+
+        <div class="fragment" style="margin-top:0.8em; padding:0.5em; background:#f5f3ef; border-radius:5px;">
+          <p><strong>Answer: B.</strong> The model is a reasoning engine, not an execution engine. It <em>describes</em> what tool to call as text. Your code must parse that text, run the actual tool, and pass the result back.</p>
+        </div>
+
+        </div>
+      </section>
 
 
 
@@ -469,6 +629,18 @@ agent("Where was Acme's CEO born?", docs, llm)
 <li><code>"What is 15% of the number of days until New Year?"</code> — 3 steps</li>
 </ul>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>Keep a list called <code>messages</code> (the conversation history). At each step, send the full list to the model and append its reply.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>When a tool call is detected, run the tool and append the result as a new message (e.g., <code>"Tool result: 2026-11-15"</code>). Then loop back and ask the model again with the updated history.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 3</summary>
+  <p>Use a <code>for step in range(max_steps)</code> loop. Inside, call the model, parse the response. If <code>"answer"</code>, return it. If <code>"tool"</code>, run the tool and append the result. If you exhaust all steps, return a message saying the agent could not finish.</p>
+</details>
 
         </div>
       </section>
@@ -497,6 +669,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p>Update your <code>TOOL_PROMPT</code> to include these tools and update <code>run_tool</code> to dispatch to them. Then test the two-call sequence above.</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>Use a plain Python dictionary as the memory store: <code>memory = {}</code>. The <code>remember</code> tool does <code>memory[key] = value</code> and <code>recall</code> does <code>memory.get(key, "Not found")</code>.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>In <code>run_tool</code>, add two new cases: if the tool name is <code>"remember"</code>, parse the key=value string and store it. If <code>"recall"</code>, look up the key and return the value.</p>
+</details>
 
         </div>
       </section>
@@ -516,7 +696,7 @@ agent("Where was Acme's CEO born?", docs, llm)
         <h3>RAG Agent — Combining Everything</h3>
         <div class="slide-content">
 
-        <p>Your final exercise combines everything: the vector index from Module 2, the grounded generation from Module 3, and the agentic loop from Module 5.</p>
+        <p>Your final exercise combines everything: the vector index from Part 2, the grounded generation from Part 3, and the agentic loop from Part 5.</p>
 
 <p><strong>Your task.</strong> Add a <code>search_docs(query)</code> tool that wraps your <code>retrieve</code> function. Update the tool prompt to include it. Then build a complete RAG agent that can both retrieve information from documents AND use tools — and decide which it needs at each step.</p>
 
@@ -530,6 +710,18 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 <p><strong>Bonus:</strong> Use <code>QA_EVAL_SET</code> from acme_datasets to measure your agent's accuracy across 15 question-answer pairs.</p>
 
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 1</summary>
+  <p>The <code>search_docs(query)</code> tool is just a wrapper: inside it, call your <code>retrieve(query, index)</code> function and return the text of the top results.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 2</summary>
+  <p>Add <code>"search_docs"</code> to your tool prompt alongside the existing tools. In <code>run_tool</code>, add a case that calls <code>retrieve</code> and returns the document text.</p>
+</details>
+<details style="font-size:0.85em; margin:0.3em 0;">
+  <summary>Hint 3</summary>
+  <p>Your agent loop already works for tools. The only change is that <code>search_docs</code> returns document text, which the model can then use to generate a grounded answer on the next iteration.</p>
+</details>
 
         </div>
       </section>
@@ -545,7 +737,7 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 
 
-      <!-- Part None: What You Invented -->
+      <!-- Part 6: What You Invented -->
       <section id="part6">
         <h2>What You Invented</h2>
 
@@ -685,14 +877,46 @@ agent("Where was Acme's CEO born?", docs, llm)
 
 
 
+      <!-- Part 7: Reflection -->
+      <section id="part7">
+        <h2>Part 7: Reflection</h2>
+
+        <div class="slide-content"><p>Take a moment to think about what you have built, in your own words.</p>
+</div>
+
+      </section>
+
+
+
       <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Answer these questions in your own words — there are no right or wrong answers.</p>
+
+<ol>
+<li>In Part 1, you discovered that a language model's knowledge is frozen. Why does stuffing <em>all</em> documents into the prompt not scale? What is the key insight of retrieval?</li>
+<li>In Part 2, keyword matching failed when words meant the same thing but were spelled differently. How do embeddings solve this? Could you explain embeddings to a friend who has never coded?</li>
+<li>In Part 3, you added a confidence gate. Why is it important to <em>not</em> call the model when retrieval fails? What could go wrong without the gate?</li>
+<li>In Part 5, you turned a single-step tool call into a <em>loop</em>. What makes the loop an "agent"? How does the model decide whether to use another tool or give a final answer?</li>
+<li>You built every piece from scratch. If you had to explain RAG to someone in one sentence, what would you say?</li>
+</ol>
+
+
+        </div>
+      </section>
+
+
+
+      <!-- Part 8: Going Further -->
+      <section id="part8">
         <div class="slide-content"><h2>Going Further</h2>
 
 <p>Once you have completed all exercises, the natural next steps are:</p>
 
 <ul>
 <li><strong>Proper vector databases.</strong> Replace your in-memory index with ChromaDB or Qdrant — both have free local modes and Python clients.</li>
-<li><strong>The ReAct paper.</strong> Read <em>ReAct: Synergizing Reasoning and Acting in Language Models</em> (Yao et al., 2022). It formalises the loop you built in Exercise 5.1.</li>
+<li><strong>The ReAct paper.</strong> Read <em>ReAct: Synergizing Reasoning and Acting in Language Models</em> (Yao et al., 2022). It describes the exact loop you built in Exercise 5.1.</li>
 <li><strong>Anthropic's native tool use.</strong> The Anthropic API supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it.</li>
 <li><strong>Evaluation.</strong> Build a tiny evaluation set: 10 questions with known correct answers, and measure how often your agent gets them right.</li>
 <li><strong>Multi-agent systems.</strong> What if one agent specialised in retrieval and another in calculation, and a coordinator decided which to call? That is a multi-agent system — the current frontier.</li>
@@ -711,7 +935,8 @@ agent("Where was Acme's CEO born?", docs, llm)
             <li><a href="#/part4">Part 4: The Single-Step Limit</a></li>
             <li><a href="#/part5">Part 5: Inventing Agents</a></li>
             <li><a href="#/part6">What You Invented</a></li>
-            <li><a href="#/part7">Going Further</a></li>
+            <li><a href="#/part7">Part 7: Reflection</a></li>
+            <li><a href="#/part8">Going Further</a></li>
           </ol>
         </div></div>
       </section>
