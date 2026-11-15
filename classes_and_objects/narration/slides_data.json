@@ -1,8 +1,8 @@
 [
   {
     "slide_index": 0,
-    "content_id": "9ba0df76cd",
-    "slide_text": "Classes & Objects — Inventing the Model API So far your programs kept data (lists, dicts) and behavior (functions) in separate boxes, and you passed one to the other by hand. A class glues them together: an object carries its own data and the functions that work on it. Why should a machine-learning book care? Because a trained model is an object — some learned numbers plus a function that uses them. By the end of this chapter you will have invented the / interface that scikit-learn, Keras and friends all use, hand-built a decision tree out of objects, and saved a model to disk. Navigate: press or Space to advance | to go back",
+    "content_id": "3224d8cb36",
+    "slide_text": "Classes & Objects — Inventing the Model API So far your programs kept data (lists, dicts) and behavior (functions) in separate boxes, and you passed one to the other by hand. A class glues them together: an object carries its own data and the functions that work on it. Why should a machine-learning book care? Because a trained model is an object — some learned numbers plus a function that uses them. By the end of this chapter you will have invented the / pattern that scikit-learn, Keras, and PyTorch all use, hand-built a decision tree out of objects, and saved a model to a file. Navigate: press or Space to advance | to go back",
     "fragments": []
   },
   {
@@ -19,8 +19,8 @@
   },
   {
     "slide_index": 3,
-    "content_id": "c2836c754f",
-    "slide_text": "Customer Write a class : stores the two values on the object ( hint: define and assign to , ). A method returns .",
+    "content_id": "dc528fc64f",
+    "slide_text": "Customer Write a class : stores the two values on the object. A method returns . Hint 1 A class starts with . The special method runs automatically when you write . Hint 2 Inside , save the arguments on the object: and . Then can use and . Solution [code block]",
     "fragments": []
   },
   {
@@ -37,8 +37,8 @@
   },
   {
     "slide_index": 6,
-    "content_id": "84d4618f2b",
-    "slide_text": "TwoPointLine Write a class with: — and are lists of two values each: two points and . Compute the slope and intercept , and store them on . — take a list of x values, return the list of . [code block]",
+    "content_id": "74108e97ca",
+    "slide_text": "TwoPointLine Write a class with: — and are lists of two values each: two points and . Compute the slope and intercept , and store them on . — take a list of x values, return the list of . [code block] Hint 1 receives two lists, each of length 2. Use index and to get the two points. The slope formula is . Hint 2 After computing , get . Store both on the object with and . In , loop through the input list and return . Solution [code block]",
     "fragments": []
   },
   {
@@ -49,8 +49,8 @@
   },
   {
     "slide_index": 8,
-    "content_id": "ea53d25e0f",
-    "slide_text": "Guard the Gate silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make raise a unless both lists have exactly two values ( hint: ).",
+    "content_id": "4b8939a7b6",
+    "slide_text": "Guard the Gate silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make raise a unless both lists have exactly two values. Hint 1 At the top of , check and . If either is not 2, raise an error. Hint 2 Use:",
     "fragments": []
   },
   {
@@ -61,15 +61,21 @@
   },
   {
     "slide_index": 10,
-    "content_id": "1a6ebb8a1d",
-    "slide_text": "Animal, Dog, Cat has a method returning . adds returning — and must not redefine . adds returning . The class in parentheses — — is the parent. Everything the parent can do, the child can do too.",
+    "content_id": "415c794c16",
+    "slide_text": "Animal, Dog, Cat has a method returning . adds returning — and must not redefine . adds returning . The class in parentheses — — is the parent. Everything the parent can do, the child can do too. Hint 1 Start with and give it a method . Hint 2 Write — the part means Dog inherits everything from Animal. Just add . Do not redefine . Do the same pattern for . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 11,
-    "content_id": "bc6caf241c",
-    "slide_text": "Quick Check — Why Inherit? In the // example, inherits from . What is the main benefit of this inheritance? A. Dogs run faster in Python than standalone classes B. Shared behavior (like `speak` or `name`) is defined once in `Animal`, and each subclass only adds or overrides what's different C. Python requires all classes to inherit from something D. It prevents you from creating `Animal` objects directly",
-    "fragments": []
+    "content_id": "ee050bd3c4",
+    "slide_text": "Quick Check — Why Inherit? In the // example, inherits from . What is the main benefit of this inheritance? A. Dogs run faster in Python than standalone classes B. Shared behavior (like ) is written once in , and each subclass only adds or changes what is different C. Python requires all classes to inherit from something D. It prevents you from creating objects directly",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "15978b8b7e",
+        "text": "Answer: B. Inheritance lets you write shared code once in the parent class. The child classes get it for free and only need to add their own unique behavior."
+      }
+    ]
   },
   {
     "slide_index": 12,
@@ -79,14 +85,14 @@
   },
   {
     "slide_index": 13,
-    "content_id": "86d003f59f",
-    "slide_text": "Node with total and count Write a class : stores the value and the two children. returns this node's plus the totals of its children (skip a child if it is ). returns how many nodes are in this subtree. Notice the recursion: a method calling the same method on its children .",
+    "content_id": "b6bd96b56a",
+    "slide_text": "Node with total and count Write a class : stores the value and the two children. returns this node's plus the totals of its children (skip a child if it is ). returns how many nodes are in this subtree. Notice the recursion: a method calling the same method on its children . Hint 1 In , store , , and . For , start with , then add the left child's total if it is not , and the right child's total if it is not . Hint 2 For , a single node counts as 1. Add if the left child exists, and similarly for right. The pattern is the same as but you add 1 instead of . Solution [code block]",
     "fragments": []
   },
   {
     "slide_index": 14,
-    "content_id": "163665ec10",
-    "slide_text": "More Tree Methods Extend your class (copy it and add methods): / — smallest / largest value in the subtree. — if appears anywhere in the subtree. — length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive crashes on a leaf — handle children. — replace every node's with , in place.",
+    "content_id": "094b065127",
+    "slide_text": "More Tree Methods Extend your class (copy it and add methods): / — smallest / largest value in the subtree. — if appears anywhere in the subtree. — length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive crashes on a leaf — handle children. — replace every node's with , in place. Hint 1 follows the same pattern as : start with , then compare with the children's if they exist. Use Python's built-in . Hint 2 For , a leaf (no children) has depth 1. Otherwise, take the of the children's depths and add 1. Check if each child is before calling on it — treat a missing child as depth 0. Hint 3 For : set , then call and if they exist. No return value needed — the changes happen in place.",
     "fragments": []
   },
   {
@@ -97,8 +103,8 @@
   },
   {
     "slide_index": 16,
-    "content_id": "32df6118a5",
-    "slide_text": "DecisionNode, Yes, No stores all four. Its method looks up (circumstance is a dict) and delegates : How should the node decide which child to ask? What role does the play? and are leaf classes: their ignores the circumstance and returns / . Give them their own no-argument . No -chains about salaries anywhere — the structure of the objects encodes the rules.",
+    "content_id": "2e06edcc42",
+    "slide_text": "DecisionNode, Yes, No stores all four. Its method looks up (circumstance is a dict) and delegates : How should the node decide which child to ask? What role does the play? and are leaf classes: their ignores the circumstance and returns / . Give them their own no-argument . No -chains about salaries anywhere — the structure of the objects encodes the rules. Hint 1 stores , , , and . In , look up the value: . If , ask the left child; otherwise ask the right child. Hint 2 and inherit from but their takes no arguments (just ) — they are leaves. Their ignores and returns or . Solution [code block]",
     "fragments": []
   },
   {
@@ -109,20 +115,26 @@
   },
   {
     "slide_index": 18,
-    "content_id": "4a587c409c",
-    "slide_text": "Quick Check — Classes vs. Dicts You built a decision tree using , , and classes. Could you have represented the same tree using nested dictionaries instead? What would you lose? A. Dictionaries can't be nested, so it's impossible B. It would work, but you'd lose the ability to call methods like `.predict()` directly on the tree — you'd need separate functions that know the dict structure C. Dictionaries are faster, so you'd actually gain performance D. You'd lose nothing — classes and dicts are interchangeable",
-    "fragments": []
+    "content_id": "a6da8f0092",
+    "slide_text": "Quick Check — Classes vs. Dicts You built a decision tree using , , and classes. Could you have represented the same tree using nested dictionaries instead? What would you lose? A. Dictionaries cannot be nested, so it is impossible B. It would work, but you would lose the ability to call methods like directly on the tree — you would need separate functions that know the dict structure C. Dictionaries are faster, so you would actually gain performance D. You would lose nothing — classes and dicts are interchangeable",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8accba5caf",
+        "text": "Answer: B. Dicts can be nested, but they carry only data. With classes, the object itself knows how to a question. With dicts you would need a separate function that walks the nested structure manually."
+      }
+    ]
   },
   {
     "slide_index": 19,
-    "content_id": "2e9d0b1faf",
-    "slide_text": "Part 6: Saving Objects to Files Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain. Let's serialize it. JSON can store dicts, lists, numbers, strings and booleans — but not your objects. So the plan is: object → dict → JSON file , and back.",
+    "content_id": "29ba3e58c4",
+    "slide_text": "Part 6: Saving Objects to Files Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain every time. Let's fix that by saving it to a file. JSON files can hold dicts, lists, numbers, strings and booleans — but not your custom objects. So the plan is: object → dict → JSON file , and back again.",
     "fragments": []
   },
   {
     "slide_index": 20,
-    "content_id": "82b3c6ed8a",
-    "slide_text": "to_dict and from_dict — a leaf becomes , a leaf becomes , and an inner node becomes (children converted recursively). Hint: tells leaves apart. — the exact inverse, rebuilding real objects. The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.",
+    "content_id": "8f59bd0b15",
+    "slide_text": "to_dict and from_dict — a leaf becomes , a leaf becomes , and an inner node becomes (children converted recursively). Hint: tells leaves apart. — the exact inverse, rebuilding real objects. The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers. Hint 1 In , first check: is the node a leaf? Return . A leaf? Return . Use to tell them apart. Hint 2 For an inner node, return a dict with , , , and . For , check if the dict has a key — if so, return or . Otherwise, rebuild a and recursively call on the children.",
     "fragments": []
   },
   {
@@ -139,20 +151,38 @@
   },
   {
     "slide_index": 23,
-    "content_id": "7bfd7990b2",
-    "slide_text": "FitPlane fits a line through 2 points. In 3D, three points determine a plane — and finding , , means solving three linear equations: [code block] You already own a tool for that: paste your (and its helpers) from the Loops and Arrays chapter into the cell, then write : — is a list of three tuples. Build the three equations and solve for . — a list of tuples in, a list of out.",
+    "content_id": "9f7b1875f4",
+    "slide_text": "FitPlane fits a line through 2 points. In 3D, three points determine a plane — and finding , , means solving three linear equations: [code block] You already own a tool for that: paste your (and its helpers) from the Loops and Arrays chapter into the cell, then write : — is a list of three tuples. Build the three equations and solve for . — a list of tuples in, a list of out. Hint 1 Each of the three points gives one equation: (the format your expects). Build a list of three such rows and solve for . Hint 2 In , loop through the input tuples and compute for each.",
     "fragments": []
   },
   {
     "slide_index": 24,
-    "content_id": "c5160eff0a",
-    "slide_text": "Summary Part You built The idea 1 , , methods — data + behavior in one place 2 the / model API , input validation 3 → , inheritance 4 recursion on object trees 5 , , a decision tree as objects; leaves via inheritance 6 / serialization — models that survive the program Bonus fit = solving equations (three points → a plane)",
-    "fragments": []
+    "content_id": "1aefad6b7b",
+    "slide_text": "What You Just Invented What you built Its real name with and Class, constructor, instance attributes / The scikit-learn Estimator API (/) , Inheritance (parent/child classes) calling children's Recursive tree traversal / / Decision tree (the same structure ML learns automatically) / to JSON Serialization (saving a model so it survives the program) (three points determine a plane) Multi-variable linear model",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2ccd19e815",
+        "text": "Nobody taught you these — you built them yourself . Every ML library you will ever use — scikit-learn, Keras, PyTorch — follows the same / pattern you just invented."
+      }
+    ]
   },
   {
     "slide_index": 25,
-    "content_id": "74a24c4f0e",
-    "slide_text": "Index Part 1: From Dict to Class Part 2: A Model Is an Object — `TwoPointLine` Part 3: Inheritance — Classes That Extend Classes Part 4: Objects That Contain Objects — Trees Part 5: A Decision Tree Is an Object Part 6: Saving Objects to Files Part 7: Bonus Challenge — `FitPlane`",
+    "content_id": "1147b97e4a",
+    "slide_text": "Part 8: Reflection — What Did You Just Build?",
+    "fragments": []
+  },
+  {
+    "slide_index": 26,
+    "content_id": "9bcfdbd109",
+    "slide_text": "Reflection Take a moment to answer these questions in your own words. Before classes, you kept data in dicts and behavior in functions. What practical problem does bundling them together into one object solve? Why does every ML model follow the same two-step pattern — then ? What would go wrong if you tried to before ? In Part 4, your method called . How is this the same idea as the recursive functions you wrote in the Recursion chapter? You converted your decision tree to a dict and saved it as JSON. Why is it useful that JSON is readable by humans and other programming languages, unlike Python's ? If you wanted to add a new kind of animal (say, ) that can and also , how would you do it without changing the class?",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "content_id": "3f79869e99",
+    "slide_text": "Index Part 1: From Dict to Class Part 2: A Model Is an Object — `TwoPointLine` Part 3: Inheritance — Classes That Extend Classes Part 4: Objects That Contain Objects — Trees Part 5: A Decision Tree Is an Object Part 6: Saving Objects to Files Part 7: Bonus Challenge — `FitPlane` Part 8: Reflection — What Did You Just Build?",
     "fragments": []
   }
 ]
