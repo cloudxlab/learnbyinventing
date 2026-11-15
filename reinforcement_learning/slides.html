@@ -272,6 +272,14 @@ starting:</p>
 
         <p>Write a loop that keeps taking random actions (0 or 1) until the game ends (<code>terminated</code> or <code>truncated</code>). Count how many steps you survived — that's your score. Run it a few times. What scores do you get?</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Use a <code>while</code> loop that runs until <code>terminated or truncated</code> is True. Inside the loop, pick a random action with <code>np.random.choice([0, 1])</code> and call <code>env.step(action)</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Keep a counter <code>steps = 0</code>. After each <code>env.step()</code>, increment it. Unpack the return values: <code>obs, reward, terminated, truncated, info = env.step(action)</code>. When the loop ends, <code>steps</code> is your score.</p>
+        </details>
 
         </div>
       </section>
@@ -330,6 +338,14 @@ average score.</p>
 
 <p>Test them with a random policy: <code>evaluate(lambda obs: np.random.choice([0, 1]), env)</code>.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p><code>play_game</code> should call <code>env.reset()</code>, then loop calling <code>policy_fn(obs)</code> to pick an action and <code>env.step(action)</code> to advance. Accumulate the total reward and return it when the episode ends.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p><code>evaluate</code> is just a list comprehension: <code>np.mean([play_game(policy_fn, env) for _ in range(n)])</code>.</p>
+        </details>
 
         </div>
       </section>
@@ -501,6 +517,25 @@ repeated. Before we go further, give each piece a short name:</p>
 
 
 
+      <section>
+        <div class="slide-content">
+          <p><strong>Quick Check</strong></p>
+          <p>In reinforcement learning, a &ldquo;policy&rdquo; is:</p>
+          <ol style="list-style-type:upper-alpha;">
+            <li>The game environment the agent plays in</li>
+            <li>The reward signal that tells the agent how well it&rsquo;s doing</li>
+            <li>A function that decides what action to take given the current state</li>
+            <li>The set of all possible states in the environment</li>
+          </ol>
+          <div class="fragment" data-fragment-index="0">
+            <p><strong>C.</strong> A policy is a function (or strategy) that maps the
+            current state to an action. Your <code>my_policy(obs)</code> function is
+            exactly that &mdash; it looked at the observations and decided
+            whether to push left or right.</p>
+          </div>
+        </div>
+      </section>
+
 
 
       <!-- Part 4: Policy as a Formula -->
@@ -645,6 +680,14 @@ exercises from here on.</p>
 
         <p>Generate 100 random weight vectors (each weight between -1 and 1). Evaluate each one over 5 episodes. Print the best weights and their score.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Use <code>np.random.uniform(-1, 1, size=4)</code> to generate one random weight vector. Loop 100 times and keep track of the best score and best weights.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>For each candidate, create a policy with <code>lambda obs, w=w: 1 if np.dot(w, obs) > 0 else 0</code> and pass it to <code>evaluate(..., n=5)</code>. Compare the score to <code>best_score</code>.</p>
+        </details>
 
         </div>
       </section>
@@ -665,6 +708,14 @@ exercises from here on.</p>
 
 <p>Now you have 20 good weight vectors. But you need 100 for the next round. How would you get from 20 back to 100? And then what? Design the rest of this algorithm yourself, implement it, and run it for 10 generations. Print the best score each generation.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>To go from 20 back to 100: pick a random parent from the top 20 and add a small amount of random noise (e.g., <code>parent + np.random.randn(4) * 0.1</code>). Repeat until you have 100 children.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Each generation: evaluate all 100, sort by score, keep top 20, create 80 children by copying random parents with noise. After 10 generations, the best weights should score well above 100.</p>
+        </details>
 
         </div>
       </section>
@@ -707,6 +758,27 @@ exercises from here on.</p>
 
 <p>You found good policy parameters without any calculus — just random variation and selection. Evolution works!</p>
 </div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content">
+          <p><strong>Quick Check</strong></p>
+          <p>In the genetic algorithm you built, what is the purpose of adding random noise to the surviving weight vectors?</p>
+          <ol style="list-style-type:upper-alpha;">
+            <li>To make the evaluation faster</li>
+            <li>To explore nearby variations that might score even better</li>
+            <li>To reset the search from scratch each generation</li>
+            <li>To reduce the population size</li>
+          </ol>
+          <div class="fragment" data-fragment-index="0">
+            <p><strong>B.</strong> Adding noise is like biological mutation &mdash; it creates
+            children that are similar to good parents but slightly different.
+            Some of those children will be even better. Without noise, you
+            would just keep the same 20 vectors forever and never improve.</p>
+          </div>
+        </div>
       </section>
 
 
@@ -764,6 +836,14 @@ the effect of small changes.</p>
 <code>[0, 0, 1, 0.5]</code>). Estimate the gradient and update for 20 steps. Does the
 score improve?</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>For each weight <code>i</code>: create two copies of the weight vector, one with <code>weights[i] + 0.01</code> and one with <code>weights[i] - 0.01</code>. Evaluate each. The gradient at <code>i</code> is <code>(score_plus - score_minus) / 0.02</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>After computing the gradient vector (4 numbers), update: <code>weights += learning_rate * gradient</code>. Use a small learning rate like 0.1. Repeat 20 times.</p>
+        </details>
 
         </div>
       </section>
@@ -882,6 +962,14 @@ the gradient from one of your steps.</p>
 
         <p>Write <code>compute_discounted_rewards(rewards, gamma=0.99)</code> that implements the credit system you just designed. It takes a list of rewards (one per step) and returns the discounted return for each step.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Work backwards from the last step. The last step's credit is just its own reward. Each earlier step's credit is: its reward + gamma times the next step's credit.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Use a <code>running = 0</code> variable. Loop through <code>reversed(range(len(rewards)))</code>: set <code>running = rewards[t] + gamma * running</code> and store it.</p>
+        </details>
 
         </div>
       </section>
@@ -912,6 +1000,14 @@ better than others.</p>
 below-average actions get NEGATIVE credit? Write a function that does this and
 apply it to the discounted rewards.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Subtract the mean from all values. Actions with above-average credit become positive, below-average become negative.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Write <code>normalize(values)</code>: return <code>(values - mean) / (std + 1e-8)</code>. The small number avoids dividing by zero.</p>
+        </details>
 
         </div>
       </section>
@@ -1008,6 +1104,14 @@ outputs a value between 0 and 1.</p>
 
 <p>Test with <code>weights = np.zeros(4)</code>. What probability do you get? Why?</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p><code>prob_right</code> is one line: <code>return sigmoid(np.dot(weights, obs))</code>. For <code>sample_action</code>, generate a random number between 0 and 1 and compare it to the probability.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p><code>sample_action</code>: <code>return 1 if np.random.random() &lt; prob_right(obs, weights) else 0</code>. With zero weights, <code>sigmoid(0) = 0.5</code> &mdash; a coin flip.</p>
+        </details>
 
         </div>
       </section>
@@ -1079,6 +1183,14 @@ differences (the same trick from Exercise 6.1).</p>
 
 <p>Do the numbers match?</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>For each weight index <code>i</code>: make a copy of <code>weights</code>, add <code>eps</code> to position <code>i</code>, compute <code>log(p)</code>, then subtract <code>eps</code> twice (to get the minus version) and compute <code>log(p)</code> again. The gradient at <code>i</code> is the difference divided by <code>2*eps</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Remember: <code>p</code> is the probability of the <em>chosen</em> action. If action=1, <code>p = prob_right(obs, weights)</code>. If action=0, <code>p = 1 - prob_right(obs, weights)</code>. Use <code>np.log(p)</code>.</p>
+        </details>
 
         </div>
       </section>
@@ -1121,6 +1233,14 @@ probabilistic policy and records everything that happens:</p>
 <p>Return all four lists. Test it — play one episode and print the number of
 steps and the total reward.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>The structure is the same as your earlier game loop. The new parts: (1) compute <code>p = prob_right(obs, weights)</code>, (2) sample action from <code>p</code>, (3) compute gradient using the analytical formula, (4) append everything to lists.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Gradient for action=1: <code>(1 - p) * obs</code>. For action=0: <code>-p * obs</code>. Append obs, action, reward, and grad to their lists each step. Return all four when done.</p>
+        </details>
 
         </div>
       </section>
@@ -1145,6 +1265,14 @@ steps and the total reward.</p>
 
 <p>Return <code>(weights, total_score)</code>.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Call <code>play_episode</code> to get the four lists. Then: <code>disc = compute_discounted_rewards(rewards)</code>, <code>norm = normalize(disc)</code>. Loop through <code>zip(gradients, norm)</code> to accumulate <code>total_gradient += grad * r</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>After computing <code>total_gradient</code>: <code>weights += lr * total_gradient</code>. Return <code>(weights, sum(rewards))</code>. This is gradient <em>ascent</em> (plus, not minus) because we want to maximize reward.</p>
+        </details>
 
         </div>
       </section>
@@ -1168,6 +1296,10 @@ steps and the total reward.</p>
 
 <p>After training, evaluate the final policy over 100 fresh episodes with <code>evaluate()</code> and compare to the random baseline (~20).</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Start with <code>weights = np.zeros(4)</code>. Loop 1000 times calling <code>weights, score = reinforce_update(env, weights)</code>. Append <code>score</code> to a list and plot it.</p>
+        </details>
 
         </div>
       </section>
@@ -1201,6 +1333,26 @@ reasons researchers developed the improvements in Parts 8 and 9.</p>
       </section>
 
 
+
+      <section>
+        <div class="slide-content">
+          <p><strong>Quick Check</strong></p>
+          <p>In REINFORCE, we multiply each step&rsquo;s gradient by its normalized discounted reward. Why?</p>
+          <ol style="list-style-type:upper-alpha;">
+            <li>To make the math simpler</li>
+            <li>To reinforce actions that led to high rewards and suppress actions that led to low rewards</li>
+            <li>To ensure the weights stay between -1 and 1</li>
+            <li>To speed up the computation</li>
+          </ol>
+          <div class="fragment" data-fragment-index="0">
+            <p><strong>B.</strong> The gradient points in the direction that makes the chosen
+            action more likely. Multiplying by a positive reward pushes the
+            weights that way (repeat this action!). Multiplying by a negative
+            reward pushes the weights the opposite way (avoid this action!).
+            That is the core learning signal.</p>
+          </div>
+        </div>
+      </section>
 
 
 
@@ -1323,6 +1475,14 @@ from Exercise 7.5), compute actual discounted rewards with
 <code>compute_discounted_rewards</code>, and update the value weights to reduce the squared
 error.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Initialize <code>value_weights = np.zeros(4)</code>. For each episode: play it, compute discounted rewards, then for each (obs, target) pair update: <code>value_weights += lr * (target - np.dot(value_weights, obs)) * obs</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>The gradient of squared error $(V - \text{target})^2$ with respect to <code>value_weights</code> is <code>2 * (V - target) * obs</code>. We move in the opposite direction, so the update is <code>lr * (target - V) * obs</code>.</p>
+        </details>
 
         </div>
       </section>
@@ -1366,6 +1526,14 @@ error.</p>
 
 <p>Write <code>td_update(obs, reward, next_obs, done, value_weights)</code>. When the game is done, <code>V(next_state) = 0</code> (no future rewards).</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>Compute <code>V_current = np.dot(value_weights, obs)</code>. If <code>done</code>, <code>V_next = 0</code>; otherwise <code>V_next = np.dot(value_weights, next_obs)</code>. The target is <code>reward + gamma * V_next</code>.</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p><code>error = target - V_current</code>. Update: <code>value_weights += lr * error * obs</code>. Return <code>error</code> (you will need it later as the advantage).</p>
+        </details>
 
         </div>
       </section>
@@ -1437,6 +1605,25 @@ is what you built here.</p>
       </section>
 
 
+
+      <section>
+        <div class="slide-content">
+          <p><strong>Quick Check</strong></p>
+          <p>The TD error is: <code>reward + gamma * V(next_state) - V(current_state)</code>. If this error is positive, it means:</p>
+          <ol style="list-style-type:upper-alpha;">
+            <li>The value model is broken and needs to be retrained from scratch</li>
+            <li>The action was definitely the best possible action</li>
+            <li>The outcome was better than the model expected</li>
+            <li>The discount factor gamma is too large</li>
+          </ol>
+          <div class="fragment" data-fragment-index="0">
+            <p><strong>C.</strong> A positive TD error means the actual outcome (reward plus
+            estimated future) exceeded the model&rsquo;s prediction for the current
+            state. The action led somewhere better than expected &mdash; a
+            pleasant surprise. Negative means worse than expected.</p>
+          </div>
+        </div>
+      </section>
 
 
 
@@ -1528,6 +1715,10 @@ compute and print each piece:</p>
 
 <p>This is the same math from Parts 7 and 8 — you're just combining them.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>For one step: (1) <code>p = prob_right(obs, actor_weights)</code>, (2) sample action, (3) compute gradient, (4) take step to get next_obs and reward, (5) compute TD error, (6) update critic with <code>lr * error * obs</code>, (7) update actor with <code>lr * error * gradient</code>.</p>
+        </details>
 
         </div>
       </section>
@@ -1551,6 +1742,14 @@ compute and print each piece:</p>
 
 <p>Train for 2000 episodes, plot the scores, and evaluate the final policy.</p>
 
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 1</summary>
+          <p>The inner loop (one episode) is: reset env, then while not done: compute probability, sample action, compute gradient, step env, compute TD error, update critic weights, update actor weights (gradient * advantage * lr).</p>
+        </details>
+        <details style="font-size:0.85em; margin:0.3em 0;">
+          <summary>Hint 2 (near-giveaway)</summary>
+          <p>Key difference from REINFORCE: you update weights <em>inside</em> the episode (after each step), not after the whole episode. The advantage (TD error) replaces the normalized discounted reward.</p>
+        </details>
 
         </div>
       </section>
@@ -1580,7 +1779,7 @@ that produce a score each episode, so we can plot learning curves:</p>
 
 
 
-      <!-- Part None: Summary -->
+      <!-- Part 10: Summary -->
       <section id="part10">
         <h2>Summary</h2>
 
@@ -1714,6 +1913,31 @@ that produce a score each episode, so we can plot learning curves:</p>
         </div>
       </section>
 
+      <section>
+        <div class="slide-content">
+          <p><strong>Reflection &mdash; what did you just build?</strong></p>
+          <ol style="line-height:1.8; font-size:0.95em;">
+            <li>Explain in your own words the difference between &ldquo;searching
+            for good weights from outside the game&rdquo; (genetic algorithm,
+            random search) and &ldquo;learning from experience inside the
+            game&rdquo; (REINFORCE, Actor-Critic). Which feels more natural?
+            Which do you think scales better to harder problems?</li>
+            <li>The credit assignment problem asks: &ldquo;Was this specific
+            action good?&rdquo; Why is this question hard to answer? How did
+            discounted rewards and TD errors each try to solve it?</li>
+            <li>The actor-critic architecture uses two separate models
+            working together. Can you think of a real-life situation where
+            having a &ldquo;doer&rdquo; (actor) and an &ldquo;evaluator&rdquo;
+            (critic) working together leads to better outcomes than either
+            alone?</li>
+            <li>Every algorithm you built works on CartPole with just 4
+            observations and 2 actions. What challenges do you think would
+            arise if the game had 1000 observations and 100 possible
+            actions?</li>
+          </ol>
+        </div>
+      </section>
+
       <!-- Index slide (last slide, linked from bottom-left) -->
       <section id="slide-index">
         <h2>Index</h2>
@@ -1763,28 +1987,6 @@ that produce a score each episode, so we can plot learning curves:</p>
     Reveal.on('ready', function() { updateProgress(); });
   </script>
 <div class="chapter-footer">
-
-  <p><em><p>You started by wiggling a cart left and right. You ended by inventing Actor-Critic — the architecture behind modern game-playing AIs. Every algorithm you built is used in production today. The only difference between your version and DeepMind's is scale.</p>
-
-<p><strong>Going further:</strong></p>
-
-<ul>
-<li><strong>Deep Actor-Critic:</strong> Replace the linear models with small neural networks
-(one hidden layer of 32 neurons with ReLU). If you know PyTorch, use
-<code>nn.Linear(4, 32)</code> → <code>nn.ReLU()</code> → <code>nn.Linear(32, 1)</code> and let
-<code>loss.backward()</code> handle all gradient computation. Compare learning speed
-to the linear version.</li>
-<li><strong>PPO (Proximal Policy Optimization):</strong> REINFORCE and Actor-Critic can make
-dangerously large updates. PPO clips the gradient so the policy can't change
-too much in one step — stabler training, used by ChatGPT's RLHF.</li>
-<li><strong>Multi-step returns:</strong> Instead of 1-step TD ($r + \gamma V(s')$), use 2 or 3
-steps of actual rewards before bootstrapping. A middle ground between REINFORCE
-(all actual) and TD (all estimated).</li>
-<li><strong>Different games:</strong> Try <code>LunarLander-v3</code>, <code>MountainCar-v0</code>, or <code>Acrobot-v1</code> with
-<code>gymnasium</code>. Each has different observation and action spaces — your algorithms
-transfer directly.</li>
-</ul></em></p>
-
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
