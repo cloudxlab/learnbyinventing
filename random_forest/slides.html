@@ -168,10 +168,17 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
         <p>Invent a single number that is <code>0</code> when all values are identical and grows as the values spread out. Try to come up with your own formula before reading on.</p>
 
-<p>The classic answer is <strong>variance</strong>: the average <em>squared</em> distance from the mean. (Why squared? So that being 10 below the mean can't cancel out being 10 above it --- and big misses get punished extra hard.)</p>
-
 <p><strong>Write <code>variance(values)</code>.</strong></p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> Start by computing the mean of the values.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> For each value, measure how far it is from the mean. But simple differences can cancel out (positive + negative = 0). How can you fix that?</p>
+        </div>
+        <div class="fragment" data-fragment-index="2">
+        <p><strong>Hint 3:</strong> Square each difference, then take the average. That is variance: <code>sum((v - mean)**2 for v in values) / len(values)</code>. Why squared? So that being 10 below the mean can't cancel out being 10 above it --- and big misses get punished extra hard.</p>
+        </div>
 
         </div>
       </section>
@@ -188,10 +195,16 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p>But there's a trap: <code>[1]</code> having zero variance shouldn't count as much as a five-element group having zero variance --- otherwise the tree learns to slice off one element at a time.</p>
 
-<p><strong>Your challenge:</strong> Simply adding the two variances treats a 1-element group the same as a 5-element group --- that can't be right. How should you combine the two variances so that a larger group's variance counts more? Think about what "fraction of elements" each side holds and use that to weight the variances.</p>
+<p><strong>Your challenge:</strong> Simply adding the two variances treats a 1-element group the same as a 5-element group --- that can't be right. How should you combine the two variances so that a larger group's variance counts more?</p>
 
 <p><strong>Write <code>total_variance(left, right)</code>.</strong></p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> Think about what "fraction of elements" each side holds.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> Weight each side's variance by the fraction of total elements it contains: <code>(len(left) / n) * variance(left) + (len(right) / n) * variance(right)</code> where <code>n = len(left) + len(right)</code>.</p>
+        </div>
 
         </div>
       </section>
@@ -208,6 +221,12 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p>Then check: for <code>[10, 9, 11, 8, 10, 1]</code>, splitting the troublemaker off should score much higher than splitting down the middle.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> You already have the parent's variance and the children's weighted variance. What single arithmetic operation captures "how much purer did the split make things"?</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> Subtraction: <code>variance(parent) - total_variance(left, right)</code>. The bigger the drop in variance, the better the split.</p>
+        </div>
 
         </div>
       </section>
@@ -215,7 +234,7 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 
       <section>
-        <h3>Variance vs Impurity</h3>
+        <h3>Quick Check 1.1 --- Variance vs Impurity</h3>
         <div class="slide-content">
 
         <p>In the classification decision tree chapter, you used impurity (mixing of labels) to evaluate splits. Now for regression, you use variance instead. Why the change?</p>
@@ -229,6 +248,9 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
         <p><strong>D.</strong> Python's standard library only has a variance function, not an impurity function</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Answer: B.</strong> Classification labels are discrete categories (red/blue, yes/no) --- impurity counts how mixed those categories are. But regression targets are continuous numbers: there's no finite set to count. Variance measures how spread out numbers are around their mean, which is exactly what "impure" means for numeric data.</p>
+        </div>
 
         </div>
       </section>
@@ -322,6 +344,12 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p>If there is nothing to split (no candidates), return <code>(None, None, 0.0)</code>.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> For each feature, sort its unique values and take midpoints between consecutive values as candidate thresholds.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> For each threshold <code>t</code>, split the targets: <code>left_y = [y[i] for i in range(len(y)) if X[i][f] &lt;= t]</code>, and similarly for <code>right_y</code>. Compute <code>variance_reduction(y, left_y, right_y)</code> and track the best.</p>
+        </div>
 
         </div>
       </section>
@@ -402,6 +430,12 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p><strong><code>predict</code></strong> walks each row from the root --- go left if <code>row[feature] &lt;= threshold</code> --- and returns the leaf's value.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> Write a helper <code>_build(X, y, depth)</code> that returns a <code>Node</code>. Check the three stopping conditions first --- if any fires, return a leaf whose <code>value</code> is <code>mean(y)</code>.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> Otherwise, call <code>find_best_split</code>, partition rows into left/right by the best <code>(feature, threshold)</code>, and recurse: <code>Node(feature, threshold, left=_build(X_left, y_left, depth+1), right=_build(X_right, y_right, depth+1))</code>.</p>
+        </div>
 
         </div>
       </section>
@@ -438,6 +472,12 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p><strong>Write <code>bootstrap_sample(X, y)</code></strong> that returns a new <code>(X_sample, y_sample)</code> of the same length, where each position holds a uniformly random row of the original data --- and each <code>y</code> stays paired with its <code>X</code> row. Use <code>random.randint</code>.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> Generate <code>n</code> random indices (each between 0 and n-1), then gather the corresponding rows.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> <code>indices = [random.randint(0, n-1) for _ in range(n)]</code>, then <code>X_sample = [X[i] for i in indices]</code> and similarly for <code>y_sample</code>.</p>
+        </div>
 
         </div>
       </section>
@@ -454,6 +494,9 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p>This is why <code>find_best_split</code> takes that <code>feature_indices</code> parameter.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint:</strong> <code>random.sample(range(n_features), max_features)</code> does the job in one line --- it picks <code>max_features</code> distinct indices without replacement.</p>
+        </div>
 
         </div>
       </section>
@@ -461,7 +504,7 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 
       <section>
-        <h3>Why Randomness Helps</h3>
+        <h3>Quick Check 4.1 --- Why Randomness Helps</h3>
         <div class="slide-content">
 
         <p>In a random forest, each tree is trained on a random bootstrap sample AND considers only a random subset of features at each split. Why does this randomness improve the final prediction?</p>
@@ -475,6 +518,9 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
         <p><strong>D.</strong> Random selection always finds better splits than checking all features</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Answer: B.</strong> If every tree were identical, averaging would give the same answer as one tree. By injecting randomness (different rows via bootstrap, different features per split), each tree makes <em>different</em> mistakes. When you average many independent errors, they tend to cancel out, leaving only the true signal. This is the "wisdom of the crowd" effect.</p>
+        </div>
 
         </div>
       </section>
@@ -513,6 +559,12 @@ group_b = [1, 50, 3, 80]           # wild disagreement
 
 <p><strong><code>predict</code></strong>: ask every tree, and return the <strong>average</strong> of their answers for each row.</p>
 
+        <div class="fragment" data-fragment-index="0">
+        <p><strong>Hint 1:</strong> In <code>fit</code>, loop <code>n_estimators</code> times. Each iteration: call <code>bootstrap_sample</code>, call <code>choose_features</code> (or use all features if <code>max_features</code> is <code>None</code>), then create and fit a <code>DecisionTree</code> with those feature indices.</p>
+        </div>
+        <div class="fragment" data-fragment-index="1">
+        <p><strong>Hint 2:</strong> In <code>predict</code>, collect each tree's predictions into a list-of-lists, then for each row average across all trees: <code>mean([tree_preds[j] for tree_preds in all_preds])</code>.</p>
+        </div>
 
         </div>
       </section>
@@ -552,6 +604,7 @@ group_b = [1, 50, 3, 80]           # wild disagreement
       <section>
 
         <div class="slide-content">
+        <p><strong>What you just invented:</strong></p>
         <table>
           <tr>
 
@@ -614,6 +667,9 @@ group_b = [1, 50, 3, 80]           # wild disagreement
           </tr>
 
         </table>
+        <div class="fragment" data-fragment-index="0">
+        <p>You didn't learn random forests. <strong>You invented them.</strong></p>
+        </div>
         </div>
       </section>
 
@@ -622,6 +678,32 @@ group_b = [1, 50, 3, 80]           # wild disagreement
       <section>
         <div class="slide-content"><p>You have now invented, from scratch, the algorithm behind scikit-learn's <code>RandomForestRegressor</code>. The next big idea in tree ensembles --- training each new tree on the <em>errors</em> of the previous ones --- is called <strong>gradient boosting</strong> (XGBoost, LightGBM). You already own every ingredient it needs.</p>
 </div>
+      </section>
+
+      <!-- Part 7: Reflection -->
+      <section id="part7">
+        <h2>Part 7: Reflection</h2>
+
+      </section>
+
+
+
+      <section>
+        <h3>Reflection</h3>
+        <div class="slide-content">
+
+        <p>Take a moment to answer these questions in your own words.</p>
+
+<ol>
+<li>Why does a single deep tree score perfectly on training data but often poorly on new data? What is this phenomenon called?</li>
+<li>Explain in one sentence why averaging many imperfect trees beats one "perfect" tree.</li>
+<li>What would happen if you set <code>max_features</code> equal to the total number of features? How would the forest's trees differ from each other?</li>
+<li>A friend says "I'll just use 10,000 trees to be safe." What is the downside, and does adding more trees ever <em>hurt</em> accuracy?</li>
+<li>You built a regression forest (numeric targets). What would you change to handle <em>classification</em> (categorical targets) instead?</li>
+</ol>
+
+
+        </div>
       </section>
 
       <!-- Index slide (last slide, linked from bottom-left) -->
@@ -635,6 +717,7 @@ group_b = [1, 50, 3, 80]           # wild disagreement
             <li><a href="#/part4">Part 4: Many Trees Are Better Than One</a></li>
             <li><a href="#/part5">Part 5: The Random Forest</a></li>
             <li><a href="#/part6">Part 6: Summary — What Did You Just Build?</a></li>
+            <li><a href="#/part7">Part 7: Reflection</a></li>
           </ol>
         </div></div>
       </section>
