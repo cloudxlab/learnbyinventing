@@ -240,7 +240,8 @@ The narration player (`tools/narration/narration-player.js`, copied to each chap
 - **Equalizer bars** — animated bars shown while audio is playing
 - **Buffering indicator** — spinning ring around the mute button while audio is loading (uses `waiting`/`canplay`/`playing` audio events); equalizer bars are hidden during buffering
 - **Autoplay unlock** — queues audio until first user interaction (click/key/touch)
-- **Fragment support** — plays separate audio for Reveal.js fragments (`slide-NN-frag-N.mp3`)
+- **Fragment support** — plays separate audio for fragments
+- **Content-hash file naming** — audio/script files are named by SHA-256 hash of slide content (first 10 hex chars) instead of sequential indices. A `narration/manifest.json` maps slide positions (e.g., `"0"`, `"3-frag-1"`) to content-hash filenames. This means inserting or reordering slides does not invalidate existing audio files — only changed slides need regeneration. The player falls back to legacy `slide-NN` naming if no manifest is found.
 
 ---
 
