@@ -47,7 +47,11 @@
     '.narration-bars span:nth-child(1) { animation:narration-bar1 0.8s ease-in-out infinite; }' +
     '.narration-bars span:nth-child(2) { animation:narration-bar2 0.6s ease-in-out infinite 0.1s; }' +
     '.narration-bars span:nth-child(3) { animation:narration-bar3 0.7s ease-in-out infinite 0.2s; }' +
-    '.narration-bars span:nth-child(4) { animation:narration-bar1 0.9s ease-in-out infinite 0.15s; }';
+    '.narration-bars span:nth-child(4) { animation:narration-bar1 0.9s ease-in-out infinite 0.15s; }' +
+    '@keyframes narration-ellipsis { 0%{content:"."} 33%{content:".."} 66%{content:"..."} }' +
+    '.narration-buffering-label { display:none; font-size:12px; color:rgba(255,255,255,0.85); background:rgba(0,0,0,0.55); padding:2px 10px; border-radius:12px; font-family:system-ui,sans-serif; white-space:nowrap; }' +
+    '.narration-buffering-label::after { content:"..."; animation:narration-ellipsis 1.2s steps(1) infinite; }' +
+    '#narration-controls.buffering .narration-buffering-label { display:block; }';
   document.head.appendChild(style);
 
   // ── UI ──────────────────────────────────────────────────────────────
@@ -113,9 +117,14 @@
   bars.className = 'narration-bars';
   for (var b = 0; b < 4; b++) bars.appendChild(document.createElement('span'));
 
+  var bufferingLabel = document.createElement('span');
+  bufferingLabel.className = 'narration-buffering-label';
+  bufferingLabel.textContent = 'Buffering';
+
   container.appendChild(muteBtn);
   container.appendChild(replayBtn);
   container.appendChild(bars);
+  container.appendChild(bufferingLabel);
 
   // ── Completion chime (Web Audio API) ─────────────────────────────────
 
