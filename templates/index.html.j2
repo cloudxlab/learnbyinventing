@@ -228,12 +228,34 @@
     footer a { color: #aaa; text-decoration: none; }
     footer a:hover { color: #c8a96e; }
 
-    #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 2px 10px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; transition: background 0.2s; }
-    #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+    #bug-report-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff8e7;
+      color: #e37400;
+      border: 1px solid #f5c842;
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-family: system-ui, sans-serif;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: background 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    #bug-report-fab:hover { background: #fff3d0; color: #c56200; box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+    #bug-report-fab svg { flex-shrink: 0; }
 
     @media (max-width: 520px) {
       h1 { font-size: 1.8rem; }
       .track-desc { padding-left: 0; }
+      #bug-report-fab { padding: 8px 12px; font-size: 0.75rem; bottom: 16px; right: 16px; }
     }
   </style>
 {% include "blocks/ga.html" %}
@@ -285,11 +307,16 @@
 
 {% endfor %}
   <footer>
-    <span>Source on <a href="{{ footer.github_url }}" target="_blank" rel="noopener">GitHub</a> &middot; <a href="#" id="bug-report-link" rel="noopener">Report a Bug</a> &middot; &copy; 2026 <a href="{{ footer.copyright_url }}" target="_blank" rel="noopener">{{ footer.copyright_holder }}</a></span>
+    <span>Source on <a href="{{ footer.github_url }}" target="_blank" rel="noopener">GitHub</a> &middot; &copy; 2026 <a href="{{ footer.copyright_url }}" target="_blank" rel="noopener">{{ footer.copyright_holder }}</a></span>
     <span><a href="{{ footer.author_url }}">girisandeep.com</a></span>
   </footer>
+
+  <a href="#" id="bug-report-fab" rel="noopener">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Report a Bug
+  </a>
   <script>
-document.getElementById('bug-report-link').addEventListener('click', function(e) {
+document.getElementById('bug-report-fab').addEventListener('click', function(e) {
   e.preventDefault();
   var pageUrl = location.href;
   var body = '**Page**\nIndex (topic list)\nURL: ' + pageUrl +
