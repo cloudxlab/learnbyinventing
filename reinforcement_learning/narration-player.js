@@ -31,6 +31,12 @@
     '@keyframes narration-spin { to{transform:rotate(360deg)} }' +
     '#narration-controls.playing #narration-mute { animation: narration-pulse 2s ease-in-out infinite; }' +
     '#narration-controls.buffering #narration-mute { animation: none; }' +
+    '@keyframes narration-done-glow { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.7)} 40%{box-shadow:0 0 12px 4px rgba(34,197,94,0.4)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }' +
+    '#narration-controls.done #narration-mute { animation: narration-done-glow 1.8s ease-out; background: rgba(34,197,94,0.55) !important; }' +
+    '#narration-done-check { display:none;position:absolute;top:0;left:0;width:36px;height:36px;pointer-events:none;align-items:center;justify-content:center; }' +
+    '#narration-controls.done #narration-done-check { display:flex; }' +
+    '@keyframes narration-check-in { 0%{opacity:0;transform:scale(0.3)} 50%{opacity:1;transform:scale(1.1)} 100%{opacity:1;transform:scale(1)} }' +
+    '#narration-controls.done #narration-done-check svg { animation: narration-check-in 0.4s ease-out; }' +
     '#narration-spinner { display:none;position:absolute;top:0;left:0;width:36px;height:36px;pointer-events:none; }' +
     '#narration-controls.buffering #narration-spinner { display:block; }' +
     '#narration-spinner svg { animation:narration-spin 1s linear infinite; }' +
@@ -96,6 +102,13 @@
     '</svg>';
   muteBtn.appendChild(spinner);
 
+  var doneCheck = document.createElement('div');
+  doneCheck.id = 'narration-done-check';
+  doneCheck.innerHTML =
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+    '<polyline points="20 6 9 17 4 12"/></svg>';
+  muteBtn.appendChild(doneCheck);
+
   var bars = document.createElement('div');
   bars.className = 'narration-bars';
   for (var b = 0; b < 4; b++) bars.appendChild(document.createElement('span'));
@@ -104,14 +117,72 @@
   container.appendChild(replayBtn);
   container.appendChild(bars);
 
+  // ── Completion chime (Web Audio API) ─────────────────────────────────
+
+  var audioCtx = null;
+  var CHIME_ENABLED_KEY = 'narration-chime';
+  var chimeEnabled = localStorage.getItem(CHIME_ENABLED_KEY) !== 'false';
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  function playChime() {
+    if (!chimeEnabled || muted) return;
+    try {
+      var ctx = getAudioCtx();
+      var now = ctx.currentTime;
+      var gain = ctx.createGain();
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+      var o1 = ctx.createOscillator();
+      o1.type = 'sine';
+      o1.frequency.setValueAtTime(880, now);
+      o1.connect(gain);
+      o1.start(now);
+      o1.stop(now + 0.3);
+
+      var gain2 = ctx.createGain();
+      gain2.connect(ctx.destination);
+      gain2.gain.setValueAtTime(0, now);
+      gain2.gain.setValueAtTime(0.10, now + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+
+      var o2 = ctx.createOscillator();
+      o2.type = 'sine';
+      o2.frequency.setValueAtTime(1174.66, now + 0.15);
+      o2.connect(gain2);
+      o2.start(now + 0.15);
+      o2.stop(now + 0.6);
+    } catch (e) {}
+  }
+
   // ── Playing state ───────────────────────────────────────────────────
+
+  var doneTimer = null;
 
   function setPlaying(isPlaying) {
     if (isPlaying) {
+      container.classList.remove('done');
+      if (doneTimer) { clearTimeout(doneTimer); doneTimer = null; }
       container.classList.add('playing');
     } else {
       container.classList.remove('playing');
     }
+  }
+
+  function showDone() {
+    container.classList.add('done');
+    if (doneTimer) clearTimeout(doneTimer);
+    doneTimer = setTimeout(function () {
+      container.classList.remove('done');
+      doneTimer = null;
+    }, 2000);
   }
 
   function setBuffering(isBuffering) {
@@ -124,7 +195,7 @@
 
   audio.addEventListener('play', function () { setPlaying(true); });
   audio.addEventListener('pause', function () { setPlaying(false); setBuffering(false); });
-  audio.addEventListener('ended', function () { setPlaying(false); setBuffering(false); });
+  audio.addEventListener('ended', function () { setPlaying(false); setBuffering(false); playChime(); showDone(); });
   audio.addEventListener('waiting', function () { setBuffering(true); });
   audio.addEventListener('canplay', function () { setBuffering(false); });
   audio.addEventListener('playing', function () { setBuffering(false); });
