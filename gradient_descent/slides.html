@@ -817,116 +817,6 @@ w, b = fit(X, y)
       </section>
 
 
-
-      <section>
-        <div class="slide-content"><div style="font-size:1.2em;">
-  <p>Look at what you wrote for 1D and 2D side by side:</p>
-  <table style="margin:0.3em auto; font-size:0.9em;">
-    <tr><th style="padding:0.2em 0.6em;">&nbsp;</th><th style="padding:0.2em 0.6em;">Position</th><th style="padding:0.2em 0.6em;">Gradient</th></tr>
-    <tr><td>1D</td><td>a number</td><td>a number</td></tr>
-    <tr><td>2D</td><td>a pair</td><td>a pair</td></tr>
-    <tr><td>ND</td><td>?</td><td>?</td></tr>
-  </table>
-  <div class="fragment" data-fragment-index="0">
-    <p>Fill in the ND row. Then write a general
-    <code>compute_gradient</code> that takes a function and a
-    <strong>list</strong> of variables and returns the gradient
-    (a list of partial derivatives).</p>
-    <p style="font-size:0.85em;">(Hint: loop over each variable,
-    nudge it by $h$, compute that partial derivative.)</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-<pre><code>def compute_gradient(f, variables, h=1e-5):
-    grad = []
-    f0 = f(variables)
-    for i in range(len(variables)):
-        v_plus = variables.copy();  v_plus[i] += h
-        grad.append((f(v_plus) - f0) / h)
-    return grad</code></pre>
-  </div>
-</div>
-</div>
-      </section>
-
-
-
-      <section>
-        <div class="slide-content"><div style="font-size:1.2em;">
-  <p><strong>Your turn:</strong> Now write a single
-  <code>find_minima</code> that works for any number of variables,
-  using <code>compute_gradient</code>.</p>
-  <div class="code-stack" style="min-height:10em;">
-    <div class="code-step fragment fade-out" data-fragment-index="0">
-<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
-    """Find the values that minimize f. variables is a list."""
-    # Compute gradient, update each variable, stop when small
-    # your code here</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="0">
-<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
-    variables = list(variables)
-    for step in range(100000):
-        grad = compute_gradient(f, variables)
-        if sum(g**2 for g in grad)**0.5 &lt; epsilon:
-            break
-        for i in range(len(variables)):
-            variables[i] -= alpha * grad[i]
-    return variables, f(variables)</code></pre>
-    </div>
-  </div>
-  <details style="font-size:0.8em; margin:0.3em 0;">
-    <summary>Hint</summary>
-    <p>Same structure as <code>find_minima_1d</code>: loop, compute gradient
-    (now a list), check magnitude, then update each variable with
-    <code>variables[i] -= alpha * grad[i]</code>.</p>
-  </details>
-</div>
-</div>
-      </section>
-
-
-
-      <section>
-        <div class="slide-content"><style>td .fragment.fade-out { display: none; }</style>
-
-<div style="font-size:1.3em;">
-  <p>One algorithm, any number of dimensions:</p>
-  <table style="margin:0.5em auto; font-size:0.85em;">
-    <tr>
-      <th style="padding:0.2em 0.6em;">Function</th>
-      <th style="padding:0.2em 0.6em;">Start</th>
-      <th style="padding:0.2em 0.6em;">Found minimum</th>
-    </tr>
-    <tr>
-      <td>$v_0^4 - 4v_0 + 10$</td>
-      <td>[2.0]</td>
-      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[1.0] &rarr; f&nbsp;=&nbsp;7.0</span></td>
-    </tr>
-    <tr>
-      <td>$v_0^2 + v_1^2$</td>
-      <td>[2.0, 3.0]</td>
-      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[0.0, 0.0] &rarr; f&nbsp;=&nbsp;0.0</span></td>
-    </tr>
-    <tr>
-      <td>$(v_0\!-\!1)^2 + (v_1\!-\!2)^2 + (v_2\!+\!3)^2$</td>
-      <td>[0, 0, 0]</td>
-      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[1, 2, &minus;3] &rarr; f&nbsp;=&nbsp;0.0</span></td>
-    </tr>
-  </table>
-  <div class="fragment" data-fragment-index="1">
-    <p>You have built a <strong>general-purpose optimizer</strong>.
-    It can find the minimum of <em>any</em> smooth function
-    in <em>any</em> number of dimensions.</p>
-    <p style="font-size:0.95em;">Now &mdash; what should we minimize?</p>
-  </div>
-</div>
-</div>
-      </section>
-
-
-
-
-
       <!-- Part 4: Fitting a Line to Data -->
       <section id="part4">
         <h2>Part 4: Fitting a Line to Data</h2>
@@ -1072,10 +962,10 @@ w, b = fit(X, y)
         <p style="font-size:0.95em;">A <strong>convex bowl</strong>
         &mdash; one single minimum.</p>
         <p style="font-size:0.9em;">You already have
-        <code>find_minima</code>.<br/>
+        <code>find_minima_2d</code>.<br/>
         MSE is just another function of two variables.</p>
         <p style="font-size:0.95em;"><strong>What if you plugged
-        MSE into find_minima?</strong></p>
+        MSE into find_minima_2d?</strong></p>
       </div>
     </div>
   </div>
@@ -1117,37 +1007,34 @@ w, b = fit(X, y)
 
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
-  <p><strong>Your turn:</strong> <code>find_minima</code> expects a function
-  of a <strong>list</strong>. <code>mse</code> takes <code>(X, y, m, c)</code>.</p>
+  <p><strong>Your turn:</strong> <code>find_minima_2d</code> takes a function
+  of <strong>two variables</strong>. <code>mse</code> takes <code>(X, y, m, c)</code>.</p>
   <p>First, set up a dataset (the true line is $y = 2.5x + 4$, plus noise):</p>
 <pre><code>X_data = [1, 2, 3, 4, 5, 6, 7, 8]
 y_data = [6.2, 9.3, 11.4, 14.1, 16.3, 19.5, 21.8, 24.2]</code></pre>
-  <p>Write a wrapper that takes
-  <code>params = [m, c]</code> and calls <code>mse</code> with this data.
-  Then plug it into <code>find_minima</code> and run it.</p>
+  <p>Write a wrapper that takes <code>(m, c)</code> and calls
+  <code>mse</code> with this data.
+  Then plug it into <code>find_minima_2d</code>.</p>
   <div class="code-stack" style="min-height:7em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
-<pre><code>def mse_for_optimizer(params):
-    # unpack params into m and c
+<pre><code>def mse_wrapper(m, c):
     # call mse with X_data, y_data, m, c
     # your code here
 
-result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></pre>
+m, c, error = find_minima_2d(mse_wrapper, 0.0, 0.0, alpha=0.001)</code></pre>
     </div>
     <div class="code-step fragment" data-fragment-index="0">
-<pre><code>def mse_for_optimizer(params):
-    m, c = params
+<pre><code>def mse_wrapper(m, c):
     return mse(X_data, y_data, m, c)
 
-result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></pre>
+m, c, error = find_minima_2d(mse_wrapper, 0.0, 0.0, alpha=0.001)</code></pre>
     </div>
   </div>
   <div class="fragment" data-fragment-index="1">
     <details style="font-size:0.85em; margin:0.3em 0;">
       <summary>Hint</summary>
-      <p>The wrapper just unpacks: <code>m, c = params</code>, then returns
-      <code>mse(X_data, y_data, m, c)</code>. The data variables live
-      in the outer scope.</p>
+      <p>The wrapper just passes through: <code>return mse(X_data, y_data, m, c)</code>.
+      The data variables live in the outer scope.</p>
     </details>
   </div>
   <div class="fragment" data-fragment-index="2">
@@ -1192,11 +1079,129 @@ result, error = find_minima(mse_for_optimizer, [0.0, 0.0], alpha=0.001)</code></
 
 
 
-
-
-      <!-- Part 6: Many Features -->
+      <!-- Part 6: Generalizing to N Dimensions -->
       <section id="part6">
-        <h2>Part 6: Many Features</h2>
+        <h2>Part 6: Generalizing to N Dimensions</h2>
+
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p>Look at what you wrote for 1D and 2D side by side:</p>
+  <table style="margin:0.3em auto; font-size:0.9em;">
+    <tr><th style="padding:0.2em 0.6em;">&nbsp;</th><th style="padding:0.2em 0.6em;">Position</th><th style="padding:0.2em 0.6em;">Gradient</th></tr>
+    <tr><td>1D</td><td>a number</td><td>a number</td></tr>
+    <tr><td>2D</td><td>a pair</td><td>a pair</td></tr>
+    <tr><td>ND</td><td>?</td><td>?</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Fill in the ND row. Then write a general
+    <code>compute_gradient</code> that takes a function and a
+    <strong>list</strong> of variables and returns the gradient
+    (a list of partial derivatives).</p>
+    <p style="font-size:0.85em;">(Hint: loop over each variable,
+    nudge it by $h$, compute that partial derivative.)</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+<pre><code>def compute_gradient(f, variables, h=1e-5):
+    grad = []
+    f0 = f(variables)
+    for i in range(len(variables)):
+        v_plus = variables.copy();  v_plus[i] += h
+        grad.append((f(v_plus) - f0) / h)
+    return grad</code></pre>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.2em;">
+  <p><strong>Your turn:</strong> Now write a single
+  <code>find_minima</code> that works for any number of variables,
+  using <code>compute_gradient</code>.</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="0">
+<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
+    """Find the values that minimize f. variables is a list."""
+    # Compute gradient, update each variable, stop when small
+    # your code here</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="0">
+<pre><code>def find_minima(f, variables, alpha=0.01, epsilon=1e-6):
+    variables = list(variables)
+    for step in range(100000):
+        grad = compute_gradient(f, variables)
+        if sum(g**2 for g in grad)**0.5 &lt; epsilon:
+            break
+        for i in range(len(variables)):
+            variables[i] -= alpha * grad[i]
+    return variables, f(variables)</code></pre>
+    </div>
+  </div>
+  <details style="font-size:0.8em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>Same structure as <code>find_minima_1d</code>: loop, compute gradient
+    (now a list), check magnitude, then update each variable with
+    <code>variables[i] -= alpha * grad[i]</code>.</p>
+  </details>
+</div>
+</div>
+      </section>
+
+
+
+      <section>
+        <div class="slide-content"><style>td .fragment.fade-out { display: none; }</style>
+
+<div style="font-size:1.3em;">
+  <p>One algorithm, any number of dimensions:</p>
+  <table style="margin:0.5em auto; font-size:0.85em;">
+    <tr>
+      <th style="padding:0.2em 0.6em;">Function</th>
+      <th style="padding:0.2em 0.6em;">Start</th>
+      <th style="padding:0.2em 0.6em;">Found minimum</th>
+    </tr>
+    <tr>
+      <td>$v_0^4 - 4v_0 + 10$</td>
+      <td>[2.0]</td>
+      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[1.0] &rarr; f&nbsp;=&nbsp;7.0</span></td>
+    </tr>
+    <tr>
+      <td>$v_0^2 + v_1^2$</td>
+      <td>[2.0, 3.0]</td>
+      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[0.0, 0.0] &rarr; f&nbsp;=&nbsp;0.0</span></td>
+    </tr>
+    <tr>
+      <td>$(v_0\!-\!1)^2 + (v_1\!-\!2)^2 + (v_2\!+\!3)^2$</td>
+      <td>[0, 0, 0]</td>
+      <td><span class="fragment fade-out" data-fragment-index="0">?</span><span class="fragment" data-fragment-index="0">[1, 2, &minus;3] &rarr; f&nbsp;=&nbsp;0.0</span></td>
+    </tr>
+  </table>
+  <div class="fragment" data-fragment-index="1">
+    <p>You have built a <strong>general-purpose optimizer</strong>.
+    It can find the minimum of <em>any</em> smooth function
+    in <em>any</em> number of dimensions.</p>
+    <p style="font-size:0.95em;">Next &mdash; what if your model has many features?</p>
+  </div>
+</div>
+</div>
+      </section>
+
+
+
+
+
+
+
+
+      <!-- Part 7: Many Features -->
+      <section id="part7">
+        <h2>Part 7: Many Features</h2>
 
       </section>
 
@@ -1386,9 +1391,9 @@ X2 = add_feature(X, lambda row: row[0]**2)
       <th style="padding:0.3em 0.6em;">Standard name</th>
     </tr>
     <tr><td><code>numerical_derivative</code></td><td>Gradient computation</td></tr>
-    <tr><td><code>find_minima</code></td><td>Gradient descent optimizer</td></tr>
+    <tr><td><code>find_minima_2d</code> / <code>find_minima</code></td><td>Gradient descent optimizer</td></tr>
     <tr><td><code>mse</code></td><td>Loss function (Mean Squared Error)</td></tr>
-    <tr><td><code>find_minima(mse)</code></td><td>Training &mdash; <strong>linear regression</strong></td></tr>
+    <tr><td><code>find_minima_2d(mse)</code></td><td>Training &mdash; <strong>linear regression</strong></td></tr>
     <tr><td><code>predict</code> + <code>fit</code></td><td>Model API (same pattern as <code>sklearn</code>)</td></tr>
     <tr><td><code>add_feature</code></td><td>Feature engineering</td></tr>
     <tr><td><code>alpha</code></td><td>Learning rate (hyperparameter)</td></tr>
@@ -1431,7 +1436,8 @@ X2 = add_feature(X, lambda row: row[0]**2)
             <li><a href="#/part3">Part 3: Many Variables</a></li>
             <li><a href="#/part4">Part 4: Fitting a Line to Data</a></li>
             <li><a href="#/part5">Part 5: The Payoff — Linear Regression</a></li>
-            <li><a href="#/part6">Part 6: Many Features</a></li>
+            <li><a href="#/part6">Part 6: Generalizing to N Dimensions</a></li>
+            <li><a href="#/part7">Part 7: Many Features</a></li>
           </ol>
         </div></div>
       </section>
