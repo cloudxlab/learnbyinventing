@@ -75,6 +75,9 @@
   <script>
 document.getElementById('bug-report-link').addEventListener('click', function(e) {
   e.preventDefault();
+  var btn = this;
+  var origText = btn.textContent;
+  btn.textContent = 'Capturing...';
   var idx = Reveal.getIndices();
   var slideNum = idx.h + 1;
   var ch = location.pathname.split('/').filter(Boolean);
@@ -88,14 +91,37 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       break;
     }
   }
-  var body = '**Chapter / Slide**\nChapter: ' + ch +
-    '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href +
-    '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots (optional)**\n\n\n**Device**\n- Browser: ' +
-    navigator.userAgent.split(' ').pop() + '\n- Device: ';
-  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
-    encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) +
-    '&body=' + encodeURIComponent(body);
-  window.open(url, '_blank');
+  var screenshotNote = '';
+  function openIssue() {
+    btn.textContent = origText;
+    var body = '**Chapter / Slide**\nChapter: ' + ch +
+      '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href +
+      '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n' + screenshotNote +
+      '\n\n**Device**\n- Browser: ' +
+      navigator.userAgent.split(' ').pop() + '\n- Device: ';
+    var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
+      encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) +
+      '&body=' + encodeURIComponent(body);
+    window.open(url, '_blank');
+  }
+  if (typeof html2canvas === 'function') {
+    html2canvas(document.body, {scale: 1, logging: false}).then(function(canvas) {
+      canvas.toBlob(function(blob) {
+        if (navigator.clipboard && window.ClipboardItem) {
+          navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(function() {
+            screenshotNote = 'Screenshot copied to clipboard — paste here with Ctrl+V / Cmd+V';
+            openIssue();
+          }).catch(function() {
+            screenshotNote = 'Could not copy screenshot. Please paste a screenshot manually.';
+            openIssue();
+          });
+        } else {
+          screenshotNote = 'Clipboard not supported. Please paste a screenshot manually.';
+          openIssue();
+        }
+      }, 'image/png');
+    }).catch(function() { openIssue(); });
+  } else { openIssue(); }
 });
 </script>
   <div class="reveal">
@@ -1258,5 +1284,6 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
 </div>
 
 <script src="narration-player.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
