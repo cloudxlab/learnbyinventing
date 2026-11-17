@@ -346,11 +346,28 @@
     Report a Bug
   </a>
   <script>
+function detectDevice() {
+  var ua = navigator.userAgent;
+  var browser = 'Unknown';
+  if (ua.indexOf('Edg/') > -1) browser = 'Edge';
+  else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
+  else if (ua.indexOf('Chrome/') > -1) browser = 'Chrome';
+  else if (ua.indexOf('Safari/') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+  else if (ua.indexOf('Firefox/') > -1) browser = 'Firefox';
+  var os = 'Unknown';
+  if (ua.indexOf('Android') > -1) os = 'Android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+  else if (ua.indexOf('Windows') > -1) os = 'Windows';
+  else if (ua.indexOf('Mac OS') > -1) os = 'macOS';
+  else if (ua.indexOf('Linux') > -1) os = 'Linux';
+  var screen = window.screen.width + 'x' + window.screen.height;
+  var viewport = window.innerWidth + 'x' + window.innerHeight;
+  return '- Browser: ' + browser + '\n- OS: ' + os + '\n- Screen: ' + screen + ' (viewport ' + viewport + ')';
+}
 document.getElementById('bug-report-fab').addEventListener('click', function(e) {
   e.preventDefault();
   var body = '**Page**\nIndex (topic list)\nURL: ' + location.href +
-    '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n- Browser: ' +
-    navigator.userAgent.split(' ').pop() + '\n- Device: ';
+    '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n' + detectDevice();
   var url = '{{ footer.github_url }}/issues/new?title=' +
     encodeURIComponent('[Bug] Index page') +
     '&body=' + encodeURIComponent(body);
