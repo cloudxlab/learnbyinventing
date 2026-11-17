@@ -77,9 +77,6 @@
   <script>
 document.getElementById('bug-report-link').addEventListener('click', function(e) {
   e.preventDefault();
-  var btn = this;
-  var origText = btn.textContent;
-  btn.textContent = 'Capturing...';
   var idx = Reveal.getIndices();
   var slideNum = idx.h + 1;
   var ch = location.pathname.split('/').filter(Boolean);
@@ -93,55 +90,30 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       break;
     }
   }
-  var screenshotNote = '';
-  function openIssue() {
-    btn.textContent = origText;
-    var body = '**Chapter / Slide**\nChapter: ' + ch +
-      '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href +
-      '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n' + screenshotNote +
-      '\n\n**Device**\n- Browser: ' +
-      navigator.userAgent.split(' ').pop() + '\n- Device: ';
-    var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
-      encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) +
-      '&body=' + encodeURIComponent(body);
-    window.open(url, '_blank');
-  }
-  function downloadBlob(blob) {
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'screenshot-' + ch + '-slide-' + slideNum + '.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-  }
-  if (typeof html2canvas === 'function') {
-    html2canvas(document.body, {scale: 1, logging: false}).then(function(canvas) {
-      canvas.toBlob(function(blob) {
-        downloadBlob(blob);
-        if (navigator.clipboard && window.ClipboardItem) {
-          navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(function() {
-            screenshotNote = 'Screenshot downloaded and copied to clipboard.\nPaste with Ctrl+V / Cmd+V, or attach the downloaded file.';
-            openIssue();
-          }).catch(function() {
-            screenshotNote = 'Screenshot downloaded.\nAttach the downloaded file below.';
-            openIssue();
-          });
-        } else {
-          screenshotNote = 'Screenshot downloaded.\nAttach the downloaded file below.';
-          openIssue();
-        }
-      }, 'image/png');
-    }).catch(function() { openIssue(); });
-  } else { openIssue(); }
-});
-        } else {
-          screenshotNote = 'Clipboard not supported. Please paste a screenshot manually.';
-          openIssue();
-        }
-      }, 'image/png');
-    }).catch(function() { openIssue(); });
-  } else { openIssue(); }
+  var body = '**Chapter / Slide**
+Chapter: ' + ch +
+    '
+Slide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '
+URL: ' + location.href +
+    '
+
+**What happened?**
+
+
+**What did you expect?**
+
+
+**Screenshots**
+
+
+**Device**
+- Browser: ' +
+    navigator.userAgent.split(' ').pop() + '
+- Device: ';
+  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
+    encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) +
+    '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank');
 });
 </script>
   <div class="reveal">
@@ -855,6 +827,5 @@ The black box changes; the wrapper pattern never does.</p>
 </div>
 
 <script src="narration-player.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>

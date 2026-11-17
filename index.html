@@ -838,54 +838,16 @@ Resist the urge to look ahead. The struggle is the lesson.
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     Report a Bug
   </a>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
 document.getElementById('bug-report-fab').addEventListener('click', function(e) {
   e.preventDefault();
-  var btn = this;
-  var origHTML = btn.innerHTML;
-  btn.innerHTML = btn.querySelector('svg').outerHTML + ' Capturing...';
-  var pageUrl = location.href;
-  var screenshotNote = '';
-  function openIssue() {
-    btn.innerHTML = origHTML;
-    var body = '**Page**\nIndex (topic list)\nURL: ' + pageUrl +
-      '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n' + screenshotNote +
-      '\n\n**Device**\n- Browser: ' +
-      navigator.userAgent.split(' ').pop() + '\n- Device: ';
-    var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
-      encodeURIComponent('[Bug] Index page') +
-      '&body=' + encodeURIComponent(body);
-    window.open(url, '_blank');
-  }
-  function downloadBlob(blob) {
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'screenshot-index.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-  }
-  if (typeof html2canvas === 'function') {
-    html2canvas(document.body, {scale: 1, logging: false, windowHeight: document.documentElement.scrollHeight}).then(function(canvas) {
-      canvas.toBlob(function(blob) {
-        downloadBlob(blob);
-        if (navigator.clipboard && window.ClipboardItem) {
-          navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(function() {
-            screenshotNote = 'Screenshot downloaded and copied to clipboard.\nPaste with Ctrl+V / Cmd+V, or attach the downloaded file.';
-            openIssue();
-          }).catch(function() {
-            screenshotNote = 'Screenshot downloaded.\nAttach the downloaded file below.';
-            openIssue();
-          });
-        } else {
-          screenshotNote = 'Screenshot downloaded.\nAttach the downloaded file below.';
-          openIssue();
-        }
-      }, 'image/png');
-    }).catch(function() { openIssue(); });
-  } else { openIssue(); }
+  var body = '**Page**\nIndex (topic list)\nURL: ' + location.href +
+    '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n- Browser: ' +
+    navigator.userAgent.split(' ').pop() + '\n- Device: ';
+  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' +
+    encodeURIComponent('[Bug] Index page') +
+    '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank');
 });
 </script>
 
