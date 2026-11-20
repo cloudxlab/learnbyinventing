@@ -1,10 +1,9 @@
-<!-- Learning Naive Bayes by Inventing It — Slides -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Learning Naive Bayes by Inventing It — Slides</title>
+  <title>Naive Bayes — Slides</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
 
@@ -31,10 +30,10 @@
     .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
     .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
     .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .reveal .progress { display: none !important; }
     .chapter-footer { display: none; }
-    .chapter-footer a { color:#888; text-decoration:none; }
-    .chapter-footer a:hover { color:#c8a96e; }
-      .reveal .progress { display: none !important; }
     #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
     #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
     #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
@@ -42,6 +41,32 @@
     #bottom-copyright a:hover { color: #c8a96e; }
     #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
     #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
 
     @media screen and (max-width: 768px) {
       .reveal .slide-content { font-size: 0.65em; }
@@ -54,6 +79,14 @@
       .reveal th, .reveal td { padding: 0.2em 0.4em; }
       .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
       #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
     }
   </style>
 <!-- Google tag (gtag.js) -->
@@ -72,7 +105,6 @@
     <span style="display:flex;gap:10px;align-items:center;">
       <a href="index.html" style="color:#888;text-decoration:none;">Interactive</a>
       <strong style="color:#333;">Slides</strong>
-
     </span>
   </nav>
   <div id="top-progress"><div id="top-progress-bar"></div></div>
@@ -121,673 +153,437 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 
       <!-- Title slide -->
       <section>
-        <h1>Learning Naive Bayes by Inventing It</h1>
-
-        <div class="slide-content slide-title">You will discover the Naive Bayes classifier yourself — step by step, from counting to a working ML model.</div>
+        <h1>Naive Bayes</h1>
+        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
           to advance &nbsp;|&nbsp;
           <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&larr;</kbd> to go back
         </p>
-
-
       </section>
 
 
-
-      <section>
-        <div class="slide-content"><div style="font-size:1.3em;">
-<div>
-<p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-<p>Build a <code>NaiveBayes</code> classifier for categorical features from scratch, with no sklearn. <code>fit</code> counts class priors and per-class feature-value frequencies. <code>predict</code> multiplies the prior by each feature's conditional probability and returns the class with the highest score. Use <strong>Laplace smoothing</strong> so an unseen feature value never zeroes out a class.</p>
-<pre><code>class NaiveBayes:
-    def __init__(self, alpha=1): ...
-    def fit(self, X, y): ...      # X: list of rows, y: list of labels
-    def predict(self, row): ...   # returns the best label</code></pre>
-<pre><code>X = [["Sunny","Hot"], ["Rainy","Mild"], ["Sunny","Mild"], ["Rainy","Hot"]]
-y = ["No", "Yes", "Yes", "Yes"]
-nb = NaiveBayes().fit(X, y)       # fit returns self
-nb.predict(["Sunny","Mild"])      # -> "Yes"
-nb.predict(["Overcast","Hot"])    # unseen value: still returns a label, no crash</code></pre>
-<p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
-</div>
-</div></div>
-      </section>
-
-
-
-      <!-- Part 1: Counting and Probability -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 1: Counting and Probability                         -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part1">
         <h2>Part 1: Counting and Probability</h2>
+      </section>
 
-        <div class="slide-content"><p>Before any algorithm, let's learn to count carefully. That's all probability is — careful counting.</p>
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Build a <code>NaiveBayes</code> class from scratch. <code>fit(X, y)</code>
+  counts class priors and per-class feature frequencies.
+  <code>predict(row)</code> multiplies the prior by each feature&rsquo;s
+  conditional probability and returns the winning class. Use
+  <strong>Laplace smoothing</strong> so an unseen feature value never zeroes
+  out a class.</p>
+  <p style="font-size:0.85em; color:#888;">Already got it?
+  <a href="#/ending">Skip to the end</a>.</p>
 </div>
-
       </section>
-
-
 
       <section>
-        <h3>Meet the Data</h3>
         <div class="slide-content">
-
-
-        <p>Here are 14 days of weather observations. For each day we recorded the outlook, temperature, humidity, and wind — and whether we played tennis.</p>
-
-<table>
-<thead>
-<tr>
-  <th>Day</th>
-  <th>Outlook</th>
-  <th>Temp</th>
-  <th>Humidity</th>
-  <th>Wind</th>
-  <th>Play?</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1</td>
-  <td>Sunny</td>
-  <td>Hot</td>
-  <td>High</td>
-  <td>Weak</td>
-  <td>No</td>
-</tr>
-<tr>
-  <td>2</td>
-  <td>Sunny</td>
-  <td>Hot</td>
-  <td>High</td>
-  <td>Strong</td>
-  <td>No</td>
-</tr>
-<tr>
-  <td>3</td>
-  <td>Overcast</td>
-  <td>Hot</td>
-  <td>High</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>4</td>
-  <td>Rainy</td>
-  <td>Mild</td>
-  <td>High</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>5</td>
-  <td>Rainy</td>
-  <td>Cool</td>
-  <td>Normal</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>6</td>
-  <td>Rainy</td>
-  <td>Cool</td>
-  <td>Normal</td>
-  <td>Strong</td>
-  <td>No</td>
-</tr>
-<tr>
-  <td>7</td>
-  <td>Overcast</td>
-  <td>Cool</td>
-  <td>Normal</td>
-  <td>Strong</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>8</td>
-  <td>Sunny</td>
-  <td>Mild</td>
-  <td>High</td>
-  <td>Weak</td>
-  <td>No</td>
-</tr>
-<tr>
-  <td>9</td>
-  <td>Sunny</td>
-  <td>Cool</td>
-  <td>Normal</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>10</td>
-  <td>Rainy</td>
-  <td>Mild</td>
-  <td>Normal</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>11</td>
-  <td>Sunny</td>
-  <td>Mild</td>
-  <td>Normal</td>
-  <td>Strong</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>12</td>
-  <td>Overcast</td>
-  <td>Mild</td>
-  <td>High</td>
-  <td>Strong</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>13</td>
-  <td>Overcast</td>
-  <td>Hot</td>
-  <td>Normal</td>
-  <td>Weak</td>
-  <td>Yes</td>
-</tr>
-<tr>
-  <td>14</td>
-  <td>Rainy</td>
-  <td>Mild</td>
-  <td>High</td>
-  <td>Strong</td>
-  <td>No</td>
-</tr>
-</tbody>
-</table>
-
-<p><strong>Tasks (pen &amp; paper):</strong></p>
-
-<ol>
-<li>Count the number of <strong>Yes</strong> days and <strong>No</strong> days.</li>
-<li>What fraction of all days resulted in "Yes"?</li>
-<li>Without looking at any weather features, if someone asked "Will we play tomorrow?", what would you guess?</li>
-</ol>
-
-
-
-
-        </div>
+  <p>Here are 14 days of weather observations. For each day we
+  recorded the outlook, temperature, humidity, wind &mdash; and whether we
+  played tennis.</p>
+  <table style="font-size:0.65em;">
+    <tr><th>Day</th><th>Outlook</th><th>Temp</th><th>Humidity</th><th>Wind</th><th>Play?</th></tr>
+    <tr><td>1</td><td>Sunny</td><td>Hot</td><td>High</td><td>Weak</td><td>No</td></tr>
+    <tr><td>2</td><td>Sunny</td><td>Hot</td><td>High</td><td>Strong</td><td>No</td></tr>
+    <tr><td>3</td><td>Overcast</td><td>Hot</td><td>High</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>4</td><td>Rainy</td><td>Mild</td><td>High</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>5</td><td>Rainy</td><td>Cool</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>6</td><td>Rainy</td><td>Cool</td><td>Normal</td><td>Strong</td><td>No</td></tr>
+    <tr><td>7</td><td>Overcast</td><td>Cool</td><td>Normal</td><td>Strong</td><td>Yes</td></tr>
+    <tr><td>8</td><td>Sunny</td><td>Mild</td><td>High</td><td>Weak</td><td>No</td></tr>
+    <tr><td>9</td><td>Sunny</td><td>Cool</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>10</td><td>Rainy</td><td>Mild</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>11</td><td>Sunny</td><td>Mild</td><td>Normal</td><td>Strong</td><td>Yes</td></tr>
+    <tr><td>12</td><td>Overcast</td><td>Mild</td><td>High</td><td>Strong</td><td>Yes</td></tr>
+    <tr><td>13</td><td>Overcast</td><td>Hot</td><td>Normal</td><td>Weak</td><td>Yes</td></tr>
+    <tr><td>14</td><td>Rainy</td><td>Mild</td><td>High</td><td>Strong</td><td>No</td></tr>
+  </table>
+  <p><strong>Before coding:</strong> count the Yes days and No days.
+  What fraction of all days resulted in Yes?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.4em; background:#e8f5e9; border-radius:5px;">
+    <strong>Yes:</strong> 9 &nbsp; <strong>No:</strong> 5 &nbsp;
+    P(Yes) = 9/14 &asymp; 0.643</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Your First Prediction Rule</h3>
         <div class="slide-content">
-
-
-        <p>Imagine you have <strong>no weather information at all</strong>. A friend calls and asks: "Should I come to play tennis?"</p>
-
-<ol>
-<li>What would you predict? Why?</li>
-<li>What is the probability of Play = Yes? Express it as a fraction.</li>
-<li>What is the probability of Play = No?</li>
-<li>Do these two probabilities add up to 1? Why must they?</li>
-</ol>
-
-<p><strong>Your answers:</strong></p>
-
-<ol>
-<li>Prediction: ...</li>
-<li>P(Yes) = ...</li>
-<li>P(No) = ...</li>
-<li>Sum = ... because ...</li>
-</ol>
-
-
-
-
-        </div>
+  <p>Imagine you have <strong>no weather information at all</strong>. A
+  friend calls and asks: &ldquo;Should I come to play tennis?&rdquo;</p>
+  <p>What would you predict, and why?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#f0ede6; border-left:4px solid #c8a96e; border-radius:4px;">
+    You&rsquo;d say <strong>Yes</strong> &mdash; it happened 9 out of 14
+    times. P(Yes) = 9/14, P(No) = 5/14. These add to 1 because every
+    day is either Yes or No. This baseline guess, before looking at any
+    features, is called the <strong>prior probability</strong>.</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Quick Check — Prior Probability</h3>
         <div class="slide-content">
-
-        <p>P(Play = Yes) = 9/14. In probability and machine learning, this is called a "prior" probability. Why is it called "prior"?</p>
-
-
-        <p><strong>A.</strong> Because it was computed before computers existed</p>
-
-        <p><strong>B.</strong> Because it uses the first column of the data</p>
-
-        <p><strong>C.</strong> It's what you'd predict *before* looking at any features — your default belief based only on past outcomes</p>
-
-        <p><strong>D.</strong> It always equals 0.5</p>
-
-        <div class="fragment" data-fragment-index="0">
-          <p style="margin-top:1em; padding:0.5em; background:#f0ede6; border-left:4px solid #c8a96e; border-radius:4px;"><strong>Answer: C.</strong> "Prior" means <em>before seeing any evidence</em>. It is your baseline belief, computed purely from how often each label appears in the data.</p>
-        </div>
-
-        </div>
+  <p><strong>Quick Check:</strong> P(Play = Yes) = 9/14. In probability
+  and ML, this is called a &ldquo;prior.&rdquo; Why &ldquo;prior&rdquo;?</p>
+  <p><strong>A.</strong> Because it was computed before computers existed
+  &nbsp;&nbsp;
+  <strong>B.</strong> Because it uses the first column of the data
+  &nbsp;&nbsp;
+  <strong>C.</strong> It is what you would predict <em>before</em> looking
+  at any features &mdash; your default belief based only on past outcomes
+  &nbsp;&nbsp;
+  <strong>D.</strong> It always equals 0.5</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: C.</strong> &ldquo;Prior&rdquo; means <em>before
+    seeing any evidence</em>. It is your baseline belief, computed purely
+    from how often each label appears in the data.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 2: One Feature — Does Weather Help? -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 2: One Feature — Does Weather Help?                 -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part2">
-        <h2>Part 2: One Feature — Does Weather Help?</h2>
+        <h2>Part 2: One Feature</h2>
+      </section>
 
-        <div class="slide-content"><p>The prior says "Yes" 64% of the time. But surely the weather matters. Let's see how one feature changes our prediction.</p>
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>predict_one_feature</code> that uses a single feature&rsquo;s
+  conditional probability and the prior to predict the class.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part3">Skip to Part 3</a>.</p>
 </div>
-
       </section>
 
-
-
       <section>
-        <h3>Counting with a Condition</h3>
         <div class="slide-content">
-
-
-        <p>Look at the data table and answer <strong>by hand</strong> (just count the rows):</p>
-
-<ol>
-<li>Of the <strong>9 Yes days</strong>, how many have Outlook = Sunny?</li>
-<li>Of the <strong>5 No days</strong>, how many have Outlook = Sunny?</li>
-<li>Compute the fractions: "Among Yes days, what fraction is Sunny?" and "Among No days, what fraction is Sunny?"</li>
-</ol>
-
-<p><strong>Your answers:</strong></p>
-
-<ol>
-<li>Sunny &amp; Yes days: ... out of 9</li>
-<li>Sunny &amp; No days: ... out of 5</li>
-<li>Fraction among Yes: ... / 9 = ... &nbsp;&nbsp; Fraction among No: ... / 5 = ...</li>
-</ol>
-
-
-
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>The Key Question</h3>
-        <div class="slide-content">
-
-
-        <p>It's a <strong>Sunny</strong> day. You want to decide: is it more likely a Yes day or a No day?</p>
-
-<p>You have two pieces of information:</p>
-
-<ul>
-<li>From Ex 2.1: Among Yes days, 2/9 are Sunny. Among No days, 3/5 are Sunny.</li>
-<li>From Ex 1.2: P(Yes) = 9/14, P(No) = 5/14.</li>
-</ul>
-
-<p><strong>Tasks:</strong></p>
-
-<ol>
-<li>Compute: (fraction of Sunny among Yes) × P(Yes) = ?</li>
-<li>Compute: (fraction of Sunny among No) × P(No) = ?</li>
-<li>Which product is larger? What would you predict for a Sunny day?</li>
-</ol>
-
-<p><strong>Your calculation:</strong></p>
-
-<ol>
-<li>Score(Yes) = (2/9) × (9/14) = ...</li>
-<li>Score(No) = (3/5) × (5/14) = ...</li>
-<li>Winner: ...</li>
-</ol>
-
-
-
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>Try Other Outlooks</h3>
-        <div class="slide-content">
-
-
-        <p>Repeat the same calculation from Ex 2.2 for:</p>
-
-<ol>
-<li><strong>Overcast</strong> days: compute Score(Yes) and Score(No). What do you predict?</li>
-<li><strong>Rainy</strong> days: compute Score(Yes) and Score(No). What do you predict?</li>
-</ol>
-
-<p><em>You'll need to count how many Overcast and Rainy days appear among Yes days and No days first.</em></p>
-
-
-
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>Code It: `count_where`</h3>
-        <div class="slide-content">
-
-        <p>Now let's automate the counting. Write a function that counts how many rows match a set of conditions.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">count_where</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">conditions</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Count rows in data where ALL conditions are met.</span>
-<span class="sd">    conditions: dict like {&quot;Outlook&quot;: &quot;Sunny&quot;, &quot;Play&quot;: &quot;Yes&quot;}</span>
-<span class="sd">    Returns: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
+  <p>The prior says &ldquo;Yes&rdquo; 64% of the time. But surely the
+  weather matters. Look at the data table:</p>
+  <p><strong>Before coding:</strong> of the <strong>9 Yes days</strong>,
+  how many have Outlook = Sunny? Of the <strong>5 No days</strong>?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Sunny &amp; Yes: <strong>2</strong> out of 9 &nbsp;&nbsp;
+    Sunny &amp; No: <strong>3</strong> out of 5</p>
+    <p>So among Yes days, 2/9 are Sunny. Among No days, 3/5 are Sunny.
+    These are <strong>conditional probabilities</strong>:
+    P(Sunny | Yes) = 2/9, &nbsp; P(Sunny | No) = 3/5.</p>
+  </div>
 </div>
+      </section>
 
-<details><summary>Hint 1</summary>
-<p>Loop through every row in <code>data</code>. For each row, check whether <em>all</em> key-value pairs in <code>conditions</code> match the row.</p>
-</details>
-<details><summary>Hint 2</summary>
-<p>Use Python's <code>all()</code> built-in: <code>all(row[k] == v for k, v in conditions.items())</code>. If that is <code>True</code>, increment your counter.</p>
-</details>
-<details><summary>Solution</summary>
+      <section>
+        <div class="slide-content">
+  <p>It&rsquo;s a <strong>Sunny</strong> day. Is it more likely a Yes day
+  or a No day? Combine the conditional probability with the prior:</p>
+  <p><strong>Before coding:</strong></p>
+  <ol>
+    <li>Score(Yes) = P(Sunny | Yes) &times; P(Yes) = ?</li>
+    <li>Score(No) = P(Sunny | No) &times; P(No) = ?</li>
+    <li>Which score is larger?</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.4em; background:#e8f5e9; border-radius:5px;">
+    Score(Yes) = (2/9) &times; (9/14) = 2/14 &asymp; 0.143<br/>
+    Score(No) &thinsp;= (3/5) &times; (5/14) = 3/14 &asymp; 0.214<br/>
+    <strong>No wins</strong> &mdash; on a Sunny day, the data leans
+    toward not playing.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s automate the counting. Write <code>count_where</code> &mdash;
+  it counts rows where all conditions are met:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def count_where(data, conditions):
+    # data: list of dicts (one per row)
+    # conditions: {"Outlook": "Sunny", "Play": "Yes"}
+    # Return: int (number of matching rows)
+    # YOUR CODE HERE
+    pass
+
+data = [
+  {"Outlook":"Sunny","Temp":"Hot","Humidity":"High","Wind":"Weak","Play":"No"},
+  {"Outlook":"Sunny","Temp":"Hot","Humidity":"High","Wind":"Strong","Play":"No"},
+  {"Outlook":"Overcast","Temp":"Hot","Humidity":"High","Wind":"Weak","Play":"Yes"},
+  # ... all 14 rows
+]
+print(count_where(data, {"Outlook":"Sunny","Play":"Yes"}))  # 2</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def count_where(data, conditions):
     count = 0
     for row in data:
         if all(row[k] == v for k, v in conditions.items()):
             count += 1
-    return count</code></pre>
-</details>
+    return count
 
-        </div>
+print(count_where(data, {"Outlook":"Sunny","Play":"Yes"}))  # 2
+print(count_where(data, {"Play":"Yes"}))                    # 9
+print(count_where(data, {"Play":"No"}))                     # 5</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: loop through rows. For each, check whether <em>all</em>
+    key-value pairs match.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: use <code>all(row[k] == v for k, v in conditions.items())</code>.</p>
+  </div>
+</div>
       </section>
 
-
-
       <section>
-        <h3>Code It: `probability`</h3>
         <div class="slide-content">
+  <p>Now write <code>probability</code> &mdash; compute
+  P(event | given) using <code>count_where</code>:</p>
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def probability(data, event, given):
+    # event: {"Outlook": "Sunny"}
+    # given: {"Play": "Yes"}
+    # Return: P(event | given) as a float
+    # YOUR CODE HERE
+    pass
 
-        <p>Write a function that computes a conditional probability using <code>count_where</code>.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">probability</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">given</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute P(event | given).</span>
-<span class="sd">    event: dict of conditions for the event, e.g. {&quot;Outlook&quot;: &quot;Sunny&quot;}</span>
-<span class="sd">    given: dict of conditions for the given, e.g. {&quot;Play&quot;: &quot;Yes&quot;}</span>
-<span class="sd">    Returns: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
-</div>
-
-<details><summary>Hint 1</summary>
-<p>P(event | given) = (count of rows matching <em>both</em> event and given) / (count of rows matching given). You already have <code>count_where</code>.</p>
-</details>
-<details><summary>Hint 2</summary>
-<p>Merge the two dicts: <code>{**given, **event}</code> gives a single conditions dict for the numerator. The denominator is just <code>count_where(data, given)</code>.</p>
-</details>
-<details><summary>Solution</summary>
+print(probability(data, {"Outlook":"Sunny"}, {"Play":"Yes"}))
+# 0.222...  (2/9)</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def probability(data, event, given):
     both = {**given, **event}
-    return count_where(data, both) / count_where(data, given)</code></pre>
-</details>
+    return count_where(data, both) / count_where(data, given)
 
-        </div>
+print(probability(data, {"Outlook":"Sunny"}, {"Play":"Yes"}))
+# 0.222...  (2/9)
+print(probability(data, {"Outlook":"Sunny"}, {"Play":"No"}))
+# 0.6  (3/5)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: P(event | given) = (rows matching <em>both</em>) /
+    (rows matching given).</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: merge dicts with <code>{**given, **event}</code> for the
+    numerator.</p>
+  </div>
+</div>
       </section>
 
-
-
       <section>
-        <h3>Predict with One Feature</h3>
         <div class="slide-content">
+  <p>Write <code>predict_one_feature</code> &mdash; for each label,
+  compute Score = P(feature_value | label) &times; P(label), then return
+  the winner:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def predict_one_feature(data, feat_name, feat_val, label_col, labels):
+    # For each label: score = P(feat_val|label) * P(label)
+    # Return: label with the highest score
+    # YOUR CODE HERE
+    pass
 
-        <p>Write a function that predicts the class using a single feature:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_one_feature</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_name</span><span class="p">,</span> <span class="n">feature_value</span><span class="p">,</span> <span class="n">label_col</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    For each label, compute:  score = P(feature_value | label) * P(label)</span>
-<span class="sd">    Return the label with the highest score.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
-</div>
-
-<details><summary>Hint 1</summary>
-<p>Loop over each label. For each, compute P(feature_value | label) using your <code>probability</code> function, and P(label) = count_where(data, {label_col: label}) / len(data).</p>
-</details>
-<details><summary>Hint 2</summary>
-<p>Store each label's score in a dict. Then return the label with the maximum score: <code>max(scores, key=scores.get)</code>.</p>
-</details>
-<details><summary>Solution</summary>
-<pre><code>def predict_one_feature(data, feature_name, feature_value, label_col, labels):
+print(predict_one_feature(data, "Outlook", "Sunny", "Play", ["Yes","No"]))
+# "No"
+print(predict_one_feature(data, "Outlook", "Overcast", "Play", ["Yes","No"]))
+# "Yes"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def predict_one_feature(data, feat_name, feat_val, label_col, labels):
     scores = {}
     for label in labels:
         p_label = count_where(data, {label_col: label}) / len(data)
-        p_feat  = probability(data, {feature_name: feature_value}, {label_col: label})
+        p_feat = probability(data, {feat_name: feat_val}, {label_col: label})
         scores[label] = p_feat * p_label
-    return max(scores, key=scores.get)</code></pre>
-</details>
+    return max(scores, key=scores.get)
 
-        </div>
+print(predict_one_feature(data, "Outlook", "Sunny", "Play", ["Yes","No"]))
+# "No"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: loop over labels, compute each score, store in a dict.
+    Return <code>max(scores, key=scores.get)</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: P(label) = <code>count_where(data, {label_col: label}) / len(data)</code>.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 3: Two Features — Combining Evidence -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 3: Two Features — Combining Evidence                -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part3">
-        <h2>Part 3: Two Features — Combining Evidence</h2>
+        <h2>Part 3: Two Features</h2>
+      </section>
 
-        <div class="slide-content"><p>One feature helped. Can two features help more? Let's combine evidence.</p>
+      <section>
+        <div class="slide-content">
+  <p>One feature helped. Can two features help more?</p>
+  <p>It&rsquo;s a <strong>Sunny</strong> and <strong>Hot</strong> day.
+  Try multiplying each feature&rsquo;s contribution separately, along
+  with the prior:</p>
+  <p><strong>Before coding:</strong></p>
+  <ol>
+    <li>P(Sunny | Yes) = 2/9, &nbsp; P(Hot | Yes) = 2/9, &nbsp;
+        P(Yes) = 9/14</li>
+    <li>Score(Yes) = (2/9) &times; (2/9) &times; (9/14) = ?</li>
+    <li>P(Sunny | No) = 3/5, &nbsp; P(Hot | No) = 2/5, &nbsp;
+        P(No) = 5/14</li>
+    <li>Score(No) = (3/5) &times; (2/5) &times; (5/14) = ?</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.4em; background:#e8f5e9; border-radius:5px;">
+    Score(Yes) = 4/81 &times; 9/14 &asymp; <strong>0.032</strong><br/>
+    Score(No) &thinsp;= 6/25 &times; 5/14 &asymp; <strong>0.086</strong><br/>
+    <strong>No wins</strong> &mdash; Sunny + Hot strongly suggests no tennis.</p>
+  </div>
 </div>
-
       </section>
 
-
-
       <section>
-        <h3>Two Features by Hand</h3>
         <div class="slide-content">
-
-
-        <p>It's a <strong>Sunny</strong> and <strong>Hot</strong> day. Should we play?</p>
-
-<p>We already know how to use one feature. For two features, try this: multiply the contribution of each feature separately, along with the prior.</p>
-
-<p><strong>Compute by hand:</strong></p>
-
-<ol>
-<li>From the data, find:
-<ul>
-<li>P(Sunny | Yes) = ?</li>
-<li>P(Hot | Yes) = ?</li>
-<li>P(Yes) = ?</li>
-</ul></li>
-<li>Multiply them: Score(Yes) = P(Sunny | Yes) × P(Hot | Yes) × P(Yes)</li>
-<li>Do the same for No: Score(No) = P(Sunny | No) × P(Hot | No) × P(No)</li>
-<li>Which score is higher? What do you predict?</li>
-</ol>
-
-<p><strong>Your calculation:</strong></p>
-
-<ol>
-<li>P(Sunny|Yes) = ..., P(Hot|Yes) = ..., P(Yes) = ...</li>
-<li>Score(Yes) = ... × ... × ... = ...</li>
-<li>P(Sunny|No) = ..., P(Hot|No) = ..., P(No) = ...</li>
-<li>Score(No) = ... × ... × ... = ...</li>
-<li>Prediction: ...</li>
-</ol>
-
-
-
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>Try Another Combination</h3>
-        <div class="slide-content">
-
-
-        <p>Compute Score(Yes) and Score(No) for a <strong>Rainy</strong> and <strong>Cool</strong> day.</p>
-
-<ol>
-<li>Count P(Rainy | Yes), P(Cool | Yes), P(Rainy | No), P(Cool | No).</li>
-<li>Compute Score(Yes) and Score(No).</li>
-<li>What do you predict?</li>
-</ol>
-
-
-
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>Quick Check — The Big Assumption</h3>
-        <div class="slide-content">
-
-        <p>In Exercise 3.1, you multiplied P(Sunny | Yes) × P(Hot | Yes). This multiplication is only mathematically valid under a specific assumption. What is it?</p>
-
-
-        <p><strong>A.</strong> Outlook and Temperature must have the same number of possible values</p>
-
-        <p><strong>B.</strong> Outlook and Temperature are *independent* given the label — knowing one doesn't tell you about the other (once you already know whether we played)</p>
-
-        <p><strong>C.</strong> The dataset must have at least 100 rows</p>
-
-        <p><strong>D.</strong> All feature probabilities must be greater than 0.5</p>
-
-        <div class="fragment" data-fragment-index="0">
-          <p style="margin-top:1em; padding:0.5em; background:#f0ede6; border-left:4px solid #c8a96e; border-radius:4px;"><strong>Answer: B.</strong> This is the <em>naive</em> in Naive Bayes. We assume features are conditionally independent given the class label, so the joint probability factors into a product of individual probabilities. In reality features are often correlated, but the classifier works surprisingly well anyway.</p>
-        </div>
-
-        </div>
-      </section>
-
-
-
-      <section>
-        <h3>Code It: `predict_two_features`</h3>
-        <div class="slide-content">
-
-        <p>Write a function that predicts using two features:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_two_features</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f1_name</span><span class="p">,</span> <span class="n">f1_val</span><span class="p">,</span> <span class="n">f2_name</span><span class="p">,</span> <span class="n">f2_val</span><span class="p">,</span> <span class="n">label_col</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    For each label, compute:</span>
-<span class="sd">      score = P(f1_val | label) * P(f2_val | label) * P(label)</span>
-<span class="sd">    Return the label with the highest score.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
+  <p><strong>Quick Check:</strong> You just multiplied P(Sunny | Yes)
+  &times; P(Hot | Yes). This multiplication is only valid under a specific
+  assumption. What is it?</p>
+  <p><strong>A.</strong> Outlook and Temperature must have the same number
+  of values &nbsp;&nbsp;
+  <strong>B.</strong> Outlook and Temperature are <em>independent</em>
+  given the label &mdash; knowing one tells you nothing about the other
+  (once you already know whether we played) &nbsp;&nbsp;
+  <strong>C.</strong> The dataset must have at least 100 rows &nbsp;&nbsp;
+  <strong>D.</strong> All probabilities must be greater than 0.5</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: B.</strong> This is the <em>naive</em> in Naive Bayes.
+    We assume features are conditionally independent given the class. In
+    reality they often aren&rsquo;t &mdash; but the classifier works
+    surprisingly well anyway.</p>
+  </div>
 </div>
+      </section>
 
-<details><summary>Hint 1</summary>
-<p>This is almost identical to <code>predict_one_feature</code> — you just multiply <em>two</em> conditional probabilities instead of one before multiplying by the prior.</p>
-</details>
-<details><summary>Solution</summary>
-<pre><code>def predict_two_features(data, f1_name, f1_val, f2_name, f2_val, label_col, labels):
+      <section>
+        <div class="slide-content">
+  <p>Write <code>predict_two_features</code> &mdash; like the one-feature
+  version, but multiply two conditional probabilities:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def predict_two_features(data, f1_name, f1_val,
+                         f2_name, f2_val, label_col, labels):
+    # score = P(f1_val|label) * P(f2_val|label) * P(label)
+    # YOUR CODE HERE
+    pass
+
+print(predict_two_features(data, "Outlook", "Sunny",
+      "Temp", "Hot", "Play", ["Yes","No"]))  # "No"
+print(predict_two_features(data, "Outlook", "Rainy",
+      "Temp", "Cool", "Play", ["Yes","No"]))  # "Yes"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def predict_two_features(data, f1_name, f1_val,
+                         f2_name, f2_val, label_col, labels):
     scores = {}
     for label in labels:
         p_label = count_where(data, {label_col: label}) / len(data)
         p_f1 = probability(data, {f1_name: f1_val}, {label_col: label})
         p_f2 = probability(data, {f2_name: f2_val}, {label_col: label})
         scores[label] = p_f1 * p_f2 * p_label
-    return max(scores, key=scores.get)</code></pre>
-</details>
+    return max(scores, key=scores.get)
 
-        </div>
+print(predict_two_features(data, "Outlook", "Sunny",
+      "Temp", "Hot", "Play", ["Yes","No"]))  # "No"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: identical to <code>predict_one_feature</code> &mdash; just
+    multiply <em>two</em> conditional probabilities instead of one.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 4: N Features — The General Algorithm -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 4: N Features — The General Algorithm               -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part4">
-        <h2>Part 4: N Features — The General Algorithm</h2>
-
-        <div class="slide-content"><p>You've done it for 1 feature and 2 features. Now let's generalize to any number of features.</p>
-</div>
-
+        <h2>Part 4: N Features</h2>
       </section>
 
-
-
       <section>
-        <h3>Three Features by Hand</h3>
         <div class="slide-content">
-
-
-        <p>It's <strong>Sunny</strong>, <strong>Hot</strong>, and <strong>High</strong> humidity. Compute Score(Yes) and Score(No) using all three features.</p>
-
-<ol>
-<li>You already have P(Sunny|Yes) and P(Hot|Yes). Now find P(High|Yes) and P(High|No) from the data.</li>
-<li>Score(Yes) = P(Sunny|Yes) × P(Hot|Yes) × P(High|Yes) × P(Yes)</li>
-<li>Score(No) = P(Sunny|No) × P(Hot|No) × P(High|No) × P(No)</li>
-<li>Which class wins?</li>
-</ol>
-
-
-
-
-        </div>
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>predict(data, features, label_col, labels)</code> that
+  works for <em>any</em> number of features. Then handle the
+  zero-frequency problem with Laplace smoothing.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part6">Skip to Part 6</a>.</p>
+</div>
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p><strong>Before coding:</strong> it&rsquo;s <strong>Sunny</strong>,
+  <strong>Hot</strong>, <strong>High</strong> humidity. Use all three
+  features:</p>
+  <ol>
+    <li>Score(Yes) = P(Sunny|Yes) &times; P(Hot|Yes) &times;
+        P(High|Yes) &times; P(Yes)</li>
+    <li>Score(No) = P(Sunny|No) &times; P(Hot|No) &times;
+        P(High|No) &times; P(No)</li>
+  </ol>
+  <p>Find P(High|Yes) and P(High|No) from the table, then compute
+  the scores.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.4em; background:#e8f5e9; border-radius:5px;">
+    P(High|Yes) = 3/9, P(High|No) = 4/5<br/>
+    Score(Yes) = (2/9)(2/9)(3/9)(9/14) &asymp; 0.011<br/>
+    Score(No) &thinsp;= (3/5)(2/5)(4/5)(5/14) &asymp; 0.069<br/>
+    <strong>No wins</strong> decisively.</p>
+  </div>
+</div>
+      </section>
 
       <section>
-        <h3>Generalize to N Features</h3>
         <div class="slide-content">
+  <p>You&rsquo;ve seen the pattern: for each label, start with the
+  prior and multiply by one conditional probability per feature.
+  Generalize to any number of features:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def predict(data, features, label_col, labels):
+    # features: {"Outlook":"Sunny", "Temp":"Hot", "Humidity":"High"}
+    # For each label:
+    #   score = P(label) * P(f1|label) * P(f2|label) * ...
+    # Return label with highest score
+    # YOUR CODE HERE
+    pass
 
-        <p>You've seen the pattern: for each label, multiply the prior by the conditional probability of each feature. Now write the general version:</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">label_col</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    features: dict mapping feature_name -&gt; feature_value,</span>
-<span class="sd">              e.g. {&quot;Outlook&quot;: &quot;Sunny&quot;, &quot;Temperature&quot;: &quot;Hot&quot;, &quot;Humidity&quot;: &quot;High&quot;}</span>
-<span class="sd">    label_col: name of the label column, e.g. &quot;Play&quot;</span>
-<span class="sd">    labels: list of possible labels, e.g. [&quot;Yes&quot;, &quot;No&quot;]</span>
-
-<span class="sd">    For each label, compute:</span>
-<span class="sd">      score = P(label) * P(f1_val|label) * P(f2_val|label) * ... * P(fn_val|label)</span>
-<span class="sd">    Return the label with the highest score.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
-</div>
-
-<details><summary>Hint 1</summary>
-<p>Start with <code>score = P(label)</code>. Then loop over the features dict: for each <code>fname, fval</code> pair, multiply score by <code>probability(data, {fname: fval}, {label_col: label})</code>.</p>
-</details>
-<details><summary>Hint 2</summary>
-<p>This is just your <code>predict_two_features</code> code with a loop replacing the two hard-coded feature lookups.</p>
-</details>
-<details><summary>Solution</summary>
+print(predict(data, {"Outlook":"Sunny","Temp":"Hot",
+      "Humidity":"High"}, "Play", ["Yes","No"]))  # "No"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def predict(data, features, label_col, labels):
     scores = {}
     for label in labels:
@@ -795,442 +591,439 @@ nb.predict(["Overcast","Hot"])    # unseen value: still returns a label, no cras
         for fname, fval in features.items():
             score *= probability(data, {fname: fval}, {label_col: label})
         scores[label] = score
-    return max(scores, key=scores.get)</code></pre>
-</details>
+    return max(scores, key=scores.get)
 
-        </div>
+print(predict(data, {"Outlook":"Sunny","Temp":"Hot",
+      "Humidity":"High"}, "Play", ["Yes","No"]))  # "No"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: start with <code>score = P(label)</code>, then loop
+    over features and multiply each conditional probability in.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: this is <code>predict_two_features</code> with a loop
+    replacing the two hard-coded lookups.</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Test on All Training Rows</h3>
         <div class="slide-content">
-
-        <p>Run your <code>predict</code> function on <strong>every row</strong> in the dataset and compare to the actual label.</p>
-
-<ol>
-<li>How many does it get right?</li>
-<li>Which rows (if any) does it get wrong? Look at those rows — can you see why?</li>
-</ol>
-
-
-        </div>
+  <p><strong>Quick Check:</strong> your <code>predict</code> computes, for
+  each class $c$: $\text{Score}(c) = P(c) \times \prod_{i} P(f_i \mid c)$.
+  What does the $\prod$ symbol mean?</p>
+  <p><strong>A.</strong> Add up all the feature probabilities &nbsp;&nbsp;
+  <strong>B.</strong> Take the average &nbsp;&nbsp;
+  <strong>C.</strong> Multiply all of them together &nbsp;&nbsp;
+  <strong>D.</strong> Pick the largest one</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: C.</strong> $\prod$ means &ldquo;product&rdquo; &mdash;
+    multiply every term together, just like $\sum$ means &ldquo;sum.&rdquo;</p>
+  </div>
+</div>
       </section>
 
 
-
-      <section>
-        <h3>Quick Check — The General Formula</h3>
-        <div class="slide-content">
-
-        <p>Your <code>predict</code> function computes, for each class $c$: $\text{Score}(c) = P(c) \times \prod_{i} P(f_i \mid c)$. What does the $\prod$ symbol mean in plain English?</p>
-
-        <p><strong>A.</strong> Add up all the feature probabilities</p>
-
-        <p><strong>B.</strong> Take the average of all the feature probabilities</p>
-
-        <p><strong>C.</strong> Multiply all the feature probabilities together</p>
-
-        <p><strong>D.</strong> Pick the largest feature probability</p>
-
-        <div class="fragment" data-fragment-index="0">
-          <p style="margin-top:1em; padding:0.5em; background:#f0ede6; border-left:4px solid #c8a96e; border-radius:4px;"><strong>Answer: C.</strong> The big-pi symbol $\prod$ means "product" — multiply every term together, just like $\sum$ means "sum." Each feature's conditional probability is multiplied into the running score.</p>
-        </div>
-
-        </div>
-      </section>
-
-
-
-      <!-- Part 5: The Zero-Frequency Problem -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 5: The Zero-Frequency Problem                       -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part5">
-        <h2>Part 5: The Zero-Frequency Problem</h2>
-
-        <div class="slide-content"><p>Your algorithm has a fatal flaw. Let's find it and fix it.</p>
-</div>
-
+        <h2>Part 5: The Zero Problem</h2>
       </section>
 
-
-
       <section>
-        <h3>Break Your Code</h3>
         <div class="slide-content">
-
-
-        <p>Look at the data: Outlook = Overcast appears on days 3, 7, 12, 13. What is the Play label for <strong>all</strong> of those days?</p>
-
-<p>Now answer:</p>
-
-<ol>
-<li>What is P(Overcast | No)?</li>
-<li>If you try to predict for a new day with Outlook = Overcast and any other features, what happens to Score(No)?</li>
-<li>Is this a reasonable prediction? What if you had Overcast + Strong Wind + High Humidity — conditions that historically lean toward No?</li>
-</ol>
-
-
-
-
-        </div>
+  <p>Your algorithm has a <strong>fatal flaw</strong>. Let&rsquo;s find it.</p>
+  <p>Look at the data: Outlook = Overcast appears on days 3, 7, 12, 13.
+  What is the Play label for <strong>all</strong> of those days?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>All four are <strong>Yes</strong>. So P(Overcast | No) = 0/5 = <strong>0</strong>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now predict for Overcast + Strong Wind + High Humidity. Score(No)
+    includes P(Overcast | No) = 0. Zero times <em>anything</em> is zero.
+    <strong>No matter how much other evidence points to No, the single
+    zero kills it.</strong></p>
+    <p>That&rsquo;s the <em>zero-frequency problem</em>.</p>
+  </div>
+</div>
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p>The fix is simple: <strong>pretend you&rsquo;ve seen every
+  combination at least once</strong>.</p>
+  <p>Instead of P(Overcast | No) = 0/5, add 1 to the numerator and
+  <em>k</em> to the denominator (where <em>k</em> = number of possible
+  values for that feature).</p>
+  <p>For Outlook, k = 3 (Sunny, Overcast, Rainy):</p>
+  <p style="padding:0.4em; background:#f0ede6; border-radius:5px;">
+  P<sub>smooth</sub>(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125</p>
+  <p>This is called <strong>Laplace smoothing</strong> (or add-one
+  smoothing).</p>
+</div>
+      </section>
 
       <section>
-        <h3>Fix It: Laplace Smoothing</h3>
         <div class="slide-content">
+  <p>Write <code>probability_smooth</code> &mdash; adds 1 to the
+  numerator and k to the denominator:</p>
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def probability_smooth(data, event, given, k):
+    # Smoothed: (count_both + 1) / (count_given + k)
+    # YOUR CODE HERE
+    pass
 
-        <p>The fix is beautifully simple: pretend you've seen every combination at least once.</p>
-
-<p><strong>The idea:</strong> Instead of computing P(Overcast | No) = 0/5, add 1 to the numerator (pretend you saw one extra Overcast-No day) and add k to the denominator (where k is the number of possible values for that feature).</p>
-
-<p>For Outlook, k = 3 (Sunny, Overcast, Rainy). So:</p>
-
-<ul>
-<li>P_smooth(Overcast | No) = (0 + 1) / (5 + 3) = 1/8 = 0.125</li>
-</ul>
-
-<p><strong>Tasks:</strong></p>
-
-<ol>
-<li>Compute P_smooth(Sunny | No) with k=3. Compare to the unsmoothed version.</li>
-<li>Write <code>probability_smooth(data, event, given, k)</code>:</li>
-</ol>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">probability_smooth</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">given</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Smoothed conditional probability.</span>
-<span class="sd">    Adds 1 to the numerator and k to the denominator.</span>
-<span class="sd">    k = number of possible values for the event&#39;s feature.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
-</div>
-
-<details><summary>Hint 1</summary>
-<p>The numerator is <code>count_where(data, {**given, **event}) + 1</code>. The denominator is <code>count_where(data, given) + k</code>.</p>
-</details>
-<details><summary>Solution</summary>
+print(probability_smooth(data, {"Outlook":"Overcast"},
+      {"Play":"No"}, 3))  # 0.125</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def probability_smooth(data, event, given, k):
     both = {**given, **event}
-    return (count_where(data, both) + 1) / (count_where(data, given) + k)</code></pre>
-</details>
+    return (count_where(data, both) + 1) / (count_where(data, given) + k)
 
-        </div>
+print(probability_smooth(data, {"Outlook":"Overcast"},
+      {"Play":"No"}, 3))  # 0.125
+print(probability_smooth(data, {"Outlook":"Sunny"},
+      {"Play":"No"}, 3))  # 0.5</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: numerator = <code>count_where(data, {**given, **event}) + 1</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: denominator = <code>count_where(data, given) + k</code>.</p>
+  </div>
+</div>
       </section>
 
-
-
       <section>
-        <h3>Update Your Predict Function</h3>
         <div class="slide-content">
+  <p>Now write <code>predict_smooth</code> &mdash; like <code>predict</code>,
+  but with smoothing. Compute k for each feature from the data:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def predict_smooth(data, features, label_col, labels):
+    # Like predict(), but use probability_smooth
+    # k = number of distinct values per feature
+    # YOUR CODE HERE
+    pass
 
-        <p>Write <code>predict_smooth</code> — like your <code>predict</code> from Part 4, but using <code>probability_smooth</code> instead of <code>probability</code>.</p>
-
-<p>You'll need to know k (number of possible values) for each feature. Compute this from the data.</p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_smooth</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">label_col</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Like predict(), but uses Laplace smoothing.</span>
-<span class="sd">    For each feature, k = number of distinct values of that feature in the data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Your code here</span>
-    <span class="k">pass</span>
-</code></pre>
-</div>
-
-<details><summary>Hint 1</summary>
-<p>To find k for a feature, collect all distinct values: <code>k = len(set(row[fname] for row in data))</code>. Then call <code>probability_smooth</code> instead of <code>probability</code>.</p>
-</details>
-<details><summary>Solution</summary>
+print(predict_smooth(data, {"Outlook":"Overcast","Temp":"Hot",
+      "Humidity":"High","Wind":"Strong"}, "Play", ["Yes","No"]))
+# Should work — no zero crash!</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
 <pre><code>def predict_smooth(data, features, label_col, labels):
     scores = {}
     for label in labels:
         score = count_where(data, {label_col: label}) / len(data)
         for fname, fval in features.items():
             k = len(set(row[fname] for row in data))
-            score *= probability_smooth(data, {fname: fval}, {label_col: label}, k)
+            score *= probability_smooth(
+                data, {fname: fval}, {label_col: label}, k)
         scores[label] = score
-    return max(scores, key=scores.get)</code></pre>
-</details>
+    return max(scores, key=scores.get)
 
-        </div>
+print(predict_smooth(data, {"Outlook":"Overcast","Temp":"Hot",
+      "Humidity":"High","Wind":"Strong"}, "Play", ["Yes","No"]))
+# "Yes"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: compute k per feature with
+    <code>len(set(row[fname] for row in data))</code>.</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Quick Check — Why Smoothing Works</h3>
         <div class="slide-content">
-
-        <p>Laplace smoothing adds 1 to every count. What would happen if you added <strong>1000</strong> instead of 1?</p>
-
-
-        <p><strong>A.</strong> The classifier would become more accurate because it has more "data"</p>
-
-        <p><strong>B.</strong> Nothing would change — the relative ordering of scores stays the same</p>
-
-        <p><strong>C.</strong> All smoothed probabilities would approach 1/k (uniform) — the fake counts would overwhelm the real data, and the classifier would ignore the actual evidence</p>
-
-        <p><strong>D.</strong> Python would crash with an overflow error</p>
-
-        <div class="fragment" data-fragment-index="0">
-          <p style="margin-top:1em; padding:0.5em; background:#f0ede6; border-left:4px solid #c8a96e; border-radius:4px;"><strong>Answer: C.</strong> With a huge smoothing value, the added fake counts dwarf the real counts, making every conditional probability close to 1/k. The classifier effectively forgets the training data. That is why the smoothing parameter (often called alpha) is typically kept small, like 1.</p>
-        </div>
-
-        </div>
+  <p><strong>Quick Check:</strong> Laplace smoothing adds 1 to every
+  count. What would happen if you added <strong>1000</strong> instead?</p>
+  <p><strong>A.</strong> More accurate &mdash; more &ldquo;data&rdquo;
+  &nbsp;&nbsp;
+  <strong>B.</strong> Nothing &mdash; relative ordering stays the same
+  &nbsp;&nbsp;
+  <strong>C.</strong> All probabilities approach 1/k (uniform) &mdash; the
+  fake counts overwhelm the real data, and the classifier ignores evidence
+  &nbsp;&nbsp;
+  <strong>D.</strong> Python crashes with overflow</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: C.</strong> With a huge smoothing value, fake counts
+    dwarf real counts, making every conditional probability close to 1/k.
+    The classifier forgets the training data. That is why the smoothing
+    parameter (alpha) is typically kept small, like 1.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 6: The NaiveBayes Class -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 6: The NaiveBayes Class                             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part6">
         <h2>Part 6: The NaiveBayes Class</h2>
-
-        <div class="slide-content"><p>You have all the pieces. Now wrap them into a reusable class with the standard ML interface: <code>fit</code> and <code>predict</code>.</p>
-</div>
-
       </section>
-
-
 
       <section>
-        <h3>Design the Interface</h3>
         <div class="slide-content">
-
-
-        <p>Before writing code, think about what <code>fit(X, y)</code> needs to compute and store so that <code>predict(X)</code> can work later without re-scanning all the training data.</p>
-
-<p><strong>Think about:</strong></p>
-
-<ol>
-<li>What are the possible labels? (e.g., Yes and No)</li>
-<li>For each label, how many training examples had that label? (the priors)</li>
-<li>For each label AND each feature AND each feature value, how many times did that combination appear? (the conditional counts)</li>
-<li>For each feature, how many distinct values does it have? (needed for smoothing)</li>
-</ol>
-
-<p><strong>Your design:</strong></p>
-
-<p>After <code>fit(X, y)</code>, <code>self</code> should contain:</p>
-
-<ul>
-<li>self.labels = ...</li>
-<li>self.label_counts = ...</li>
-<li>self.feature_counts = ...</li>
-<li>self.feature_values = ...</li>
-<li>self.total = ...</li>
-</ul>
-
-
-
-
-        </div>
+  <p>You have all the pieces. Now wrap them into a reusable class with
+  the standard ML interface: <code>fit</code> and <code>predict</code>.</p>
+  <p><strong>Before coding:</strong> think about what <code>fit(X, y)</code>
+  needs to store so <code>predict</code> works without re-scanning the
+  data:</p>
+  <ol>
+    <li>What are the possible labels?</li>
+    <li>How many training examples had each label? (priors)</li>
+    <li>For each label + feature + feature value, how many times did that
+    combination appear? (conditional counts)</li>
+    <li>For each feature, how many distinct values? (needed for smoothing)</li>
+  </ol>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Implement `NaiveBayes`</h3>
         <div class="slide-content">
+  <p>Implement the full <code>NaiveBayes</code> class:</p>
+  <div class="code-stack" style="min-height:28em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class NaiveBayes:
+    def __init__(self, alpha=1):
+        # alpha: Laplace smoothing parameter
+        # YOUR CODE HERE
+        pass
 
-        <p>Implement the full class:</p>
+    def fit(self, X, y):
+        # X: list of dicts, y: list of labels
+        # Precompute all counts needed for predict
+        # Return self (for chaining)
+        # YOUR CODE HERE
+        pass
 
-<div class="codehilite">
-<pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">NaiveBayes</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;smoothing: Laplace smoothing parameter (default 1).&quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+    def predict(self, X):
+        # X: list of dicts
+        # Return: list of predicted labels
+        # YOUR CODE HERE
+        pass
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        X : list of dicts (each dict maps feature_name -&gt; feature_value)</span>
-<span class="sd">        y : list of labels</span>
-<span class="sd">        Precompute and store all the counts needed for prediction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+nb = NaiveBayes()
+nb.fit(X_train, y_train)
+print(nb.predict(X_train))  # predictions for all rows</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>class NaiveBayes:
+    def __init__(self, alpha=1):
+        self.alpha = alpha
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        X : list of dicts</span>
-<span class="sd">        Returns: list of predicted labels, one per row.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-</code></pre>
+    def fit(self, X, y):
+        self.labels = list(set(y))
+        self.total = len(y)
+        self.label_counts = {}
+        self.feat_counts = {}   # {label: {feat: {val: count}}}
+        self.feat_values = {}   # {feat: set of values}
+        for row, label in zip(X, y):
+            self.label_counts[label] = self.label_counts.get(label, 0) + 1
+            if label not in self.feat_counts:
+                self.feat_counts[label] = {}
+            for feat, val in row.items():
+                self.feat_values.setdefault(feat, set()).add(val)
+                fc = self.feat_counts[label]
+                fc.setdefault(feat, {})
+                fc[feat][val] = fc[feat].get(val, 0) + 1
+        return self
+
+    def predict(self, X):
+        results = []
+        for row in X:
+            best_label, best_score = None, -1
+            for label in self.labels:
+                score = self.label_counts[label] / self.total
+                for feat, val in row.items():
+                    count = self.feat_counts[label].get(feat, {}).get(val, 0)
+                    k = len(self.feat_values.get(feat, set()))
+                    score *= (count + self.alpha) / (self.label_counts[label] + self.alpha * k)
+                if score > best_score:
+                    best_score = score
+                    best_label = label
+            results.append(best_label)
+        return results</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: in <code>fit</code>, loop once through X and y together.
+    Build nested dicts for counts. Return <code>self</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: in <code>predict</code>, smoothed P =
+    <code>(count + alpha) / (label_count + alpha * k)</code>.</p>
+  </div>
 </div>
-
-<details><summary>Hint 1</summary>
-<p>In <code>__init__</code>, just store <code>self.smoothing = smoothing</code>. The heavy work happens in <code>fit</code>.</p>
-</details>
-<details><summary>Hint 2</summary>
-<p>In <code>fit</code>, loop once through <code>X</code> and <code>y</code> together. Count how many times each label appears (<code>self.label_counts</code>), and for each label + feature + value, increment a nested dict (<code>self.feature_counts[label][feature][value]</code>). Also collect every distinct value per feature (<code>self.feature_values</code>). Return <code>self</code> so <code>fit</code> can be chained.</p>
-</details>
-<details><summary>Hint 3</summary>
-<p>In <code>predict</code>, for each row compute each label's score = (label_count / total) * product of smoothed conditional probabilities. Smoothed P = (count + smoothing) / (label_count + smoothing * k).</p>
-</details>
-
-        </div>
       </section>
-
-
 
       <section>
-        <h3>A Bigger Dataset</h3>
         <div class="slide-content">
+  <p>Test your class on the tennis data &mdash; compute training accuracy:</p>
+  <div class="code-stack" style="min-height:19em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code># Build X (list of dicts) and y (list of labels) from the data
+X_train = [{k:v for k,v in row.items() if k != "Play"} for row in data]
+y_train = [row["Play"] for row in data]
 
-        <p>Test your <code>NaiveBayes</code> class on a spam detection problem. Each email is represented by the presence/absence of certain words:</p>
+nb = NaiveBayes()
+nb.fit(X_train, y_train)
+preds = nb.predict(X_train)
 
-<p><strong>Tasks:</strong></p>
+# How many correct?
+correct = sum(p == a for p, a in zip(preds, y_train))
+print(f"Accuracy: {correct}/{len(y_train)}")
 
-<ol>
-<li>Train your <code>NaiveBayes</code> on this dataset.</li>
-<li>Compute training accuracy.</li>
-<li>Predict on these new emails:</li>
-</ol>
+# Try a new day:
+print(nb.predict([{"Outlook":"Sunny","Temp":"Cool",
+      "Humidity":"Normal","Wind":"Weak"}]))  # ?</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>X_train = [{k:v for k,v in row.items() if k != "Play"} for row in data]
+y_train = [row["Play"] for row in data]
 
-<div class="codehilite">
-<pre><span></span><code><span class="n">new_emails</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span><span class="s2">&quot;free&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;money&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;urgent&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;meeting&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">},</span>   <span class="c1"># likely spam?</span>
-    <span class="p">{</span><span class="s2">&quot;free&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>  <span class="s2">&quot;money&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>  <span class="s2">&quot;urgent&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;meeting&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">},</span>  <span class="c1"># likely ham?</span>
-    <span class="p">{</span><span class="s2">&quot;free&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;money&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>  <span class="s2">&quot;urgent&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;meeting&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span><span class="p">},</span> <span class="c1"># tricky!</span>
-<span class="p">]</span>
-</code></pre>
+nb = NaiveBayes()
+nb.fit(X_train, y_train)
+preds = nb.predict(X_train)
+
+correct = sum(p == a for p, a in zip(preds, y_train))
+print(f"Accuracy: {correct}/{len(y_train)}")
+# Accuracy: 13/14 (one borderline row misclassified)
+
+print(nb.predict([{"Outlook":"Sunny","Temp":"Cool",
+      "Humidity":"Normal","Wind":"Weak"}]))
+# ["Yes"]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: build X by removing the &ldquo;Play&rdquo; key from each
+    row dict.</p>
+  </div>
 </div>
-
-<ol start="4">
-<li>Do the predictions match your intuition?</li>
-</ol>
-
-
-        </div>
       </section>
 
 
-
-
-
-      <!-- Part 7: Bonus Challenges -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 7: Bonus                                            -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part7">
-        <h2>Part 7: Bonus Challenges</h2>
-
+        <h2>Bonus</h2>
       </section>
 
-
-
       <section>
-        <h3>Predict Probabilities</h3>
         <div class="slide-content">
+  <p>Add <code>predict_proba</code> &mdash; return the probability of
+  each class, not just the winner. Divide each score by the total:</p>
+  <div class="code-stack" style="min-height:19em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def predict_proba(self, X):
+    # Return: list of dicts, e.g. [{"Yes": 0.7, "No": 0.3}, ...]
+    # Each dict's values should sum to 1.0
+    # YOUR CODE HERE
+    pass
 
-        <p>Right now, <code>predict</code> returns just the winning label. Add a <code>predict_proba</code> method that returns the <strong>probability</strong> of each class.</p>
-
-<p>To convert scores to probabilities, divide each score by the sum of all scores:</p>
-
-<p>For example, if Score(Yes) = 0.03 and Score(No) = 0.07, then:</p>
-
-<ul>
-<li>P(Yes) = 0.03 / (0.03 + 0.07) = 0.3</li>
-<li>P(No) = 0.07 / (0.03 + 0.07) = 0.7</li>
-</ul>
-
-<div class="codehilite">
-<pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    X : list of dicts</span>
-<span class="sd">    Returns: list of dicts, each mapping label -&gt; probability.</span>
-<span class="sd">    e.g. [{&quot;Yes&quot;: 0.3, &quot;No&quot;: 0.7}, ...]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span>
-</code></pre>
+# Add to NaiveBayes class, then:
+# nb.predict_proba([{"Outlook":"Sunny","Temp":"Hot",
+#   "Humidity":"High","Wind":"Weak"}])
+# [{"Yes": 0.17, "No": 0.83}]  (approximate)</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def predict_proba(self, X):
+    results = []
+    for row in X:
+        scores = {}
+        for label in self.labels:
+            score = self.label_counts[label] / self.total
+            for feat, val in row.items():
+                count = self.feat_counts[label].get(feat, {}).get(val, 0)
+                k = len(self.feat_values.get(feat, set()))
+                score *= (count + self.alpha) / (self.label_counts[label] + self.alpha * k)
+            scores[label] = score
+        total = sum(scores.values())
+        results.append({l: s/total for l, s in scores.items()})
+    return results</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: reuse the scoring logic from <code>predict</code>, then
+    normalize: <code>prob[label] = score / sum(all_scores)</code>.</p>
+  </div>
 </div>
-
-<p><strong>Test:</strong> The probabilities for each row should sum to 1.0.</p>
-
-<details><summary>Hint</summary>
-<p>Reuse the scoring logic from <code>predict</code>, but instead of returning the max, divide each score by the total of all scores: <code>prob[label] = scores[label] / sum(scores.values())</code>.</p>
-</details>
-
-        </div>
       </section>
 
-
-
       <section>
-        <h3>Compare with scikit-learn</h3>
         <div class="slide-content">
+  <p>Compare your results with scikit-learn&rsquo;s
+  <code>CategoricalNB</code>:</p>
+<pre><code>from sklearn.preprocessing import OrdinalEncoder
+from sklearn.naive_bayes import CategoricalNB
+import numpy as np
 
-        <p>Scikit-learn has a built-in <code>CategoricalNB</code>. Compare your results:</p>
+enc = OrdinalEncoder()
+X_encoded = enc.fit_transform(
+    [[row[f] for f in ["Outlook","Temp","Humidity","Wind"]]
+     for row in data])
+y_encoded = [1 if row["Play"]=="Yes" else 0 for row in data]
 
-<div class="codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrdinalEncoder</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">CategoricalNB</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+clf = CategoricalNB(alpha=1.0)
+clf.fit(X_encoded, y_encoded)
 
-<span class="c1"># Encode string features as integers</span>
-<span class="n">enc</span> <span class="o">=</span> <span class="n">OrdinalEncoder</span><span class="p">()</span>
-<span class="n">X_encoded</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([[</span><span class="n">row</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Outlook&quot;</span><span class="p">,</span><span class="s2">&quot;Temperature&quot;</span><span class="p">,</span><span class="s2">&quot;Humidity&quot;</span><span class="p">,</span><span class="s2">&quot;Wind&quot;</span><span class="p">]]</span>
-                                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
-<span class="n">y_encoded</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;Play&quot;</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;Yes&quot;</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
-
-<span class="n">clf</span> <span class="o">=</span> <span class="n">CategoricalNB</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># alpha=1.0 is Laplace smoothing</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_encoded</span><span class="p">,</span> <span class="n">y_encoded</span><span class="p">)</span>
-
-<span class="c1"># Compare predictions</span>
-<span class="n">sk_preds</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_encoded</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sklearn predictions:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Yes&quot;</span> <span class="k">if</span> <span class="n">p</span><span class="o">==</span><span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;No&quot;</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sk_preds</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Your predictions:   &quot;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
-</code></pre>
+sk_preds = clf.predict(X_encoded)
+print("sklearn:", ["Yes" if p==1 else "No" for p in sk_preds])
+print("yours: ", nb.predict(X_train))</code></pre>
+  <p>Do the predictions match? If not, investigate why.</p>
 </div>
-
-<p>Do the predictions match? If not, investigate why.</p>
-
-
-        </div>
       </section>
 
-
-
       <section>
-        <h3>What About Continuous Features?</h3>
         <div class="slide-content">
-
-        <p>Your classifier works with categorical features (Sunny, Rainy, etc.). But what if a feature is a number, like actual temperature (72°F, 85°F, etc.)?</p>
-
-<ol>
-<li>Why can't you directly count P(Temperature=72.3 | Yes)? (How many training rows have that exact value?)</li>
-<li>One approach: assume numerical features follow a bell curve (Gaussian distribution) within each class. Instead of counting, you'd compute the mean and standard deviation per class, then use the bell curve to get the probability.</li>
-<li>Another approach: bin the numbers into categories (e.g., Cold: &lt;60, Mild: 60-80, Hot: &gt;80) and use your existing categorical classifier.</li>
-</ol>
-
-<p>Try the binning approach on a dataset of your choice.</p>
-
-
-        </div>
+  <p><strong>Continuous features:</strong> your classifier works with
+  categories (Sunny, Rainy). But what about actual numbers like
+  temperature = 72.3&deg;F?</p>
+  <p>P(Temp = 72.3 | Yes) is essentially zero &mdash; that exact value
+  probably never appeared in training.</p>
+  <p><strong>Two approaches:</strong></p>
+  <ol>
+    <li><strong>Bin the numbers</strong> into categories (Cold: &lt;60,
+    Mild: 60&ndash;80, Hot: &gt;80) and use your existing classifier.</li>
+    <li><strong>Gaussian NB:</strong> assume numerical features follow a
+    bell curve per class. Compute the mean and standard deviation per
+    class, then use the bell curve formula to get the probability.</li>
+  </ol>
+  <p>Try the binning approach on a dataset of your choice.</p>
+</div>
       </section>
 
 
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  ENDING                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="ending">
+        <h2>What You Just Invented</h2>
+      </section>
 
       <section>
-        <div class="slide-content"><div style="font-size:1.2em;">
-  <h2 style="border:none; color:#333;">What You Just Invented</h2>
-  <table style="margin:0.5em auto; font-size:0.95em;">
-    <tr><th style="padding:0.2em 0.8em;">What you built</th>
-        <th style="padding:0.2em 0.8em;">Its real name</th></tr>
+        <div class="slide-content">
+  <table>
+    <tr><th>What you built</th><th>Its real name</th></tr>
     <tr><td>Count labels, pick the majority</td>
         <td><strong>Prior probability (base rate)</strong></td></tr>
     <tr><td>P(feature | class) from counting rows</td>
         <td><strong>Conditional / likelihood probability</strong></td></tr>
     <tr><td>Prior &times; likelihood &rarr; pick highest</td>
-        <td><strong>Bayes' theorem (MAP decision rule)</strong></td></tr>
+        <td><strong>Bayes&rsquo; theorem (MAP decision rule)</strong></td></tr>
     <tr><td>Multiply per-feature likelihoods independently</td>
         <td><strong>Naive independence assumption</strong></td></tr>
     <tr><td>Add 1 to every count to avoid zeros</td>
-        <td><strong>Laplace smoothing (additive smoothing)</strong></td></tr>
+        <td><strong>Laplace smoothing</strong></td></tr>
     <tr><td><code>NaiveBayes.fit()</code> + <code>.predict()</code></td>
         <td><strong>Categorical Naive Bayes classifier</strong></td></tr>
     <tr><td>Normalize scores to sum to 1</td>
@@ -1238,71 +1031,58 @@ nb.predict(["Overcast","Hot"])    # unseen value: still returns a label, no cras
   </table>
   <div class="fragment" data-fragment-index="0">
     <p>Nobody taught you these &mdash; <strong>you derived them
-    yourself</strong>. The next time you see "Naive Bayes",
-    "prior", or "Laplace smoothing", you&rsquo;ll know exactly
-    what&rsquo;s happening under the hood.</p>
+    yourself</strong>. The next time you see &ldquo;Naive Bayes&rdquo;,
+    &ldquo;prior&rdquo;, or &ldquo;Laplace smoothing&rdquo;, you&rsquo;ll
+    know exactly what&rsquo;s happening under the hood.</p>
   </div>
 </div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>What is a prior probability? Why is it useful even before you look
+    at any features?</li>
+    <li>What does &ldquo;naive&rdquo; mean in Naive Bayes? Is the assumption
+    literally true for our weather data? Does it matter?</li>
+    <li>Why does multiplying many small probabilities still produce a useful
+    prediction? What matters &mdash; the absolute values or the relative
+    ordering?</li>
+    <li>What would happen without Laplace smoothing? Give a concrete example
+    from the tennis dataset.</li>
+    <li>How is <code>fit</code> different from <code>predict</code>? Which
+    one looks at training data, and which one uses stored counts?</li>
+    <li>Where else could Naive Bayes be useful? Think of a problem from your
+    own life where you classify something based on several independent
+    clues.</li>
+  </ol>
 </div>
       </section>
 
 
-
-      <!-- Part 8: Reflection — What Did You Just Build? -->
-      <section id="part8">
-        <h2>Part 8: Reflection — What Did You Just Build?</h2>
-
-      </section>
-
-
-
-      <section>
-        <h3>Reflection</h3>
-        <div class="slide-content">
-
-
-        <p>Answer these questions in your own words:</p>
-
-<ol>
-<li><strong>What is a prior probability?</strong> Why is it useful even before you look at any features?</li>
-<li><strong>What does "naive" mean in Naive Bayes?</strong> Is the assumption literally true for our weather data? Does it matter?</li>
-<li><strong>Why does multiplying many small probabilities together still produce a useful prediction?</strong> What matters — the absolute values or the relative ordering?</li>
-<li><strong>What would happen without Laplace smoothing?</strong> Give a concrete example from the tennis dataset.</li>
-<li><strong>How is <code>fit</code> different from <code>predict</code>?</strong> Which one looks at training data, and which one uses the stored counts?</li>
-<li><strong>Where else could Naive Bayes be useful?</strong> Think of a problem from your own life where you classify something based on several independent clues.</li>
-</ol>
-
-
-
-
-        </div>
-      </section>
-
-      <!-- Index slide (last slide, linked from bottom-left) -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  INDEX                                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="slide-index">
         <h2>Index</h2>
-        <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
+        <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Part 1: Counting and Probability</a></li>
-            <li><a href="#/part2">Part 2: One Feature — Does Weather Help?</a></li>
-            <li><a href="#/part3">Part 3: Two Features — Combining Evidence</a></li>
-            <li><a href="#/part4">Part 4: N Features — The General Algorithm</a></li>
-            <li><a href="#/part5">Part 5: The Zero-Frequency Problem</a></li>
-            <li><a href="#/part6">Part 6: The NaiveBayes Class</a></li>
-            <li><a href="#/part7">Part 7: Bonus Challenges</a></li>
-            <li><a href="#/part8">Part 8: Reflection — What Did You Just Build?</a></li>
+            <li><a href="#/part1">Counting and Probability</a></li>
+            <li><a href="#/part2">One Feature</a></li>
+            <li><a href="#/part3">Two Features</a></li>
+            <li><a href="#/part4">N Features</a></li>
+            <li><a href="#/part5">The Zero Problem</a></li>
+            <li><a href="#/part6">The NaiveBayes Class</a></li>
+            <li><a href="#/part7">Bonus</a></li>
           </ol>
-        </div></div>
+        </div>
       </section>
-
-
-
-
-
 
 
     </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
   <script>
     Reveal.initialize({
@@ -1310,8 +1090,8 @@ nb.predict(["Overcast","Hot"])    # unseen value: still returns a label, no cras
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 700 : 1200,
-      height: window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700,
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
       minScale: 0.1,
       maxScale: 2.0,
     });
@@ -1322,10 +1102,24 @@ nb.predict(["Overcast","Hot"])    # unseen value: still returns a label, no cras
       document.getElementById('top-progress-bar').style.width = pct + '%';
     }
     Reveal.on('slidechanged', function() { updateProgress(); });
-    Reveal.on('ready', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
   </script>
 <div class="chapter-footer">
-  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+
+  <p><em>You invented a Naive Bayes classifier from scratch &mdash;
+  priors, conditional probabilities, the independence assumption,
+  Laplace smoothing, and a full fit/predict class.</em></p>
+
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a>
+  &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
 
