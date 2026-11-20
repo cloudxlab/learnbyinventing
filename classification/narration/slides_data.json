@@ -1,0 +1,828 @@
+[
+  {
+    "slide_index": 0,
+    "content_id": "93b1a39228",
+    "slide_text": "Classification Don t just watch invent . Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "content_id": "58c99b92aa",
+    "slide_text": "Part 1: Scaling Values",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "content_id": "0cae33b1ab",
+    "slide_text": "Challenge (skip ahead if you can): Write a Python function that takes a list of positive numbers and returns a new list where every element is between 0 and 1, and the elements sum to exactly 1. [code block] Test: [code block] Already got it? Skip to Part 2 . Otherwise, the next slides will guide you step by step.",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "content_id": "766c1a4116",
+    "slide_text": "Imagine you have two numbers: 1 and 9 . How would you turn them into fractions that add up to 1?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "64d1738617",
+        "text": "Simple divide each by their total: [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "43d592826b",
+        "text": "Try these yourself (pencil and paper!): [math] ? [math] ? [math] ?"
+      }
+    ]
+  },
+  {
+    "slide_index": 4,
+    "content_id": "fa6b01685d",
+    "slide_text": "",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "bb6f6152e1",
+        "text": "Check your answers: [math] [math] [math] The rule: divide each value by the sum of all values."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "e920d17e63",
+        "text": "Now write it in Python: [code block] [code block] Hint: compute , then divide each element by it."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "f938dd8042",
+        "text": "Hint: compute , then divide each element by it."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "f250b12b6f",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 5,
+    "content_id": "2e3dc30b1b",
+    "slide_text": "Notice something about :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a8e98b369d",
+        "text": "Every output is between 0 and 1"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "f66a7e289e",
+        "text": "All outputs sum to exactly 1"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "8d57d7671e",
+        "text": "Bigger inputs get bigger shares"
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "9f67621876",
+        "text": "But what happens with ? We get [math]. The 5 is five times bigger than 1, but its share is only about five times bigger. What if we wanted the biggest value to really dominate to be pushed much closer to 1?"
+      }
+    ]
+  },
+  {
+    "slide_index": 6,
+    "content_id": "c5058a315b",
+    "slide_text": "Part 2: Making Big Bigger",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "content_id": "6b2c03f293",
+    "slide_text": "Challenge (skip ahead if you can): Write a function that takes a list of numbers (possibly negative) and returns a list of probabilities (each between 0 and 1, summing to 1) where the largest value gets pushed much closer to 1. Got it? Skip to Part 3 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "content_id": "f52a258dcf",
+    "slide_text": "We want to amplify differences before scaling. Given [math], we want the 5 to end up with a share much larger than [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "bc241a9a48",
+        "text": "What mathematical operation makes big numbers much bigger while keeping small numbers relatively small?"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "9b5ccfa545",
+        "text": "Think of a few options. There is no single right answer brainstorm! Squaring? [math] scale [math] Cubing? [math] scale [math] Exponential? [math] scale [math]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "8d78ac1250",
+        "text": "All of these amplify! But there s a problem with squaring and cubing what happens if the input is negative ?"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "content_id": "32f7e8a63f",
+    "slide_text": "If inputs can be negative (and they often are in ML): [math] a negative number becomes positive and big. That s wrong a small (negative) value should stay small. But [math] small and positive.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "69e507977e",
+        "text": "The exponential [math] has a perfect property: Large positive [math] very large output Zero output is 1 Negative [math] output is small but always positive"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "0cc1faf604",
+        "text": "So our recipe is: apply [math] to each value, then scale."
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "content_id": "f0d98436f5",
+    "slide_text": "Part 3: Softmax",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "content_id": "937929b796",
+    "slide_text": "Challenge (skip ahead if you can): Write : apply [math] to each element, then scale so the results sum to 1. Test it on , , and . Got it? Skip to Part 4 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "content_id": "98c636be89",
+    "slide_text": "Let s combine what we invented: Take each value [math]. Compute [math]. Divide each by the sum of all [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "00b9e22c2c",
+        "text": "In math: [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d9d2f2ed39",
+        "text": "Try it by hand on [math]: [math] Sum [math] Softmax [math] the 3 dominates!"
+      }
+    ]
+  },
+  {
+    "slide_index": 13,
+    "content_id": "ba1f373f58",
+    "slide_text": "Now write it in Python:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a7f2c9f34c",
+        "text": "Hint 1: use for each value."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "38a8dfb0d9",
+        "text": "Hint 2: it s just applied to the exponentiated values!"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "e171cc4204",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "content_id": "dd8d266707",
+    "slide_text": "Compare vs on the same input: Input [math] [math] [math] [math] [math] [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "f8d66be1e3",
+        "text": "Softmax makes the winner win harder . The biggest value gets pushed closer to 1; smaller values get pushed closer to 0."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "9181a8897a",
+        "text": "This is called the softmax function and you just invented it. It s one of the most important functions in machine learning. We ll see exactly why soon."
+      }
+    ]
+  },
+  {
+    "slide_index": 15,
+    "content_id": "3cab5f9cd4",
+    "slide_text": "Part 4: Sigmoid",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "content_id": "066fad414a",
+    "slide_text": "Challenge (skip ahead if you can): Using your function, can you squash a single number into the range [math]? Derive the formula and write . Got it? Skip to Part 5 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "content_id": "84b5e48c05",
+    "slide_text": "Softmax takes a list and produces probabilities. But what if we only have one number and we want to push it into [math]?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "63c8051626",
+        "text": "Here s a trick: make it a two-element list by adding a 0: [math] The second element gives us the probability for [math]."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "6a40b16eee",
+        "text": "Try it: [math] Second element: [math]"
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "content_id": "5ca8a02540",
+    "slide_text": "So for any single number [math], the formula is: [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2b2b428ffa",
+        "text": "This can also be written as: [math] (Multiply top and bottom by [math] to verify.)"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b38e0a7d5c",
+        "text": "This is the sigmoid function (also called the logistic function). You just derived it from softmax!"
+      }
+    ]
+  },
+  {
+    "slide_index": 19,
+    "content_id": "fa1f859c16",
+    "slide_text": "Write it in Python and test:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "eb43a8dff4",
+        "text": "Hint: just translate the formula [math] directly."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "cb0cc1ceff",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "content_id": "a033ba46f6",
+    "slide_text": "Explore the sigmoid in Desmos . Type this into desmos.com/calculator : [code block] Add sliders for [math] and [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "079270297e",
+        "text": "Play with the sliders and answer: What does [math] control? What does [math] control? What happens when [math] is very large? What happens when [math] is negative?"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "e462cce5d6",
+        "text": "[math] controls the steepness . [math] shifts the curve left or right. As [math], the sigmoid approaches a step function."
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "content_id": "419642458b",
+    "slide_text": "Key properties of sigmoid:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c84dab56c5",
+        "text": "Output is always between 0 and 1 perfect for probabilities"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "0439fd9dbf",
+        "text": "[math] the midpoint"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "96bcbf5535",
+        "text": "Large positive [math] output near 1"
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "7a537e0db3",
+        "text": "Large negative [math] output near 0"
+      },
+      {
+        "fragment_index": 4,
+        "content_id": "59716686eb",
+        "text": "It s smooth and differentiable everywhere"
+      },
+      {
+        "fragment_index": 5,
+        "content_id": "dbf64379db",
+        "text": "It maps any real number to a probability. That is exactly what we need for classification ."
+      }
+    ]
+  },
+  {
+    "slide_index": 22,
+    "content_id": "603c40a42d",
+    "slide_text": "Part 5: The Classification Problem",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "content_id": "c987fffa15",
+    "slide_text": "Challenge (skip ahead if you can): Given a dataset of ages and a 0/1 label (teenager or not), build a model that predicts the probability of being a teenager. Write using sigmoid, an loss, and fit with gradient descent. Got it? Skip to Part 6 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "content_id": "c1bc0419b5",
+    "slide_text": "Here is a dataset of ages and whether the person is a teenager (1) or not (0): [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "37560e0cd3",
+        "text": "Plot it: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "46a038df74",
+        "text": "Can you fit a straight line through this data?"
+      }
+    ]
+  },
+  {
+    "slide_index": 25,
+    "content_id": "a729263c3a",
+    "slide_text": "If we try fitting a straight line ([math]):",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "56c0f10b09",
+        "text": "The line would predict values above 1 and below 0 ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "3c2236dd39",
+        "text": "But our labels are only 0 or 1 probabilities must be between 0 and 1!"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "4075008549",
+        "text": "A straight line cannot capture this S-shaped boundary."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "b26d99291b",
+        "text": "What if, instead of predicting [math] directly, we passed the result through sigmoid ? [math] Now the output is always between 0 and 1!"
+      }
+    ]
+  },
+  {
+    "slide_index": 26,
+    "content_id": "afc608f069",
+    "slide_text": "Write a predict function:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "040cbe4b03",
+        "text": "Hint: just call ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "4fd9f68728",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "0e846623cd",
+        "text": "Now we need a way to measure how wrong our predictions are. We already know one: Mean Squared Error ."
+      }
+    ]
+  },
+  {
+    "slide_index": 27,
+    "content_id": "585a505e24",
+    "slide_text": "Write the MSE for our classifier:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a59cc57f7d",
+        "text": "Hint 1: predict for each data point, then compare to the label."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "6eee17bd77",
+        "text": "Hint 2:"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "e6f8843bce",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 28,
+    "content_id": "727937f198",
+    "slide_text": "We need from the differentiation chapter. Here it is as a helper: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "85bf9978ee",
+        "text": "This computes [math] for each parameter by nudging it slightly in both directions."
+      }
+    ]
+  },
+  {
+    "slide_index": 29,
+    "content_id": "6949119acc",
+    "slide_text": "Now fit with gradient descent! Find and that minimize the MSE:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8e03c29668",
+        "text": "Hint 1: define that calls ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "e4a601f70e",
+        "text": "Hint 2: use to get , then update: ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "6d5d339a91",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "content_id": "5ecfca8d83",
+    "slide_text": "Plot the fitted sigmoid over the data: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "296587a37c",
+        "text": "Congratulations! You just built a binary classifier from scratch using sigmoid + MSE + gradient descent."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "71eb403424",
+        "text": "But what if we have more than one input feature ?"
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "content_id": "eed93d4d45",
+    "slide_text": "Part 6: Multiple Features",
+    "fragments": []
+  },
+  {
+    "slide_index": 32,
+    "content_id": "94940102f7",
+    "slide_text": "Challenge (skip ahead if you can): Extend your classifier to handle multiple input features using the Iris dataset (2 classes). Write , , and fit with gradient descent. Got it? Skip to Part 7 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "content_id": "b66d2dde8f",
+    "slide_text": "So far, our model had one input (age). What if [math] has [math] features?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c9242bc615",
+        "text": "Instead of [math], use a dot product : [math] Then: [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "8161e5e47d",
+        "text": "Load the Iris dataset (first two classes only): [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 34,
+    "content_id": "51bd147150",
+    "slide_text": "Write a predict function for multiple features:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "d73549f681",
+        "text": "Hint: compute (matrix-vector product), then apply sigmoid to each element."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "57405ecfbc",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 35,
+    "content_id": "40469a498c",
+    "slide_text": "Write the MSE for multiple features:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3ac562ea2b",
+        "text": "Hint: same pattern as before predictions minus labels, squared, mean."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "43d17e7c9e",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "content_id": "4c7b9b9215",
+    "slide_text": "Now fit with gradient descent. The tricky part: we need gradients for each weight and the bias.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "40225a3b95",
+        "text": "Hint 1: pack [math] and [math] into a single params list."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "27893e66aa",
+        "text": "Hint 2: returns one gradient per parameter."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "cb71615969",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "b8de569ecf",
+    "slide_text": "Check the accuracy: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "259d7a4933",
+        "text": "You just built logistic regression from scratch! (Well, almost the standard version uses a different loss function. That s next.)"
+      }
+    ]
+  },
+  {
+    "slide_index": 38,
+    "content_id": "4607a8fce3",
+    "slide_text": "Part 7: Cross-Entropy Loss",
+    "fragments": []
+  },
+  {
+    "slide_index": 39,
+    "content_id": "3871983bd1",
+    "slide_text": "Challenge (skip ahead if you can): Can you think of a loss function that punishes confident wrong predictions much more than MSE? Write . Got it? Skip to Part 8 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 40,
+    "content_id": "5957aeb81a",
+    "slide_text": "MSE works for classification, but let s think about whether it s the best choice. Suppose the true label is [math] and our model predicts [math]. The MSE penalty is [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "43e9785606",
+        "text": "Now suppose the model predicts [math] ten times larger. The MSE penalty is [math]. That s barely different! Is MSE harsh enough when we re very wrong?"
+      }
+    ]
+  },
+  {
+    "slide_index": 41,
+    "content_id": "c55f76f439",
+    "slide_text": "What if, instead of squaring the error, we used [math] when the true label is 1?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "9a8d6fac0b",
+        "text": "Compute these by hand or in Python: [math] [math] (small penalty good prediction) [math] [math] [math] [math] (huge penalty!) [math] [math] (infinite penalty!)"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "fbc5fad66f",
+        "text": "[math] gives a much stronger signal when the model is confidently wrong."
+      }
+    ]
+  },
+  {
+    "slide_index": 42,
+    "content_id": "f07c97263d",
+    "slide_text": "What about when the true label is [math]? We want to penalize high predictions. What expression goes to [math] as [math]?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "52a553d526",
+        "text": "[math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "f0514e7e3c",
+        "text": "Combining both cases into one formula: [math] When [math]: only the first term survives [math]. When [math]: only the second term survives [math]."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "bf4ec0ecee",
+        "text": "This is called binary cross-entropy (or log loss)."
+      }
+    ]
+  },
+  {
+    "slide_index": 43,
+    "content_id": "fb49fd3260",
+    "slide_text": "Write the cross-entropy loss in Python:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "484b3d9bb4",
+        "text": "Hint 1: get predictions, then apply the formula [math]."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "89d1596700",
+        "text": "Hint 2: use to avoid ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "41d2b23efd",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 44,
+    "content_id": "6d9002290d",
+    "slide_text": "Part 8: Cross-Entropy + Gradient Descent",
+    "fragments": []
+  },
+  {
+    "slide_index": 45,
+    "content_id": "abc3fab22b",
+    "slide_text": "Challenge (skip ahead if you can): Re-train your binary classifier using cross-entropy instead of MSE. Compare the convergence. Then train on the Iris dataset with cross-entropy. Got it? Skip to Part 9 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 46,
+    "content_id": "72b44c9dd7",
+    "slide_text": "Re-run gradient descent on the teenager dataset, but now using cross-entropy instead of MSE:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "e3e7720732",
+        "text": "Hint: wrap your 1-feature data as and use ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "00bc1ccaa5",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 47,
+    "content_id": "ac9d1ef36a",
+    "slide_text": "Compare the two loss curves. Record losses during training for both methods and plot: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "0c2281b6d1",
+        "text": "Does cross-entropy converge faster? Does the final fit look different?"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "28932c153a",
+        "text": "Now re-run on the Iris dataset with cross-entropy. Compare accuracy with your MSE version from Part 6."
+      }
+    ]
+  },
+  {
+    "slide_index": 48,
+    "content_id": "06d5c0500b",
+    "slide_text": "Part 9: Multi-Class Classification",
+    "fragments": []
+  },
+  {
+    "slide_index": 49,
+    "content_id": "438c27c52a",
+    "slide_text": "Challenge (skip ahead if you can): Extend your classifier to handle more than 2 classes using all 3 Iris species. Write and , and fit with gradient descent. Got it? Skip to the end .",
+    "fragments": []
+  },
+  {
+    "slide_index": 50,
+    "content_id": "13c4633e42",
+    "slide_text": "With 2 classes, we used sigmoid . With [math] classes, what should we use?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "28290ca5ac",
+        "text": "Softmax! Full circle back to where we started in Part 3. For each class [math]: [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b70c5fbefb",
+        "text": "We need [math] sets of weights. Weight matrix [math] is [math], bias [math] is [math]."
+      }
+    ]
+  },
+  {
+    "slide_index": 51,
+    "content_id": "d8415a5603",
+    "slide_text": "Load the full Iris dataset (3 classes) and one-hot encode the labels: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "e5cdf84d6f",
+        "text": "Why one-hot? Because with 3 classes, our model outputs 3 probabilities per sample. We need the labels in the same shape."
+      }
+    ]
+  },
+  {
+    "slide_index": 52,
+    "content_id": "005ca90f66",
+    "slide_text": "Write softmax prediction for multi-class:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "13ecdda7c6",
+        "text": "Hint: compute [math], then apply softmax row-wise. Subtract the max per row for numerical stability."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "fdf799fcdb",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 53,
+    "content_id": "5c627eb854",
+    "slide_text": "Write the multi-class cross-entropy loss: [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7d00c888b4",
+        "text": "Hint: only the terms where [math] contribute that picks out [math] for the correct class."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "81b34ca016",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 54,
+    "content_id": "6e142a4081",
+    "slide_text": "Fit with gradient descent on the full Iris dataset:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8bc1a2f941",
+        "text": "Hint: flatten [math] and [math] into one params list, like you did in Part 6."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "7e3812e81d",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 55,
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 56,
+    "content_id": "78600ab6a1",
+    "slide_text": "Your function Standard name Normalization (to probability simplex) Softmax function Sigmoid / logistic function + Logistic regression with MSE loss + Multi-feature logistic regression Binary cross-entropy (log loss) + Softmax regression / multinomial logistic regression",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "ddba73a503",
+        "text": "You started by scaling numbers to sum to 1. You invented softmax, derived sigmoid from it, built a binary classifier with MSE, extended to multiple features, discovered why MSE isn t ideal, invented cross-entropy, and generalized everything to multiple classes. All from scratch."
+      }
+    ]
+  },
+  {
+    "slide_index": 57,
+    "content_id": "02e13c85ff",
+    "slide_text": "Reflection what did you just build? Explain in your own words: why can t we use linear regression directly for classification? How is sigmoid related to softmax? Could you derive one from the other? Why is cross-entropy a better loss than MSE for classification? What happens to the gradient when the model is confidently wrong? How does multi-class classification generalize binary classification? What replaces sigmoid, and what replaces binary cross-entropy?",
+    "fragments": []
+  },
+  {
+    "slide_index": 58,
+    "content_id": "3bc8a6cd3f",
+    "slide_text": "Index Scaling Values Making Big Bigger Softmax Sigmoid The Classification Problem Multiple Features Cross-Entropy Loss Cross-Entropy + Gradient Descent Multi-Class Classification",
+    "fragments": []
+  }
+]
