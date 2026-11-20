@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Beam Search — Slides</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    .reveal { font-family: Georgia, serif; margin-top: 25px; }
+    .reveal .slide-content { font-size: 0.55em; }
+    .reveal h1 { font-size: 1.8em; }
+    .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
+    .reveal h3 { font-size: 1.1em; }
+    .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+    .reveal p code, .reveal li code {
+      background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
+      color: #c7254e; font-size: 0.85em;
+    }
+    .reveal pre code { background: #282c34; color: #abb2bf; padding: 0.8em; border-radius: 5px; }
+    .reveal table { font-size: 0.7em; margin: 0 auto; }
+    .reveal th { background: #f5f3ef; }
+    .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
+    .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
+    .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .reveal .progress { display: none !important; }
+    .chapter-footer { display: none; }
+    #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
+    #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
+    #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
+    #bottom-copyright a { color: #aaa; text-decoration: none; }
+    #bottom-copyright a:hover { color: #c8a96e; }
+    #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
+    #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+
+    /* ── Question styling ──────────────────────────────────────────── */
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
+
+    /* ── Mobile-friendly overrides ─────────────────────────────────── */
+    @media screen and (max-width: 768px) {
+      .reveal .slide-content { font-size: 0.65em; }
+      .reveal h2 { font-size: 0.95em; }
+      .reveal h3 { font-size: 0.8em; }
+      .reveal pre { font-size: 0.6em; }
+      .reveal table { font-size: 0.6em; }
+      .reveal ul, .reveal ol { font-size: 0.65em; }
+      .reveal p code, .reveal li code { font-size: 0.85em; }
+      .reveal th, .reveal td { padding: 0.2em 0.4em; }
+      .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
+      #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
+    }
+  </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9TZCPED97E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9TZCPED97E');
+</script>
+
+</head>
+<body>
+  <nav class="slides-topnav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);padding:4px 16px;font-size:13px;font-family:sans-serif;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+    <a href="../index.html" style="color:#888;text-decoration:none;">&larr; All chapters</a>
+    <span style="display:flex;gap:10px;align-items:center;">
+      <strong style="color:#333;">Slides</strong>
+    </span>
+  </nav>
+  <div id="top-progress"><div id="top-progress-bar"></div></div>
+  <div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="#" id="bug-report-link">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
+  <script>
+function detectDevice() {
+  var ua = navigator.userAgent;
+  var browser = 'Unknown';
+  if (ua.indexOf('Edg/') > -1) browser = 'Edge';
+  else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
+  else if (ua.indexOf('Chrome/') > -1) browser = 'Chrome';
+  else if (ua.indexOf('Safari/') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+  else if (ua.indexOf('Firefox/') > -1) browser = 'Firefox';
+  var os = 'Unknown';
+  if (ua.indexOf('Android') > -1) os = 'Android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+  else if (ua.indexOf('Windows') > -1) os = 'Windows';
+  else if (ua.indexOf('Mac OS') > -1) os = 'macOS';
+  else if (ua.indexOf('Linux') > -1) os = 'Linux';
+  var screen = window.screen.width + 'x' + window.screen.height;
+  var viewport = window.innerWidth + 'x' + window.innerHeight;
+  return '- Browser: ' + browser + '\n- OS: ' + os + '\n- Screen: ' + screen + ' (viewport ' + viewport + ')';
+}
+document.getElementById('bug-report-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  var idx = Reveal.getIndices();
+  var slideNum = idx.h + 1;
+  var ch = location.pathname.split('/').filter(Boolean);
+  ch = ch.length > 1 ? ch[ch.length - 2] : '';
+  var partName = '';
+  var sections = document.querySelectorAll('.slides > section');
+  for (var j = idx.h; j >= 0; j--) {
+    if (sections[j] && sections[j].id && sections[j].id.match(/^part/)) {
+      var h2 = sections[j].querySelector('h2');
+      partName = h2 ? h2.textContent : sections[j].id;
+      break;
+    }
+  }
+  var body = '**Chapter / Slide**\nChapter: ' + ch + '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href + '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n' + detectDevice();
+  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' + encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) + '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank');
+});
+</script>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Title slide -->
+      <section>
+        <h1>Beam Search</h1>
+
+        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
+
+        <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
+          Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
+          or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
+          to advance &nbsp;|&nbsp;
+          <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&larr;</kbd> to go back
+        </p>
+
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 1: Fair Coin Toss                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part1">
+        <h2>Part 1: Fair Coin Toss</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write a Python function <code>fair_coin()</code> that returns
+  <code>"H"</code> or <code>"T"</code> with equal probability (50/50).
+  Then write <code>biased_coin(p)</code> that returns <code>"H"</code>
+  with probability $p$.</p>
+  <p style="font-size:0.85em; color:#888;">Already got it?
+  <a href="#/part3">Skip to Part 3</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s start with the simplest random event: a fair coin toss.</p>
+  <p>How would you simulate one in Python?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Python&rsquo;s <code>random</code> module gives us <code>random.random()</code>,
+    which returns a number between 0 and 1.</p>
+<pre><code>import random
+print(random.random())   # e.g., 0.7231...
+print(random.random())   # e.g., 0.1489...</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>If this number is less than 0.5, call it Heads. Otherwise, Tails.</p>
+    <p>Before coding &mdash; why does this give each side exactly 50% chance?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write it:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>import random
+
+def fair_coin():
+    # Return "H" or "T" with equal probability
+    # YOUR CODE HERE
+    pass
+
+# Test: flip 10 times
+for i in range(10):
+    print(fair_coin(), end=" ")</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>import random
+
+def fair_coin():
+    if random.random() < 0.5:
+        return "H"
+    else:
+        return "T"
+
+# Test: flip 10 times
+for i in range(10):
+    print(fair_coin(), end=" ")
+# e.g., H T H H T T H T H T</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: compare <code>random.random()</code> to 0.5.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s verify it&rsquo;s fair. Flip 10,000 times and count:</p>
+<pre><code>results = [fair_coin() for _ in range(10000)]
+h_count = results.count("H")
+print(f"Heads: {h_count}, Tails: {10000 - h_count}")
+# Should be roughly 5000 each</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>It won&rsquo;t be <em>exactly</em> 5000 each time &mdash; that&rsquo;s randomness.
+    But it should be <em>close</em>.</p>
+    <p>Now, what if the coin isn&rsquo;t fair?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 2: Biased Coin                                      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part2">
+        <h2>Part 2: Biased Coin</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>What if Heads should come up 70% of the time?</p>
+  <p>Before coding: if <code>random.random()</code> gives a number between
+  0 and 1, what threshold should you use instead of 0.5?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Use <strong>0.7</strong> as the threshold. Numbers below 0.7 (which
+    happens 70% of the time) become Heads.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Generalize: write <code>biased_coin(p)</code> where <code>p</code> is
+    the probability of Heads.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def biased_coin(p):
+    # Return "H" with probability p, "T" otherwise
+    # YOUR CODE HERE
+    pass
+
+# Test: flip a 70% biased coin 10,000 times
+results = [biased_coin(0.7) for _ in range(10000)]
+print(f"Heads: {results.count('H')}")  # ~7000</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def biased_coin(p):
+    if random.random() < p:
+        return "H"
+    else:
+        return "T"
+
+# Test: flip a 70% biased coin 10,000 times
+results = [biased_coin(0.7) for _ in range(10000)]
+print(f"Heads: {results.count('H')}")  # ~7000</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: same as <code>fair_coin</code>, but compare to <code>p</code> instead of 0.5.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>Notice: <code>fair_coin()</code> is just <code>biased_coin(0.5)</code>.
+    The fair coin is a special case of the biased coin!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Quick sanity check &mdash; test various biases:</p>
+<pre><code>for p in [0.0, 0.1, 0.5, 0.9, 1.0]:
+    results = [biased_coin(p) for _ in range(10000)]
+    pct = results.count("H") / 100
+    print(f"p={p:.1f} → Heads: {pct:.1f}%")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>A coin has only two outcomes. But what if we have <em>more than two</em>
+    choices, each with its own probability?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 3: Weighted Random Selection                        -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part3">
+        <h2>Part 3: Weighted Random Selection</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>weighted_choice(items, probs)</code> that picks one item
+  from a list, where each item has a different probability of being chosen.
+  For example, <code>weighted_choice(["A","B","C"], [0.7, 0.2, 0.1])</code>
+  should return <code>"A"</code> about 70% of the time.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part4">Skip to Part 4</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Imagine a spinner divided into sections of different sizes:</p>
+  <table>
+    <tr><th>Item</th><th>Probability</th><th>Range on spinner</th></tr>
+    <tr><td>A</td><td>0.7</td><td>0.0 &ndash; 0.7</td></tr>
+    <tr><td>B</td><td>0.2</td><td>0.7 &ndash; 0.9</td></tr>
+    <tr><td>C</td><td>0.1</td><td>0.9 &ndash; 1.0</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>If we pick a random number between 0 and 1, we just check which
+    section it falls into.</p>
+    <p>For example, 0.85 falls in B&rsquo;s range (0.7&ndash;0.9).</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The technique: walk through the probabilities, accumulating a running
+    total. Stop when the random number is less than the running total.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write it:</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def weighted_choice(items, probs):
+    # Pick one item based on its probability
+    # YOUR CODE HERE
+    pass
+
+# Test
+counts = {"A": 0, "B": 0, "C": 0}
+for _ in range(10000):
+    pick = weighted_choice(["A", "B", "C"], [0.7, 0.2, 0.1])
+    counts[pick] += 1
+print(counts)  # ~A:7000, B:2000, C:1000</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def weighted_choice(items, probs):
+    r = random.random()
+    running_total = 0
+    for item, p in zip(items, probs):
+        running_total += p
+        if r < running_total:
+            return item
+    return items[-1]
+
+# Test
+counts = {"A": 0, "B": 0, "C": 0}
+for _ in range(10000):
+    pick = weighted_choice(["A", "B", "C"], [0.7, 0.2, 0.1])
+    counts[pick] += 1
+print(counts)  # ~A:7000, B:2000, C:1000</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: generate one random number. Walk through probabilities
+    keeping a running total.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: if <code>r &lt; running_total</code>, return that item.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s make sure it really works. Verify with an extreme case:</p>
+<pre><code># One item has 99% probability
+for _ in range(20):
+    print(weighted_choice(["rare", "common"], [0.01, 0.99]), end=" ")
+# Almost all "common"</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>You&rsquo;ve now built a general random selector that respects
+    any probability distribution. This is a core building block.</p>
+    <p>Next: where do these probabilities come from in the real world?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 4: Generating Text with an LLM                     -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part4">
+        <h2>Part 4: Generating Text with an LLM</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Use an LLM API to get next-token probabilities for a prompt.
+  Write <code>generate_greedy(prompt, n)</code> that always picks the
+  highest-probability token to build a sentence word by word.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part5">Skip to Part 5</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>A large language model (LLM) does something remarkably simple:</p>
+  <p>Given some text, it predicts <strong>probabilities for the next token</strong>.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>For example, given <code>"The cat sat on the"</code>, an LLM might output:</p>
+    <table>
+      <tr><th>Token</th><th>Probability</th></tr>
+      <tr><td>mat</td><td>0.35</td></tr>
+      <tr><td>floor</td><td>0.20</td></tr>
+      <tr><td>roof</td><td>0.15</td></tr>
+      <tr><td>bed</td><td>0.10</td></tr>
+      <tr><td>table</td><td>0.08</td></tr>
+      <tr><td>&hellip;</td><td>&hellip;</td></tr>
+    </table>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The simplest strategy: <strong>always pick the most probable token</strong>.
+    This is called <strong>greedy decoding</strong>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s simulate an LLM with a simple dictionary. In practice
+  you&rsquo;d call an API &mdash; but this lets us focus on the algorithm:</p>
+<pre><code>def fake_llm(prompt):
+    """Return a dict of {token: probability} for the next word."""
+    words = prompt.lower().split()
+    last = words[-1] if words else ""
+
+    table = {
+        "the": {"cat": 0.30, "dog": 0.20, "bird": 0.10,
+                "sky": 0.10, "mat": 0.08, "house": 0.07,
+                "tree": 0.05, "rain": 0.05, "sun": 0.05},
+        "cat": {"sat": 0.40, "slept": 0.20, "ran": 0.15,
+                "purred": 0.10, "jumped": 0.10, "ate": 0.05},
+        "sat": {"on": 0.50, "down": 0.20, "quietly": 0.15,
+                "still": 0.10, "up": 0.05},
+        "on":  {"the": 0.60, "a": 0.20, "top": 0.10,
+                "my": 0.05, "its": 0.05},
+    }
+    if last in table:
+        return table[last]
+    # Fallback: uniform over some words
+    fallback = ["the", "a", "and", "is", "was", "it"]
+    return {w: 1/len(fallback) for w in fallback}</code></pre>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Try it:</p>
+<pre><code>probs = fake_llm("the cat sat on the")
+print(probs)
+# {'cat': 0.30, 'dog': 0.20, 'bird': 0.10, ...}</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now write greedy generation &mdash; always pick the token with
+    the <strong>highest probability</strong>:</p>
+  </div>
+  <div class="code-stack fragment" style="min-height:7em;" data-fragment-index="1">
+    <div class="code-step fragment fade-out" data-fragment-index="3">
+<pre><code>def generate_greedy(prompt, n_tokens):
+    """Generate n tokens by always picking the most probable."""
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        # Pick the token with the highest probability
+        # YOUR CODE HERE
+        pass
+    return text</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="3">
+<pre><code>def generate_greedy(prompt, n_tokens):
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        best_token = max(probs, key=probs.get)
+        text = text + " " + best_token
+    return text</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>Hint: <code>max(probs, key=probs.get)</code> returns the key with the
+    highest value.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Test it:</p>
+<pre><code>print(generate_greedy("the", 6))
+# "the cat sat on the cat sat"</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>It works! But notice a problem &mdash; greedy decoding often gets
+    <strong>stuck in loops</strong>. It always picks the same &ldquo;best&rdquo;
+    token, so it repeats itself.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Also, it&rsquo;s <em>boring</em>. Real language is varied. &ldquo;The cat
+    sat on the mat&rdquo; is perfectly fine, but so is &ldquo;The cat sat on
+    the roof.&rdquo;</p>
+    <p>What if we added some <strong>randomness</strong>?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 5: Sampling with Weighted Choices                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part5">
+        <h2>Part 5: Sampling with Weighted Choices</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>generate_sample(prompt, n)</code> that picks each next token
+  <em>randomly</em> according to the LLM&rsquo;s probabilities (using your
+  <code>weighted_choice</code>).</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part6">Skip to Part 6</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Instead of always picking the best token, we <strong>sample</strong> from the
+  probability distribution. The most likely token still gets picked
+  most often, but less likely tokens have a chance too.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>We already built the tool for this! Remember <code>weighted_choice</code>?</p>
+    <p>We just need to feed it the LLM&rsquo;s tokens and probabilities.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write it:</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def generate_sample(prompt, n_tokens):
+    """Generate n tokens by sampling from the probability distribution."""
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        tokens = list(probs.keys())
+        probabilities = list(probs.values())
+        # Use weighted_choice to pick a token
+        # YOUR CODE HERE
+        pass
+    return text</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def generate_sample(prompt, n_tokens):
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        tokens = list(probs.keys())
+        probabilities = list(probs.values())
+        next_token = weighted_choice(tokens, probabilities)
+        text = text + " " + next_token
+    return text</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: extract tokens and probabilities as separate lists from the dict.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: call <code>weighted_choice(tokens, probabilities)</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Run it several times and compare with greedy:</p>
+<pre><code>print("Greedy:", generate_greedy("the", 6))
+print()
+for i in range(5):
+    print(f"Sample {i+1}:", generate_sample("the", 6))</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>The greedy output is always the same. But each sampled sentence
+    is <strong>different</strong> &mdash; sometimes surprising, sometimes creative.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>But there&rsquo;s a problem: sometimes sampling picks very unlikely
+    tokens and produces nonsense.</p>
+    <p>Can we control <em>how random</em> the sampling is?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 6: Temperature                                      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part6">
+        <h2>Part 6: Temperature</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>softmax_with_temperature(values, T)</code> where $T$ controls
+  how &ldquo;sharp&rdquo; the distribution is. Test with $T = 0.1$, $T = 1.0$,
+  and $T = 5.0$. Then use it to generate text.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part7">Skip to Part 7</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>We want a knob that controls randomness:</p>
+  <ul>
+    <li><strong>Low randomness</strong>: almost always pick the best token (like greedy)</li>
+    <li><strong>High randomness</strong>: pick more adventurously from unlikely tokens</li>
+  </ul>
+  <div class="fragment" data-fragment-index="0">
+    <p>Remember softmax from the classification chapter?</p>
+    <p style="text-align:center;">$\text{softmax}(x_i) = \dfrac{e^{x_i}}{\sum_j e^{x_j}}$</p>
+    <p>It makes big values bigger and small values smaller.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>What if we divided the values by a number $T$ <em>before</em> applying softmax?</p>
+    <p style="text-align:center;">$\text{softmax}(x_i / T) = \dfrac{e^{x_i/T}}{\sum_j e^{x_j/T}}$</p>
+    <p>What happens when $T$ is very small? Very large?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Before coding &mdash; think through these cases:</p>
+  <p>Suppose values are $(2, 5, 1)$.</p>
+  <ul>
+    <li class="fragment" data-fragment-index="0"><strong>$T = 1$:</strong> values become $(2, 5, 1)$ &mdash; normal softmax.</li>
+    <li class="fragment" data-fragment-index="1"><strong>$T = 0.1$:</strong> values become $(20, 50, 10)$ &mdash; huge differences!
+    Softmax will put almost all weight on the largest value.</li>
+    <li class="fragment" data-fragment-index="2"><strong>$T = 100$:</strong> values become $(0.02, 0.05, 0.01)$ &mdash; tiny differences.
+    Softmax will make them nearly equal (uniform).</li>
+  </ul>
+  <div class="fragment" data-fragment-index="3">
+    <p>So $T$ is a &ldquo;temperature&rdquo; knob:</p>
+    <ul>
+      <li>$T \to 0$: &ldquo;frozen&rdquo; &mdash; always pick the best (greedy)</li>
+      <li>$T = 1$: standard sampling</li>
+      <li>$T \to \infty$: &ldquo;melted&rdquo; &mdash; pick uniformly at random</li>
+    </ul>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write softmax with temperature:</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>import math
+
+def softmax_with_temp(values, T=1.0):
+    # Divide each value by T, then apply softmax
+    # YOUR CODE HERE
+    pass
+
+# Test: compare T=0.1, T=1.0, T=5.0
+vals = [2, 5, 1]
+print("T=0.1:", softmax_with_temp(vals, 0.1))
+print("T=1.0:", softmax_with_temp(vals, 1.0))
+print("T=5.0:", softmax_with_temp(vals, 5.0))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>import math
+
+def softmax_with_temp(values, T=1.0):
+    scaled = [v / T for v in values]
+    max_s = max(scaled)  # for numerical stability
+    exps = [math.exp(v - max_s) for v in scaled]
+    total = sum(exps)
+    return [e / total for e in exps]
+
+vals = [2, 5, 1]
+print("T=0.1:", softmax_with_temp(vals, 0.1))
+# [~0.000, ~1.000, ~0.000] — almost greedy
+print("T=1.0:", softmax_with_temp(vals, 1.0))
+# [0.047, 0.936, 0.017] — standard
+print("T=5.0:", softmax_with_temp(vals, 5.0))
+# [0.279, 0.443, 0.279] — nearly uniform</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: divide each value by $T$ first, then apply the
+    normal softmax formula.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: subtract the max before exponentiating to avoid overflow.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now use temperature in text generation. We need to convert the LLM&rsquo;s
+  probabilities to &ldquo;logits&rdquo; (log-probabilities) first, then
+  apply temperature, then sample:</p>
+  <div class="code-stack" style="min-height:9em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def generate_with_temp(prompt, n_tokens, T=1.0):
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        tokens = list(probs.keys())
+        # Convert probabilities to log-probs (logits)
+        logits = [math.log(p) for p in probs.values()]
+        # Apply softmax with temperature
+        # Sample using weighted_choice
+        # YOUR CODE HERE
+        pass
+    return text</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def generate_with_temp(prompt, n_tokens, T=1.0):
+    text = prompt
+    for _ in range(n_tokens):
+        probs = fake_llm(text)
+        tokens = list(probs.keys())
+        logits = [math.log(p) for p in probs.values()]
+        new_probs = softmax_with_temp(logits, T)
+        next_token = weighted_choice(tokens, new_probs)
+        text = text + " " + next_token
+    return text</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: use <code>math.log(p)</code> to convert probabilities to logits.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: apply <code>softmax_with_temp(logits, T)</code>, then sample.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Compare different temperatures:</p>
+<pre><code>for T in [0.1, 0.5, 1.0, 2.0, 5.0]:
+    results = [generate_with_temp("the", 5, T) for _ in range(3)]
+    print(f"\nT={T}:")
+    for r in results:
+        print(f"  {r}")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>What do you notice?</p>
+    <ul>
+      <li>$T = 0.1$: almost identical each time (like greedy)</li>
+      <li>$T = 1.0$: varied but sensible</li>
+      <li>$T = 5.0$: very random, often nonsensical</li>
+    </ul>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Temperature gives us a smooth dial between &ldquo;safe and repetitive&rdquo;
+    and &ldquo;creative and risky.&rdquo;</p>
+    <p>But there&rsquo;s still a deeper problem&hellip;</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 7: The Problem with Greedy Choices                  -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part7">
+        <h2>Part 7: The Problem with Greedy Choices</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Instead of keeping just one candidate sentence, keep the <strong>top $k$</strong>
+  candidates at each step, expanding each one with all possible next tokens,
+  then keeping only the best $k$ overall. Write <code>beam_search(prompt, n, k)</code>.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/ending">Skip to the end</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Consider this scenario. The LLM gives these probabilities:</p>
+  <table>
+    <tr><th></th><th>Token A (0.6)</th><th>Token B (0.4)</th></tr>
+    <tr><td>Then next:</td><td>A&rarr;X (0.3)</td><td>B&rarr;Y (0.9)</td></tr>
+    <tr><td>Total:</td><td>$0.6 \times 0.3 = 0.18$</td><td>$0.4 \times 0.9 = 0.36$</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Greedy picks A first (0.6 &gt; 0.4). But the path through B is
+    <strong>twice as good</strong> overall (0.36 vs 0.18)!</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The locally best choice isn&rsquo;t always the globally best path.</p>
+    <p>How do we fix this without trying <em>every</em> possible sequence
+    (which grows exponentially)?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>The idea: instead of keeping <strong>one</strong> candidate at each step,
+  keep the <strong>top $k$</strong> best candidates.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>At each step:</p>
+    <ol>
+      <li>Take your $k$ current candidates.</li>
+      <li>For <em>each</em> candidate, try <em>all</em> possible next tokens.</li>
+      <li>Score every extension: candidate&rsquo;s score $\times$ new token&rsquo;s probability.</li>
+      <li>Keep only the top $k$ overall.</li>
+    </ol>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>It&rsquo;s like exploring a tree, but instead of one path (greedy)
+    or all paths (exhaustive), you keep <strong>$k$ beams of light</strong>
+    shining through the most promising branches.</p>
+    <p>This is called <strong>beam search</strong>, and $k$ is the <strong>beam width</strong>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s trace through an example with beam width $k = 2$.</p>
+  <p>Start: <code>"the"</code> (score = 1.0)</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Step 1:</strong> expand &ldquo;the&rdquo; with all next tokens:</p>
+    <table style="font-size:0.85em;">
+      <tr><td>&ldquo;the cat&rdquo;</td><td>$1.0 \times 0.30 = 0.30$</td></tr>
+      <tr><td>&ldquo;the dog&rdquo;</td><td>$1.0 \times 0.20 = 0.20$</td></tr>
+      <tr><td>&ldquo;the bird&rdquo;</td><td>$1.0 \times 0.10 = 0.10$</td></tr>
+      <tr><td>&hellip;</td><td>&hellip;</td></tr>
+    </table>
+    <p>Keep top 2: <strong>&ldquo;the cat&rdquo; (0.30)</strong> and <strong>&ldquo;the dog&rdquo; (0.20)</strong></p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p><strong>Step 2:</strong> expand <em>both</em> candidates, score all extensions,
+    keep top 2 again. The beam explores two promising paths in parallel!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write beam search step by step. First, the core loop:</p>
+  <div class="code-stack" style="min-height:14em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def beam_search(prompt, n_tokens, beam_width=3):
+    # Each beam is (text, score)
+    beams = [(prompt, 1.0)]
+
+    for step in range(n_tokens):
+        all_candidates = []
+        for text, score in beams:
+            probs = fake_llm(text)
+            for token, p in probs.items():
+                # Create new candidate: extend text, multiply score
+                # YOUR CODE HERE
+                pass
+
+        # Sort by score (highest first) and keep top beam_width
+        # YOUR CODE HERE
+        beams = []
+
+    return beams</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def beam_search(prompt, n_tokens, beam_width=3):
+    beams = [(prompt, 1.0)]
+
+    for step in range(n_tokens):
+        all_candidates = []
+        for text, score in beams:
+            probs = fake_llm(text)
+            for token, p in probs.items():
+                new_text = text + " " + token
+                new_score = score * p
+                all_candidates.append((new_text, new_score))
+
+        all_candidates.sort(key=lambda x: x[1], reverse=True)
+        beams = all_candidates[:beam_width]
+
+    return beams</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: for each candidate, loop through all next tokens and compute
+    <code>new_score = score * p</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: sort all candidates by score descending, then slice <code>[:beam_width]</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Test it:</p>
+<pre><code>results = beam_search("the", 4, beam_width=3)
+print("Top 3 sequences:")
+for text, score in results:
+    print(f"  {score:.6f}  {text}")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Compare with greedy:</p>
+<pre><code>print("\nGreedy:", generate_greedy("the", 4))
+print("Beam #1:", results[0][0])</code></pre>
+    <p>Are they the same? If not, beam search found a better overall path
+    that greedy missed!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Let&rsquo;s visualize what beam search does at each step:</p>
+<pre><code>def beam_search_verbose(prompt, n_tokens, beam_width=3):
+    beams = [(prompt, 1.0)]
+    for step in range(n_tokens):
+        print(f"\n--- Step {step + 1} ---")
+        print(f"Current beams:")
+        for text, score in beams:
+            print(f"  [{score:.4f}] {text}")
+        all_candidates = []
+        for text, score in beams:
+            probs = fake_llm(text)
+            for token, p in probs.items():
+                all_candidates.append((text + " " + token, score * p))
+        all_candidates.sort(key=lambda x: x[1], reverse=True)
+        beams = all_candidates[:beam_width]
+        print(f"Kept top {beam_width}:")
+        for text, score in beams:
+            print(f"  [{score:.4f}] {text}")
+    return beams
+
+beam_search_verbose("the", 3, beam_width=3)</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Watch how the beams branch out, compete, and get pruned at each step.
+    Some early leaders get overtaken!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Experiment with different beam widths:</p>
+<pre><code>for k in [1, 2, 3, 5, 10]:
+    results = beam_search("the", 5, beam_width=k)
+    best = results[0]
+    print(f"k={k:2d}: [{best[1]:.6f}] {best[0]}")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>What do you notice?</p>
+    <ul>
+      <li>$k = 1$ is exactly greedy decoding!</li>
+      <li>Larger $k$ finds better (higher-scoring) sequences.</li>
+      <li>But the improvement gets smaller as $k$ grows.</li>
+    </ul>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>In practice, $k = 3$ to $k = 10$ works well.
+    The computational cost grows linearly with $k$, so it&rsquo;s a
+    good trade-off between quality and speed.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>One refinement &mdash; using <strong>log-probabilities</strong> instead of raw
+  probabilities. Multiplying many small probabilities leads to tiny numbers
+  that can underflow. Adding log-probabilities is more stable:</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def beam_search_log(prompt, n_tokens, beam_width=3):
+    # Use log-probability scores instead of raw probabilities
+    beams = [(prompt, 0.0)]  # log(1.0) = 0
+
+    for step in range(n_tokens):
+        all_candidates = []
+        for text, log_score in beams:
+            probs = fake_llm(text)
+            for token, p in probs.items():
+                # Add log(p) instead of multiplying p
+                # YOUR CODE HERE
+                pass
+        all_candidates.sort(key=lambda x: x[1], reverse=True)
+        beams = all_candidates[:beam_width]
+    return beams</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def beam_search_log(prompt, n_tokens, beam_width=3):
+    beams = [(prompt, 0.0)]  # log(1.0) = 0
+
+    for step in range(n_tokens):
+        all_candidates = []
+        for text, log_score in beams:
+            probs = fake_llm(text)
+            for token, p in probs.items():
+                new_text = text + " " + token
+                new_log_score = log_score + math.log(p)
+                all_candidates.append((new_text, new_log_score))
+        all_candidates.sort(key=lambda x: x[1], reverse=True)
+        beams = all_candidates[:beam_width]
+    return beams</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: start with score <code>0.0</code> (since $\log(1) = 0$), and
+    <em>add</em> <code>math.log(p)</code> at each step.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  ENDING                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="ending">
+        <h2>What You Just Invented</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <table>
+    <tr><th>Your function</th><th>Standard name</th></tr>
+    <tr><td><code>fair_coin()</code></td><td>Bernoulli trial ($p = 0.5$)</td></tr>
+    <tr><td><code>biased_coin(p)</code></td><td>Bernoulli trial (general)</td></tr>
+    <tr><td><code>weighted_choice(items, probs)</code></td><td>Categorical sampling</td></tr>
+    <tr><td><code>generate_greedy</code></td><td>Greedy decoding</td></tr>
+    <tr><td><code>generate_sample</code></td><td>Ancestral / random sampling</td></tr>
+    <tr><td><code>softmax_with_temp</code></td><td>Temperature-scaled softmax</td></tr>
+    <tr><td><code>generate_with_temp</code></td><td>Temperature sampling</td></tr>
+    <tr><td><code>beam_search</code></td><td>Beam search</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>You started by flipping a fair coin. You built biased coins, then
+    generalized to weighted selection. You used that to sample text from
+    an LLM, added temperature control, and finally invented beam search
+    to find the best <em>overall</em> sequence. <strong>All from scratch.</strong></p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>Why does greedy decoding get stuck in loops? Can you think of
+    a concrete example where it fails?</li>
+    <li>What does temperature = 0 mean in practice? What about
+    temperature = infinity?</li>
+    <li>Beam search with $k = 1$ is exactly greedy decoding. Why?</li>
+    <li>If you double the beam width, do you always get a better result?
+    What&rsquo;s the trade-off?</li>
+    <li>Real LLMs combine beam search with temperature, top-$k$ filtering,
+    and top-$p$ (nucleus) sampling. How would you combine temperature
+    with beam search?</li>
+  </ol>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  INDEX                                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="slide-index">
+        <h2>Index</h2>
+        <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
+          <ol style="line-height:2;">
+            <li><a href="#/part1">Fair Coin Toss</a></li>
+            <li><a href="#/part2">Biased Coin</a></li>
+            <li><a href="#/part3">Weighted Random Selection</a></li>
+            <li><a href="#/part4">Generating Text with an LLM</a></li>
+            <li><a href="#/part5">Sampling with Weighted Choices</a></li>
+            <li><a href="#/part6">Temperature</a></li>
+            <li><a href="#/part7">The Problem with Greedy Choices</a></li>
+          </ol>
+        </div>
+      </section>
+
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      progress: true,
+      transition: 'slide',
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
+      minScale: 0.1,
+      maxScale: 2.0,
+    });
+    function updateProgress() {
+      var total = Reveal.getTotalSlides();
+      var current = Reveal.getSlidePastCount() + 1;
+      var pct = Math.min(100, (current / total) * 100);
+      document.getElementById('top-progress-bar').style.width = pct + '%';
+    }
+    Reveal.on('slidechanged', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
+  </script>
+<div class="chapter-footer">
+
+  <p><em>You started by flipping a fair coin. You built biased coins, weighted
+  selection, text sampling, temperature control, and finally beam search &mdash;
+  all from scratch.</em></p>
+
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a>
+  &middot; <a href="../index.html">Back to all chapters</a></p>
+  <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
+</div>
+
+<script src="narration-player.js"></script>
+</body>
+</html>
