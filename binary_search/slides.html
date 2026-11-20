@@ -173,10 +173,10 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <section>
         <div class="slide-content">
   <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Without using <code>math.log</code>, <code>**</code> with fractional exponents,
-  or any built-in root/log function, write <code>nth_root(x, n)</code> and
-  <code>log_base(x, b)</code> using only <strong>binary search</strong>.
-  Both should be accurate to 6 decimal places.</p>
+  <p>Write <code>find_first(arr, x)</code> and <code>find_last(arr, x)</code>
+  that find the first/last occurrence of <code>x</code> in a sorted array
+  using binary search (no linear scan). Then write
+  <code>find_min_convex(arr)</code> for a valley-shaped array.</p>
   <p style="font-size:0.85em; color:#888;">Already got it?
   <a href="#/ending">Skip to the end</a>.</p>
 </div>
@@ -230,450 +230,21 @@ print(count_halvings(1))     # 0</code></pre>
   to keep. This works whenever the function is <strong>monotone</strong>
   &mdash; always increasing or always decreasing.</p>
   <div class="fragment" data-fragment-index="0">
-    <p>We will use this one idea to compute square roots, cube roots,
-    nth roots, and logarithms &mdash; without any built-in math
-    functions.</p>
+    <p>In the <a href="../square_root/slides.html">Finding Square Roots</a>
+    and <a href="../logarithm/slides.html">Logarithms</a> chapters, you
+    already used this idea to compute roots and logs on
+    <strong>continuous</strong> ranges. Now apply it to
+    <strong>sorted arrays</strong>.</p>
   </div>
 </div>
       </section>
 
 
       <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 2: Square Root                                      -->
+      <!--  PART 2: Binary Search on Sorted Arrays                   -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part2">
-        <h2>Part 2: Square Root via Binary Search</h2>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>sqrt_binary_search(n, precision)</code> that finds
-  <code>x</code> where <code>x * x &asymp; n</code>, without using
-  <code>math.sqrt</code> or <code>** 0.5</code>.</p>
-  <p style="font-size:0.85em; color:#888;">Got it?
-  <a href="#/part3">Skip to Part 3</a>.</p>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>The square root of <code>n</code> is the number <code>x</code>
-  where <code>x * x = n</code>. For sqrt(25), you know the answer is
-  between 0 and 25.</p>
-  <p><strong>Before coding:</strong> suppose you guess the middle,
-  12.5. Since $12.5^2 = 156.25 &gt; 25$, the answer must be in
-  [0, 12.5]. Now guess 6.25 &mdash; $6.25^2 = 39.06 &gt; 25$, so
-  keep [0, 6.25]. Each guess halves the range.</p>
-  <div class="code-stack fragment" style="min-height:17em;" data-fragment-index="0">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
-<pre><code>def sqrt_binary_search(n, precision):
-    # Find x such that x * x ≈ n
-    # low = 0, high = max(1, n)
-    # Stop when abs(mid*mid - n) < precision
-    # YOUR CODE HERE
-    pass
-
-print(sqrt_binary_search(25, 0.0001))   # ≈ 5.0
-print(sqrt_binary_search(2, 0.0001))    # ≈ 1.4142
-print(sqrt_binary_search(0.25, 0.0001)) # ≈ 0.5</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="2">
-<pre><code>def sqrt_binary_search(n, precision):
-    low = 0
-    high = max(1, n)
-    while True:
-        mid = (low + high) / 2
-        if abs(mid * mid - n) < precision:
-            return mid
-        if mid * mid < n:
-            low = mid
-        else:
-            high = mid
-
-print(sqrt_binary_search(25, 0.0001))   # ≈ 5.0
-print(sqrt_binary_search(2, 0.0001))    # ≈ 1.4142
-print(sqrt_binary_search(0.25, 0.0001)) # ≈ 0.5</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint: if <code>mid * mid &lt; n</code>, move <code>low = mid</code>;
-    if <code>mid * mid &gt; n</code>, move <code>high = mid</code>.
-    Use <code>high = max(1, n)</code> so sqrt(0.25) works.</p>
-  </div>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p><strong>Quick Check:</strong> Why do we use <code>high = max(1, n)</code>
-  instead of just <code>high = n</code>?</p>
-  <p><strong>A.</strong> To avoid division by zero &nbsp;&nbsp;
-  <strong>B.</strong> Because sqrt(0.25) = 0.5, which is <em>larger</em>
-  than 0.25 &mdash; so the answer is outside [0, n] &nbsp;&nbsp;
-  <strong>C.</strong> To make the loop faster &nbsp;&nbsp;
-  <strong>D.</strong> It doesn&rsquo;t matter</p>
-  <div class="fragment" data-fragment-index="0">
-    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
-    <strong>Answer: B.</strong> When n &lt; 1, the square root is
-    <em>bigger</em> than n. For example, $\sqrt{0.25} = 0.5$. Using
-    <code>high = n = 0.25</code> would exclude the answer.</p>
-  </div>
-</div>
-      </section>
-
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 3: Cube Root                                        -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part3">
-        <h2>Part 3: Cube Root via Binary Search</h2>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>cuberoot_binary_search(n, precision)</code> that handles
-  negative numbers and values between -1 and 1.</p>
-  <p style="font-size:0.85em; color:#888;">Got it?
-  <a href="#/part4">Skip to Part 4</a>.</p>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>The cube root is trickier than the square root. Two new wrinkles:</p>
-  <ul>
-    <li><strong>Negative inputs:</strong> cuberoot(-8) = -2, because
-    $(-2)^3 = -8$. Work on <code>abs(n)</code>, then negate.</li>
-    <li><strong>|n| &lt; 1:</strong> cuberoot(0.001) = 0.1, which is
-    <em>larger</em> than 0.001. Use <code>high = 1</code> for these.</li>
-  </ul>
-  <div class="code-stack fragment" style="min-height:21em;" data-fragment-index="0">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
-<pre><code>def cuberoot_binary_search(n, precision):
-    # Handle negatives: work on abs(n), negate at end
-    # Handle |n| < 1: use high = 1
-    # Check: mid**3 vs abs(n)
-    # YOUR CODE HERE
-    pass
-
-print(cuberoot_binary_search(27, 1e-6))    # ≈ 3.0
-print(cuberoot_binary_search(-64, 1e-6))   # ≈ -4.0
-print(cuberoot_binary_search(0.001, 1e-6)) # ≈ 0.1</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="2">
-<pre><code>def cuberoot_binary_search(n, precision):
-    sign = 1 if n >= 0 else -1
-    val = abs(n)
-    low = 0
-    high = max(1, val)
-    while True:
-        mid = (low + high) / 2
-        cube = mid * mid * mid
-        if abs(cube - val) < precision:
-            return sign * mid
-        if cube < val:
-            low = mid
-        else:
-            high = mid
-
-print(cuberoot_binary_search(27, 1e-6))    # ≈ 3.0
-print(cuberoot_binary_search(-64, 1e-6))   # ≈ -4.0
-print(cuberoot_binary_search(0.001, 1e-6)) # ≈ 0.1</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint: save the sign, binary-search on <code>abs(n)</code> using the
-    same loop as sqrt (but checking <code>mid**3</code>), then multiply
-    the result by the sign.</p>
-  </div>
-</div>
-      </section>
-
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 4: Nth Root                                         -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part4">
-        <h2>Part 4: Nth Root &mdash; Generalise</h2>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>nth_root(x, n)</code> that finds <code>r</code> where
-  <code>r**n &asymp; x</code>, for any positive x and integer n &ge; 2.</p>
-  <p style="font-size:0.85em; color:#888;">Got it?
-  <a href="#/part5">Skip to Part 5</a>.</p>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>Look at what you built side by side:</p>
-  <table>
-    <tr><th>Function</th><th>Check</th></tr>
-    <tr><td>sqrt</td><td><code>mid * mid</code></td></tr>
-    <tr><td>cuberoot</td><td><code>mid * mid * mid</code></td></tr>
-    <tr><td>nth root</td><td><code>mid ** n</code></td></tr>
-  </table>
-  <p>The <em>only</em> thing that changes is the check function.
-  Everything else &mdash; the loop, the bracket, the halving &mdash;
-  stays the same.</p>
-  <div class="code-stack fragment" style="min-height:17em;" data-fragment-index="0">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
-<pre><code>def nth_root(x, n, precision=1e-9):
-    # Find r such that r**n ≈ x
-    # Assume x >= 0
-    # YOUR CODE HERE
-    pass
-
-print(nth_root(81, 4))    # ≈ 3.0
-print(nth_root(32, 5))    # ≈ 2.0
-print(nth_root(0.25, 2))  # ≈ 0.5
-print(nth_root(1024, 10)) # ≈ 2.0</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="2">
-<pre><code>def nth_root(x, n, precision=1e-9):
-    low = 0
-    high = max(1, x)
-    while True:
-        mid = (low + high) / 2
-        val = mid ** n
-        if abs(val - x) < precision:
-            return mid
-        if val < x:
-            low = mid
-        else:
-            high = mid
-
-print(nth_root(81, 4))    # ≈ 3.0
-print(nth_root(32, 5))    # ≈ 2.0
-print(nth_root(0.25, 2))  # ≈ 0.5</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint: same structure as sqrt, but replace <code>mid * mid</code>
-    with <code>mid ** n</code>. Use <code>high = max(1, x)</code>
-    to handle x &lt; 1.</p>
-  </div>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>Verify your function matches Python&rsquo;s built-in:</p>
-<pre><code># Python computes nth roots with x ** (1/n)
-import math
-for x in [81, 32, 0.25, 1024, 7]:
-    for n in [2, 3, 4, 5]:
-        yours = nth_root(x, n)
-        theirs = x ** (1/n)
-        assert abs(yours - theirs) < 1e-6, f"Mismatch: {x}, {n}"
-print("All match!")</code></pre>
-  <div class="fragment" data-fragment-index="0">
-    <p>Three functions &mdash; sqrt, cuberoot, nth_root &mdash; and they
-    are all the same algorithm. The binary search structure is universal;
-    only the <strong>check function</strong> changes.</p>
-  </div>
-</div>
-      </section>
-
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 5: Log Base 10                                      -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part5">
-        <h2>Part 5: Log Base 10 &mdash; Flipping the Problem</h2>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>log10_binary_search(x)</code> that finds <code>y</code>
-  where <code>10**y &asymp; x</code>. No <code>math.log</code> allowed.</p>
-  <p style="font-size:0.85em; color:#888;">Got it?
-  <a href="#/part6">Skip to Part 6</a>.</p>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>So far you searched for a <strong>value</strong>: find <code>x</code>
-  where <code>x**n = target</code>. Now flip the problem: search for an
-  <strong>exponent</strong> <code>y</code> where <code>10**y = x</code>.</p>
-  <p>$$\log_{10}(x) = y \quad \Leftrightarrow \quad 10^y = x$$</p>
-  <p><strong>Before coding:</strong> $f(y) = 10^y$ is strictly increasing.
-  If <code>10**mid &lt; x</code>, the true exponent must be larger.
-  But what should the initial <code>[low, high]</code> be?</p>
-  <div class="fragment" data-fragment-index="0">
-    <p>The exponent could be any real number. Start with
-    <code>[0, 1]</code> and <em>expand</em>:</p>
-    <ul>
-      <li>If $x \ge 1$: double <code>high</code> until
-      <code>10**high &ge; x</code></li>
-      <li>If $x &lt; 1$: the exponent is negative &mdash; keep doubling
-      the magnitude of <code>low</code> until
-      <code>10**low &le; x</code></li>
-    </ul>
-  </div>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <div class="code-stack" style="min-height:23em;">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
-<pre><code>def log10_binary_search(x, tol=1e-7):
-    # Find y such that 10**y ≈ x
-    # Step 1: find bracket [low, high]
-    # Step 2: binary search the exponent
-    # YOUR CODE HERE
-    pass
-
-print(log10_binary_search(100))    # ≈ 2.0
-print(log10_binary_search(1000))   # ≈ 3.0
-print(log10_binary_search(0.01))   # ≈ -2.0
-print(log10_binary_search(0.001))  # ≈ -3.0
-print(log10_binary_search(1))      # ≈ 0.0</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="2">
-<pre><code>def log10_binary_search(x, tol=1e-7):
-    low, high = 0, 1
-    if x >= 1:
-        while 10 ** high < x:
-            high *= 2
-    else:
-        low = -1
-        while 10 ** low > x:
-            low *= 2
-    while high - low > 1e-12:
-        mid = (low + high) / 2
-        if 10 ** mid < x:
-            low = mid
-        else:
-            high = mid
-    return (low + high) / 2
-
-print(log10_binary_search(100))    # ≈ 2.0
-print(log10_binary_search(0.01))   # ≈ -2.0</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint 1: expand the bracket by doubling. For x &ge; 1: start
-    <code>high = 1</code>, keep <code>high *= 2</code> until
-    <code>10**high &ge; x</code>.</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint 2: once bracketed, the loop is the same as before: compare
-    <code>10**mid</code> vs <code>x</code>. Stop when
-    <code>high - low</code> is tiny.</p>
-  </div>
-</div>
-      </section>
-
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 6: Log Base N                                       -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part6">
-        <h2>Part 6: Log Base N &mdash; Any Base</h2>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>log_base_n(x, n)</code> for any base n, including
-  bases between 0 and 1 (where the function is <em>decreasing</em>).
-  Raise <code>ValueError</code> for invalid inputs.</p>
-  <p style="font-size:0.85em; color:#888;">Got it?
-  <a href="#/part7">Skip to Part 7</a>.</p>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <p>Generalise from base 10 to any base. When <code>n &gt; 1</code>,
-  $f(y) = n^y$ is increasing &mdash; same as log10. But when
-  <code>0 &lt; n &lt; 1</code>, it&rsquo;s <strong>decreasing</strong>.</p>
-  <p><strong>Before coding:</strong> verify by hand:
-  $\log_5(0.04) = -2$ because $5^{-2} = 1/25 = 0.04$.
-  With base 0.5: $\log_{0.5}(8) = -3$ because $0.5^{-3} = 8$.</p>
-  <div class="code-stack fragment" style="min-height:25em;" data-fragment-index="0">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
-<pre><code>def log_base_n(x, n, tol=1e-7):
-    # Find y such that n**y ≈ x
-    # Raise ValueError if x <= 0, n <= 0, or n == 1
-    # Handle n > 1 (increasing) and 0 < n < 1 (decreasing)
-    # YOUR CODE HERE
-    pass
-
-print(log_base_n(8, 2))      # ≈ 3.0
-print(log_base_n(0.04, 5))   # ≈ -2.0
-print(log_base_n(8, 0.5))    # ≈ -3.0
-print(log_base_n(1000, 10))  # ≈ 3.0</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="2">
-<pre><code>def log_base_n(x, n, tol=1e-7):
-    if x <= 0 or n <= 0 or n == 1:
-        raise ValueError("Invalid input")
-    low, high = 0, 1
-    if x >= 1:
-        while n ** high < x if n > 1 else n ** high > x:
-            high *= 2
-    else:
-        low = -1
-        while n ** low > x if n > 1 else n ** low < x:
-            low *= 2
-    while high - low > 1e-12:
-        mid = (low + high) / 2
-        if (n ** mid < x) == (n > 1):
-            low = mid
-        else:
-            high = mid
-    return (low + high) / 2
-
-print(log_base_n(8, 2))     # ≈ 3.0
-print(log_base_n(0.04, 5))  # ≈ -2.0</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint: when <code>n &gt; 1</code>, <code>n**mid &lt; x</code>
-    means move low up. When <code>0 &lt; n &lt; 1</code>, the function
-    is decreasing &mdash; flip the comparison.</p>
-  </div>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content">
-  <h3>Change of Base Formula</h3>
-  <p>The change of base formula says:</p>
-  <p>$$\log_b(x) = \frac{\log_a(x)}{\log_a(b)}$$</p>
-  <p>Verify with your function:</p>
-<pre><code># log2(8) using base-10 logs:
-# log10(8) / log10(2) should equal log2(8) = 3
-result = log_base_n(8, 10) / log_base_n(2, 10)
-print(result)  # ≈ 3.0
-
-# Try more: log5(625) = log10(625) / log10(5)
-result = log_base_n(625, 10) / log_base_n(5, 10)
-print(result)  # ≈ 4.0</code></pre>
-  <div class="fragment" data-fragment-index="0">
-    <p>This means you only <em>need</em> one log function (say base 10)
-    &mdash; you can compute any other base from it by dividing. That&rsquo;s
-    why most calculators only have <code>log</code> and <code>ln</code>.</p>
-  </div>
-</div>
-      </section>
-
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 7: Bonus — Sorted Arrays                           -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part7">
-        <h2>Part 7: Bonus &mdash; Binary Search on Sorted Arrays</h2>
+        <h2>Part 2: Binary Search on Sorted Arrays</h2>
       </section>
 
       <section>
@@ -954,26 +525,28 @@ print(find_min_convex([5, 3, 1, 2, 4]))  # 1</code></pre>
     <tr><td><code>count_halvings</code></td>
         <td>$\lfloor \log_2 n \rfloor$</td>
         <td>Foundation of O(log n) complexity</td></tr>
-    <tr><td><code>sqrt_binary_search</code></td>
-        <td>Bisection method (square root)</td>
-        <td>Search for value: <code>mid**2 &asymp; n</code></td></tr>
-    <tr><td><code>nth_root</code></td>
-        <td>General root finding</td>
-        <td>Same as <code>x ** (1/n)</code></td></tr>
-    <tr><td><code>log10 / log_base_n</code></td>
-        <td>Logarithm via bisection</td>
-        <td>Flip: search for <em>exponent</em></td></tr>
-    <tr><td><code>contains / find_first / find_last</code></td>
-        <td><code>bisect</code> module</td>
-        <td>Binary search on sorted arrays</td></tr>
+    <tr><td><code>contains</code></td>
+        <td>Binary search</td>
+        <td>Halve the array at each step</td></tr>
+    <tr><td><code>find_first / find_last</code></td>
+        <td><code>bisect_left / bisect_right</code></td>
+        <td>Don&rsquo;t stop at first match &mdash; keep searching</td></tr>
+    <tr><td><code>count_val</code></td>
+        <td>Range count</td>
+        <td>Two binary searches beat one linear scan</td></tr>
+    <tr><td><code>commons</code></td>
+        <td>Set intersection via search</td>
+        <td>$m \log n$ vs $m \times n$</td></tr>
     <tr><td><code>find_min_convex</code></td>
-        <td>Gradient-style search</td>
+        <td>Ternary / gradient-style search</td>
         <td>&ldquo;Walk downhill&rdquo; &mdash; same idea as gradient descent</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
     <p>One idea &mdash; <strong>halve the search space</strong> &mdash;
-    solved six different problems. Whenever a function is monotone or a
-    dataset is sorted, binary search applies.</p>
+    works on continuous ranges (see
+    <a href="../square_root/slides.html">Square Roots</a> and
+    <a href="../logarithm/slides.html">Logarithms</a>) and sorted
+    arrays alike.</p>
   </div>
 </div>
       </section>
@@ -984,14 +557,13 @@ print(find_min_convex([5, 3, 1, 2, 4]))  # 1</code></pre>
   <ol style="line-height:1.8; font-size:0.95em;">
     <li>In your own words, explain why binary search is $O(\log n)$
     instead of $O(n)$.</li>
-    <li>Why does binary search require the function to be
-    <strong>monotone</strong> (or the array to be sorted)?
+    <li>Why does binary search require the array to be sorted?
     What goes wrong if it isn&rsquo;t?</li>
-    <li>You built <code>sqrt</code>, <code>nth_root</code>, and
-    <code>log</code> from scratch. What was the <em>only</em> thing
-    that changed between them?</li>
+    <li>Why does <code>find_first</code> keep searching left after
+    finding a match, instead of returning immediately?</li>
     <li>How is <code>find_min_convex</code> different from the other
-    searches? Why does it still work?</li>
+    searches? Why does it still work even though the array isn&rsquo;t
+    sorted?</li>
   </ol>
 </div>
       </section>
@@ -1005,12 +577,7 @@ print(find_min_convex([5, 3, 1, 2, 4]))  # 1</code></pre>
         <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
             <li><a href="#/part1">The Core Idea</a></li>
-            <li><a href="#/part2">Square Root via Binary Search</a></li>
-            <li><a href="#/part3">Cube Root via Binary Search</a></li>
-            <li><a href="#/part4">Nth Root &mdash; Generalise</a></li>
-            <li><a href="#/part5">Log Base 10</a></li>
-            <li><a href="#/part6">Log Base N &mdash; Any Base</a></li>
-            <li><a href="#/part7">Bonus &mdash; Sorted Arrays</a></li>
+            <li><a href="#/part2">Binary Search on Sorted Arrays</a></li>
           </ol>
         </div>
       </section>
@@ -1050,10 +617,10 @@ print(find_min_convex([5, 3, 1, 2, 4]))  # 1</code></pre>
   </script>
 <div class="chapter-footer">
 
-  <p><em>You approximated square roots, cube roots, nth roots, and
-  logarithms &mdash; all without any built-in math functions. The single
-  idea of halving a search interval is one of the most powerful tools
-  in computer science.</em></p>
+  <p><em>You applied the halving idea to sorted arrays &mdash; from basic
+  lookup to duplicate handling, range counting, and valley-minimum
+  finding. The same principle powers databases, search engines, and
+  gradient descent.</em></p>
 
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a>
   &middot; <a href="../index.html">Back to all chapters</a></p>
