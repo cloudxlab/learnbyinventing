@@ -43,6 +43,33 @@
     #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
     #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
 
+    /* ── Question styling ──────────────────────────────────────────── */
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
+
     /* ── Mobile-friendly overrides ─────────────────────────────────── */
     @media screen and (max-width: 768px) {
       .reveal .slide-content { font-size: 0.65em; }
@@ -55,6 +82,14 @@
       .reveal th, .reveal td { padding: 0.2em 0.4em; }
       .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
       #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
     }
   </style>
 <!-- Google tag (gtag.js) -->
@@ -2118,8 +2153,8 @@ print(d2fdx(5))    # ≈ 2</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 700 : 1200,
-      height: window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700,
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
       minScale: 0.1,
       maxScale: 2.0,
     });
@@ -2259,7 +2294,15 @@ print(d2fdx(5))    # ≈ 2</code></pre>
       document.getElementById('top-progress-bar').style.width = pct + '%';
     }
     Reveal.on('slidechanged', function() { updateProgress(); setTimeout(renderPlots, 100); });
-    Reveal.on('ready', function() { updateProgress(); setTimeout(renderPlots, 300); });
+    Reveal.on('ready', function() {
+      updateProgress(); setTimeout(renderPlots, 300);
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
   </script>
 <div class="chapter-footer">
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
