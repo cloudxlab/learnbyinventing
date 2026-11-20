@@ -501,6 +501,41 @@ for _ in range(20):
 
       <section>
         <div class="slide-content">
+  <p>With a <strong>real</strong> LLM it works the same way. Here&rsquo;s
+  the equivalent using Hugging Face&rsquo;s <code>AutoTokenizer</code>
+  and <code>distilgpt2</code>:</p>
+<pre><code>from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch, torch.nn.functional as F
+
+tokenizer = AutoTokenizer.from_pretrained("distilbert/distilgpt2")
+model = AutoModelForCausalLM.from_pretrained("distilbert/distilgpt2")
+model.eval()
+
+def next_token_distribution(prompt, top_k=10):
+    inputs = tokenizer(prompt, return_tensors="pt")
+    with torch.no_grad():
+        logits = model(**inputs).logits[:, -1, :]  # last position
+        probs = F.softmax(logits, dim=-1).squeeze(0)
+    topk_probs, topk_idx = torch.topk(probs, k=top_k)
+    tokens = [tokenizer.decode([i]) for i in topk_idx]
+    return list(zip(tokens, topk_probs.tolist()))
+
+for tok, p in next_token_distribution("Machine learning is"):
+    print(f"{tok:>8}  {p:.4f}")
+#       a  0.1674
+#     the  0.0713
+#     not  0.0525  ...</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Same idea: given a prompt, the model returns probabilities for
+    every possible next token. We&rsquo;ll use our <code>fake_llm</code>
+    so you don&rsquo;t need a GPU, but every algorithm below works
+    identically with a real model.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
   <p>Try it:</p>
 <pre><code>probs = fake_llm("the cat sat on the")
 print(probs)
