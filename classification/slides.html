@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Classification &mdash; From Scaling to Cross-Entropy</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    .reveal { font-family: Georgia, serif; margin-top: 25px; }
+    .reveal .slide-content { font-size: 0.55em; }
+    .reveal h1 { font-size: 1.8em; }
+    .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
+    .reveal h3 { font-size: 1.1em; }
+    .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+    .reveal p code, .reveal li code {
+      background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
+      color: #c7254e; font-size: 0.85em;
+    }
+    .reveal pre code { background: #282c34; color: #abb2bf; padding: 0.8em; border-radius: 5px; }
+    .reveal table { font-size: 0.7em; margin: 0 auto; }
+    .reveal th { background: #f5f3ef; }
+    .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
+    .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
+    .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .chapter-footer { display: none; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .chapter-footer a { color:#888; text-decoration:none; }
+    .chapter-footer a:hover { color:#c8a96e; }
+    .reveal .progress { display: none !important; }
+    #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
+    #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
+    #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
+    #bottom-copyright a { color: #aaa; text-decoration: none; }
+    #bottom-copyright a:hover { color: #c8a96e; }
+    #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
+    #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
+
+    @media screen and (max-width: 768px) {
+      .reveal .slide-content { font-size: 0.65em; }
+      .reveal h2 { font-size: 0.95em; }
+      .reveal h3 { font-size: 0.8em; }
+      .reveal pre { font-size: 0.6em; }
+      .reveal table { font-size: 0.6em; }
+      .reveal ul, .reveal ol { font-size: 0.65em; }
+      .reveal p code, .reveal li code { font-size: 0.85em; }
+      .reveal th, .reveal td { padding: 0.2em 0.4em; }
+      .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
+      #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
+    }
+  </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9TZCPED97E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9TZCPED97E');
+</script>
+
+</head>
+<body>
+  <nav class="slides-topnav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);padding:4px 16px;font-size:13px;font-family:sans-serif;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+    <a href="../index.html" style="color:#888;text-decoration:none;">&larr; All chapters</a>
+    <span style="display:flex;gap:10px;align-items:center;">
+      <strong style="color:#333;">Slides</strong>
+    </span>
+  </nav>
+  <div id="top-progress"><div id="top-progress-bar"></div></div>
+  <div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="#" id="bug-report-link">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
+  <script>
+function detectDevice() {
+  var ua = navigator.userAgent;
+  var browser = 'Unknown';
+  if (ua.indexOf('Edg/') > -1) browser = 'Edge';
+  else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
+  else if (ua.indexOf('Chrome/') > -1) browser = 'Chrome';
+  else if (ua.indexOf('Safari/') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+  else if (ua.indexOf('Firefox/') > -1) browser = 'Firefox';
+  var os = 'Unknown';
+  if (ua.indexOf('Android') > -1) os = 'Android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+  else if (ua.indexOf('Windows') > -1) os = 'Windows';
+  else if (ua.indexOf('Mac OS') > -1) os = 'macOS';
+  else if (ua.indexOf('Linux') > -1) os = 'Linux';
+  var screen = window.screen.width + 'x' + window.screen.height;
+  var viewport = window.innerWidth + 'x' + window.innerHeight;
+  return '- Browser: ' + browser + '\n- OS: ' + os + '\n- Screen: ' + screen + ' (viewport ' + viewport + ')';
+}
+document.getElementById('bug-report-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  var idx = Reveal.getIndices();
+  var slideNum = idx.h + 1;
+  var ch = location.pathname.split('/').filter(Boolean);
+  ch = ch.length > 1 ? ch[ch.length - 2] : '';
+  var partName = '';
+  var sections = document.querySelectorAll('.slides > section');
+  for (var j = idx.h; j >= 0; j--) {
+    if (sections[j] && sections[j].id && sections[j].id.match(/^part/)) {
+      var h2 = sections[j].querySelector('h2');
+      partName = h2 ? h2.textContent : sections[j].id;
+      break;
+    }
+  }
+  var body = '**Chapter / Slide**\nChapter: ' + ch + '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href + '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n' + detectDevice();
+  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' + encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) + '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank');
+});
+</script>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Title slide -->
+      <section>
+        <h1>Classification</h1>
+        <div class="slide-content slide-title">From Scaling to Cross-Entropy &mdash; <strong>invent</strong> it yourself.</div>
+        <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
+          Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
+          or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
+          to advance &nbsp;|&nbsp;
+          <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&larr;</kbd> to go back
+        </p>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 1: Scaling Values                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part1">
+        <h2>Part 1: Scaling Values</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Given any list of numbers, write a function that returns a new list
+  where every value is non-negative and the values <strong>sum to 1</strong>.</p>
+<pre><code>def scale(values):
+    # return a list that sums to 1
+    ...</code></pre>
+<pre><code>print(scale([1, 9]))     # [0.1, 0.9]
+print(scale([10, 30]))   # [0.25, 0.75]</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part2">Skip to Part 2</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Look at these pairs of numbers and their &ldquo;scaled&rdquo; versions:</p>
+  <table>
+    <tr><th>Input</th><th>Scaled</th></tr>
+    <tr><td>$(1,\; 9)$</td><td class="fragment" data-fragment-index="0">$(0.1,\; 0.9)$</td></tr>
+    <tr><td>$(10,\; 30)$</td><td class="fragment" data-fragment-index="1">$(0.25,\; 0.75)$</td></tr>
+    <tr><td>$(1,\; 2,\; 5)$</td><td class="fragment" data-fragment-index="2">$(0.125,\; 0.25,\; 0.625)$</td></tr>
+  </table>
+  <p class="fragment" data-fragment-index="3">What rule connects the input to the scaled version?</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Before coding &mdash; answer on paper:</p>
+  <ul>
+    <li>What is $1 + 9$? What is $\frac{1}{10}$?</li>
+    <li>What is $10 + 30$? What is $\frac{10}{40}$?</li>
+    <li>What is $1 + 2 + 5$? What is $\frac{1}{8}$?</li>
+  </ul>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>The rule:</strong> divide each value by the sum of all values.</p>
+    <p style="text-align:center;">$\text{scaled}_i = \dfrac{x_i}{\sum_j x_j}$</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now write it in Python:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def scale(values):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def scale(values):
+    total = sum(values)
+    return [v / total for v in values]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: compute the <code>sum(values)</code> first, then divide each element.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+<pre><code>print(scale([1, 9]))       # [0.1, 0.9]
+print(scale([10, 30]))     # [0.25, 0.75]
+print(scale([1, 2, 5]))    # [0.125, 0.25, 0.625]
+print(sum(scale([3,7,2]))) # 1.0</code></pre>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 2: Making Big Bigger                                -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part2">
+        <h2>Part 2: Making Big Bigger</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write a function that takes any list of numbers, makes large values
+  close to 1 and small values close to 0, with the total summing to 1.</p>
+<pre><code>def decisive_scale(values):
+    # return "decisive" probabilities
+    ...</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part3">Skip to Part 3</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Try <code>scale([1, 5])</code>. What do you get?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>$[0.167,\; 0.833]$</p>
+    <p>That&rsquo;s okay, but not very <strong>decisive</strong>. If $5$ is much
+    bigger than $1$, shouldn&rsquo;t the result be closer to $(0.01,\; 0.99)$?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>How could you make big values <em>bigger</em> and small values
+    <em>smaller</em> <strong>before</strong> scaling?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Brainstorm &mdash; there is no single right answer. Try a few ideas:</p>
+  <ul>
+    <li class="fragment" data-fragment-index="0">Square them? <code>scale([1**2, 5**2])</code> = <code>scale([1, 25])</code> &rarr; $[0.038,\; 0.962]$. Better!</li>
+    <li class="fragment" data-fragment-index="1">Cube them? <code>scale([1**3, 5**3])</code> = <code>scale([1, 125])</code> &rarr; $[0.008,\; 0.992]$. Even more decisive.</li>
+    <li class="fragment" data-fragment-index="2">But what about <strong>negative</strong> numbers? $(-3)^2 = 9$ &mdash; that flips the ordering!</li>
+  </ul>
+  <div class="fragment" data-fragment-index="3">
+    <p>We need a function that is <strong>always positive</strong> and
+    <strong>grows fast</strong> for large inputs. What function does that?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>The exponential function: $e^x$.</p>
+  <ul>
+    <li>Always positive (even for negative $x$)</li>
+    <li>Grows very fast: $e^1 \approx 2.7$, $e^5 \approx 148.4$</li>
+    <li>Preserves order: if $a > b$ then $e^a > e^b$</li>
+  </ul>
+  <div class="fragment" data-fragment-index="0">
+    <p>Try it in Python:</p>
+<pre><code>from math import exp
+print(scale([exp(1), exp(5)]))
+# compare with scale([1, 5])</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>$\text{scale}([e^1, e^5]) \approx [0.018,\; 0.982]$ &mdash; much more decisive!</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 3: Softmax                                          -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part3">
+        <h2>Part 3: Softmax</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>softmax(values)</code> from scratch &mdash; it should turn
+  any list of numbers into probabilities that sum to 1, with larger
+  inputs getting much larger probabilities.</p>
+<pre><code>def softmax(values):
+    ...
+print(softmax([1, 2, 5]))  # large weight on 5</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part4">Skip to Part 4</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Putting your two discoveries together:</p>
+  <ol>
+    <li>Apply $e^x$ to each value (makes big bigger, stays positive)</li>
+    <li>Scale so they sum to 1 (divide by total)</li>
+  </ol>
+  <div class="fragment" data-fragment-index="0">
+    <p>This two-step process has a name: <strong>softmax</strong>.</p>
+    <p style="text-align:center; font-size:1.1em;">
+      $\text{softmax}(x_i) = \dfrac{e^{x_i}}{\displaystyle\sum_j e^{x_j}}$
+    </p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write it in Python:</p>
+  <div class="code-stack" style="min-height:6em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>from math import exp
+
+def softmax(values):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>from math import exp
+
+def softmax(values):
+    exps = [exp(v) for v in values]
+    total = sum(exps)
+    return [e / total for e in exps]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: first compute <code>[exp(v) for v in values]</code>,
+    then divide each by the sum.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+<pre><code>print(softmax([1, 2, 5]))
+# [0.018, 0.047, 0.935]  — 5 dominates!
+print(sum(softmax([1, 2, 5])))  # 1.0</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Try softmax on different inputs and notice the pattern:</p>
+<pre><code>print(softmax([0, 0, 0]))   # equal inputs → ?
+print(softmax([1, 1, 1]))   # still equal → ?
+print(softmax([-1, 0, 1]))  # spread out → ?
+print(softmax([10, 20]))    # big gap → ?</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Key insight: softmax turns <em>any</em> list of numbers into
+    <strong>probabilities</strong> &mdash; always positive, always sum to 1.
+    Equal inputs give equal probabilities; bigger gaps give more decisive results.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 4: Sigmoid                                          -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part4">
+        <h2>Part 4: Sigmoid</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>What if you have just <strong>one</strong> number and need to map it
+  to a value between 0 and 1? Can you derive a formula using softmax?</p>
+<pre><code>def sigmoid(x):
+    # map any number to (0, 1)
+    ...</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part5">Skip to Part 5</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Softmax needs <em>at least two</em> numbers. But what if you only have one?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Trick: make it two numbers by pairing your value $x$ with $0$.</p>
+    <p>Apply softmax to $[0,\; x]$:</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p style="text-align:center;">
+      $\text{softmax}([0,\; x]) = \left[\;\dfrac{e^0}{e^0 + e^x},\;\; \dfrac{e^x}{e^0 + e^x}\;\right]
+      = \left[\;\dfrac{1}{1 + e^x},\;\; \dfrac{e^x}{1 + e^x}\;\right]$
+    </p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>Try it: <code>softmax([0, 3])</code>. The <strong>second</strong> element is our answer.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>That second element, $\dfrac{e^x}{1 + e^x}$, can also be written as:</p>
+  <p style="text-align:center; font-size:1.2em;">
+    $\sigma(x) = \dfrac{1}{1 + e^{-x}}$
+  </p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Verify: multiply top and bottom of $\dfrac{e^x}{1 + e^x}$ by $e^{-x}$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>This function is called the <strong>sigmoid</strong>.
+    It maps any number to a value between 0 and 1.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write the sigmoid in Python:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>from math import exp
+
+def sigmoid(x):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>from math import exp
+
+def sigmoid(x):
+    return 1 / (1 + exp(-x))</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: use the formula $\sigma(x) = \frac{1}{1 + e^{-x}}$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+<pre><code>print(sigmoid(0))    # 0.5  (midpoint)
+print(sigmoid(5))    # ≈ 0.993
+print(sigmoid(-5))   # ≈ 0.007
+print(sigmoid(100))  # ≈ 1.0</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Go to <a href="https://www.desmos.com/calculator" target="_blank">desmos.com/calculator</a>
+  and plot:</p>
+  <p style="text-align:center; font-size:1.1em;">
+    $y = \dfrac{1}{1 + e^{-(ax+b)}}$
+  </p>
+  <p>Add sliders for $a$ and $b$. Try changing them.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>What does $a$ control?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>$a$ controls the <strong>steepness</strong> of the S-curve.
+    Larger $|a|$ &rarr; sharper transition.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>What does $b$ control?</p>
+  </div>
+  <div class="fragment" data-fragment-index="3">
+    <p>$b$ controls the <strong>horizontal shift</strong>.
+    The midpoint ($y = 0.5$) moves to $x = -b/a$.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 5: The Classification Problem                       -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part5">
+        <h2>Part 5: The Classification Problem</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Given a dataset of ages and &ldquo;teenager&rdquo; labels (1 or 0),
+  build a model that predicts whether a person is a teenager from their age alone.</p>
+<pre><code>ages = [5, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 30, 35, 40]
+teenager = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+# Build a model: age → probability of being a teenager</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part7">Skip to Part 7</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Here&rsquo;s the data. Run this in your notebook:</p>
+<pre><code>import numpy as np
+import matplotlib.pyplot as plt
+
+ages = np.array([5, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 25, 30, 35, 40])
+teenager = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0])
+
+plt.scatter(ages, teenager)
+plt.xlabel('Age')
+plt.ylabel('Teenager (1=yes, 0=no)')
+plt.title('Is this person a teenager?')
+plt.show()</code></pre>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Look at the scatter plot. The labels are either 0 or 1 &mdash;
+  no values in between.</p>
+  <p>Can you fit a straight line through this data?
+  Would linear regression work here?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Try it! Use <code>np.polyfit(ages, teenager, 1)</code> and plot the line.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+<pre><code>m, c = np.polyfit(ages, teenager, 1)
+plt.scatter(ages, teenager)
+xs = np.linspace(0, 45, 100)
+plt.plot(xs, m * xs + c, 'r-')
+plt.show()</code></pre>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 6: Why Lines Fail                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part6">
+        <h2>Part 6: Why Lines Fail</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>What do you notice about the linear regression line?</p>
+  <div class="fragment" data-fragment-index="0">
+    <ul>
+      <li>It goes <strong>below 0</strong> for young ages</li>
+      <li>It doesn&rsquo;t capture the &ldquo;step&rdquo; shape at all</li>
+      <li>Predictions can be negative or greater than 1</li>
+    </ul>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>For classification we need predictions between 0 and 1
+    (they represent <strong>probabilities</strong>).</p>
+    <p>What function maps any number to the range $(0, 1)$?</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>The <strong>sigmoid</strong> you just invented!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Instead of predicting $y = mx + c$ (which can be anything),
+  predict:</p>
+  <p style="text-align:center; font-size:1.2em;">
+    $\hat{y} = \sigma(mx + c)$
+  </p>
+  <div class="fragment" data-fragment-index="0">
+    <p>The linear part $mx + c$ can be any real number.
+    The sigmoid squashes it into $(0, 1)$.</p>
+    <p>Now $\hat{y}$ is a <strong>probability</strong>: how likely is this person a teenager?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The parameters $m$ and $c$ control the steepness and position
+    of the S-curve &mdash; just like you explored in Desmos!</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 7: Sigmoid + MSE                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part7">
+        <h2>Part 7: Building the Binary Classifier</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>predict</code> and <code>mse</code> functions, then use
+  gradient descent to find the best $m$ and $c$ for the teenager dataset.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part8">Skip to Part 8</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Before coding, write on paper:</p>
+  <ul>
+    <li>For each age $x_i$, the prediction is $\hat{y}_i = \sigma(m \cdot x_i + c)$</li>
+    <li>The MSE loss is $\dfrac{1}{n}\sum_{i=1}^{n}(\hat{y}_i - y_i)^2$</li>
+  </ul>
+  <p>First, write <code>predict</code>:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def predict(X, m, c):
+    # return sigmoid(m*x + c) for each x
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def predict(X, m, c):
+    return np.array([sigmoid(m * x + c) for x in X])</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: apply sigmoid to each element of <code>m * X + c</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now write the MSE function:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def mse(X, y, m, c):
+    # compute predictions, then mean squared error
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def mse(X, y, m, c):
+    y_hat = predict(X, m, c)
+    return np.mean((y_hat - y) ** 2)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: get predictions with <code>predict(X, m, c)</code>,
+    then compute the mean of $({\hat{y}} - y)^2$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+<pre><code># Test with random m, c:
+print(mse(ages, teenager, 0.0, 0.0))  # should be ~0.25</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Helper: a function that computes numerical gradients
+  (from the Gradient Descent chapter):</p>
+<pre><code>def numerical_gradient(f, params, h=1e-5):
+    grads = []
+    for i in range(len(params)):
+        params_plus = list(params)
+        params_plus[i] += h
+        grads.append((f(*params_plus) - f(*params)) / h)
+    return grads</code></pre>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now use gradient descent to find the best $m$ and $c$:</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>m, c = 0.0, 0.0
+lr = 0.01
+steps = 5000
+
+for i in range(steps):
+    # compute gradients of mse w.r.t. m and c
+    # update m and c
+    # YOUR CODE HERE
+    pass
+
+print(f"m = {m:.4f}, c = {c:.4f}")</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>m, c = 0.0, 0.0
+lr = 0.01
+steps = 5000
+
+def loss(m, c):
+    return mse(ages, teenager, m, c)
+
+for i in range(steps):
+    dm, dc = numerical_gradient(loss, [m, c])
+    m -= lr * dm
+    c -= lr * dc
+    if i % 1000 == 0:
+        print(f"Step {i}: loss={loss(m,c):.4f}")
+
+print(f"m = {m:.4f}, c = {c:.4f}")</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: define <code>loss(m, c)</code> that calls <code>mse(ages, teenager, m, c)</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: use <code>numerical_gradient(loss, [m, c])</code> to get
+    <code>[dm, dc]</code>, then update: <code>m -= lr * dm</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Plot the fitted sigmoid over the data:</p>
+<pre><code>plt.scatter(ages, teenager, label='Data')
+xs = np.linspace(0, 45, 200)
+ys = [sigmoid(m * x + c) for x in xs]
+plt.plot(xs, ys, 'r-', label='Sigmoid fit')
+plt.xlabel('Age')
+plt.ylabel('P(teenager)')
+plt.legend()
+plt.show()</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Congratulations!</strong> You just built a <strong>binary classifier</strong>
+    from scratch using sigmoid + MSE + gradient descent.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 8: Multiple Features                                -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part8">
+        <h2>Part 8: Multiple Features</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Extend your classifier to handle <strong>multiple input features</strong>
+  using the Iris dataset (2 classes).</p>
+<pre><code>def predict_multi(X, w, b):
+    # X is (n, d), w is (d,), b is scalar
+    ...</code></pre>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part9">Skip to Part 9</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>So far, our model had one input (age). What if $X$ has $d$ features?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Instead of $mx + c$, use a <strong>dot product</strong>:</p>
+    <p style="text-align:center;">$z = w_1 x_1 + w_2 x_2 + \ldots + w_d x_d + b = \mathbf{w} \cdot \mathbf{x} + b$</p>
+    <p>Then: $\hat{y} = \sigma(z)$</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Load the Iris dataset (first two classes only):</p>
+<pre><code>from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data[:100]    # shape (100, 4)
+y = iris.target[:100]  # 0 or 1
+print(X.shape, y.shape)</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write a predict function for multiple features:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def predict_multi(X, w, b):
+    # X: (n, d), w: (d,), b: scalar
+    # return sigmoid of (X @ w + b)
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def predict_multi(X, w, b):
+    z = X @ w + b
+    return np.array([sigmoid(zi) for zi in z])</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: compute <code>X @ w + b</code> (matrix-vector product), then apply sigmoid to each element.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write the MSE for multiple features:</p>
+  <div class="code-stack" style="min-height:5em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def mse_multi(X, y, w, b):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def mse_multi(X, y, w, b):
+    y_hat = predict_multi(X, w, b)
+    return np.mean((y_hat - y) ** 2)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: same pattern as before &mdash; predictions minus labels, squared, mean.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now fit with gradient descent. The tricky part: we need gradients
+  for <em>each weight</em> and the bias.</p>
+  <div class="code-stack" style="min-height:12em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>d = X.shape[1]
+w = np.zeros(d)
+b = 0.0
+lr = 0.1
+
+def loss(*params):
+    return mse_multi(X, y, np.array(params[:d]), params[d])
+
+for i in range(5000):
+    # compute gradients and update
+    # YOUR CODE HERE
+    pass
+
+print(f"w = {w}, b = {b:.4f}")</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>d = X.shape[1]
+w = np.zeros(d)
+b = 0.0
+lr = 0.1
+
+def loss(*params):
+    return mse_multi(X, y, np.array(params[:d]), params[d])
+
+for i in range(5000):
+    params = list(w) + [b]
+    grads = numerical_gradient(loss, params)
+    w -= lr * np.array(grads[:d])
+    b -= lr * grads[d]
+    if i % 1000 == 0:
+        print(f"Step {i}: loss={loss(*params):.4f}")
+
+print(f"w = {w}, b = {b:.4f}")</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: pack $w$ and $b$ into a single params list.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: <code>numerical_gradient</code> returns one gradient per parameter.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Check the accuracy:</p>
+<pre><code>y_hat = predict_multi(X, w, b)
+predictions = (y_hat >= 0.5).astype(int)
+accuracy = np.mean(predictions == y)
+print(f"Accuracy: {accuracy * 100:.1f}%")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>You just built <strong>logistic regression</strong> from scratch!
+    (Well, almost &mdash; the standard version uses a different loss function.
+    That&rsquo;s next.)</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 9: Cross-Entropy Loss                               -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part9">
+        <h2>Part 9: Cross-Entropy Loss</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Can you think of a better loss function than MSE for classification?
+  Write <code>cross_entropy(X, y, w, b)</code>.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/part10">Skip to Part 10</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>MSE works, but let&rsquo;s think about whether it&rsquo;s the <em>best</em> choice.</p>
+  <p>Suppose the true label is $y = 1$ and our model predicts $\hat{y} = 0.001$.</p>
+  <p>The MSE penalty is $(1 - 0.001)^2 = 0.998$.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now suppose the model predicts $\hat{y} = 0.01$ &mdash; ten times larger.
+    The MSE penalty is $(1 - 0.01)^2 = 0.980$.</p>
+    <p>That&rsquo;s barely different! Is MSE harsh enough when we&rsquo;re <em>very</em> wrong?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>What if, instead of squaring the error, we used <strong>$-\log(\hat{y})$</strong>
+  when the true label is 1?</p>
+  <div class="fragment" data-fragment-index="0">
+    <ul>
+      <li>$\hat{y} = 0.9$ &rarr; $-\log(0.9) = 0.105$ (small penalty &mdash; good prediction)</li>
+      <li>$\hat{y} = 0.5$ &rarr; $-\log(0.5) = 0.693$</li>
+      <li>$\hat{y} = 0.01$ &rarr; $-\log(0.01) = 4.605$ (huge penalty!)</li>
+      <li>$\hat{y} \to 0$ &rarr; $-\log(\hat{y}) \to \infty$ (infinite penalty!)</li>
+    </ul>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>$-\log$ gives a <strong>much stronger signal</strong> when the model
+    is confidently wrong.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>What about when the true label is $y = 0$?</p>
+  <p>We want to penalize <em>high</em> predictions. What expression goes to
+  $\infty$ as $\hat{y} \to 1$?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>$-\log(1 - \hat{y})$</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Combining both cases into one formula:</p>
+    <p style="text-align:center; font-size:1.1em;">
+      $L = -\left[\; y \cdot \log(\hat{y}) \;+\; (1-y) \cdot \log(1 - \hat{y}) \;\right]$
+    </p>
+    <p>When $y = 1$: only the first term survives &rarr; $-\log(\hat{y})$.<br/>
+    When $y = 0$: only the second term survives &rarr; $-\log(1 - \hat{y})$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>This is called <strong>binary cross-entropy</strong> (or log loss).</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write the cross-entropy loss in Python:</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def cross_entropy(X, y, w, b):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def cross_entropy(X, y, w, b):
+    y_hat = predict_multi(X, w, b)
+    eps = 1e-15  # avoid log(0)
+    y_hat = np.clip(y_hat, eps, 1 - eps)
+    return -np.mean(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: get predictions, then apply the formula
+    $-\frac{1}{n}\sum[y_i \log(\hat{y}_i) + (1-y_i)\log(1 - \hat{y}_i)]$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: use <code>np.clip(y_hat, 1e-15, 1-1e-15)</code> to avoid
+    <code>log(0)</code>.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 10: Gradient Descent with Cross-Entropy             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part10">
+        <h2>Part 10: Cross-Entropy + Gradient Descent</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Re-run gradient descent on the teenager dataset, but now using
+  <strong>cross-entropy</strong> instead of MSE:</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code># Use your 1-feature sigmoid model from Part 7
+# but replace mse with cross_entropy
+m, c = 0.0, 0.0
+lr = 0.01
+
+def loss_ce(m, c):
+    # YOUR CODE HERE — use cross_entropy with 1-feature data
+    pass
+
+# gradient descent loop
+# YOUR CODE HERE</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>m, c = 0.0, 0.0
+lr = 0.01
+
+def loss_ce(m, c):
+    w = np.array([m])
+    return cross_entropy(ages.reshape(-1, 1), teenager, w, c)
+
+for i in range(5000):
+    dm, dc = numerical_gradient(loss_ce, [m, c])
+    m -= lr * dm
+    c -= lr * dc
+    if i % 1000 == 0:
+        print(f"Step {i}: loss={loss_ce(m,c):.4f}")
+
+print(f"m = {m:.4f}, c = {c:.4f}")</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: wrap your 1-feature data as <code>ages.reshape(-1, 1)</code>
+    and use <code>w = np.array([m])</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Compare the two loss curves. Run both and plot:</p>
+<pre><code># (Record losses during training for both mse and cross-entropy)
+plt.plot(mse_losses, label='MSE')
+plt.plot(ce_losses, label='Cross-Entropy')
+plt.xlabel('Step')
+plt.ylabel('Loss')
+plt.legend()
+plt.title('MSE vs Cross-Entropy convergence')
+plt.show()</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Does cross-entropy converge faster? Does the final fit look different?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now re-run on the <strong>Iris</strong> dataset with cross-entropy.
+    Compare accuracy with your MSE version from Part 8.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 11: Multi-Class Classification                      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part11">
+        <h2>Part 11: Multi-Class Classification</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Extend your classifier to handle <strong>more than 2 classes</strong>
+  using all 3 Iris species. Write <code>softmax_predict</code> and
+  <code>multi_cross_entropy</code>.</p>
+  <p style="font-size:0.85em; color:#888;">Got it? <a href="#/ending">Skip to the end</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>With 2 classes, we used <strong>sigmoid</strong>.
+  With $K$ classes, what should we use?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Softmax!</strong> Full circle &mdash; back to where we started.</p>
+    <p>For each class $k$:
+    $P(y = k) = \text{softmax}(\mathbf{w}_k \cdot \mathbf{x} + b_k)$</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>We need $K$ sets of weights. Weight matrix $W$ is $(K, d)$,
+    bias $\mathbf{b}$ is $(K,)$.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Load the full Iris dataset (3 classes) and one-hot encode the labels:</p>
+<pre><code>iris = load_iris()
+X_full = iris.data           # (150, 4)
+y_full = iris.target         # 0, 1, or 2
+
+# One-hot encode: label 1 → [0, 1, 0]
+def one_hot(y, K):
+    oh = np.zeros((len(y), K))
+    for i, yi in enumerate(y):
+        oh[i, yi] = 1.0
+    return oh
+
+Y = one_hot(y_full, 3)      # (150, 3)
+print(Y[:3])</code></pre>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write softmax prediction for multi-class:</p>
+  <div class="code-stack" style="min-height:7em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def softmax_predict(X, W, b):
+    # X: (n, d), W: (K, d), b: (K,)
+    # return (n, K) matrix of probabilities
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def softmax_predict(X, W, b):
+    Z = X @ W.T + b          # (n, K)
+    exp_Z = np.exp(Z - Z.max(axis=1, keepdims=True))
+    return exp_Z / exp_Z.sum(axis=1, keepdims=True)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: compute $Z = XW^T + b$, then apply softmax row-wise.
+    Subtract the max per row for numerical stability.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write the multi-class cross-entropy loss:</p>
+  <p style="text-align:center;">
+    $L = -\dfrac{1}{n}\displaystyle\sum_{i=1}^{n}\sum_{k=1}^{K} y_{ik} \log(\hat{y}_{ik})$
+  </p>
+  <div class="code-stack" style="min-height:6em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def multi_cross_entropy(X, Y, W, b):
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def multi_cross_entropy(X, Y, W, b):
+    probs = softmax_predict(X, W, b)
+    probs = np.clip(probs, 1e-15, 1.0)
+    return -np.mean(np.sum(Y * np.log(probs), axis=1))</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: only the terms where $y_{ik} = 1$ contribute &mdash; that
+    picks out $\log(\hat{y})$ for the correct class.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Fit with gradient descent on the full Iris dataset:</p>
+  <div class="code-stack" style="min-height:12em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>K, d = 3, X_full.shape[1]
+W = np.zeros((K, d))
+b = np.zeros(K)
+lr = 0.01
+
+# gradient descent loop
+# YOUR CODE HERE</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>K, d = 3, X_full.shape[1]
+W = np.zeros((K, d))
+b = np.zeros(K)
+lr = 0.01
+
+def loss_multi(*params):
+    Wf = np.array(params[:K*d]).reshape(K, d)
+    bf = np.array(params[K*d:])
+    return multi_cross_entropy(X_full, Y, Wf, bf)
+
+for i in range(3000):
+    params = list(W.flatten()) + list(b)
+    grads = numerical_gradient(loss_multi, params)
+    W -= lr * np.array(grads[:K*d]).reshape(K, d)
+    b -= lr * np.array(grads[K*d:])
+    if i % 500 == 0:
+        print(f"Step {i}: loss={loss_multi(*params):.4f}")
+
+preds = softmax_predict(X_full, W, b).argmax(axis=1)
+print(f"Accuracy: {np.mean(preds == y_full)*100:.1f}%")</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: flatten $W$ and $b$ into one params list, like you did in Part 8.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  ENDING                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="ending">
+        <h2>What You Just Invented</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <table>
+    <tr><th>Your function</th><th>Standard name</th></tr>
+    <tr><td><code>scale(values)</code></td><td>Normalization (to probability simplex)</td></tr>
+    <tr><td><code>softmax(values)</code></td><td>Softmax function</td></tr>
+    <tr><td><code>sigmoid(x)</code></td><td>Sigmoid / logistic function</td></tr>
+    <tr><td><code>predict</code> + <code>mse</code></td><td>Logistic regression with MSE loss</td></tr>
+    <tr><td><code>cross_entropy</code></td><td>Binary cross-entropy (log loss)</td></tr>
+    <tr><td><code>softmax_predict</code> + <code>multi_cross_entropy</code></td><td>Softmax regression / multinomial logistic regression</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>You started by scaling numbers to sum to 1. You invented softmax,
+    derived sigmoid from it, built a binary classifier, discovered why MSE
+    isn&rsquo;t ideal, invented cross-entropy, and extended everything to
+    multiple classes. <strong>All from scratch.</strong></p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>Explain in your own words: why can&rsquo;t we use linear regression
+    directly for classification?</li>
+    <li>How is sigmoid related to softmax? Could you derive one from the other?</li>
+    <li>Why is cross-entropy a better loss than MSE for classification?
+    What happens to the gradient when the model is confidently wrong?</li>
+    <li>How does multi-class classification generalize binary classification?
+    What replaces sigmoid, and what replaces binary cross-entropy?</li>
+  </ol>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  INDEX                                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="slide-index">
+        <h2>Index</h2>
+        <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
+          <ol style="line-height:2;">
+            <li><a href="#/part1">Scaling Values</a></li>
+            <li><a href="#/part2">Making Big Bigger</a></li>
+            <li><a href="#/part3">Softmax</a></li>
+            <li><a href="#/part4">Sigmoid</a></li>
+            <li><a href="#/part5">The Classification Problem</a></li>
+            <li><a href="#/part6">Why Lines Fail</a></li>
+            <li><a href="#/part7">Building the Binary Classifier</a></li>
+            <li><a href="#/part8">Multiple Features</a></li>
+            <li><a href="#/part9">Cross-Entropy Loss</a></li>
+            <li><a href="#/part10">Cross-Entropy + Gradient Descent</a></li>
+            <li><a href="#/part11">Multi-Class Classification</a></li>
+          </ol>
+        </div>
+      </section>
+
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      progress: true,
+      transition: 'slide',
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
+      minScale: 0.1,
+      maxScale: 2.0,
+    });
+    function updateProgress() {
+      var total = Reveal.getTotalSlides();
+      var current = Reveal.getSlidePastCount() + 1;
+      var pct = Math.min(100, (current / total) * 100);
+      document.getElementById('top-progress-bar').style.width = pct + '%';
+    }
+    Reveal.on('slidechanged', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
+  </script>
+<div class="chapter-footer">
+
+  <p><em>You started by scaling numbers to sum to 1. You invented softmax,
+  derived sigmoid from it, built a binary classifier, discovered why MSE
+  isn&rsquo;t ideal, invented cross-entropy, and extended everything to
+  multiple classes &mdash; all from scratch.</em></p>
+
+  <p><strong>Going further:</strong></p>
+  <ul>
+    <li><strong>Regularization:</strong> Add an L2 penalty to prevent overfitting.</li>
+    <li><strong>Feature engineering:</strong> Polynomial or interaction features
+    can make linear classifiers more powerful.</li>
+    <li><strong>Neural networks:</strong> Replace the linear $\mathbf{w} \cdot \mathbf{x} + b$
+    with layers of neurons &mdash; the softmax + cross-entropy output layer stays the same.</li>
+  </ul>
+
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+  <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
+</div>
+
+<script src="narration-player.js"></script>
+</body>
+</html>

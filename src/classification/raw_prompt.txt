@@ -1,0 +1,65 @@
+Let's create separate slides for classification in the same format and philosophy - learnbyinventing. The flow will be such that it builds intuition - scaling -> softmax -> sigmoid -> gradient descent with 'MSE' as loss function (binary classification with one variable, multi class classification, with multiple features - multi class classification  -> crosss entropy loss -> gradient descent with cross entropy loss
+
+Here are rough ideas for presentation content flow:
+
+1. How would you scale these values such that total becomes one:
+
+(1, 9) -> (.1, .9)
+(10, 30) -> (.25, .75)
+(1, 2, 5) -> (.125, .25, .625)
+
+2. How would you make big value close to 1 and small value close to zero and then make the total to be 1?
+
+For example, if we have 1 and 5. It should become something like (.1 and .9).
+
+Basically you need to make big value bigger and small value smaller.
+
+There is no single answer. Come up with as many answers as possible.
+
+3. One such solution is doing exp() followed by scalling. [Insert example]. This is called softmax.
+
+4. Now, if we have only one value and we want to bring it between 0 and 1 using softmax. What can we do?
+
+Can we just make it two values by adding one more value which is zero?
+
+[0, 3] -> [1/(1+e^3), e^3/(1+e^3)]
+
+This function e^x/(1+e^x) is called sigmoid.
+
+4.1 Plot this graph in desmos.
+
+Y = 1/(1+(e-(ax+b).
+
+Check the plot by changing a and b. What do you notice?
+
+5. Say we have a dataset containing age and a flag (teenager or not). We need to build a model that given an age predicts if the person is teenager or not.
+
+[Generate dataset and scatter plot it.]
+
+Do you notice any challenges?
+
+Do you think we can fit a straight line through it? Is it possible to train the linear regression model?
+
+
+6. Thats right. It is impossible to fit straight line through it properly.
+
+7. What if we find out what is that step or reverse Z shape that fits thru the data.
+
+8. Write a python function that takes a list of values of X, y and m and c. Then it calculates sigmoid(x*m + c) i.e. the predicted y and then computes MSE
+
+def mse(X, m, c):
+
+9. Now, using the gradient descent that you coded earlier, find the value of m, c for the dataset.
+
+10. Congratulations! You built a binary classifier with X having one feature.
+11. Now, write the MSE for X having many features. [Insert the iris dataset]
+Then, using gradient descent find the model.
+
+12. Wonderful, you have built a classification model but there is a further improvement possible.
+It was discovered that in binary p, the logistic loss.
+
+[Insert the formula]
+[Ask user to code logistic loss]
+[Then optimize]
+
+13. Amazing! [Ask user to build multi class classification]
