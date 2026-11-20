@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>K-Nearest Neighbors — Slides</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
+
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$']] } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    .reveal { font-family: Georgia, serif; margin-top: 25px; }
+    .reveal .slide-content { font-size: 0.55em; }
+    .reveal h1 { font-size: 1.8em; }
+    .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
+    .reveal h3 { font-size: 1.1em; }
+    .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+    .reveal p code, .reveal li code {
+      background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
+      color: #c7254e; font-size: 0.85em;
+    }
+    .reveal pre code { background: #282c34; color: #abb2bf; padding: 0.8em; border-radius: 5px; }
+    .reveal table { font-size: 0.7em; margin: 0 auto; }
+    .reveal th { background: #f5f3ef; }
+    .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
+    .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
+    .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .reveal .progress { display: none !important; }
+    .chapter-footer { display: none; }
+    #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
+    #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
+    #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
+    #bottom-copyright a { color: #aaa; text-decoration: none; }
+    #bottom-copyright a:hover { color: #c8a96e; }
+    #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
+    #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+
+    .reveal .exercise-badge {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: #fff3d0;
+      color: #7a6b3a;
+      font-size: 0.35em;
+      font-family: sans-serif;
+      padding: 0.2em 0.7em;
+      border-radius: 12px;
+      border: 1.5px solid #c8a96e;
+      font-weight: 600;
+      z-index: 10;
+    }
+
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
+
+    @media screen and (max-width: 768px) {
+      .reveal .slide-content { font-size: 0.65em; }
+      .reveal h2 { font-size: 0.95em; }
+      .reveal h3 { font-size: 0.8em; }
+      .reveal pre { font-size: 0.6em; }
+      .reveal table { font-size: 0.6em; }
+      .reveal ul, .reveal ol { font-size: 0.65em; }
+      .reveal p code, .reveal li code { font-size: 0.85em; }
+      .reveal th, .reveal td { padding: 0.2em 0.4em; }
+      .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
+      #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
+    }
+  </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9TZCPED97E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9TZCPED97E');
+</script>
+
+</head>
+<body>
+  <nav class="slides-topnav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);padding:4px 16px;font-size:13px;font-family:sans-serif;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+    <a href="../index.html" style="color:#888;text-decoration:none;">&larr; All chapters</a>
+    <span style="display:flex;gap:10px;align-items:center;">
+      <strong style="color:#333;">Slides</strong>
+    </span>
+  </nav>
+  <div id="top-progress"><div id="top-progress-bar"></div></div>
+  <div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="#" id="bug-report-link">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
+  <script>
+function detectDevice() {
+  var ua = navigator.userAgent;
+  var browser = 'Unknown';
+  if (ua.indexOf('Edg/') > -1) browser = 'Edge';
+  else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
+  else if (ua.indexOf('Chrome/') > -1) browser = 'Chrome';
+  else if (ua.indexOf('Safari/') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+  else if (ua.indexOf('Firefox/') > -1) browser = 'Firefox';
+  var os = 'Unknown';
+  if (ua.indexOf('Android') > -1) os = 'Android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+  else if (ua.indexOf('Windows') > -1) os = 'Windows';
+  else if (ua.indexOf('Mac OS') > -1) os = 'macOS';
+  else if (ua.indexOf('Linux') > -1) os = 'Linux';
+  var screen = window.screen.width + 'x' + window.screen.height;
+  var viewport = window.innerWidth + 'x' + window.innerHeight;
+  return '- Browser: ' + browser + '\n- OS: ' + os + '\n- Screen: ' + screen + ' (viewport ' + viewport + ')';
+}
+document.getElementById('bug-report-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  var idx = Reveal.getIndices();
+  var slideNum = idx.h + 1;
+  var ch = location.pathname.split('/').filter(Boolean);
+  ch = ch.length > 1 ? ch[ch.length - 2] : '';
+  var partName = '';
+  var sections = document.querySelectorAll('.slides > section');
+  for (var j = idx.h; j >= 0; j--) {
+    if (sections[j] && sections[j].id && sections[j].id.match(/^part/)) {
+      var h2 = sections[j].querySelector('h2');
+      partName = h2 ? h2.textContent : sections[j].id;
+      break;
+    }
+  }
+  var body = '**Chapter / Slide**\nChapter: ' + ch + '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href + '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n' + detectDevice();
+  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' + encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) + '&body=' + encodeURIComponent(body);
+  window.open(url, '_blank');
+});
+</script>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Title slide -->
+      <section>
+        <h1>K-Nearest Neighbors</h1>
+        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
+        <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
+          Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
+          or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
+          to advance &nbsp;|&nbsp;
+          <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&larr;</kbd> to go back
+        </p>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 1: Finding the Nearest Neighbor                     -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part1">
+        <h2>Part 1: Finding the Nearest Neighbor</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>knn_predict(point, dataset, k)</code> that classifies a
+  new point by finding its <code>k</code> nearest labeled neighbors and
+  taking a majority vote.</p>
+  <p style="font-size:0.85em; color:#888;">Already got it?
+  <a href="#/ending">Skip to the end</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Imagine you just moved to a new city. You find a fruit you&rsquo;ve
+  never seen and want to know if it&rsquo;s an apple or an orange.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>You could measure its <strong>weight</strong> and
+    <strong>color</strong>, then compare those numbers to fruits you
+    already know. The closest match is your best guess.</p>
+    <p>That&rsquo;s the whole idea. Let&rsquo;s build it.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>First we need a way to measure &ldquo;how far apart&rdquo; two points
+  are. Write <code>distance(a, b)</code> for any number of dimensions:</p>
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>import math
+
+def distance(a, b):
+    # Euclidean distance between two points (any dimensions)
+    # distance([0,0], [3,4]) → 5.0
+    # distance([1,2,3], [4,6,3]) → 5.0
+    # YOUR CODE HERE
+    pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>import math
+
+def distance(a, b):
+    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+
+print(distance([0, 0], [3, 4]))      # 5.0
+print(distance([1, 2, 3], [4, 6, 3]))  # 5.0</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: square the difference for each coordinate, sum them up,
+    take the square root. $\sqrt{\sum (a_i - b_i)^2}$</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now find the <strong>single closest</strong> point from a list.
+  Write <code>find_nearest(point, points)</code>:</p>
+  <div class="code-stack" style="min-height:14em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def find_nearest(point, points):
+    # Return the point from `points` closest to `point`
+    # find_nearest([2,3], [[0,0],[1,2],[5,5],[3,4]]) → [3,4]
+    # YOUR CODE HERE
+    pass
+
+print(find_nearest([2, 3], [[0, 0], [1, 2], [5, 5], [3, 4]]))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def find_nearest(point, points):
+    return min(points, key=lambda p: distance(point, p))
+
+print(find_nearest([2, 3], [[0, 0], [1, 2], [5, 5], [3, 4]]))
+# [3, 4]  (distance = sqrt(2) ≈ 1.41)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: use <code>min()</code> with a <code>key</code> that computes
+    the distance to our target point.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>You can now find the nearest point. But in real problems, each point
+  has a <strong>label</strong> &mdash; &ldquo;apple&rdquo; or &ldquo;orange&rdquo;,
+  &ldquo;spam&rdquo; or &ldquo;not spam.&rdquo;</p>
+  <div class="fragment" data-fragment-index="0">
+<pre><code>dataset = [
+    ([2, 5], "apple"),   ([3, 4], "apple"),
+    ([1, 6], "apple"),   ([7, 1], "orange"),
+    ([8, 2], "orange"),  ([6, 1], "orange"),
+]
+# Each entry: (features, label)</code></pre>
+    <p>Using just the <strong>one</strong> nearest neighbor, what would you
+    predict for the point <code>[5, 3]</code>?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>The nearest is <code>[6, 1]</code> (orange), so we predict
+    &ldquo;orange.&rdquo; But what if the nearest neighbor happened to
+    be an outlier? One neighbor is fragile&hellip;</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 2: From 1 Neighbor to K Neighbors                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part2">
+        <h2>Part 2: From 1 Neighbor to K Neighbors</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Instead of asking <em>one</em> neighbor, ask the <strong>$k$ closest
+  neighbors</strong> and let them <strong>vote</strong>.</p>
+  <p>Write <code>find_k_nearest(point, labeled_data, k)</code>:</p>
+  <div class="code-stack" style="min-height:15em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def find_k_nearest(point, labeled_data, k):
+    # labeled_data is a list of (features, label) tuples
+    # Return the k entries closest to `point`
+    # YOUR CODE HERE
+    pass
+
+data = [([2,5],"apple"), ([3,4],"apple"), ([1,6],"apple"),
+        ([7,1],"orange"), ([8,2],"orange"), ([6,1],"orange")]
+print(find_k_nearest([5, 3], data, 3))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def find_k_nearest(point, labeled_data, k):
+    by_dist = sorted(labeled_data,
+                     key=lambda item: distance(point, item[0]))
+    return by_dist[:k]
+
+data = [([2,5],"apple"), ([3,4],"apple"), ([1,6],"apple"),
+        ([7,1],"orange"), ([8,2],"orange"), ([6,1],"orange")]
+print(find_k_nearest([5, 3], data, 3))
+# [([3,4],"apple"), ([6,1],"orange"), ([7,1],"orange")]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: sort the labeled data by distance to <code>point</code>,
+    then take the first <code>k</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Now count the votes. Write <code>majority_vote(neighbors)</code>
+  that returns the most common label:</p>
+  <div class="code-stack" style="min-height:16em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def majority_vote(neighbors):
+    # neighbors is a list of (features, label) tuples
+    # Count each label, return the most common one
+    # YOUR CODE HERE
+    pass
+
+test = [([3,4],"apple"), ([6,1],"orange"), ([7,1],"orange")]
+print(majority_vote(test))  # "orange"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def majority_vote(neighbors):
+    counts = {}
+    for _, label in neighbors:
+        counts[label] = counts.get(label, 0) + 1
+    return max(counts, key=counts.get)
+
+test = [([3,4],"apple"), ([6,1],"orange"), ([7,1],"orange")]
+print(majority_vote(test))  # "orange" (2 votes vs 1)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: build a dictionary of <code>{label: count}</code>, then
+    return the key with the highest value.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Quick Check:</strong> You have 3 nearest neighbors with labels
+  <code>["apple", "apple", "orange"]</code>. What does majority vote
+  predict?</p>
+  <p><strong>A.</strong> apple (2 votes to 1) &nbsp;&nbsp;
+  <strong>B.</strong> orange (it&rsquo;s the nearest) &nbsp;&nbsp;
+  <strong>C.</strong> unknown (can&rsquo;t decide) &nbsp;&nbsp;
+  <strong>D.</strong> both equally</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: A.</strong> Apple wins 2&ndash;1. Each neighbor gets
+    one vote regardless of its distance.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 3: The Complete K-NN Classifier                     -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part3">
+        <h2>Part 3: The Complete K-NN Classifier</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Combine your two functions into <code>knn_predict</code>:</p>
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def knn_predict(point, dataset, k):
+    # Find k nearest, return majority label
+    # YOUR CODE HERE
+    pass
+
+dataset = [
+    ([1,2],"red"), ([2,3],"red"), ([3,1],"red"),
+    ([6,5],"blue"), ([7,7],"blue"), ([8,6],"blue"),
+]
+print(knn_predict([5, 5], dataset, 3))
+print(knn_predict([2, 1], dataset, 3))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def knn_predict(point, dataset, k):
+    neighbors = find_k_nearest(point, dataset, k)
+    return majority_vote(neighbors)
+
+dataset = [
+    ([1,2],"red"), ([2,3],"red"), ([3,1],"red"),
+    ([6,5],"blue"), ([7,7],"blue"), ([8,6],"blue"),
+]
+print(knn_predict([5, 5], dataset, 3))  # "blue"
+print(knn_predict([2, 1], dataset, 3))  # "red"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: it&rsquo;s just two lines &mdash; call
+    <code>find_k_nearest</code>, then <code>majority_vote</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>That&rsquo;s a working classifier &mdash; but how do we know if it&rsquo;s
+  <em>good</em>? For each point in the dataset, predict its label using
+  the <strong>other</strong> points and check if we got it right.</p>
+  <p>Write <code>knn_accuracy(dataset, k)</code>:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def knn_accuracy(dataset, k):
+    # For each point, predict using all OTHER points
+    # Return the fraction of correct predictions
+    # YOUR CODE HERE
+    pass
+
+print(knn_accuracy(dataset, 3))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def knn_accuracy(dataset, k):
+    correct = 0
+    for i in range(len(dataset)):
+        test_point, true_label = dataset[i]
+        train = dataset[:i] + dataset[i+1:]
+        if knn_predict(test_point, train, k) == true_label:
+            correct += 1
+    return correct / len(dataset)
+
+print(knn_accuracy(dataset, 3))  # 1.0 (all correct)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: loop through each index <code>i</code>. The training set
+    is everything <em>except</em> index <code>i</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: <code>dataset[:i] + dataset[i+1:]</code> gives you all
+    items except the $i$-th one.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Try it on a bigger dataset where accuracy won&rsquo;t be perfect:</p>
+<pre><code>bigger = [
+    ([1,1],"A"), ([2,1],"A"), ([1,2],"A"), ([2,2],"A"),
+    ([5,5],"B"), ([6,5],"B"), ([5,6],"B"), ([6,6],"B"),
+    ([3,3],"A"), ([4,4],"B"), ([3,4],"B"), ([4,3],"A"),
+]
+
+for k in [1, 3, 5]:
+    acc = knn_accuracy(bigger, k)
+    print(f"k={k}: accuracy = {acc:.2f}")</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p>Points near the boundary between classes are harder to classify.
+    Different values of $k$ handle these differently.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Quick Check:</strong> For a two-class problem, why is an
+  <strong>odd</strong> value of $k$ preferred?</p>
+  <p><strong>A.</strong> Odd numbers compute faster &nbsp;&nbsp;
+  <strong>B.</strong> Avoids ties in the majority vote &nbsp;&nbsp;
+  <strong>C.</strong> Odd $k$ is always more accurate &nbsp;&nbsp;
+  <strong>D.</strong> Even $k$ causes errors</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: B.</strong> With two classes and an odd $k$, one class
+    always has strictly more votes. Even $k$ can produce a tie like
+    2&ndash;2.</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 4: Choosing K and Distance                          -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part4">
+        <h2>Part 4: Choosing K and Distance</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>What happens as $k$ changes?</p>
+  <table>
+    <tr><th>$k$</th><th>Behavior</th></tr>
+    <tr><td>1</td><td>Copies the nearest label exactly &mdash; <strong>memorizes</strong>
+    noise</td></tr>
+    <tr><td>3&ndash;7</td><td>Smooths out outliers &mdash; usually a sweet spot</td></tr>
+    <tr><td>$n$</td><td>Always predicts the most common class &mdash;
+    <strong>ignores</strong> the data</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>$k = 1$ <strong>overfits</strong> (too sensitive to noise).
+    Large $k$ <strong>underfits</strong> (too smooth, loses local
+    patterns). The best $k$ is somewhere in between.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Euclidean distance treats all dimensions equally. But sometimes you
+  want a different measure. Write <code>manhattan_distance(a, b)</code>:</p>
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def manhattan_distance(a, b):
+    # Sum of absolute differences
+    # manhattan_distance([0,0], [3,4]) → 7
+    # YOUR CODE HERE
+    pass
+
+print(manhattan_distance([0, 0], [3, 4]))  # 7
+print(manhattan_distance([1, 5], [4, 1]))  # 7</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def manhattan_distance(a, b):
+    return sum(abs(x - y) for x, y in zip(a, b))
+
+print(manhattan_distance([0, 0], [3, 4]))  # 7
+print(manhattan_distance([1, 5], [4, 1]))  # 7
+# Like walking city blocks: 3 east + 4 north = 7</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: same pattern as Euclidean, but use <code>abs()</code>
+    instead of squaring and square-rooting.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Make the distance function <strong>pluggable</strong>. Write
+  <code>knn_predict_custom</code>:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def knn_predict_custom(point, dataset, k, dist_fn=distance):
+    # Same as knn_predict, but uses dist_fn instead of distance
+    # YOUR CODE HERE
+    pass
+
+# Test with Manhattan distance
+print(knn_predict_custom([5,5], dataset, 3, manhattan_distance))
+# Test with Euclidean (default)
+print(knn_predict_custom([5,5], dataset, 3))</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def knn_predict_custom(point, dataset, k, dist_fn=distance):
+    by_dist = sorted(dataset,
+                     key=lambda item: dist_fn(point, item[0]))
+    neighbors = by_dist[:k]
+    return majority_vote(neighbors)
+
+print(knn_predict_custom([5,5], dataset, 3, manhattan_distance))
+# "blue"
+print(knn_predict_custom([5,5], dataset, 3))
+# "blue"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint: same logic as <code>knn_predict</code>, but pass
+    <code>dist_fn</code> wherever you&rsquo;d normally call
+    <code>distance</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Quick Check:</strong> K-NN&rsquo;s biggest weakness at
+  scale is:</p>
+  <p><strong>A.</strong> It can only handle two classes &nbsp;&nbsp;
+  <strong>B.</strong> It needs to be retrained when new data arrives &nbsp;&nbsp;
+  <strong>C.</strong> It computes distance to <em>every</em> training point
+  for each prediction &nbsp;&nbsp;
+  <strong>D.</strong> It can only work with numbers, not categories</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: C.</strong> With $n$ training points and $d$
+    dimensions, each prediction costs $O(nd)$. For millions of points,
+    that gets slow. (Techniques like KD-trees help.)</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  ENDING                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="ending">
+        <h2>What You Just Invented</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <table>
+    <tr><th>What you built</th><th>Its real name</th></tr>
+    <tr><td><code>distance(a, b)</code></td>
+        <td>Euclidean distance</td></tr>
+    <tr><td><code>find_nearest</code></td>
+        <td>1-Nearest Neighbor (1-NN)</td></tr>
+    <tr><td><code>find_k_nearest</code></td>
+        <td>K-Nearest Neighbors query</td></tr>
+    <tr><td><code>majority_vote</code></td>
+        <td>Plurality voting</td></tr>
+    <tr><td><code>knn_predict</code></td>
+        <td><strong>K-NN classifier</strong></td></tr>
+    <tr><td><code>knn_accuracy</code> (leave-one-out)</td>
+        <td>Leave-One-Out Cross-Validation (LOOCV)</td></tr>
+    <tr><td><code>manhattan_distance</code></td>
+        <td>L1 / Manhattan / Taxicab distance</td></tr>
+    <tr><td>Pluggable <code>dist_fn</code></td>
+        <td>Metric space generalization</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>K-NN is one of the simplest ML algorithms &mdash; and you just
+    built it from scratch. No training phase, no model weights: the
+    <strong>data itself is the model</strong>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>K-NN has no &ldquo;training step.&rdquo; Why is that both a
+    strength and a weakness?</li>
+    <li>What happens to K-NN&rsquo;s accuracy if one feature is measured
+    in meters and another in kilometers? How would you fix it?</li>
+    <li>You used leave-one-out to measure accuracy. Can you think of a
+    faster alternative when the dataset is large?</li>
+    <li>When would Manhattan distance be a better choice than Euclidean?
+    (Hint: think about dimensions with very different scales.)</li>
+    <li>How is K-NN related to the recommender system idea of &ldquo;find
+    similar users and use their preferences&rdquo;?</li>
+  </ol>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  INDEX                                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="slide-index">
+        <h2>Index</h2>
+        <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
+          <ol style="line-height:2;">
+            <li><a href="#/part1">Finding the Nearest Neighbor</a></li>
+            <li><a href="#/part2">From 1 Neighbor to K Neighbors</a></li>
+            <li><a href="#/part3">The Complete K-NN Classifier</a></li>
+            <li><a href="#/part4">Choosing K and Distance</a></li>
+          </ol>
+        </div>
+      </section>
+
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      progress: true,
+      transition: 'slide',
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
+      minScale: 0.1,
+      maxScale: 2.0,
+    });
+    function updateProgress() {
+      var total = Reveal.getTotalSlides();
+      var current = Reveal.getSlidePastCount() + 1;
+      var pct = Math.min(100, (current / total) * 100);
+      document.getElementById('top-progress-bar').style.width = pct + '%';
+    }
+    Reveal.on('slidechanged', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.code-stack').forEach(function(el) {
+        var section = el.closest('section');
+        if (section && !section.querySelector('.exercise-badge')) {
+          var badge = document.createElement('span');
+          badge.className = 'exercise-badge';
+          badge.textContent = '✍ Your turn';
+          section.style.position = 'relative';
+          section.appendChild(badge);
+        }
+      });
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
+  </script>
+<div class="chapter-footer">
+
+  <p><em>You started by measuring the distance between two points and ended
+  by inventing a full classifier &mdash; K-Nearest Neighbors, the algorithm
+  that proves sometimes the simplest idea wins.</em></p>
+
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a>
+  &middot; <a href="../index.html">Back to all chapters</a></p>
+  <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
+</div>
+
+<script src="narration-player.js"></script>
+</body>
+</html>
