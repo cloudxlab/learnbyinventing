@@ -68,6 +68,21 @@
     .reveal li.question { padding-left: 1.6em; }
     .reveal li.question::before { top: 0.15em; }
 
+    .sort-viz { text-align: center; margin: 0.5em 0; }
+    .viz-bars { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 160px; margin-bottom: 0.5em; }
+    .viz-bar { width: 32px; background: #7a9ec7; border-radius: 3px 3px 0 0; transition: height 0.25s, background 0.25s; position: relative; }
+    .viz-bar span { position: absolute; bottom: -1.4em; left: 0; right: 0; text-align: center; font-size: 0.7em; font-family: monospace; color: #555; }
+    .viz-bar.comparing { background: #f0c040; }
+    .viz-bar.swapping  { background: #e06050; }
+    .viz-bar.sorted    { background: #5cb85c; }
+    .viz-bar.pivot     { background: #c090d0; }
+    .viz-bar.merged    { background: #5cb85c; }
+    .viz-controls { display: flex; gap: 6px; justify-content: center; margin: 0.4em 0; }
+    .viz-btn { font-size: 0.75em; padding: 0.3em 0.9em; border: 1px solid #bbb; border-radius: 4px; background: #f5f3ef; cursor: pointer; font-family: system-ui, sans-serif; }
+    .viz-btn:hover { background: #e8e5dd; }
+    .viz-btn:disabled { opacity: 0.4; cursor: default; }
+    .viz-status { font-size: 0.75em; color: #666; min-height: 1.5em; font-family: system-ui, sans-serif; }
+
     @media screen and (max-width: 768px) {
       .reveal .slide-content { font-size: 0.65em; }
       .reveal h2 { font-size: 0.95em; }
@@ -368,6 +383,22 @@ print(x)  # [1, 2, 5, 5, 6, 9]</code></pre>
 
       <section>
         <div class="slide-content">
+  <p><strong>Watch bubble sort in action:</strong></p>
+  <div class="sort-viz" id="bubble-viz">
+    <div class="viz-bars" id="bubble-bars"></div>
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="vizStep('bubble')">Step</button>
+      <button class="viz-btn" onclick="vizPlay('bubble')">Play</button>
+      <button class="viz-btn" onclick="vizReset('bubble')">Reset</button>
+    </div>
+    <div class="viz-status" id="bubble-status">Press Step or Play</div>
+  </div>
+  <p style="font-size:0.8em; color:#888; margin-top:0.3em;">Yellow = comparing &nbsp; Red = swapping &nbsp; Green = sorted</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
   <p><strong>Quick Check:</strong> Bubble sort takes 50 seconds to sort
   10,000 numbers. How long for 100,000 (10x more)?</p>
   <p><strong>A.</strong> ~500 seconds (10x) &nbsp;&nbsp;
@@ -476,6 +507,22 @@ print(x)  # [1, 2, 5, 5, 6, 9]</code></pre>
     data is nearly sorted</strong> &mdash; that&rsquo;s why Python&rsquo;s
     Timsort uses it as a building block.</p>
   </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Watch insertion sort in action:</strong></p>
+  <div class="sort-viz" id="insertion-viz">
+    <div class="viz-bars" id="insertion-bars"></div>
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="vizStep('insertion')">Step</button>
+      <button class="viz-btn" onclick="vizPlay('insertion')">Play</button>
+      <button class="viz-btn" onclick="vizReset('insertion')">Reset</button>
+    </div>
+    <div class="viz-status" id="insertion-status">Press Step or Play</div>
+  </div>
+  <p style="font-size:0.8em; color:#888; margin-top:0.3em;">Yellow = inserting &nbsp; Red = shifting &nbsp; Green = sorted prefix</p>
 </div>
       </section>
 
@@ -601,6 +648,22 @@ level 2:    [n/4][n/4]  [n/4][n/4]        ~n comparisons
     </ul>
     <p><strong>50,000x less work.</strong></p>
   </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Watch merge sort in action:</strong></p>
+  <div class="sort-viz" id="merge-viz">
+    <div class="viz-bars" id="merge-bars"></div>
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="vizStep('merge')">Step</button>
+      <button class="viz-btn" onclick="vizPlay('merge')">Play</button>
+      <button class="viz-btn" onclick="vizReset('merge')">Reset</button>
+    </div>
+    <div class="viz-status" id="merge-status">Press Step or Play</div>
+  </div>
+  <p style="font-size:0.8em; color:#888; margin-top:0.3em;">Yellow = comparing &nbsp; Green = merged into place</p>
 </div>
       </section>
 
@@ -777,6 +840,22 @@ print(x)  # [1, 2, 5, 5, 6, 9]</code></pre>
 </div>
       </section>
 
+      <section>
+        <div class="slide-content">
+  <p><strong>Watch quick sort in action:</strong></p>
+  <div class="sort-viz" id="quick-viz">
+    <div class="viz-bars" id="quick-bars"></div>
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="vizStep('quick')">Step</button>
+      <button class="viz-btn" onclick="vizPlay('quick')">Play</button>
+      <button class="viz-btn" onclick="vizReset('quick')">Reset</button>
+    </div>
+    <div class="viz-status" id="quick-status">Press Step or Play</div>
+  </div>
+  <p style="font-size:0.8em; color:#888; margin-top:0.3em;">Purple = pivot &nbsp; Yellow = comparing &nbsp; Red = swapping &nbsp; Green = sorted</p>
+</div>
+      </section>
+
 
       <!-- ══════════════════════════════════════════════════════════ -->
       <!--  PART 6: Counting Sort                                    -->
@@ -858,6 +937,22 @@ print(tally_sort([3, 1, 3, 0], 3))  # [0, 1, 3, 3]</code></pre>
     But this only works when k is small &mdash; you can&rsquo;t bucket
     arbitrary floats.</p>
   </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Watch counting sort in action:</strong></p>
+  <div class="sort-viz" id="counting-viz">
+    <div class="viz-bars" id="counting-bars"></div>
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="vizStep('counting')">Step</button>
+      <button class="viz-btn" onclick="vizPlay('counting')">Play</button>
+      <button class="viz-btn" onclick="vizReset('counting')">Reset</button>
+    </div>
+    <div class="viz-status" id="counting-status">Press Step or Play</div>
+  </div>
+  <p style="font-size:0.8em; color:#888; margin-top:0.3em;">Yellow = counting &nbsp; Green = placed in output</p>
 </div>
       </section>
 
@@ -972,6 +1067,250 @@ print(tally_sort([3, 1, 3, 0], 3))  # [0, 1, 3, 3]</code></pre>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
 
+<script>
+(function() {
+  var INIT = [5, 3, 8, 1, 9, 2, 7, 4, 6];
+  var MAX_VAL = 9;
+  var vizzes = {};
+
+  function makeViz(name, genSteps) {
+    var arr = INIT.slice();
+    var steps = genSteps(arr.slice());
+    vizzes[name] = { arr: arr.slice(), steps: steps, idx: 0, playing: false, timer: null };
+    renderBars(name, arr, []);
+  }
+
+  function renderBars(name, arr, highlights) {
+    var cont = document.getElementById(name + '-bars');
+    if (!cont) return;
+    cont.innerHTML = '';
+    for (var i = 0; i < arr.length; i++) {
+      var bar = document.createElement('div');
+      bar.className = 'viz-bar';
+      if (highlights[i]) bar.className += ' ' + highlights[i];
+      bar.style.height = Math.round((arr[i] / MAX_VAL) * 140) + 'px';
+      var label = document.createElement('span');
+      label.textContent = arr[i];
+      bar.appendChild(label);
+      cont.appendChild(bar);
+    }
+  }
+
+  function setStatus(name, msg) {
+    var el = document.getElementById(name + '-status');
+    if (el) el.textContent = msg;
+  }
+
+  window.vizStep = function(name) {
+    var v = vizzes[name];
+    if (!v || v.idx >= v.steps.length) { setStatus(name, 'Done!'); return; }
+    var s = v.steps[v.idx++];
+    var hl = [];
+    if (s.hl) for (var k in s.hl) hl[k] = s.hl[k];
+    if (s.swap) { var t = v.arr[s.swap[0]]; v.arr[s.swap[0]] = v.arr[s.swap[1]]; v.arr[s.swap[1]] = t; }
+    if (s.set) { for (var k in s.set) v.arr[k] = s.set[k]; }
+    renderBars(name, v.arr, hl);
+    setStatus(name, s.msg || ('Step ' + v.idx + ' / ' + v.steps.length));
+    if (v.idx >= v.steps.length) setStatus(name, 'Done! All sorted.');
+  };
+
+  window.vizPlay = function(name) {
+    var v = vizzes[name];
+    if (!v) return;
+    if (v.playing) { v.playing = false; clearInterval(v.timer); return; }
+    v.playing = true;
+    v.timer = setInterval(function() {
+      if (v.idx >= v.steps.length) { v.playing = false; clearInterval(v.timer); return; }
+      vizStep(name);
+    }, 400);
+  };
+
+  window.vizReset = function(name) {
+    var v = vizzes[name];
+    if (!v) return;
+    v.playing = false;
+    if (v.timer) clearInterval(v.timer);
+    v.arr = INIT.slice();
+    v.idx = 0;
+    renderBars(name, v.arr, []);
+    setStatus(name, 'Press Step or Play');
+  };
+
+  // Bubble sort steps
+  function bubbleSteps(a) {
+    var steps = [], n = a.length;
+    for (var end = n - 1; end > 0; end--) {
+      var swapped = false;
+      for (var i = 0; i < end; i++) {
+        var hl = {}; hl[i] = 'comparing'; hl[i+1] = 'comparing';
+        for (var s = end+1; s < n; s++) hl[s] = 'sorted';
+        steps.push({ hl: hl, msg: 'Compare ' + a[i] + ' and ' + a[i+1] });
+        if (a[i] > a[i+1]) {
+          var hl2 = {}; hl2[i] = 'swapping'; hl2[i+1] = 'swapping';
+          for (var s = end+1; s < n; s++) hl2[s] = 'sorted';
+          var t = a[i]; a[i] = a[i+1]; a[i+1] = t;
+          steps.push({ swap: [i, i+1], hl: hl2, msg: 'Swap ' + a[i] + ' ↔ ' + a[i+1] });
+          swapped = true;
+        }
+      }
+      var hl3 = {}; for (var s = end; s < n; s++) hl3[s] = 'sorted';
+      steps.push({ hl: hl3, msg: a[end] + ' is in final position' });
+      if (!swapped) break;
+    }
+    var hlf = {}; for (var i = 0; i < n; i++) hlf[i] = 'sorted';
+    steps.push({ hl: hlf, msg: 'All sorted!' });
+    return steps;
+  }
+
+  // Insertion sort steps
+  function insertionSteps(a) {
+    var steps = [], n = a.length;
+    var hl0 = {}; hl0[0] = 'sorted';
+    steps.push({ hl: hl0, msg: 'First element ' + a[0] + ' is trivially sorted' });
+    for (var k = 1; k < n; k++) {
+      var hl = {}; for (var s = 0; s < k; s++) hl[s] = 'sorted'; hl[k] = 'comparing';
+      steps.push({ hl: hl, msg: 'Insert ' + a[k] + ' into sorted prefix' });
+      var j = k;
+      while (j > 0 && a[j-1] > a[j]) {
+        var hl2 = {}; for (var s = 0; s < k+1; s++) hl2[s] = 'sorted';
+        hl2[j] = 'swapping'; hl2[j-1] = 'swapping';
+        var t = a[j]; a[j] = a[j-1]; a[j-1] = t;
+        steps.push({ swap: [j-1, j], hl: hl2, msg: 'Shift ' + a[j] + ' right, move ' + a[j-1] + ' left' });
+        j--;
+      }
+      var hl3 = {}; for (var s = 0; s <= k; s++) hl3[s] = 'sorted';
+      steps.push({ hl: hl3, msg: a[j] + ' is in place — sorted prefix has ' + (k+1) + ' elements' });
+    }
+    var hlf = {}; for (var i = 0; i < n; i++) hlf[i] = 'sorted';
+    steps.push({ hl: hlf, msg: 'All sorted!' });
+    return steps;
+  }
+
+  // Merge sort steps (in-place visualization)
+  function mergeSteps(a) {
+    var steps = [], n = a.length;
+    function ms(lo, hi) {
+      if (hi - lo <= 1) return;
+      var mid = Math.floor((lo + hi) / 2);
+      ms(lo, mid);
+      ms(mid, hi);
+      // merge
+      var left = a.slice(lo, mid), right = a.slice(mid, hi);
+      var i = 0, j = 0, k = lo;
+      while (i < left.length && j < right.length) {
+        var hl = {};
+        hl[lo + i] = 'comparing'; hl[mid + j] = 'comparing';
+        steps.push({ hl: hl, msg: 'Merge: compare ' + left[i] + ' and ' + right[j] });
+        if (left[i] <= right[j]) {
+          a[k] = left[i]; i++;
+        } else {
+          a[k] = right[j]; j++;
+        }
+        var setObj = {}; setObj[k] = a[k];
+        var hl2 = {}; hl2[k] = 'merged';
+        steps.push({ set: setObj, hl: hl2, msg: 'Place ' + a[k] + ' at position ' + k });
+        k++;
+      }
+      while (i < left.length) {
+        a[k] = left[i];
+        var setObj = {}; setObj[k] = a[k];
+        var hl2 = {}; hl2[k] = 'merged';
+        steps.push({ set: setObj, hl: hl2, msg: 'Place remaining ' + a[k] });
+        i++; k++;
+      }
+      while (j < right.length) {
+        a[k] = right[j];
+        var setObj = {}; setObj[k] = a[k];
+        var hl2 = {}; hl2[k] = 'merged';
+        steps.push({ set: setObj, hl: hl2, msg: 'Place remaining ' + a[k] });
+        j++; k++;
+      }
+    }
+    ms(0, n);
+    var hlf = {}; for (var i = 0; i < n; i++) hlf[i] = 'sorted';
+    steps.push({ hl: hlf, msg: 'All sorted!' });
+    return steps;
+  }
+
+  // Quick sort steps
+  function quickSteps(a) {
+    var steps = [], n = a.length;
+    function qs(lo, hi) {
+      if (lo >= hi) {
+        if (lo === hi) {
+          var hl = {}; hl[lo] = 'sorted';
+          steps.push({ hl: hl, msg: a[lo] + ' is in final position' });
+        }
+        return;
+      }
+      var pivot = a[hi];
+      var hl = {}; hl[hi] = 'pivot';
+      steps.push({ hl: hl, msg: 'Pivot = ' + pivot + ' (last element)' });
+      var store = lo;
+      for (var i = lo; i < hi; i++) {
+        var hl2 = {}; hl2[hi] = 'pivot'; hl2[i] = 'comparing';
+        steps.push({ hl: hl2, msg: 'Compare ' + a[i] + ' with pivot ' + pivot });
+        if (a[i] < pivot) {
+          if (i !== store) {
+            var hl3 = {}; hl3[hi] = 'pivot'; hl3[i] = 'swapping'; hl3[store] = 'swapping';
+            var t = a[i]; a[i] = a[store]; a[store] = t;
+            steps.push({ swap: [i, store], hl: hl3, msg: 'Swap ' + a[store] + ' to position ' + store });
+          }
+          store++;
+        }
+      }
+      if (store !== hi) {
+        var hl4 = {}; hl4[store] = 'swapping'; hl4[hi] = 'swapping';
+        var t = a[store]; a[store] = a[hi]; a[hi] = t;
+        steps.push({ swap: [store, hi], hl: hl4, msg: 'Place pivot ' + a[store] + ' at position ' + store });
+      }
+      var hl5 = {}; hl5[store] = 'sorted';
+      steps.push({ hl: hl5, msg: a[store] + ' is in final position' });
+      qs(lo, store - 1);
+      qs(store + 1, hi);
+    }
+    qs(0, n - 1);
+    var hlf = {}; for (var i = 0; i < n; i++) hlf[i] = 'sorted';
+    steps.push({ hl: hlf, msg: 'All sorted!' });
+    return steps;
+  }
+
+  // Counting sort steps
+  function countingSteps(a) {
+    var steps = [], n = a.length;
+    var counts = [];
+    for (var i = 0; i <= MAX_VAL; i++) counts.push(0);
+    for (var i = 0; i < n; i++) {
+      var hl = {}; hl[i] = 'comparing';
+      counts[a[i]]++;
+      steps.push({ hl: hl, msg: 'Count ' + a[i] + ' — seen ' + counts[a[i]] + ' time(s)' });
+    }
+    var result = [];
+    for (var v = 0; v <= MAX_VAL; v++) {
+      for (var c = 0; c < counts[v]; c++) {
+        result.push(v);
+        var idx = result.length - 1;
+        var setObj = {}; setObj[idx] = v;
+        a[idx] = v;
+        var hl = {}; hl[idx] = 'merged';
+        steps.push({ set: setObj, hl: hl, msg: 'Place ' + v + ' at position ' + idx });
+      }
+    }
+    var hlf = {}; for (var i = 0; i < n; i++) hlf[i] = 'sorted';
+    steps.push({ hl: hlf, msg: 'All sorted — no comparisons needed!' });
+    return steps;
+  }
+
+  // Initialize all when Reveal is ready
+  Reveal.on('ready', function() {
+    makeViz('bubble', bubbleSteps);
+    makeViz('insertion', insertionSteps);
+    makeViz('merge', mergeSteps);
+    makeViz('quick', quickSteps);
+    makeViz('counting', countingSteps);
+  });
+})();
+</script>
 <script src="narration-player.js"></script>
 </body>
 </html>
