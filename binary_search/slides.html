@@ -448,6 +448,232 @@ print(commons(small, huge))  # [6, 99, 999999]</code></pre>
 
       <section>
         <div class="slide-content">
+  <p>You have a sorted list and a new value <code>x</code>. Where should
+  you insert it so the list stays sorted? Write
+  <code>insert_position(arr, x)</code>:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def insert_position(arr, x):
+    # Return the index where x should be inserted
+    # to keep arr sorted. If x already exists,
+    # return the index of the first occurrence.
+    # YOUR CODE HERE
+    pass
+
+print(insert_position([1, 3, 5, 7], 4))   # 2
+print(insert_position([1, 3, 5, 7], 5))   # 2 (before existing 5)
+print(insert_position([1, 3, 5, 7], 0))   # 0
+print(insert_position([1, 3, 5, 7], 9))   # 4</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def insert_position(arr, x):
+    lo, hi = 0, len(arr)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] < x:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+print(insert_position([1, 3, 5, 7], 4))   # 2
+print(insert_position([1, 3, 5, 7], 5))   # 2
+# This is exactly what Python's bisect.bisect_left does!</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: use <code>hi = len(arr)</code> (not <code>len-1</code>)
+    since the insertion point could be past the end.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: when <code>arr[mid] &lt; x</code>, the position is to the
+    right; otherwise it&rsquo;s at <code>mid</code> or to the left.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Given a sorted array and a target <code>x</code> (which may not be in
+  the array), find the <strong>closest</strong> value. Write
+  <code>closest(arr, x)</code>:</p>
+  <div class="code-stack" style="min-height:17em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def closest(arr, x):
+    # Return the element in sorted arr nearest to x
+    # YOUR CODE HERE
+    pass
+
+print(closest([1, 4, 6, 10], 5))    # 4 or 6 (either OK)
+print(closest([1, 4, 6, 10], 7))    # 6
+print(closest([1, 4, 6, 10], 0))    # 1
+print(closest([1, 4, 6, 10], 100))  # 10</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def closest(arr, x):
+    pos = insert_position(arr, x)
+    if pos == 0:
+        return arr[0]
+    if pos == len(arr):
+        return arr[-1]
+    if abs(arr[pos] - x) < abs(arr[pos - 1] - x):
+        return arr[pos]
+    return arr[pos - 1]
+
+print(closest([1, 4, 6, 10], 5))    # 4
+print(closest([1, 4, 6, 10], 7))    # 6
+print(closest([1, 4, 6, 10], 100))  # 10</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: reuse <code>insert_position</code> to find where
+    <code>x</code> would go.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: the closest value is either <code>arr[pos]</code> or
+    <code>arr[pos-1]</code> &mdash; compare distances. Watch the edges.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>A sorted array was <strong>rotated</strong>: the front was cut off
+  and glued to the back. The array <code>[1,2,3,4,5,6,7]</code> became
+  <code>[4,5,6,7,1,2,3]</code>. Find a target value in it.</p>
+  <p><strong>Before coding:</strong> at any <code>mid</code>, one half is
+  still sorted. How do you tell which half, and whether the target is
+  in that half?</p>
+  <div class="code-stack fragment" style="min-height:19em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def search_rotated(arr, x):
+    # Return index of x in rotated sorted array, or -1
+    # YOUR CODE HERE
+    pass
+
+print(search_rotated([4,5,6,7,0,1,2], 0))   # 4
+print(search_rotated([4,5,6,7,0,1,2], 5))   # 1
+print(search_rotated([4,5,6,7,0,1,2], 3))   # -1</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def search_rotated(arr, x):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == x:
+            return mid
+        if arr[lo] <= arr[mid]:       # left half is sorted
+            if arr[lo] <= x < arr[mid]:
+                hi = mid - 1
+            else:
+                lo = mid + 1
+        else:                          # right half is sorted
+            if arr[mid] < x <= arr[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+    return -1</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: if <code>arr[lo] &le; arr[mid]</code>, the left half is sorted.
+    Check if <code>x</code> falls in that range; if not, go right.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <h3>Finding the Peak of a Mountain</h3>
+  <p>This array goes <strong>up then down</strong>, like a mountain:</p>
+<pre><code>[1, 3, 5, 8, 12, 10, 7, 4, 2]</code></pre>
+  <p>Find the peak value. Compare <code>arr[mid]</code> with
+  <code>arr[mid + 1]</code>: if still going up, the peak is to the right.</p>
+  <div class="code-stack fragment" style="min-height:15em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def find_peak(arr):
+    # Return the maximum value in a mountain-shaped array
+    # YOUR CODE HERE
+    pass
+
+print(find_peak([1, 3, 5, 8, 12, 10, 7, 4, 2]))  # 12
+print(find_peak([1, 5, 3]))                         # 5</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def find_peak(arr):
+    lo, hi = 0, len(arr) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] < arr[mid + 1]:
+            lo = mid + 1
+        else:
+            hi = mid
+    return arr[lo]
+
+print(find_peak([1, 3, 5, 8, 12, 10, 7, 4, 2]))  # 12
+print(find_peak([1, 5, 3]))                         # 5</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: if <code>arr[mid] &lt; arr[mid+1]</code>, you&rsquo;re on the
+    uphill slope &mdash; set <code>lo = mid + 1</code>. Otherwise
+    <code>hi = mid</code>.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <h3>Binary Search on the Answer</h3>
+  <p>A conveyor belt has packages with weights. You must ship them all in
+  <code>days</code> days, loading packages <em>in order</em>. What is the
+  <strong>minimum ship capacity</strong>?</p>
+  <p><strong>Before coding:</strong> if the capacity is large enough, you
+  can ship in 1 day. If too small, you need more days. The number of days
+  is <em>decreasing</em> as capacity grows &mdash; perfect for binary search.</p>
+  <div class="code-stack fragment" style="min-height:21em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>def min_capacity(weights, days):
+    # Return smallest capacity that ships all in 'days' days
+    # Packages must stay in order
+    # YOUR CODE HERE
+    pass
+
+print(min_capacity([1,2,3,4,5,6,7,8,9,10], 5))  # 15
+print(min_capacity([3,2,2,4,1,4], 3))             # 6
+print(min_capacity([1,2,3,1,1], 4))                # 3</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def days_needed(weights, cap):
+    d, load = 1, 0
+    for w in weights:
+        if load + w > cap:
+            d += 1
+            load = 0
+        load += w
+    return d
+
+def min_capacity(weights, days):
+    lo, hi = max(weights), sum(weights)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if days_needed(weights, mid) <= days:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: binary search between <code>max(weights)</code> (minimum
+    possible) and <code>sum(weights)</code> (ship everything in 1 day).
+    For each candidate capacity, greedily count how many days it takes.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
   <h3>Finding the Bottom of a Valley</h3>
   <p>This array isn&rsquo;t sorted &mdash; it goes <strong>down then
   up</strong>, like a valley:</p>
@@ -537,6 +763,21 @@ print(find_min_convex([5, 3, 1, 2, 4]))  # 1</code></pre>
     <tr><td><code>commons</code></td>
         <td>Set intersection via search</td>
         <td>$m \log n$ vs $m \times n$</td></tr>
+    <tr><td><code>insert_position</code></td>
+        <td><code>bisect.bisect_left</code></td>
+        <td>Find where a value belongs</td></tr>
+    <tr><td><code>closest</code></td>
+        <td>Nearest-neighbor (1-D)</td>
+        <td>Insert position + compare neighbors</td></tr>
+    <tr><td><code>search_rotated</code></td>
+        <td>Rotated array search</td>
+        <td>One half is always sorted</td></tr>
+    <tr><td><code>find_peak</code></td>
+        <td>Peak element</td>
+        <td>Walk uphill &mdash; mirror of valley</td></tr>
+    <tr><td><code>min_capacity</code></td>
+        <td>Binary search on the answer</td>
+        <td>Search the <em>solution space</em>, not the data</td></tr>
     <tr><td><code>find_min_convex</code></td>
         <td>Ternary / gradient-style search</td>
         <td>&ldquo;Walk downhill&rdquo; &mdash; same idea as gradient descent</td></tr>
