@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Classes & Objects — Inventing the Model API — Slides</title>
+  <title>Classes &amp; Objects — Slides</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
 
@@ -25,10 +25,10 @@
     .reveal th, .reveal td { border: 1px solid #ddd; padding: 0.3em 0.6em; }
     .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
     .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
+    .reveal .code-stack { position: relative; }
+    .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .reveal .progress { display: none !important; }
     .chapter-footer { display: none; }
-    .chapter-footer a { color:#888; text-decoration:none; }
-    .chapter-footer a:hover { color:#c8a96e; }
-      .reveal .progress { display: none !important; }
     #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
     #top-progress-bar { height: 100%; width: 0%; background: #c8a96e; transition: width 0.3s ease; min-width: 2%; }
     #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
@@ -36,6 +36,32 @@
     #bottom-copyright a:hover { color: #c8a96e; }
     #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
     #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
+
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
 
     @media screen and (max-width: 768px) {
       .reveal .slide-content { font-size: 0.65em; }
@@ -48,6 +74,14 @@
       .reveal th, .reveal td { padding: 0.2em 0.4em; }
       .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
       #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
     }
   </style>
 <!-- Google tag (gtag.js) -->
@@ -64,11 +98,7 @@
   <nav class="slides-topnav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);padding:4px 16px;font-size:13px;font-family:sans-serif;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
     <a href="../index.html" style="color:#888;text-decoration:none;">&larr; All chapters</a>
     <span style="display:flex;gap:10px;align-items:center;">
-      <a href="index.html" style="color:#888;text-decoration:none;">Interactive</a>
       <strong style="color:#333;">Slides</strong>
-
-      <a href="https://colab.research.google.com/github/cloudxlab/learnbyinventing/blob/main/classes_and_objects/classes_and_objects.ipynb" target="_blank" style="color:#888;text-decoration:none;">Notebook (Colab)</a>
-
     </span>
   </nav>
   <div id="top-progress"><div id="top-progress-bar"></div></div>
@@ -117,231 +147,310 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 
       <!-- Title slide -->
       <section>
-        <h1>Classes & Objects — Inventing the Model API</h1>
-
-        <div class="slide-content slide-title"><p>So far your programs kept <em>data</em> (lists, dicts) and <em>behavior</em> (functions) in separate boxes, and you passed one to the other by hand. A <strong>class</strong> glues them together: an object carries its own data <em>and</em> the functions that work on it.</p>
-
-<p>Why should a machine-learning book care? Because a trained model <strong>is</strong> an object — some learned numbers plus a <code>predict</code> function that uses them. By the end of this chapter you will have invented the <code>fit</code>/<code>predict</code> pattern that scikit-learn, Keras, and PyTorch all use, hand-built a decision tree out of objects, and saved a model to a file.</p></div>
+        <h1>Classes &amp; Objects</h1>
+        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
           to advance &nbsp;|&nbsp;
           <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&larr;</kbd> to go back
         </p>
-
       </section>
 
 
-
-      <section>
-        <div class="slide-content"><div style="font-size:1.3em;">
-<div>
-<p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-<p>Build a tiny model API from scratch. Write a <code>Line</code> class with <code>fit(X, y)</code> and <code>predict(X)</code> (fit through the first two points), a <code>save(path)</code> method that writes it to JSON, and a <code>Line.load(path)</code> classmethod that rebuilds an identical object. Then write a subclass <code>Line2</code> that inherits from it and overrides <code>fit</code> to use all the points, via least squares.</p>
-<pre><code>class Line:
-    def fit(self, X, y): ...
-    def predict(self, X): ...
-    def save(self, path): ...
-    @classmethod
-    def load(cls, path): ...</code></pre>
-<pre><code>m = Line().fit([1, 3], [3, 7])
-m.predict([5])        # [11]
-m.save("m.json")
-Line.load("m.json").predict([5])   # [11]</code></pre>
-<p style="font-size:0.85em; color:#888;">Already got it? The next slides will guide you step by step.</p>
-</div>
-</div></div>
-      </section>
-
-
-
-
-
-      <!-- Part 1: From Dict to Class -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 1: From Dict to Class                               -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part1">
         <h2>Part 1: From Dict to Class</h2>
-
-        <div class="slide-content"><p>You could describe a customer with a dict: <code>customer = {"name": "Sandeep", "place": "India"}</code>. It works, but the data has no behavior: any code that wants to <em>do</em> something with a customer must live somewhere else.</p>
-</div>
-
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write a class <code>Customer</code> whose constructor takes
+  <code>name</code> and <code>place</code>. Add a method
+  <code>describe()</code> that returns <code>"&lt;name&gt; from &lt;place&gt;"</code>.</p>
+  <p style="font-size:0.85em; color:#888;">Already got it?
+  <a href="#/part2">Skip to Part 2</a>.</p>
+</div>
+      </section>
 
       <section>
-        <h3>Customer</h3>
         <div class="slide-content">
+  <p>You could describe a customer with a dictionary:</p>
+<pre><code>customer = {"name": "Sandeep", "place": "India"}</code></pre>
+  <p>It works, but the data has no <em>behavior</em>. Any code that wants
+  to do something with a customer must live somewhere else.</p>
+  <p>What if the data and the functions that work on it lived <em>together</em>
+  in one package?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>That&rsquo;s a <strong>class</strong>. It bundles data (attributes)
+    and behavior (methods) into one object.</p>
+  </div>
+</div>
+      </section>
 
-        <p>Write a class <code>Customer</code>:</p>
+      <section>
+        <div class="slide-content">
+  <p>Write a class <code>Customer</code>. When you call
+  <code>Customer("Sandeep", "India")</code>, Python creates an empty object
+  and runs <code>__init__(self, name, place)</code> on it. Store the
+  arguments as <code>self.name</code> and <code>self.place</code>.</p>
+  <div class="code-stack fragment" style="min-height:9em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class Customer:
+    def __init__(self, name, place):
+        # Store name and place on self
+        # YOUR CODE HERE
+        pass
 
-<ul>
-<li><code>Customer("Sandeep", "India")</code> stores the two values on the object.</li>
-<li>A method <code>describe()</code> returns <code>"&lt;name&gt; from &lt;place&gt;"</code>.</li>
-</ul>
+    def describe(self):
+        # Return "name from place"
+        # YOUR CODE HERE
+        pass
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>A class starts with <code>class Customer:</code>. The special method <code>__init__(self, name, place)</code> runs automatically when you write <code>Customer("Sandeep", "India")</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>Inside <code>__init__</code>, save the arguments on the object: <code>self.name = name</code> and <code>self.place = place</code>. Then <code>describe(self)</code> can use <code>self.name</code> and <code>self.place</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Solution</summary>
+c = Customer("Sandeep", "India")
+print(c.describe())  # "Sandeep from India"
+c2 = Customer("Alice", "UK")
+print(c2.describe())  # "Alice from UK"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>class Customer:
     def __init__(self, name, place):
         self.name = name
         self.place = place
+
     def describe(self):
-        return self.name + " from " + self.place</code></pre>
-    </details>
+        return self.name + " from " + self.place
 
-        </div>
-      </section>
-
-
-
-      <section>
-        <div class="slide-content"><p><strong>What just happened?</strong></p>
-
-<ul>
-<li><code>Customer("Sandeep", "India")</code> <strong>constructs</strong> an object: Python creates an empty object and calls your <code>__init__</code> with it as <code>self</code>.</li>
-<li><code>c.describe()</code> is exactly <code>Customer.describe(c)</code> — the object slides in as <code>self</code>. Try it: <code>Customer.describe(c)</code> returns the same string.</li>
-<li><code>c</code> and <code>c2</code> each carry their <strong>own</strong> <code>name</code> and <code>place</code>. One class, many objects.</li>
-</ul>
+c = Customer("Sandeep", "India")
+print(c.describe())  # "Sandeep from India"
+c2 = Customer("Alice", "UK")
+print(c2.describe())  # "Alice from UK"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: <code>self.name = name</code> inside <code>__init__</code>.
+    Then <code>describe</code> can use <code>self.name</code>.</p>
+  </div>
 </div>
       </section>
 
-
-
-
-
-      <!-- Part 2: A Model Is an Object — `TwoPointLine` -->
-      <section id="part2">
-        <h2>Part 2: A Model Is an Object — `TwoPointLine`</h2>
-
-        <div class="slide-content"><p>Remember the thermometer from <em>Expressions &amp; Functions</em>? Calibration data: current 1 → 30°, current 2 → 35°. What temperature is current 3? You solved it with two loose functions, <code>fit</code> and <code>predict</code>, and had to carry the <code>(m, c)</code> tuple between them yourself. Let the object carry it.</p>
-</div>
-
-      </section>
-
-
-
       <section>
-        <h3>TwoPointLine</h3>
         <div class="slide-content">
-
-        <p>Write a class <code>TwoPointLine</code> with:</p>
-
-<ul>
-<li><code>fit(x, y)</code> — <code>x</code> and <code>y</code> are lists of <strong>two</strong> values each: two points <code>(x[0], y[0])</code> and <code>(x[1], y[1])</code>. Compute the slope <code>m = (y2 - y1) / (x2 - x1)</code> and intercept <code>c = y2 - m * x2</code>, and store them on <code>self</code>.</li>
-<li><code>predict(xs)</code> — take a <em>list</em> of x values, return the list of <code>m * x + c</code>.</li>
-</ul>
-
-<div class="codehilite">
-<pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">TwoPointLine</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="mi">3</span><span class="p">])</span>       <span class="c1"># [5.0]</span>
-</code></pre>
+  <p><strong>What just happened?</strong></p>
+  <ul>
+    <li><code>Customer("Sandeep", "India")</code> <strong>constructs</strong>
+    an object: Python calls <code>__init__</code> with it as <code>self</code>.</li>
+    <li><code>c.describe()</code> is exactly
+    <code>Customer.describe(c)</code> &mdash; the object slides in as
+    <code>self</code>. Try it!</li>
+    <li><code>c</code> and <code>c2</code> each carry their <strong>own</strong>
+    <code>name</code> and <code>place</code>. One class, many objects.</li>
+  </ul>
 </div>
+      </section>
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p><code>fit</code> receives two lists, each of length 2. Use index <code>[0]</code> and <code>[1]</code> to get the two points. The slope formula is <code>m = (y[1] - y[0]) / (x[1] - x[0])</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>After computing <code>m</code>, get <code>c = y[0] - m * x[0]</code>. Store both on the object with <code>self.m = m</code> and <code>self.c = c</code>. In <code>predict</code>, loop through the input list and return <code>[self.m * xi + self.c for xi in xs]</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Solution</summary>
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 2: TwoPointLine — the fit/predict pattern           -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part2">
+        <h2>Part 2: A Model Is an Object</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write a class <code>TwoPointLine</code> with <code>fit(x, y)</code>
+  (learns slope and intercept from two points) and
+  <code>predict(xs)</code> (uses them to make predictions). Add a
+  <code>ValueError</code> if the user passes more or fewer than two points.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part3">Skip to Part 3</a>.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>A thermometer reads current 1 &rarr; 30&deg;, current 2 &rarr; 35&deg;.
+  What temperature does current 3 correspond to?</p>
+  <p>Two points define a line: <code>y = m*x + c</code>. If the object
+  <em>learns</em> <code>m</code> and <code>c</code> once (the <strong>fit</strong>
+  step), it can answer any future question (the <strong>predict</strong> step).</p>
+  <p><strong>Before coding:</strong> given points <code>(x1, y1)</code> and
+  <code>(x2, y2)</code>, how do you compute slope <code>m</code> and
+  intercept <code>c</code>?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>$m = \frac{y_2 - y_1}{x_2 - x_1}$, then $c = y_1 - m \cdot x_1$.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Write <code>TwoPointLine</code>:</p>
+  <div class="code-stack" style="min-height:11em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class TwoPointLine:
+    def fit(self, x, y):
+        # x, y are lists of 2 values each
+        # Compute m and c, store on self
+        # Return self (so you can chain: model.fit(...).predict(...))
+        # YOUR CODE HERE
+        pass
+
+    def predict(self, xs):
+        # Return [m*xi + c for each xi in xs]
+        # YOUR CODE HERE
+        pass
+
+model = TwoPointLine()
+model.fit([2, 5], [3, 9])
+print(model.predict([3]))  # [5.0]
+
+therm = TwoPointLine()
+therm.fit([1, 2], [30, 35])
+print(therm.predict([3]))  # [40.0]</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>class TwoPointLine:
     def fit(self, x, y):
         self.m = (y[1] - y[0]) / (x[1] - x[0])
         self.c = y[0] - self.m * x[0]
         return self
+
     def predict(self, xs):
-        return [self.m * xi + self.c for xi in xs]</code></pre>
-    </details>
+        return [self.m * xi + self.c for xi in xs]
 
-        </div>
-      </section>
+model = TwoPointLine()
+model.fit([2, 5], [3, 9])
+print(model.predict([3]))  # [5.0]
 
-
-
-      <section>
-        <div class="slide-content"><p><strong>You just invented the scikit-learn API</strong></p>
-
-<div class="codehilite">
-<pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_new</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>Same shape: construct → <code>fit</code> stores learned parameters on the object → <code>predict</code> uses them. Every model in the rest of this book fits this mold; the only thing that changes is <em>how</em> <code>fit</code> finds the parameters.</p>
+therm = TwoPointLine()
+therm.fit([1, 2], [30, 35])
+print(therm.predict([3]))  # [40.0]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: slope: <code>self.m = (y[1]-y[0]) / (x[1]-x[0])</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: return <code>self</code> from <code>fit</code> so you can
+    chain: <code>TwoPointLine().fit(...).predict(...)</code>.</p>
+  </div>
 </div>
       </section>
 
-
-
       <section>
-        <h3>Guard the Gate</h3>
         <div class="slide-content">
+  <p><strong>You just invented the scikit-learn API:</strong></p>
+<pre><code>from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X, y)
+model.predict(X_new)</code></pre>
+  <p>Same shape: construct &rarr; <code>fit</code> stores learned parameters
+  on the object &rarr; <code>predict</code> uses them. Every model in the
+  rest of this book follows this pattern.</p>
+</div>
+      </section>
 
-        <p><code>fit</code> silently misbehaves if you hand it three points. Make it fail loudly instead: copy your class below and make <code>fit</code> <strong>raise</strong> a <code>ValueError</code> unless both lists have exactly two values.</p>
+      <section>
+        <div class="slide-content">
+  <p><code>fit</code> silently misbehaves if you hand it three points.
+  Make it fail loudly: raise a <code>ValueError</code> unless both lists
+  have exactly two values.</p>
+  <div class="code-stack" style="min-height:9em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class TwoPointLine:
+    def fit(self, x, y):
+        # Raise ValueError if not exactly 2 points
+        # Then compute m, c as before
+        # YOUR CODE HERE
+        pass
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>At the top of <code>fit</code>, check <code>len(x)</code> and <code>len(y)</code>. If either is not 2, raise an error.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>Use: <code>if len(x) != 2 or len(y) != 2: raise ValueError("need exactly two points")</code></p>
-    </details>
+    def predict(self, xs):
+        return [self.m * xi + self.c for xi in xs]
 
-        </div>
+model = TwoPointLine()
+model.fit([1, 2, 3], [4, 5, 6])  # should raise ValueError</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>class TwoPointLine:
+    def fit(self, x, y):
+        if len(x) != 2 or len(y) != 2:
+            raise ValueError("need exactly two points")
+        self.m = (y[1] - y[0]) / (x[1] - x[0])
+        self.c = y[0] - self.m * x[0]
+        return self
+
+    def predict(self, xs):
+        return [self.m * xi + self.c for xi in xs]
+
+model = TwoPointLine()
+model.fit([1, 2, 3], [4, 5, 6])  # ValueError!</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: check <code>len(x)</code> and <code>len(y)</code> at the
+    top of <code>fit</code>.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: <code>if len(x) != 2 or len(y) != 2: raise ValueError("need exactly two points")</code></p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 3: Inheritance — Classes That Extend Classes -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 3: Inheritance                                      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part3">
-        <h2>Part 3: Inheritance — Classes That Extend Classes</h2>
-
-        <div class="slide-content"><p>All animals eat; only dogs bark. Instead of repeating <code>eat</code> in every animal class, write it once and <strong>inherit</strong> it.</p>
-</div>
-
+        <h2>Part 3: Inheritance</h2>
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>Animal</code> with <code>eat()</code>, then
+  <code>Dog(Animal)</code> with <code>bark()</code> and
+  <code>Cat(Animal)</code> with <code>meow()</code> &mdash; without
+  redefining <code>eat</code> in either child.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part4">Skip to Part 4</a>.</p>
+</div>
+      </section>
 
       <section>
-        <h3>Animal, Dog, Cat</h3>
         <div class="slide-content">
+  <p>All animals eat; only dogs bark. Instead of repeating
+  <code>eat</code> in every animal class, write it <em>once</em> and
+  <strong>inherit</strong> it.</p>
+  <p>The class in parentheses &mdash; <code>class Dog(Animal):</code> &mdash;
+  is the parent. Everything the parent can do, the child gets for free.</p>
+  <div class="code-stack fragment" style="min-height:9em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class Animal:
+    def eat(self):
+        # YOUR CODE HERE
+        pass
 
-        <ul>
-<li><code>Animal</code> has a method <code>eat()</code> returning <code>"eating"</code>.</li>
-<li><code>Dog(Animal)</code> adds <code>bark()</code> returning <code>"woof!"</code> — and must <strong>not</strong> redefine <code>eat</code>.</li>
-<li><code>Cat(Animal)</code> adds <code>meow()</code> returning <code>"meow"</code>.</li>
-</ul>
+class Dog(Animal):
+    def bark(self):
+        # YOUR CODE HERE
+        pass
 
-<p>The class in parentheses — <code>class Dog(Animal):</code> — is the parent. Everything the parent can do, the child can do too.</p>
+class Cat(Animal):
+    def meow(self):
+        # YOUR CODE HERE
+        pass
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>Start with <code>class Animal:</code> and give it a method <code>def eat(self): return "eating"</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>Write <code>class Dog(Animal):</code> — the <code>(Animal)</code> part means Dog inherits everything from Animal. Just add <code>bark(self)</code>. Do not redefine <code>eat</code>. Do the same pattern for <code>Cat</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Solution</summary>
+d = Dog()
+print(d.eat())   # "eating" (inherited!)
+print(d.bark())  # "woof!"</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>class Animal:
     def eat(self):
         return "eating"
@@ -352,185 +461,275 @@ class Dog(Animal):
 
 class Cat(Animal):
     def meow(self):
-        return "meow"</code></pre>
-    </details>
+        return "meow"
 
-        </div>
+d = Dog()
+print(d.eat())   # "eating" (inherited!)
+print(d.bark())  # "woof!"</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: <code>Dog</code> only defines <code>bark</code>. It inherits
+    <code>eat</code> from <code>Animal</code> automatically.</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>Quick Check — Why Inherit?</h3>
         <div class="slide-content">
-
-        <p>In the <code>Animal</code>/<code>Dog</code>/<code>Cat</code> example, <code>Dog</code> inherits from <code>Animal</code>. What is the main benefit of this inheritance?</p>
-
-
-        <p><strong>A.</strong> Dogs run faster in Python than standalone classes</p>
-
-        <p><strong>B.</strong> Shared behavior (like <code>eat</code>) is written once in <code>Animal</code>, and each subclass only adds or changes what is different</p>
-
-        <p><strong>C.</strong> Python requires all classes to inherit from something</p>
-
-        <p><strong>D.</strong> It prevents you from creating <code>Animal</code> objects directly</p>
-
-        <div class="fragment" data-fragment-index="0">
-        <p><strong>Answer: B.</strong> Inheritance lets you write shared code once in the parent class. The child classes get it for free and only need to add their own unique behavior.</p>
-        </div>
-
-        </div>
+  <p><strong>Quick Check:</strong> <code>Dog</code> inherits from
+  <code>Animal</code>. What is the main benefit?</p>
+  <p><strong>A.</strong> Dogs run faster in Python than standalone classes</p>
+  <p><strong>B.</strong> Shared behavior (<code>eat</code>) is written once;
+  each subclass only adds what is different</p>
+  <p><strong>C.</strong> Python requires all classes to inherit from something</p>
+  <p><strong>D.</strong> It prevents you from creating <code>Animal</code>
+  objects directly</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: B.</strong> Write shared code once in the parent.
+    Children get it for free and only add their own unique behavior.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 4: Objects That Contain Objects — Trees -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 4: Objects That Contain Objects — Trees              -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part4">
-        <h2>Part 4: Objects That Contain Objects — Trees</h2>
+        <h2>Part 4: Objects That Contain Objects</h2>
+      </section>
 
-        <div class="slide-content"><p>An object's attributes can be <em>other objects</em> — that is how you build trees. Here is a company's expense tree: each node is a department with its own expense, and (up to) two sub-departments:</p>
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write a <code>Node(val, left, right)</code> class with
+  <code>total()</code>, <code>count()</code>, <code>find(x)</code>, and
+  <code>max_depth()</code> &mdash; all recursive.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part5">Skip to Part 5</a>.</p>
+</div>
+      </section>
 
+      <section>
+        <div class="slide-content">
+  <p>An object&rsquo;s attributes can be <em>other objects</em> &mdash;
+  that&rsquo;s how you build trees. Here&rsquo;s a company expense tree:</p>
 <pre><code>        10
       /    \
      4      5
     / \    /  \
-   1  11  15  16
-</code></pre>
+   1  11  15  16</code></pre>
+  <p>Each node stores a value and (optionally) two children.</p>
+  <p>What is the total of all nodes? How many nodes are there?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Total: 10 + 4 + 1 + 11 + 5 + 15 + 16 = <strong>62</strong>.
+    Count: <strong>7</strong> nodes.</p>
+  </div>
 </div>
-
       </section>
 
-
-
       <section>
-        <h3>Node with total and count</h3>
         <div class="slide-content">
+  <p>Write <code>Node</code> with <code>total()</code> and <code>count()</code>.
+  Each method calls <em>the same method on its children</em> &mdash;
+  recursion on objects.</p>
+  <div class="code-stack" style="min-height:11em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class Node:
+    def __init__(self, val, left=None, right=None):
+        # YOUR CODE HERE
+        pass
 
-        <p>Write a class <code>Node</code>:</p>
+    def total(self):
+        # This node's val + children's totals
+        # YOUR CODE HERE
+        pass
 
-<ul>
-<li><code>Node(val, left=None, right=None)</code> stores the value and the two children.</li>
-<li><code>total()</code> returns this node's <code>val</code> plus the totals of its children (skip a child if it is <code>None</code>).</li>
-<li><code>count()</code> returns how many nodes are in this subtree.</li>
-</ul>
+    def count(self):
+        # 1 (this node) + children's counts
+        # YOUR CODE HERE
+        pass
 
-<p>Notice the recursion: a method calling <em>the same method on its children</em>.</p>
-
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>In <code>__init__</code>, store <code>self.val</code>, <code>self.left</code>, and <code>self.right</code>. For <code>total()</code>, start with <code>self.val</code>, then add the left child's total if it is not <code>None</code>, and the right child's total if it is not <code>None</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>For <code>count()</code>, a single node counts as 1. Add <code>self.left.count()</code> if the left child exists, and similarly for right. The pattern is the same as <code>total()</code> but you add 1 instead of <code>self.val</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Solution</summary>
+tree = Node(10, Node(4, Node(1), Node(11)), Node(5, Node(15), Node(16)))
+print(tree.total())  # 62
+print(tree.count())  # 7</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val
         self.left = left
         self.right = right
+
     def total(self):
         s = self.val
         if self.left:  s += self.left.total()
         if self.right: s += self.right.total()
         return s
+
     def count(self):
         c = 1
         if self.left:  c += self.left.count()
         if self.right: c += self.right.count()
-        return c</code></pre>
-    </details>
+        return c
 
-        </div>
+tree = Node(10, Node(4, Node(1), Node(11)), Node(5, Node(15), Node(16)))
+print(tree.total())  # 62
+print(tree.count())  # 7</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: <code>total</code>: start with <code>self.val</code>,
+    add child totals if they exist.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: check <code>if self.left:</code> before calling
+    <code>self.left.total()</code> (<code>None</code> has no methods).</p>
+  </div>
+</div>
       </section>
-
-
 
       <section>
-        <h3>More Tree Methods</h3>
         <div class="slide-content">
+  <p>Add more methods to <code>Node</code> (copy your class and extend it):</p>
+  <ul>
+    <li><code>find(x)</code> &mdash; <code>True</code> if <code>x</code>
+    appears anywhere in the subtree</li>
+    <li><code>max_depth()</code> &mdash; longest root-to-leaf path
+    (a lone node has depth 1)</li>
+    <li><code>apply(func)</code> &mdash; replace every node&rsquo;s
+    <code>val</code> with <code>func(val)</code>, in place</li>
+  </ul>
+  <div class="code-stack fragment" style="min-height:11em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code># Add these methods to your Node class:
+def find(self, x):
+    # YOUR CODE HERE
+    pass
 
-        <p>Extend your <code>Node</code> class (copy it and add methods):</p>
+def max_depth(self):
+    # Careful: don't call .max_depth() on None!
+    # YOUR CODE HERE
+    pass
 
-<ul>
-<li><code>min_val()</code> / <code>max_val()</code> — smallest / largest value in the subtree.</li>
-<li><code>find(x)</code> — <code>True</code> if <code>x</code> appears anywhere in the subtree.</li>
-<li><code>max_depth()</code> — length of the longest root-to-leaf path (a lone node has depth 1). Careful: the naive <code>max(self.left.max_depth(), self.right.max_depth()) + 1</code> crashes on a leaf — handle <code>None</code> children.</li>
-<li><code>apply(func)</code> — replace <strong>every</strong> node's <code>val</code> with <code>func(val)</code>, in place.</li>
-</ul>
+def apply(self, func):
+    # YOUR CODE HERE
+    pass
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p><code>min_val()</code> follows the same pattern as <code>total()</code>: start with <code>self.val</code>, then compare with the children's <code>min_val()</code> if they exist. Use Python's built-in <code>min()</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>For <code>max_depth()</code>, a leaf (no children) has depth 1. Otherwise, take the <code>max</code> of the children's depths and add 1. Check if each child is <code>None</code> before calling <code>max_depth()</code> on it — treat a missing child as depth 0.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 3</summary>
-      <p>For <code>apply(func)</code>: set <code>self.val = func(self.val)</code>, then call <code>self.left.apply(func)</code> and <code>self.right.apply(func)</code> if they exist. No return value needed — the changes happen in place.</p>
-    </details>
+tree.find(11)      # True
+tree.find(99)      # False
+tree.max_depth()   # 3
+tree.apply(lambda x: x * 2)
+tree.total()       # 124</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>def find(self, x):
+    if self.val == x:
+        return True
+    if self.left and self.left.find(x):
+        return True
+    if self.right and self.right.find(x):
+        return True
+    return False
 
-        </div>
+def max_depth(self):
+    left_d = self.left.max_depth() if self.left else 0
+    right_d = self.right.max_depth() if self.right else 0
+    return 1 + max(left_d, right_d)
+
+def apply(self, func):
+    self.val = func(self.val)
+    if self.left:  self.left.apply(func)
+    if self.right: self.right.apply(func)</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: for <code>max_depth</code>, treat a missing child as depth 0.
+    A leaf returns <code>1 + max(0, 0) = 1</code>.</p>
+  </div>
+</div>
       </section>
 
 
-
-
-
-      <!-- Part 5: A Decision Tree Is an Object -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 5: A Decision Tree Is an Object                     -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part5">
         <h2>Part 5: A Decision Tree Is an Object</h2>
-
-        <div class="slide-content"><p>You get a job offer. Do you take it? Your (very rational) rules:</p>
-
-<ol>
-<li>If the salary score is below 1 → <strong>No</strong>.</li>
-<li>Otherwise, if the learning opportunity score is below 1 → <strong>No</strong>.</li>
-<li>Otherwise, if the distance score is below 1 → <strong>Yes</strong>; too far → <strong>No</strong>.</li>
-</ol>
-
-<p>That is a tree of decisions — and you can build it from objects.</p>
-</div>
-
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>DecisionNode</code>, <code>Yes</code>, and <code>No</code>
+  classes. Build a job-offer decision tree and test it with
+  <code>.answer({"salary": 2, "learning": 0.5, "distance": 3})</code>.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part6">Skip to Part 6</a>.</p>
+</div>
+      </section>
 
       <section>
-        <h3>DecisionNode, Yes, No</h3>
         <div class="slide-content">
+  <p>You get a job offer. Your rules:</p>
+  <ol>
+    <li>If salary score &lt; 1 &rarr; <strong>No</strong></li>
+    <li>Otherwise, if learning opportunity &lt; 1 &rarr; <strong>No</strong></li>
+    <li>Otherwise, if distance &lt; 1 &rarr; <strong>Yes</strong>;
+    too far &rarr; <strong>No</strong></li>
+  </ol>
+  <p>That&rsquo;s a tree of decisions. Each node checks one criterion
+  and delegates to a child. Leaves give the final answer.</p>
+  <p>How do you represent the leaves? They don&rsquo;t check anything &mdash;
+  they just return <code>True</code> or <code>False</code>.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><code>Yes</code> and <code>No</code> classes that inherit from
+    <code>DecisionNode</code> but override <code>answer</code> to return
+    a constant.</p>
+  </div>
+</div>
+      </section>
 
-        <ul>
-<li><code>DecisionNode(criteria, boundary, left, right)</code> stores all four. Its method <code>answer(circumstance)</code> looks up <code>circumstance[self.criteria]</code> (circumstance is a dict) and <strong>delegates</strong>: How should the node decide which child to ask? What role does the <code>boundary</code> play?</li>
-<li><code>Yes(DecisionNode)</code> and <code>No(DecisionNode)</code> are leaf classes: their <code>answer</code> ignores the circumstance and returns <code>True</code> / <code>False</code>. Give them their own no-argument <code>__init__</code>.</li>
-</ul>
+      <section>
+        <div class="slide-content">
+  <div class="code-stack" style="min-height:13em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class DecisionNode:
+    def __init__(self, criteria, boundary, left, right):
+        # Store all four
+        # YOUR CODE HERE
+        pass
 
-<p>No <code>if</code>-chains about salaries anywhere — the <em>structure</em> of the objects encodes the rules.</p>
+    def answer(self, circumstance):
+        # Look up circumstance[self.criteria]
+        # If < boundary -> ask left; else -> ask right
+        # YOUR CODE HERE
+        pass
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p><code>DecisionNode.__init__</code> stores <code>criteria</code>, <code>boundary</code>, <code>left</code>, and <code>right</code>. In <code>answer(circumstance)</code>, look up the value: <code>val = circumstance[self.criteria]</code>. If <code>val &lt; self.boundary</code>, ask the left child; otherwise ask the right child.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p><code>Yes</code> and <code>No</code> inherit from <code>DecisionNode</code> but their <code>__init__</code> takes no arguments (just <code>self</code>) — they are leaves. Their <code>answer</code> ignores <code>circumstance</code> and returns <code>True</code> or <code>False</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Solution</summary>
+class Yes(DecisionNode):
+    def __init__(self): pass
+    def answer(self, circumstance):
+        # YOUR CODE HERE
+        pass
+
+class No(DecisionNode):
+    def __init__(self): pass
+    def answer(self, circumstance):
+        # YOUR CODE HERE
+        pass</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>class DecisionNode:
     def __init__(self, criteria, boundary, left, right):
         self.criteria = criteria
         self.boundary = boundary
         self.left = left
         self.right = right
+
     def answer(self, circumstance):
-        if circumstance[self.criteria] &lt; self.boundary:
+        if circumstance[self.criteria] < self.boundary:
             return self.left.answer(circumstance)
         return self.right.answer(circumstance)
 
@@ -541,233 +740,322 @@ class Yes(DecisionNode):
 class No(DecisionNode):
     def __init__(self): pass
     def answer(self, circumstance): return False</code></pre>
-    </details>
-
-        </div>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: <code>answer</code> looks up
+    <code>circumstance[self.criteria]</code>. If &lt; boundary, ask
+    left child; otherwise ask right.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: <code>Yes.answer</code> always returns <code>True</code>;
+    <code>No.answer</code> always returns <code>False</code>.</p>
+  </div>
+</div>
       </section>
 
-
-
       <section>
-        <div class="slide-content"><p><strong>This is a real decision tree</strong></p>
+        <div class="slide-content">
+  <p>Now build the job-offer tree and test it:</p>
+<pre><code>offer_tree = DecisionNode("salary", 1,
+    No(),
+    DecisionNode("learning", 1,
+        No(),
+        DecisionNode("distance", 1,
+            Yes(),
+            No()
+        )
+    )
+)</code></pre>
+  <div class="fragment" data-fragment-index="0">
+<pre><code>print(offer_tree.answer({"salary": 2, "learning": 2, "distance": 0.5}))
+# True (good salary, good learning, short distance)
 
-<p>You built its structure by hand. The <em>Decision Trees</em> chapter later in this book answers the natural next question: given a table of past decisions, how can <code>fit</code> discover the right criteria and boundaries <strong>automatically</strong>? Same object, learned instead of hand-crafted.</p>
+print(offer_tree.answer({"salary": 0.5, "learning": 2, "distance": 0.5}))
+# False (salary too low)
+
+print(offer_tree.answer({"salary": 2, "learning": 2, "distance": 3}))
+# False (too far)</code></pre>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>No <code>if</code>-chains about salaries anywhere &mdash; the
+    <em>structure</em> of the objects encodes the rules. The Decision Trees
+    chapter later will learn this structure automatically from data.</p>
+  </div>
 </div>
       </section>
 
 
-
-      <section>
-        <h3>Quick Check — Classes vs. Dicts</h3>
-        <div class="slide-content">
-
-        <p>You built a decision tree using <code>DecisionNode</code>, <code>Yes</code>, and <code>No</code> classes. Could you have represented the same tree using nested dictionaries instead? What would you lose?</p>
-
-
-        <p><strong>A.</strong> Dictionaries cannot be nested, so it is impossible</p>
-
-        <p><strong>B.</strong> It would work, but you would lose the ability to call methods like <code>.answer()</code> directly on the tree — you would need separate functions that know the dict structure</p>
-
-        <p><strong>C.</strong> Dictionaries are faster, so you would actually gain performance</p>
-
-        <p><strong>D.</strong> You would lose nothing — classes and dicts are interchangeable</p>
-
-        <div class="fragment" data-fragment-index="0">
-        <p><strong>Answer: B.</strong> Dicts can be nested, but they carry only data. With classes, the object itself knows how to <code>.answer()</code> a question. With dicts you would need a separate function that walks the nested structure manually.</p>
-        </div>
-
-        </div>
-      </section>
-
-
-
-
-
-      <!-- Part 6: Saving Objects to Files -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 6: Saving Objects to Files                          -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part6">
         <h2>Part 6: Saving Objects to Files</h2>
-
-        <div class="slide-content"><p>Your program built a useful tree — then it exits, and the tree is gone. A model you cannot save is a model you must retrain every time. Let's fix that by saving it to a file.</p>
-
-<p>JSON files can hold dicts, lists, numbers, strings and booleans — but not your custom objects. So the plan is: <strong>object → dict → JSON file</strong>, and back again.</p>
-</div>
-
       </section>
 
-
-
       <section>
-        <h3>to_dict and from_dict</h3>
         <div class="slide-content">
-
-        <ul>
-<li><code>to_dict(node)</code> — a <code>Yes</code> leaf becomes <code>{"leaf": True}</code>, a <code>No</code> leaf becomes <code>{"leaf": False}</code>, and an inner node becomes <code>{"criteria": ..., "boundary": ..., "left": &lt;dict&gt;, "right": &lt;dict&gt;}</code> (children converted recursively). <strong>Hint:</strong> <code>isinstance(node, Yes)</code> tells leaves apart.</li>
-<li><code>from_dict(d)</code> — the exact inverse, rebuilding real objects.</li>
-</ul>
-
-<p>The test saves the offer tree to a real file, loads it back, and checks that the reloaded tree gives the same answers.</p>
-
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>In <code>to_dict</code>, first check: is the node a <code>Yes</code> leaf? Return <code>{"leaf": True}</code>. A <code>No</code> leaf? Return <code>{"leaf": False}</code>. Use <code>isinstance(node, Yes)</code> to tell them apart.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>For an inner node, return a dict with <code>"criteria"</code>, <code>"boundary"</code>, <code>"left": to_dict(node.left)</code>, and <code>"right": to_dict(node.right)</code>. For <code>from_dict</code>, check if the dict has a <code>"leaf"</code> key — if so, return <code>Yes()</code> or <code>No()</code>. Otherwise, rebuild a <code>DecisionNode</code> and recursively call <code>from_dict</code> on the children.</p>
-    </details>
-
-        </div>
+  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
+  <p>Write <code>to_dict(node)</code> and <code>from_dict(d)</code> that
+  convert a decision tree to/from a plain dictionary, so you can save it
+  as JSON.</p>
+  <p style="font-size:0.85em; color:#888;">Got it?
+  <a href="#/part7">Skip to Part 7</a>.</p>
+</div>
       </section>
 
-
+      <section>
+        <div class="slide-content">
+  <p>Your program built a useful tree &mdash; then it exits, and the tree
+  is gone. JSON can hold dicts, lists, numbers, strings &mdash; but not
+  your custom objects. So the plan is:</p>
+  <p style="text-align:center;"><strong>object &rarr; dict &rarr; JSON file</strong>,
+  and back again.</p>
+  <p><strong>Before coding:</strong> a <code>Yes</code> leaf becomes
+  <code>{"leaf": True}</code>. A <code>No</code> leaf becomes
+  <code>{"leaf": False}</code>. An inner node becomes
+  <code>{"criteria": ..., "boundary": ..., "left": &lt;dict&gt;, "right": &lt;dict&gt;}</code>.</p>
+  <p>How do you tell a leaf from an inner node?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><code>isinstance(node, Yes)</code> and <code>isinstance(node, No)</code>
+    distinguish leaves from inner nodes.</p>
+  </div>
+</div>
+      </section>
 
       <section>
-        <div class="slide-content"><p><strong>Aside — <code>pickle</code></strong></p>
+        <div class="slide-content">
+  <div class="code-stack" style="min-height:12em;">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>import json
 
-<p>Python's <code>pickle</code> module can serialize almost any object in one line (<code>pickle.dump(offer_tree, f)</code>), no <code>to_dict</code> needed. So why bother? A pickle file is Python-only, unreadable by humans, and unsafe to load from untrusted sources. Your JSON file is none of those things. Real ML tooling makes the same trade-off: scikit-learn models ship as pickles (via <code>joblib</code>), while model <em>configs</em> travel as JSON or YAML.</p>
+def to_dict(node):
+    # Yes -> {"leaf": True}, No -> {"leaf": False}
+    # Inner -> {"criteria":..., "boundary":..., "left":..., "right":...}
+    # YOUR CODE HERE
+    pass
+
+def from_dict(d):
+    # Inverse of to_dict
+    # YOUR CODE HERE
+    pass
+
+d = to_dict(offer_tree)
+print(json.dumps(d, indent=2))
+
+rebuilt = from_dict(d)
+print(rebuilt.answer({"salary": 2, "learning": 2, "distance": 0.5}))
+# True (same as original)</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>import json
+
+def to_dict(node):
+    if isinstance(node, Yes):
+        return {"leaf": True}
+    if isinstance(node, No):
+        return {"leaf": False}
+    return {
+        "criteria": node.criteria,
+        "boundary": node.boundary,
+        "left": to_dict(node.left),
+        "right": to_dict(node.right),
+    }
+
+def from_dict(d):
+    if "leaf" in d:
+        return Yes() if d["leaf"] else No()
+    return DecisionNode(
+        d["criteria"], d["boundary"],
+        from_dict(d["left"]), from_dict(d["right"])
+    )</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="0">
+    <p>Hint 1: check <code>isinstance(node, Yes)</code> first. For inner
+    nodes, recursively convert children.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint 2: in <code>from_dict</code>, check <code>"leaf" in d</code>
+    to decide if it&rsquo;s a leaf.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Aside &mdash; pickle:</strong> Python&rsquo;s <code>pickle</code>
+  can serialize any object in one line. So why bother with JSON?</p>
+  <ul>
+    <li>Pickle is Python-only, unreadable by humans, and unsafe to load
+    from untrusted sources</li>
+    <li>JSON is language-agnostic, human-readable, and safe</li>
+  </ul>
+  <p>Real ML tools make the same trade-off: scikit-learn models ship as
+  pickles (via <code>joblib</code>), while model <em>configs</em> travel
+  as JSON or YAML.</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Quick Check:</strong> You converted your decision tree to a
+  dict and saved it as JSON. Could you have used nested dictionaries for
+  the tree in the first place, skipping classes entirely?</p>
+  <p><strong>A.</strong> Dictionaries cannot be nested</p>
+  <p><strong>B.</strong> It would work, but you lose <code>.answer()</code>
+  &mdash; you&rsquo;d need a separate function that walks the structure</p>
+  <p><strong>C.</strong> Dictionaries are faster</p>
+  <p><strong>D.</strong> You would lose nothing</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    <strong>Answer: B.</strong> Dicts carry only data. With classes, the
+    object itself knows how to <code>.answer()</code> a question. With dicts
+    you need a separate function that walks the structure manually.</p>
+  </div>
 </div>
       </section>
 
 
-
-
-
-      <!-- Part 7: Bonus Challenge — `FitPlane` -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 7: Bonus — FitPlane                                 -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part7">
-        <h2>Part 7: Bonus Challenge — `FitPlane`</h2>
-
-        <div class="slide-content"><p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations.</p>
-</div>
-
+        <h2>Part 7: Bonus &mdash; FitPlane</h2>
       </section>
 
-
-
       <section>
-        <h3>FitPlane</h3>
         <div class="slide-content">
-
-        <p><code>TwoPointLine</code> fits a line through 2 points. In 3D, <strong>three</strong> points determine a plane <code>z = a*x + b*y + d</code> — and finding <code>a</code>, <code>b</code>, <code>d</code> means solving three linear equations:</p>
-
+  <p><code>TwoPointLine</code> fits a line through 2 points. In 3D,
+  <strong>three</strong> points determine a plane $z = ax + by + d$.
+  Finding $a$, $b$, $d$ means solving three linear equations:</p>
 <pre><code>x1*a + y1*b + 1*d = z1
 x2*a + y2*b + 1*d = z2
-x3*a + y3*b + 1*d = z3
-</code></pre>
+x3*a + y3*b + 1*d = z3</code></pre>
+  <p>You already own a tool for that: <code>solve_equations</code> from
+  the Loops and Arrays chapter.</p>
+  <div class="code-stack fragment" style="min-height:11em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
+<pre><code>class FitPlane:
+    def fit(self, points):
+        # points = [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)]
+        # Build 3 equations [x, y, 1, z], solve for [a, b, d]
+        # YOUR CODE HERE
+        pass
 
-<p>You already own a tool for that: paste your <code>solve_equations</code> (and its helpers) from the <em>Loops and Arrays</em> chapter into the cell, then write <code>FitPlane</code>:</p>
+    def predict(self, points):
+        # points = [(x,y), ...], return [a*x + b*y + d, ...]
+        # YOUR CODE HERE
+        pass
 
-<ul>
-<li><code>fit(points)</code> — <code>points</code> is a list of three <code>(x, y, z)</code> tuples. Build the three equations <code>[x, y, 1, z]</code> and solve for <code>(a, b, d)</code>.</li>
-<li><code>predict(points)</code> — a list of <code>(x, y)</code> tuples in, a list of <code>a*x + b*y + d</code> out.</li>
-</ul>
+plane = FitPlane()
+plane.fit([(0,0,1), (1,0,2), (0,1,3)])
+print(plane.predict([(1,1)]))  # [4.0]</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="2">
+<pre><code>class FitPlane:
+    def fit(self, points):
+        equations = []
+        for x, y, z in points:
+            equations.append([x, y, 1, z])
+        a, b, d = solve_equations(equations)
+        self.a = a
+        self.b = b
+        self.d = d
+        return self
 
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 1</summary>
-      <p>Each of the three points <code>(x, y, z)</code> gives one equation: <code>[x, y, 1, z]</code> (the format your <code>solve_equations</code> expects). Build a list of three such rows and solve for <code>[a, b, d]</code>.</p>
-    </details>
-    <details style="font-size:0.85em; margin:0.3em 0;">
-      <summary>Hint 2</summary>
-      <p>In <code>predict</code>, loop through the input <code>(x, y)</code> tuples and compute <code>self.a * x + self.b * y + self.d</code> for each.</p>
-    </details>
+    def predict(self, points):
+        return [self.a * x + self.b * y + self.d
+                for x, y in points]
 
-        </div>
+plane = FitPlane()
+plane.fit([(0,0,1), (1,0,2), (0,1,3)])
+print(plane.predict([(1,1)]))  # [4.0]</code></pre>
+    </div>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Hint: each point <code>(x, y, z)</code> gives one equation:
+    <code>[x, y, 1, z]</code>.</p>
+  </div>
+</div>
       </section>
 
 
-
-      <section>
-
-        <h3>What You Just Invented</h3>
-
-        <div class="slide-content">
-        <table style="margin:0.5em auto; font-size:0.95em;">
-          <tr>
-            <th style="padding:0.2em 0.8em;">What you built</th>
-            <th style="padding:0.2em 0.8em;">Its real name</th>
-          </tr>
-          <tr>
-            <td><code>Customer</code> with <code>__init__</code> and <code>self</code></td>
-            <td><strong>Class, constructor, instance attributes</strong></td>
-          </tr>
-          <tr>
-            <td><code>TwoPointLine.fit()</code> / <code>.predict()</code></td>
-            <td><strong>The scikit-learn Estimator API</strong> (<code>fit</code>/<code>predict</code>)</td>
-          </tr>
-          <tr>
-            <td><code>Dog(Animal)</code>, <code>Cat(Animal)</code></td>
-            <td><strong>Inheritance</strong> (parent/child classes)</td>
-          </tr>
-          <tr>
-            <td><code>Node.total()</code> calling children's <code>.total()</code></td>
-            <td><strong>Recursive tree traversal</strong></td>
-          </tr>
-          <tr>
-            <td><code>DecisionNode</code> / <code>Yes</code> / <code>No</code></td>
-            <td><strong>Decision tree</strong> (the same structure ML learns automatically)</td>
-          </tr>
-          <tr>
-            <td><code>to_dict</code> / <code>from_dict</code> to JSON</td>
-            <td><strong>Serialization</strong> (saving a model so it survives the program)</td>
-          </tr>
-          <tr>
-            <td><code>FitPlane</code> (three points determine a plane)</td>
-            <td><strong>Multi-variable linear model</strong></td>
-          </tr>
-        </table>
-        <div class="fragment" data-fragment-index="0">
-        <p>Nobody taught you these — <strong>you built them yourself</strong>. Every ML library you will ever use — scikit-learn, Keras, PyTorch — follows the same <code>fit</code>/<code>predict</code> pattern you just invented.</p>
-        </div>
-        </div>
-      </section>
-
-      <!-- Part 8: Reflection — What Did You Just Build? -->
-      <section id="part8">
-        <h2>Part 8: Reflection — What Did You Just Build?</h2>
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  ENDING                                                   -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="ending">
+        <h2>What You Just Invented</h2>
       </section>
 
       <section>
-        <h3>Reflection</h3>
         <div class="slide-content">
-
-        <p>Take a moment to answer these questions in your own words.</p>
-
-<ol>
-<li>Before classes, you kept data in dicts and behavior in functions. What practical problem does bundling them together into one object solve?</li>
-<li>Why does every ML model follow the same two-step pattern — <code>fit</code> then <code>predict</code>? What would go wrong if you tried to <code>predict</code> before <code>fit</code>?</li>
-<li>In Part 4, your <code>Node.total()</code> method called <code>self.left.total()</code>. How is this the same idea as the recursive functions you wrote in the Recursion chapter?</li>
-<li>You converted your decision tree to a dict and saved it as JSON. Why is it useful that JSON is readable by humans and other programming languages, unlike Python's <code>pickle</code>?</li>
-<li>If you wanted to add a new kind of animal (say, <code>Fish</code>) that can <code>eat</code> and also <code>swim</code>, how would you do it without changing the <code>Animal</code> class?</li>
-</ol>
-
-
-        </div>
+  <table>
+    <tr><th>Your code</th><th>Standard name</th></tr>
+    <tr><td><code>Customer</code> with <code>__init__</code> and <code>self</code></td>
+        <td>Class, constructor, instance attributes</td></tr>
+    <tr><td><code>TwoPointLine.fit()</code> / <code>.predict()</code></td>
+        <td>The scikit-learn Estimator API</td></tr>
+    <tr><td><code>Dog(Animal)</code>, <code>Cat(Animal)</code></td>
+        <td>Inheritance (parent/child classes)</td></tr>
+    <tr><td><code>Node.total()</code> calling children&rsquo;s <code>.total()</code></td>
+        <td>Recursive tree traversal</td></tr>
+    <tr><td><code>DecisionNode</code> / <code>Yes</code> / <code>No</code></td>
+        <td>Decision tree</td></tr>
+    <tr><td><code>to_dict</code> / <code>from_dict</code> + JSON</td>
+        <td>Model serialization</td></tr>
+    <tr><td><code>FitPlane</code> (3 points &rarr; plane)</td>
+        <td>Multi-variable linear model</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>Every ML library &mdash; scikit-learn, Keras, PyTorch &mdash;
+    follows the same <code>fit</code>/<code>predict</code> pattern
+    <strong>you just invented</strong>.</p>
+  </div>
+</div>
       </section>
 
-      <!-- Index slide (last slide, linked from bottom-left) -->
+      <section>
+        <div class="slide-content">
+  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <ol style="line-height:1.8; font-size:0.95em;">
+    <li>Before classes, you kept data in dicts and behavior in functions.
+    What practical problem does bundling them together solve?</li>
+    <li>Why does every ML model follow the same two-step pattern &mdash;
+    <code>fit</code> then <code>predict</code>? What goes wrong if you call
+    <code>predict</code> before <code>fit</code>?</li>
+    <li>Your <code>Node.total()</code> called <code>self.left.total()</code>.
+    How is that the same idea as the recursive functions from the Recursion
+    chapter?</li>
+    <li>You saved a decision tree as JSON instead of using pickle. When
+    would you choose one format over the other?</li>
+  </ol>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  INDEX                                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
       <section id="slide-index">
         <h2>Index</h2>
-        <div class="slide-content"><div style="font-size:1.2em; text-align:left; max-width:600px; margin:0 auto;">
+        <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
-            <li><a href="#/part1">Part 1: From Dict to Class</a></li>
-            <li><a href="#/part2">Part 2: A Model Is an Object — `TwoPointLine`</a></li>
-            <li><a href="#/part3">Part 3: Inheritance — Classes That Extend Classes</a></li>
-            <li><a href="#/part4">Part 4: Objects That Contain Objects — Trees</a></li>
-            <li><a href="#/part5">Part 5: A Decision Tree Is an Object</a></li>
-            <li><a href="#/part6">Part 6: Saving Objects to Files</a></li>
-            <li><a href="#/part7">Part 7: Bonus Challenge — `FitPlane`</a></li>
-            <li><a href="#/part8">Part 8: Reflection — What Did You Just Build?</a></li>
+            <li><a href="#/part1">From Dict to Class</a></li>
+            <li><a href="#/part2">A Model Is an Object</a></li>
+            <li><a href="#/part3">Inheritance</a></li>
+            <li><a href="#/part4">Objects That Contain Objects</a></li>
+            <li><a href="#/part5">A Decision Tree Is an Object</a></li>
+            <li><a href="#/part6">Saving Objects to Files</a></li>
+            <li><a href="#/part7">Bonus &mdash; FitPlane</a></li>
           </ol>
-        </div></div>
+        </div>
       </section>
-
-
-
-
-
 
 
     </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
   <script>
     Reveal.initialize({
@@ -775,8 +1063,8 @@ x3*a + y3*b + 1*d = z3
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 700 : 1200,
-      height: window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700,
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
       minScale: 0.1,
       maxScale: 2.0,
     });
@@ -787,13 +1075,23 @@ x3*a + y3*b + 1*d = z3
       document.getElementById('top-progress-bar').style.width = pct + '%';
     }
     Reveal.on('slidechanged', function() { updateProgress(); });
-    Reveal.on('ready', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
   </script>
 <div class="chapter-footer">
 
-  <p><em>From here on, everything is objects: the <strong>Ancient Secrets of Prediction</strong> chapter finds best-fit models when no exact fit exists, <strong>Gradient Descent</strong> makes <code>fit</code> iterative, and <strong>Decision Trees</strong> learns Part 5's tree from data.</em></p>
+  <p><em>From here on, everything is objects: predictions, gradient descent,
+  and decision trees all follow the fit/predict pattern you just invented.</em></p>
 
-  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
+  <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a>
+  &middot; <a href="../index.html">Back to all chapters</a></p>
   <p>&copy; 2026 <a href="https://cloudxlab.com">CloudxLab</a>. All rights reserved.</p>
 </div>
 

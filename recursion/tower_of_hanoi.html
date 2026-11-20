@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower of Hanoi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+  }
+  h1 { margin: 20px 0 5px; font-size: 2rem; color: #e94560; }
+  .controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin: 10px 0 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .controls label { font-size: 0.95rem; color: #aaa; }
+  .controls select, .controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .controls select {
+    background: #16213e;
+    color: #eee;
+    border: 1px solid #0f3460;
+  }
+  .controls button {
+    background: #e94560;
+    color: #fff;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  .controls button:hover { background: #c73650; }
+  .info {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #aaa;
+  }
+  .info span { color: #e94560; font-weight: bold; }
+  .message {
+    height: 30px;
+    line-height: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #53d769;
+  }
+  .board {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 10px;
+  }
+  .peg-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .peg-area:hover { transform: scale(1.02); }
+  .peg-area.selected .peg-label { color: #e94560; }
+  .peg-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #aaa;
+    transition: color 0.2s;
+  }
+  .peg-container {
+    position: relative;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .peg-rod {
+    position: absolute;
+    bottom: 0;
+    width: 8px;
+    background: #534b62;
+    border-radius: 4px 4px 0 0;
+  }
+  .peg-base {
+    width: 200px;
+    height: 8px;
+    background: #534b62;
+    border-radius: 4px;
+  }
+  .disk-stack {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+  .disk {
+    height: 28px;
+    border-radius: 14px;
+    margin-bottom: 2px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: rgba(0,0,0,0.5);
+  }
+  .disk.lifted {
+    transform: translateY(-15px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  .disk-placeholder {
+    height: 30px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>Tower of Hanoi</h1>
+
+<div class="controls">
+  <label>Disks:
+    <select id="diskCount">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+  </label>
+  <button id="resetBtn">New Game</button>
+  <button id="solveBtn">Auto Solve</button>
+</div>
+
+<div class="info">
+  <div>Moves: <span id="moveCount">0</span></div>
+  <div>Minimum: <span id="minMoves">7</span></div>
+</div>
+
+<div class="message" id="message"></div>
+
+<div class="board" id="board"></div>
+
+<script>
+const COLORS = [
+  '#e94560', '#f5a623', '#f8e71c', '#7ed321',
+  '#4a90d9', '#9b59b6', '#1abc9c', '#e67e22'
+];
+
+let numDisks = 3;
+let pegs = [[], [], []];
+let moves = 0;
+let selectedPeg = null;
+let solved = false;
+let autoSolving = false;
+
+function init() {
+  numDisks = parseInt(document.getElementById('diskCount').value);
+  pegs = [[], [], []];
+  for (let i = numDisks; i >= 1; i--) pegs[0].push(i);
+  moves = 0;
+  selectedPeg = null;
+  solved = false;
+  autoSolving = false;
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('minMoves').textContent = (Math.pow(2, numDisks) - 1).toString();
+  document.getElementById('message').textContent = '';
+  render();
+}
+
+function render() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  const pegHeight = Math.max(numDisks, 3) * 30 + 20;
+
+  for (let p = 0; p < 3; p++) {
+    const area = document.createElement('div');
+    area.className = 'peg-area' + (selectedPeg === p ? ' selected' : '');
+    area.addEventListener('click', () => onPegClick(p));
+
+    const label = document.createElement('div');
+    label.className = 'peg-label';
+    label.textContent = ['A', 'B', 'C'][p];
+    area.appendChild(label);
+
+    const container = document.createElement('div');
+    container.className = 'peg-container';
+    container.style.height = pegHeight + 'px';
+
+    const rod = document.createElement('div');
+    rod.className = 'peg-rod';
+    rod.style.height = (pegHeight - 8) + 'px';
+    container.appendChild(rod);
+
+    const stack = document.createElement('div');
+    stack.className = 'disk-stack';
+
+    for (let d = 0; d < pegs[p].length; d++) {
+      const diskVal = pegs[p][d];
+      const disk = document.createElement('div');
+      disk.className = 'disk';
+      const maxW = 180;
+      const minW = 40;
+      const w = minW + (diskVal / numDisks) * (maxW - minW);
+      disk.style.width = w + 'px';
+      disk.style.background = COLORS[(diskVal - 1) % COLORS.length];
+      disk.textContent = diskVal;
+
+      if (selectedPeg === p && d === pegs[p].length - 1) {
+        disk.classList.add('lifted');
+      }
+      stack.appendChild(disk);
+    }
+
+    container.appendChild(stack);
+
+    const base = document.createElement('div');
+    base.className = 'peg-base';
+
+    area.appendChild(container);
+    area.appendChild(base);
+    board.appendChild(area);
+  }
+}
+
+function onPegClick(pegIndex) {
+  if (solved || autoSolving) return;
+
+  if (selectedPeg === null) {
+    if (pegs[pegIndex].length === 0) return;
+    selectedPeg = pegIndex;
+  } else if (selectedPeg === pegIndex) {
+    selectedPeg = null;
+  } else {
+    const from = selectedPeg;
+    const to = pegIndex;
+    const disk = pegs[from][pegs[from].length - 1];
+    const topTo = pegs[to].length > 0 ? pegs[to][pegs[to].length - 1] : Infinity;
+
+    if (disk < topTo) {
+      pegs[from].pop();
+      pegs[to].push(disk);
+      moves++;
+      document.getElementById('moveCount').textContent = moves;
+      selectedPeg = null;
+      checkWin();
+    } else {
+      document.getElementById('message').textContent = 'Invalid move!';
+      setTimeout(() => {
+        if (!solved) document.getElementById('message').textContent = '';
+      }, 1000);
+      selectedPeg = null;
+    }
+  }
+  render();
+}
+
+function checkWin() {
+  if (pegs[2].length === numDisks) {
+    solved = true;
+    const min = Math.pow(2, numDisks) - 1;
+    if (moves === min) {
+      document.getElementById('message').textContent = 'Perfect! Solved in minimum moves!';
+    } else {
+      document.getElementById('message').textContent = 'Solved in ' + moves + ' moves!';
+    }
+  }
+}
+
+async function autoSolve() {
+  if (autoSolving) return;
+  autoSolving = true;
+  solved = false;
+
+  pegs = [[], [], []];
+  for (let i = numDisks; i >= 1; i--) pegs[0].push(i);
+  moves = 0;
+  selectedPeg = null;
+  document.getElementById('moveCount').textContent = '0';
+  document.getElementById('message').textContent = 'Solving...';
+  render();
+
+  const solveMoves = [];
+  function hanoi(n, from, to, aux) {
+    if (n === 0) return;
+    hanoi(n - 1, from, aux, to);
+    solveMoves.push([from, to]);
+    hanoi(n - 1, aux, to, from);
+  }
+  hanoi(numDisks, 0, 2, 1);
+
+  for (const [from, to] of solveMoves) {
+    if (!autoSolving) return;
+    await new Promise(r => setTimeout(r, Math.max(200, 800 - numDisks * 80)));
+    const disk = pegs[from].pop();
+    pegs[to].push(disk);
+    moves++;
+    document.getElementById('moveCount').textContent = moves;
+    render();
+  }
+
+  autoSolving = false;
+  solved = true;
+  document.getElementById('message').textContent = 'Solved in ' + moves + ' moves!';
+}
+
+document.getElementById('resetBtn').addEventListener('click', init);
+document.getElementById('solveBtn').addEventListener('click', autoSolve);
+document.getElementById('diskCount').addEventListener('change', init);
+
+init();
+</script>
+
+</body>
+</html>
