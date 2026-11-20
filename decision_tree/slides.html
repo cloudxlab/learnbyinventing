@@ -43,6 +43,47 @@
     #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
     #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
 
+    .reveal .exercise-badge {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: #fff3d0;
+      color: #7a6b3a;
+      font-size: 0.35em;
+      font-family: sans-serif;
+      padding: 0.2em 0.7em;
+      border-radius: 12px;
+      border: 1.5px solid #c8a96e;
+      font-weight: 600;
+      z-index: 10;
+    }
+
+    .reveal .question {
+      font-style: italic;
+      position: relative;
+      padding-left: 1.6em;
+    }
+    .reveal .question::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      line-height: 1.2em;
+      text-align: center;
+      border-radius: 50%;
+      background: #fff3d0;
+      border: 1.5px solid #c8a96e;
+      color: #7a6b3a;
+      font-weight: bold;
+      font-style: normal;
+      font-size: 0.85em;
+    }
+    .reveal li.question { padding-left: 1.6em; }
+    .reveal li.question::before { top: 0.15em; }
+
     @media screen and (max-width: 768px) {
       .reveal .slide-content { font-size: 0.65em; }
       .reveal h2 { font-size: 0.95em; }
@@ -54,6 +95,14 @@
       .reveal th, .reveal td { padding: 0.2em 0.4em; }
       .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
       #bottom-copyright { font-size: 9px; }
+    }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.75em; }
+      .reveal h2 { font-size: 1.0em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.65em; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
     }
   </style>
 <!-- Google tag (gtag.js) -->
@@ -195,14 +244,14 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.4em;">
+        <div class="slide-content"><div style="font-size:1.2em;">
   <p>Let $p$ = fraction of red, $q$ = fraction of blue, and $p + q = 1$.</p>
-  <table style="margin:0.5em auto; font-size:0.9em;">
-    <tr><th style="padding:0.2em 0.8em;">Bag</th><th style="padding:0.2em 0.8em;">p (red)</th><th style="padding:0.2em 0.8em;">q (blue)</th><th style="padding:0.2em 0.8em;">impurity(p, q) = ?</th></tr>
+  <table style="margin:0.5em auto; font-size:0.85em;">
+    <tr><th style="padding:0.2em 0.6em;">Bag</th><th style="padding:0.2em 0.6em;">p (red)</th><th style="padding:0.2em 0.6em;">q (blue)</th><th style="padding:0.2em 0.6em;">impurity(p, q) = ?</th></tr>
     <tr><td>A (all red)</td><td>1.0</td><td>0.0</td><td>should be <strong>0</strong></td></tr>
     <tr><td>B (all blue)</td><td>0.0</td><td>1.0</td><td>should be <strong>0</strong></td></tr>
     <tr><td>C (half-half)</td><td>0.5</td><td>0.5</td><td>should be <strong>1</strong></td></tr>
-    <tr><td>D (mostly red)</td><td>0.8</td><td>0.2</td><td>should be between 0 and 1</td></tr>
+    <tr><td>D (mostly red)</td><td>0.8</td><td>0.2</td><td>between 0 and 1</td></tr>
   </table>
   <p><strong>Write a function that satisfies all four cases:</strong></p>
 <pre><code>def impurity(p, q):
@@ -210,17 +259,12 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
     Returns 0 when pure, 1 when maximally mixed."""
     return ???</code></pre>
   <div class="fragment" data-fragment-index="0">
-    <p>Try $p \times q$:</p>
-    <table style="margin:0.5em auto; font-size:0.9em;">
-      <tr><td>A: 1.0 &times; 0.0 =</td><td><strong>0.00</strong> &check;</td></tr>
-      <tr><td>B: 0.0 &times; 1.0 =</td><td><strong>0.00</strong> &check;</td></tr>
-      <tr><td>C: 0.5 &times; 0.5 =</td><td><strong>0.25</strong> &mdash; not 1!</td></tr>
-    </table>
-    <p>Pure gives 0 &check; &mdash; but 50/50 gives 0.25, not 1.</p>
+    <p>Try $p \times q$: &nbsp; A: 0 &check; &nbsp; B: 0 &check; &nbsp;
+    C: 0.25 &mdash; not 1! Close, but needs scaling.</p>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p><strong>Fix:</strong> multiply by 4 &rarr; $\text{impurity} = 4pq$</p>
-    <table style="margin:0.5em auto; font-size:0.9em;">
+    <table style="margin:0.5em auto; font-size:0.85em;">
       <tr><td>A: 4 &times; 1.0 &times; 0.0 =</td><td><strong>0.0</strong> &check;</td></tr>
       <tr><td>B: 4 &times; 0.0 &times; 1.0 =</td><td><strong>0.0</strong> &check;</td></tr>
       <tr><td>C: 4 &times; 0.5 &times; 0.5 =</td><td><strong>1.0</strong> &check;</td></tr>
@@ -317,28 +361,45 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.4em;">
-  <p>Now split a list into two halves and measure the <strong>total</strong> impurity:</p>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Now split a list and measure how good the split is:</p>
 <pre><code>items = ["R", "R", "B", "R", "B", "B", "B", "R"]</code></pre>
+  <table style="margin:0.5em auto; font-size:0.85em;">
+    <tr><th style="padding:0.2em 0.6em;">Split at</th><th style="padding:0.2em 0.6em;">Left</th><th style="padding:0.2em 0.6em;">Right</th><th style="padding:0.2em 0.6em;">Left imp.</th><th style="padding:0.2em 0.6em;">Right imp.</th></tr>
+    <tr><td>position 3</td><td>[R, R, B]</td><td>[R, B, B, B, R]</td><td>0.89</td><td>0.96</td></tr>
+    <tr><td>position 4</td><td>[R, R, B, R]</td><td>[B, B, B, R]</td><td>0.75</td><td>0.75</td></tr>
+  </table>
   <div class="fragment" data-fragment-index="0">
-    <table style="margin:0.5em auto; font-size:0.9em;">
-      <tr><th style="padding:0.2em 0.6em;">Split at</th><th style="padding:0.2em 0.6em;">Left</th><th style="padding:0.2em 0.6em;">Right</th><th style="padding:0.2em 0.6em;">Left imp.</th><th style="padding:0.2em 0.6em;">Right imp.</th></tr>
-      <tr><td>position 3</td><td>[R, R, B]</td><td>[R, B, B, B, R]</td><td>0.89</td><td>0.96</td></tr>
-      <tr><td>position 4</td><td>[R, R, B, R]</td><td>[B, B, B, R]</td><td>0.75</td><td>0.75</td></tr>
-    </table>
+    <p><strong>How should we combine left and right impurity into one number?</strong></p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p><strong>Total impurity</strong> = weighted average:</p>
-    <p style="font-size:0.95em;">
-    $\text{total} = \dfrac{|L|}{|L|+|R|} \times \text{imp}(L) + \dfrac{|R|}{|L|+|R|} \times \text{imp}(R)$
-    </p>
-    <p style="font-size:0.9em;">
-    Split at 3: $\frac{3}{8}(0.89) + \frac{5}{8}(0.96) = \mathbf{0.93}$<br/>
-    Split at 4: $\frac{4}{8}(0.75) + \frac{4}{8}(0.75) = \mathbf{0.75}$ &larr; <strong>better!</strong>
-    </p>
+    <p>Try simple average: $(0.89 + 0.96)/2 = 0.925$. But imagine a split
+    producing 1 pure item on the left and 99 mixed items on the right &mdash;
+    should a tiny pure group count as much as a huge impure one?</p>
   </div>
   <div class="fragment" data-fragment-index="2">
-    <p>The <strong>best split</strong> has the <strong>lowest total impurity</strong>.</p>
+    <p><strong>Weight by group size!</strong> Larger groups matter more:</p>
+    <p style="font-size:0.9em;">
+    $\text{total} = \dfrac{|L|}{|L|+|R|} \times \text{imp}(L) + \dfrac{|R|}{|L|+|R|} \times \text{imp}(R)$
+    </p>
+  </div>
+</div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content"><div style="font-size:1.3em;">
+  <p>Apply the weighted formula to our two splits:</p>
+  <table style="margin:0.5em auto; font-size:0.85em;">
+    <tr><th style="padding:0.2em 0.6em;">Split</th><th style="padding:0.2em 0.6em;">Sizes</th><th style="padding:0.2em 0.6em;">Weighted total</th></tr>
+    <tr><td>at 3</td><td>3 left, 5 right</td><td>$\frac{3}{8}(0.89) + \frac{5}{8}(0.96) = \mathbf{0.93}$</td></tr>
+    <tr><td>at 4</td><td>4 left, 4 right</td><td>$\frac{4}{8}(0.75) + \frac{4}{8}(0.75) = \mathbf{0.75}$ &larr; <strong>better!</strong></td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
+    <p>The <strong>best split</strong> has the <strong>lowest weighted impurity</strong>.</p>
+    <p style="font-size:0.85em;">Note: when groups are equal size, weighted average equals
+    simple average. The weighting only matters when splits are uneven &mdash;
+    which is exactly when it matters most.</p>
   </div>
 </div>
 </div>
@@ -1028,8 +1089,8 @@ print(f"Accuracy: {correct}/{len(y)} = {correct/len(y)*100:.0f}%")</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 700 : 1200,
-      height: window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700,
+      width: window.innerWidth <= 480 ? 500 : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? Math.round(500 * window.innerHeight / window.innerWidth) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
       minScale: 0.1,
       maxScale: 2.0,
     });
@@ -1040,7 +1101,25 @@ print(f"Accuracy: {correct}/{len(y)} = {correct/len(y)*100:.0f}%")</code></pre>
       document.getElementById('top-progress-bar').style.width = pct + '%';
     }
     Reveal.on('slidechanged', function() { updateProgress(); });
-    Reveal.on('ready', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.code-stack').forEach(function(el) {
+        var section = el.closest('section');
+        if (section && !section.querySelector('.exercise-badge')) {
+          var badge = document.createElement('span');
+          badge.className = 'exercise-badge';
+          badge.textContent = '✍ Your turn';
+          section.style.position = 'relative';
+          section.appendChild(badge);
+        }
+      });
+      document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
+        if (el.closest('pre, code, .code-stack, details, .chapter-footer, #slide-index')) return;
+        if (el.querySelector('a[href^="#/part"]')) return;
+        var text = el.textContent.trim();
+        if (text.endsWith('?') && text.length > 10) el.classList.add('question');
+      });
+    });
   </script>
 <div class="chapter-footer">
 
