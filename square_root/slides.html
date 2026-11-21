@@ -14,7 +14,16 @@
     .reveal h1 { font-size: 1.8em; }
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
-    .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal pre { font-size: 0.55em; box-shadow: none; position: relative; }
+    .reveal pre .copy-btn {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(255,255,255,0.15); border: none; color: #888;
+      font-size: 14px; cursor: pointer; padding: 2px 6px;
+      border-radius: 4px; opacity: 0; transition: opacity 0.2s;
+      font-family: sans-serif; line-height: 1;
+    }
+    .reveal pre:hover .copy-btn { opacity: 1; }
+    .reveal pre .copy-btn:hover { background: rgba(255,255,255,0.3); color: #fff; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -791,7 +800,25 @@ print(mysqrt(2,  1, 2, 20))   # 1.4142135...</code></pre>
       document.getElementById('top-progress-bar').style.width = pct + '%';
     }
     Reveal.on('slidechanged', function() { updateProgress(); });
-    Reveal.on('ready', function() { updateProgress(); });
+    Reveal.on('ready', function() {
+      updateProgress();
+      document.querySelectorAll('.reveal pre code').forEach(function(codeEl) {
+        var btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = '⎘';
+        btn.title = 'Copy code';
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var text = codeEl.textContent;
+          navigator.clipboard.writeText(text).then(function() {
+            btn.textContent = '✔';
+            btn.style.color = '#4CAF50';
+            setTimeout(function() { btn.textContent = '⎘'; btn.style.color = ''; }, 1500);
+          });
+        });
+        codeEl.parentElement.appendChild(btn);
+      });
+    });
   </script>
 <div class="chapter-footer">
   <p>Source on <a href="https://github.com/cloudxlab/learnbyinventing">GitHub</a> &middot; <a href="../index.html">Back to all chapters</a></p>
