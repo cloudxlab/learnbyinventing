@@ -1,242 +1,527 @@
 [
   {
     "slide_index": 0,
-    "content_id": "de4680cf7b",
-    "slide_text": "Dictionaries A dictionary maps keys to values — like an index at the back of a book. You look up a key instantly, regardless of how many entries exist. In this chapter you will use dictionaries to: Count word frequencies in text Group words that are anagrams of each other Track and query expenses by category Navigate: press or Space to advance | to go back",
+    "content_id": "ea04f293e6",
+    "slide_text": "Dictionaries Don t just watch invent . Navigate: press or Space to advance | to go back",
     "fragments": []
   },
   {
     "slide_index": 1,
-    "content_id": "0d2c19225d",
-    "slide_text": "Challenge (skip ahead if you can): Build a tiny hash table from scratch , with no built-in allowed for storage. Use a list of buckets and a hash function you write yourself. It must handle collisions. [code block] [code block] Already got it? The next slides will guide you step by step.",
+    "content_id": "dbcfc58459",
+    "slide_text": "Part 1: Dictionary Basics",
     "fragments": []
   },
   {
     "slide_index": 2,
-    "content_id": "563769ba3f",
-    "slide_text": "Part 1: Dictionary Basics Before coding the exercises, make sure you are comfortable with the four core operations.",
+    "content_id": "a6d76127ae",
+    "slide_text": "Challenge (skip ahead if you can): Write that takes a list and returns a dictionary mapping each item to how many times it appears. [code block] Already got it? Skip to Part 2 .",
     "fragments": []
   },
   {
     "slide_index": 3,
-    "content_id": "5c64428277",
-    "slide_text": "Create and Access A dictionary literal looks like . [code block] Task: Create a dictionary with three student names and their exam scores. Then print the score for one student.",
-    "fragments": []
+    "content_id": "a2e01fffe6",
+    "slide_text": "A dictionary maps keys to values like an index at the back of a book. [code block] You can add or update entries with : [code block] What happens if you look up a key that doesn t exist?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "73d1404e55",
+        "text": "raises a . Use to get a default value instead."
+      }
+    ]
   },
   {
     "slide_index": 4,
-    "content_id": "74e8fb5096",
-    "slide_text": "Add and Update Entries You can add a new key or update an existing one with . Task: Starting from an empty dict, add three entries one at a time. Then update one of them (increase the value by 10). Verify that after adding, and that the updated value is correct.",
-    "fragments": []
+    "content_id": "e295fbf3d5",
+    "slide_text": "Write that returns the value if the key exists, or if it doesn t.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "83bbed7973",
+        "text": "Hint: returns instead of raising ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d464be204f",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 5,
-    "content_id": "d750081956",
-    "slide_text": "Check Membership and Default Values — if key exists — returns instead of raising if key is missing Task: Write a function that returns the value if the key exists, or the string if it does not. [code block] Hint 1 You can use an / with , or use for a one-liner.",
-    "fragments": []
+    "content_id": "55ccc4b210",
+    "slide_text": "Now the core pattern. Given , count how many times each item appears. Before coding: walk through the list one element at a time. For each item, you need to decide: is this the first time I ve seen it, or has it appeared before?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "5f585131c6",
+        "text": "That s the check-if-exists, update-or-create pattern you ll see it again and again in this chapter."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d011bd0a6f",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "3e7fa3cae6",
+        "text": "Hint: handles both first-time and already-seen in one line."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "7902fa966c",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 6,
-    "content_id": "1ba1219b4f",
-    "slide_text": "Count Items in a List Write that takes a list and returns a dictionary where each key is an item and the value is how many times it appears. Before you code: Loop over the list. For each item, if it is not yet in the dict, add it with count 1. If it already exists, increment its count. [code block] Hint 1 Start with an empty dict . Loop over each item. Use to decide whether to set it to 1 or add 1. Hint 2 Shorter version: handles both the \"first time\" and \"already seen\" cases in one line.",
+    "content_id": "b77395b437",
+    "slide_text": "Part 2: Word Count",
     "fragments": []
   },
   {
     "slide_index": 7,
-    "content_id": "51a1a73727",
-    "slide_text": "Part 2: Word Count Now apply to text: split a string into words, then count each word.",
+    "content_id": "91564be6fb",
+    "slide_text": "Challenge (skip ahead if you can): Write that returns the most frequent words in a text as a sorted list of tuples. Got it? Skip to Part 3 .",
     "fragments": []
   },
   {
     "slide_index": 8,
-    "content_id": "8401f892d9",
-    "slide_text": "Word Count Write that: Splits into words using . Counts how many times each word appears. Returns the dictionary. [code block] Hint 1 Use to turn the string into a list of words. Hint 2 This is exactly applied to the word list. Can you reuse that function?",
-    "fragments": []
-  },
-  {
-    "slide_index": 9,
-    "content_id": "7bd4d98907",
-    "slide_text": "Most Frequent Word Write that returns the word with the highest count. If there is a tie, return any one of the tied words. [code block] Before you code: Use to get the frequency dictionary. Loop over the dictionary to find the key with the maximum value. Hint 1 Keep two variables: and . Loop through and update them whenever you find a higher count. Hint 2 Python's does this in one line — tells to compare words by their count instead of alphabetically.",
-    "fragments": []
-  },
-  {
-    "slide_index": 10,
-    "content_id": "9838d9882d",
-    "slide_text": "Top N Words Write that returns a list of the most frequent tuples, sorted from highest to lowest count. [code block] Hint 1 Turn the dict into a list of pairs with , then sort that list by the count (the second element of each pair). Hint 2 — is a tiny function that returns the count from each pair. Try it on a longer passage: [code block]",
-    "fragments": []
-  },
-  {
-    "slide_index": 11,
-    "content_id": "a6b91a68b8",
-    "slide_text": "Quick Check — Dict vs List for Counting You used a dictionary to count words. Could you have used a list of pairs instead? What would be the main drawback? A. Lists can't store pairs — only single values B. It would work identically with no drawback C. Finding whether a word already exists would require scanning the entire list each time — much slower for large texts D. Lists can't be sorted",
+    "content_id": "09a2955619",
+    "slide_text": "Split a string into words and count each word. You already have can you reuse it?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "cdb086a9bf",
-        "text": "Answer: C. A list of pairs works, but to check if a word is already there you'd need to walk through the whole list every time — that gets very slow as the text grows. A dictionary jumps straight to the right entry."
+        "content_id": "649a4b613b",
+        "text": "Hint: gives a list of words. Then it s just ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "255ecc6bc5",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "content_id": "fa4c60eb81",
+    "slide_text": "Find the word with the highest count. You have a dictionary of word count. How do you find the key with the largest value? Before coding: track two variables as you loop the best word you ve seen and its count. Sound familiar?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a7c6c53230",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b19c84b417",
+        "text": "Hint: loop through . Track and ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "6df111622d",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "content_id": "63eb74f321",
+    "slide_text": "Return the most frequent words as sorted tuples.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "ae6c13e51c",
+        "text": "Hint 1: convert to a list, then sort it."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "a2e50ee8d0",
+        "text": "Hint 2: sorts by count descending. Take the first with ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "801cb2ef01",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 11,
+    "content_id": "190638fc5b",
+    "slide_text": "Quick Check: You used a dictionary to count words. Could you have used a list of pairs instead? What would be the main drawback? A. Lists can t store pairs B. It would work identically with no drawback C. Finding whether a word already exists would require scanning the entire list each time much slower for large texts D. Lists can t be sorted",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "aa938b11a4",
+        "text": "Answer: C. With a list you d scan every pair to check if a word exists that gets slow as the text grows. A dictionary jumps straight to the right entry."
       }
     ]
   },
   {
     "slide_index": 12,
-    "content_id": "0fcea3d6e0",
-    "slide_text": "Part 3: Anagrams Two words are anagrams of each other if they contain exactly the same letters (in possibly different order). Examples: \"listen\" and \"silent\" are anagrams. \"evil\", \"vile\", \"live\", \"veil\" are all anagrams of each other. Think about it: How could you represent a word so that all its anagrams map to the same key?",
+    "content_id": "5b260c1e29",
+    "slide_text": "Part 3: Anagrams",
     "fragments": []
   },
   {
     "slide_index": 13,
-    "content_id": "af3208b033",
-    "slide_text": "Anagram Key Write that returns the sorted string of a word's letters. This key will be the same for all anagrams. [code block] Hint: gives . Use to get a string.",
+    "content_id": "e23756f8c6",
+    "slide_text": "Challenge (skip ahead if you can): Write that groups all words in a text by their anagram key (sorted letters). Return a dictionary mapping each key to the list of words that share it. Got it? Skip to Part 4 .",
     "fragments": []
   },
   {
     "slide_index": 14,
-    "content_id": "f2508678b3",
-    "slide_text": "Find Anagram Groups Write that: Splits into words. For each word, computes its . Groups words with the same key into a list. Returns a dictionary: [code block] Hint 1 Create an empty dict. For each word, compute its . If that key isn't in the dict yet, set it to an empty list. Then append the word. Hint 2 The pattern is: — returns the existing list if the key is there, or creates a new empty list if not.",
-    "fragments": []
+    "content_id": "e78a8c9c2f",
+    "slide_text": "listen and silent contain the exact same letters. So do evil , vile , live , and veil . How could you represent a word so that all its anagrams produce the same key?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "cf135e19dc",
+        "text": "Sort the letters! . . Same key."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "3627cc6dc1",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "d89b6fcccd",
+        "text": "Hint: gives . Join them back with ."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "b91b86ea3a",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 15,
-    "content_id": "b5ffc6fc75",
-    "slide_text": "Only True Anagram Groups returns every word, including words with no anagram partner. Write that returns only the groups that contain more than one word. [code block] Hint Call first, then build a new dict keeping only the entries where .",
-    "fragments": []
+    "content_id": "07c4a2ebe5",
+    "slide_text": "Group words by their anagram key. This is the same check-if-exists, update-or-create pattern from but instead of incrementing a number, you re appending to a list.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "05ead73622",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "79feb4ddc6",
+        "text": "Hint: for each word, compute its key. If the key isn t in the dict yet, create an empty list. Then append the word."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "81b4bf0bcc",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 16,
-    "content_id": "5889801854",
-    "slide_text": "Part 4: Expense Tracker A dictionary is a natural fit for tracking totals per category: [code block] Keys are expense categories; values are running totals.",
-    "fragments": []
+    "content_id": "fe242fd1f1",
+    "slide_text": "returns every word, including loners. Filter to keep only groups with two or more words.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "4f209844b8",
+        "text": "Hint: call first, then keep only entries where ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "7022626902",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 17,
-    "content_id": "5a75378097",
-    "slide_text": "Update Expenses Write that: Takes a list of tuples and an existing dict. For each tuple, adds to the running total for . Modifies in place (no return value needed). [code block] Before you code: How do you handle a category that appears for the first time? How do you handle one that already exists? Hint Use — the returns 0 the first time a category appears, so you don't need a separate .",
+    "content_id": "b6e588017a",
+    "slide_text": "Part 4: Expense Tracker",
     "fragments": []
   },
   {
     "slide_index": 18,
-    "content_id": "b07b70944c",
-    "slide_text": "Print Expenses Write that prints each category and its total, one per line, in the format . [code block]",
+    "content_id": "8910ec3fcd",
+    "slide_text": "Challenge (skip ahead if you can): Write that takes a dict of and , and returns only the categories where spending exceeds the limit. Got it? Skip to Part 5 .",
     "fragments": []
   },
   {
     "slide_index": 19,
-    "content_id": "183b3526e7",
-    "slide_text": "Highest Expense Category Write that returns the category with the highest total spend as a tuple . [code block] Hint This is the same \"find the max\" pattern from : loop through and track the pair with the highest value.",
-    "fragments": []
-  },
-  {
-    "slide_index": 20,
-    "content_id": "b57c2febab",
-    "slide_text": "Expenses Above Budget Write that returns a dictionary containing only the categories where spending exceeds the budget limit. is a dict of . Return for each over-budget category. [code block] Hint 1 Loop over the categories in . For each one, check if it also exists in and whether the spending exceeds the limit. Hint 2 Build a new dict: . If , add the entry .",
-    "fragments": []
-  },
-  {
-    "slide_index": 21,
-    "content_id": "fd62710e52",
-    "slide_text": "Quick Check — Assignment vs Accumulation In the expense tracker, you used category names as dictionary keys. What would happen if you accidentally used instead of for a category that already exists? A. Python would throw a KeyError B. The new amount would be added to the old one automatically C. The old total would be silently replaced — you'd lose all previous expenses in that category D. Python would create a list of both amounts",
+    "content_id": "c4d7db0fb8",
+    "slide_text": "Expenses arrive as tuples. Accumulate them into a running-total dictionary. Before coding: what happens if you use instead of for a category that already exists?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "8b833b987b",
-        "text": "Answer: C. The operator replaces the old value completely. Only adds the new amount on top of what was already there. This is a very common bug."
+        "content_id": "147dd21675",
+        "text": "It replaces the old total you lose all previous expenses in that category. Use (or ) to accumulate."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "076b51e8ae",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "c495819827",
+        "text": "Hint: same pattern from ."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "cd4f80618e",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "content_id": "603f91a61c",
+    "slide_text": "Find the category with the highest total. Same find the max pattern from .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "6fd05cbbb1",
+        "text": "Hint: loop through , track the pair with the highest value."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "f2aef3cfec",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "content_id": "12b39445a7",
+    "slide_text": "Given spending and budget limits, find which categories are over budget .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "510b5d2b1b",
+        "text": "Hint 1: loop through expenses. Check if the category is in limits and spending exceeds it."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "6e2f0556bd",
+        "text": "Hint 2:"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "b96af4dd73",
+        "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 22,
-    "content_id": "13eee3c9be",
-    "slide_text": "Part 5: Invert a Dictionary & Group By Sometimes you need to look up a key by its value instead of the other way around. Inverting a dictionary swaps keys and values.",
+    "content_id": "b1a94bbece",
+    "slide_text": "Part 5: Invert Group By",
     "fragments": []
   },
   {
     "slide_index": 23,
-    "content_id": "d132f0d5bd",
-    "slide_text": "Invert Dict Write that returns a new dictionary with keys and values swapped. Assume all values in are unique (otherwise some keys would be lost). [code block] Hint Create a new empty dict. Loop over and set .",
+    "content_id": "6bb4bdbbc5",
+    "slide_text": "Challenge (skip ahead if you can): Write that groups items by the result of . Then show that is just . Got it? Skip to Part 6 .",
     "fragments": []
   },
   {
     "slide_index": 24,
-    "content_id": "1375eedeb7",
-    "slide_text": "Group By Write that groups items from a list by the result of applying to each item. This is a generalisation of both and the expense grouping pattern. [code block] Hint 1 The structure is nearly identical to : loop over items, compute the key with , and group items that share the same key into a list. Hint 2 Use inside the loop.",
-    "fragments": []
+    "content_id": "4f0d650a5a",
+    "slide_text": "Swap every key with its value. Assume all values are unique.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7190e0d9fe",
+        "text": "Hint: loop over , set ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "2fcf930634",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 25,
-    "content_id": "0729135cf7",
-    "slide_text": "Rewrite find_anagrams Using group_by is just with as the key function. [code block] Verify it gives the same results as your original .",
-    "fragments": []
+    "content_id": "92c4fba100",
+    "slide_text": "Look at the pattern you ve used three times now: : group items count per item : group words list per anagram key : group expenses total per category All three: loop, compute a key, accumulate into a bucket . What if the key function were an argument?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "acbaee51d3",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "90f44cd8d0",
+        "text": "Hint: same structure as , but use instead of ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "bf5e254164",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 26,
-    "content_id": "19dabfa4e5",
-    "slide_text": "Part 6: Inventing Hashing (Why Dicts Are Fast) You've used dictionaries all chapter without asking the awkward question: is instant even if holds a million keys. A list would have to check entries one by one. How does a dict jump straight to the right spot? The answer is an idea you're about to invent: turn the key into a number , and use that number as a position.",
-    "fragments": []
+    "content_id": "d5ee844adc",
+    "slide_text": "Now the payoff. was 7 lines of code. With , it becomes: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b031903677",
+        "text": "One line. The complex anagram-grouping exercise collapses once you have the right abstraction. That s the power of generalizing a pattern into a function ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "3c4cd7d856",
+        "text": "Verify it gives the same results as your original: [code block]"
+      }
+    ]
   },
   {
     "slide_index": 27,
-    "content_id": "d797d6d546",
-    "slide_text": "Letters Are Already Numbers Python exposes each character's numeric code: is , and goes back to . Write returning the position of a lowercase letter in the alphabet — → 0, → 1, ... → 25 — using (no lookup tables!). Hint If is 97 and is 98, then subtracting from any letter's code gives its position: .",
+    "content_id": "9771892d28",
+    "slide_text": "Part 6: Inventing Hashing",
     "fragments": []
   },
   {
     "slide_index": 28,
-    "content_id": "ccbeacbd95",
-    "slide_text": "A Number for Any String One letter is easy. For a whole string, the simplest recipe: add up the character codes . That gives a big number; to turn it into a position , take the remainder when dividing by the number of slots available. Write = (sum of of every character) . The result is always a valid index between and — exactly what you need to pick a slot in a list of buckets. [code block] Hint Use a loop: , then . Finally .",
+    "content_id": "0434fa68c8",
+    "slide_text": "Challenge (skip ahead if you can): Build a hash table from scratch: write that converts a string to a bucket index, handle collisions, and explain why is instant even with a million keys. Got it? Skip to the end .",
     "fragments": []
   },
   {
     "slide_index": 29,
-    "content_id": "8bc7ef28e3",
-    "slide_text": "The Collision Run this before reading on: [code block] Both give . Of course — they're anagrams (Part 2 of this chapter!), so they contain the same letters, and addition doesn't care about order. Two different keys landing in the same bucket is called a collision , and a hash that collides for every anagram is a bad hash. The fix: make position matter. Weight each character by where it sits: Write using the weighted sum, and confirm the anagram pair now separates. [code block] Hint 1 gives you pairs where is the position (0, 1, 2, ...) and is the character. Hint 2 Replace the simple sum with: inside the loop. The makes position matter.",
-    "fragments": []
-  },
-  {
-    "slide_index": 30,
-    "content_id": "29ee2bdc47",
-    "slide_text": "The Same Trick at Data-Center Scale You just invented how a dict works inside: Hash the key to a bucket index — one arithmetic step, no searching. Go directly to that bucket. Collisions are unavoidable (infinitely many strings, finitely many buckets), so each bucket keeps a short list to check — a few items, not a million. That's why takes the same amount of time whether the dict holds ten keys or ten million. Computer scientists call this O(1) — meaning \"constant time\", independent of the data size. Now zoom out. A big website can't fit a billion users on one database server; it splits them across many. Which server holds user ? Same invention: hash the key. With numeric IDs the hash is just the remainder. Write returning , then check the test's fairness experiment: hashing 10,000 users across 7 servers should load every server almost equally. [code block] Think about it (no code): if you add an 8th server, becomes — which users are now on the wrong server? (Almost all of them! Real systems use smarter techniques to avoid reshuffling everyone. Python dicts face the same problem when they grow: they resize and re-hash every key.)",
-    "fragments": []
-  },
-  {
-    "slide_index": 31,
-    "content_id": "4aca353a89",
-    "slide_text": "Quick Check — What Happens on a Collision? You built a hash function that converts a string to a number, then uses modulo to pick a bucket. What happens when two different keys hash to the same bucket (a collision)? A. The second key silently replaces the first — data is lost B. Python raises an error and refuses to insert C. The bucket stores both key-value pairs, and lookup checks each one — still fast on average if collisions are rare D. The hash function automatically picks a different bucket",
+    "content_id": "cdd99f8b43",
+    "slide_text": "is instant even if holds a million keys. A list would check entries one by one. How does a dict jump straight to the right spot? The answer: turn the key into a number , and use that number as a position. Python gives you . Write returning a letter s position in the alphabet: 0, 1,",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "6307520d46",
-        "text": "Answer: C. Each bucket keeps a short list of all key-value pairs that landed there. On lookup, Python scans that short list. As long as collisions are rare (the hash spreads keys evenly), the list stays tiny and lookups remain fast."
+        "content_id": "03fe168d54",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "da9d2ebab4",
+        "text": "Hint: if is 97, then gives the position."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "2e1fa84cf3",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "content_id": "e125bdfaad",
+    "slide_text": "For a whole string: add up all the character codes. To turn that big number into a valid index, take the remainder mod .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "53413c3ba8",
+        "text": "Hint: , loop , return ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "192ae11b07",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "content_id": "7caff37319",
+    "slide_text": "Try this: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b3ef890e1b",
+        "text": "Both give 655 . They re anagrams same letters, same sum. Two different keys landing in the same bucket is a collision ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "46716e25b6",
+        "text": "Fix: make position matter . Weight each character by where it sits: ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "69347fa8d8",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "4482264779",
+        "text": "Hint: using ."
+      },
+      {
+        "fragment_index": 4,
+        "content_id": "fa5e19ebf7",
+        "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 32,
-    "content_id": "f97e0c7e63",
-    "slide_text": "What you just invented: You built Real name Frequency table / (sorted letters) Canonical form / normalization GROUP BY (SQL) / Reverse index / inverted index (sum of char codes mod n) Hash function (position-weighted) Polynomial rolling hash (user_id mod n) Hash-based sharding / partitioning Bucket list with collision chains Hash table (what Python's is)",
+    "content_id": "ac1e31b69e",
+    "slide_text": "How a dict works inside: Hash the key to a bucket index one arithmetic step Go directly to that bucket Collisions: each bucket keeps a short list to check That s why takes the same time whether the dict holds ten keys or ten million. This is called O(1) constant time.",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "a1993cd76b",
-        "text": "You didn't learn dictionaries. You invented them."
+        "content_id": "a10a060b52",
+        "text": "Same idea at scale: a website splits a billion users across servers. Which server holds user 12345? . That s sharding ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "c867adf2fe",
+        "text": "If you add an 8th server, becomes almost every user is now on the wrong server. Real systems use smarter techniques (consistent hashing) to avoid reshuffling everyone."
       }
     ]
   },
   {
     "slide_index": 33,
-    "content_id": "b58b0a7878",
-    "slide_text": "Part 7: Reflection — What Did You Just Build?",
-    "fragments": []
+    "content_id": "7b5e703e04",
+    "slide_text": "Quick Check: Two different keys hash to the same bucket (a collision). What happens? A. The second key silently replaces the first B. Python raises an error C. The bucket stores both pairs and lookup checks each one still fast if collisions are rare D. The hash function picks a different bucket",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "83aeecfcd7",
+        "text": "Answer: C. Each bucket keeps a short list of all key-value pairs that landed there. As long as the hash spreads keys evenly, the lists stay tiny and lookups remain fast."
+      }
+    ]
   },
   {
     "slide_index": 34,
-    "content_id": "84fca7dc5d",
-    "slide_text": "Reflection Take a moment to answer these questions in your own words. Why is a dictionary better than a list of pairs for counting things? What changes as the data gets larger? The function you wrote can replace , word counting, and expense tracking. What do all three tasks have in common? Your first hash function () gave anagrams the same bucket. How did weighting by position fix that? Can you think of two different strings that would still collide even with ? When a website adds a new server, almost every user's data ends up on the wrong machine. Why? What would you want a better hash to do? You built hash tables using only lists and arithmetic. What surprised you most about how dictionaries work under the hood?",
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
     "fragments": []
   },
   {
     "slide_index": 35,
-    "content_id": "a802931831",
-    "slide_text": "Index Part 1: Dictionary Basics Part 2: Word Count Part 3: Anagrams Part 4: Expense Tracker Part 5: Invert a Dictionary & Group By Part 6: Inventing Hashing (Why Dicts Are Fast) Part 7: Reflection — What Did You Just Build?",
+    "content_id": "acdd3052c8",
+    "slide_text": "Your function Standard name Frequency table / (sorted letters) Canonical form / normalization GROUP BY (SQL) / Reverse index / inverted index (sum of char codes mod n) Hash function (position-weighted) Polynomial rolling hash Bucket list with collision chains Hash table (what Python s is)",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3b5a1a6009",
+        "text": "You didn t learn dictionaries. You invented them."
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "content_id": "ce58d84865",
+    "slide_text": "Reflection what did you just build? Why is a dictionary better than a list of pairs for counting things? What changes as the data gets larger? The function you wrote can replace , word counting, and expense tracking. What do all three tasks have in common? Your first hash function gave anagrams the same bucket. How did weighting by position fix that? When a website adds a new server, almost every user s data lands on the wrong machine. Why?",
+    "fragments": []
+  },
+  {
+    "slide_index": 37,
+    "content_id": "ce133bbc91",
+    "slide_text": "Index Dictionary Basics Word Count Anagrams Expense Tracker Invert Group By Inventing Hashing",
     "fragments": []
   }
 ]

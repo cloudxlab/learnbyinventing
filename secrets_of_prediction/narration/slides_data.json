@@ -1,164 +1,562 @@
 [
   {
     "slide_index": 0,
-    "content_id": "66874c4612",
-    "slide_text": "The Ancient Secrets of Prediction You go to the market and buy 3 apples; with parking, the trip costs 6. Next week you buy 5 apples; the trip costs 8. How much will a 10-apple trip cost? Write the story as an equation: $[math][math]3\\beta_1 + \\beta_0 = 6[math]5\\beta_1 + \\beta_0 = 8[math]2\\beta_1 = 2$, so the price is 1 and parking is 3. Ten apples: 13 . That is the oldest prediction machine there is: turn observations into equations, solve, predict beyond them . Long before gradient descent, this is how curves were fit — and in this chapter you rebuild the whole machine, then push it to its breaking point (data that no curve passes through) and invent least squares . Prerequisite: the Loops and Arrays chapter — you will reuse your from its Part 5. Navigate: press or Space to advance | to go back",
+    "content_id": "1c2ccdfd3b",
+    "slide_text": "Vectors Matrices Don t just watch invent . Navigate: press or Space to advance | to go back",
     "fragments": []
   },
   {
     "slide_index": 1,
-    "content_id": "492f364fdf",
-    "slide_text": "Challenge (skip ahead if you can): Write that finds the best line through any number of points, even when no line passes through all of them. Use least squares via the normal equations, with no gradient descent. Build the matrix with a column of x values and a column of 1s. Then solve . [code block] Test: [code block] Already got it? The next slides will guide you step by step.",
+    "content_id": "d63f8118bd",
+    "slide_text": "Part 1: What Is a Vector?",
     "fragments": []
   },
   {
     "slide_index": 2,
-    "content_id": "f521e5d97c",
-    "slide_text": "Part 1: Vectors — the Arithmetic of Prediction A fitted model is just a list of coefficients — a vector . Evaluating it at a point is a dot product . Build that toolkit first.",
-    "fragments": []
+    "content_id": "e45407ad70",
+    "slide_text": "You already use vectors every day you just don t call them that.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "986d209938",
+        "text": "A shopping list is a vector: [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "83f540ca01",
+        "text": "A position on a map is a vector: [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "087d9e44f1",
+        "text": "A student s scores across subjects is a vector: [code block] A vector is just a list of numbers where the position of each number means something."
+      }
+    ]
   },
   {
     "slide_index": 3,
-    "content_id": "72e011fdaf",
-    "slide_text": "`dot_product` multiplies element-by-element and sums: is . Tasks: Write . Verify with these assertions: [code block] Hint 1 Loop through both lists at the same time using . Multiply matching elements and keep a running total. Hint 2",
-    "fragments": []
+    "content_id": "6dd511a476",
+    "slide_text": "What happens when you go shopping on Monday and Tuesday? [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a3a241ec45",
+        "text": "Your total is add each position separately. That s vector addition ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "0231d91a07",
+        "text": "What if you re cooking for a dinner party and need 3 times the recipe? [code block] That s scalar multiplication ."
+      }
+    ]
   },
   {
     "slide_index": 4,
-    "content_id": "58a858741d",
-    "slide_text": "`vector_length` and `convert_to_unit` The length of a vector is the distance formula in disguise: [math] — reuse your . A unit vector keeps the direction but has length 1: divide every component by the length. -> . Tasks: Write using and . Write that divides each component by the length. Verify: [code block] Hint 1 For : the dot product of a vector with itself gives the square of its length. So is . Hint 2 For : divide every element by the length. A list comprehension works well: .",
-    "fragments": []
+    "content_id": "01fbfd2bf0",
+    "slide_text": "Write and :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "49fd0a0d8a",
+        "text": "Hint: use to pair up elements, or a list comprehension over each element."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "85a39d877d",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 5,
-    "content_id": "9d42a77f2a",
-    "slide_text": "`cosine_similarity` How aligned are two vectors? Take the dot product of their unit versions. The result is the cosine of the angle between them: same direction -> perpendicular -> opposite -> This one number is how modern AI systems compare documents, images and other data represented as vectors — you will meet it again in later chapters. Tasks: Write using and . Verify: [code block] Hint 1 Convert both vectors to unit vectors first, then take their dot product. You already have both helper functions. Hint 2",
-    "fragments": []
+    "content_id": "a7b5bc6c5a",
+    "slide_text": "You walk east 3 blocks, then north 4 blocks. Your position is the vector .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3634571001",
+        "text": "Now your friend starts at and walks . Where do they end up? [code block] Vector addition = chaining movements . Scaling = going farther in the same direction ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "00d862c8a0",
+        "text": "Subtraction works too: gives the difference the direction from to ."
+      }
+    ]
   },
   {
     "slide_index": 6,
-    "content_id": "1b2b926a2f",
-    "slide_text": "`matrix_mul` A matrix is a list of rows. In the product , entry is the dot product of row i of A with column j of B . An (n x k) matrix times a (k x m) matrix gives an (n x m) matrix. Write using your . Verify: [code block] Hint 1 You need column of B. Extract it with . Hint 2 For each row of A and each column of B, compute . Collect the results into a list of lists (one inner list per row of A). Hint 3",
-    "fragments": []
+    "content_id": "d4bc92e10d",
+    "slide_text": "Quick Check: If and , what is ? A. B. C. D.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c7eaa2f6b4",
+        "text": "Answer: A. Add position by position: [math], [math]. The two perpendicular walks combine into the diagonal ."
+      }
+    ]
   },
   {
     "slide_index": 7,
-    "content_id": "dad5efc0ff",
-    "slide_text": "Quick Check: Cosine Similarity Quick Check: Two vectors have a cosine similarity of 0. What does this tell you about their relationship? A. They are identical B. They point in exactly opposite directions C. They are perpendicular (at 90 degrees) — knowing one tells you nothing about the other D. One of the vectors is all zeros Answer: C. A cosine similarity of 0 means the vectors are perpendicular — they share no component in each other's direction. Identical vectors give 1.0, opposite vectors give -1.0, and a zero vector is undefined (you cannot divide by zero length).",
+    "content_id": "8f65195407",
+    "slide_text": "Part 2: Measuring Vectors",
     "fragments": []
   },
   {
     "slide_index": 8,
-    "content_id": "9ddf45bb5b",
-    "slide_text": "Part 2: Bring Your Solver We store the equation [math] as the list , and a system as a list of such lists — exactly the representation you used in Loops and Arrays, Part 5 .",
-    "fragments": []
+    "content_id": "12fd420006",
+    "slide_text": "You walked east 3, north 4. How far are you from where you started?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "939e9e375f",
+        "text": "Pythagoras: [math]. That s the length (or magnitude ) of the vector . For any number of dimensions: [math]."
+      }
+    ]
   },
   {
     "slide_index": 9,
-    "content_id": "4762e65a92",
-    "slide_text": "Paste and Verify Your Solver Paste your (with its helpers , , ) into the code cell. The test must pass before you go on. (Skipped that chapter? Go invent it there first — this whole chapter stands on it.) Think: your solver eliminates one variable at a time, and each elimination touches every remaining equation, and each equation has that many coefficients — three nested loops. Roughly how does the running time grow with equations? If solving 4 equations takes 1 second, what would 8 take? Keep that number in mind — it returns at the end of the chapter.",
-    "fragments": []
+    "content_id": "923bd57c6b",
+    "slide_text": "Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a25b9c6281",
+        "text": "Hint: square each element, sum them, take the square root."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "96bcebba55",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 10,
-    "content_id": "c456f79a23",
-    "slide_text": "Part 3: Prediction as Equation Solving",
-    "fragments": []
+    "content_id": "a001c4bd13",
+    "slide_text": "Two vectors can point in the same direction but have different lengths. Suppose we only care about direction and want to strip away magnitude.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "edba02faca",
+        "text": "Divide every element by the vector s length. The result has length 1 a unit vector . [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "1a1a1d2a39",
+        "text": "Example: has length 5, so its unit vector is . Check: [math]."
+      }
+    ]
   },
   {
     "slide_index": 11,
-    "content_id": "1284920afd",
-    "slide_text": "The Apple Trips, by Code Redo the opening story with your tools: Build the two equations in : trip 1 -> , trip 2 -> . gives you . Predict the 10-apple trip with . Hint 1 Trip 1: 3 apples cost 6 total, so the equation is (3 times the price + 1 times parking = 6). Trip 2: 5 apples cost 8, so . Hint 2 — should give 13.",
-    "fragments": []
+    "content_id": "2d474b829b",
+    "slide_text": "Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "57f336cf68",
+        "text": "Hint: reuse . Divide each element by it."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "2710a23c45",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 12,
-    "content_id": "c85f31be80",
-    "slide_text": "When a Line Isn't Enough Traffic through a junction is measured three times: t traffic 1 6 2 12 3 20 The growth is not linear (check the gaps: +6, +8). Assume a quadratic: [math]. Each measurement is one equation in [math] — for [math]: [math], and so on. Tasks: Build the three equations. Solve for . Predict the traffic at . Hint 1 For t=1: [math], which gives the row . For t=2: . For t=3: . Hint 2 After solving, predict at t=4 with (since [math], [math], [math]).",
-    "fragments": []
+    "content_id": "4ebd87aac8",
+    "slide_text": "Now the big one: how do we measure whether two vectors point in similar directions ?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "9b5c275e88",
+        "text": "Multiply matching elements and add up: [math] This is called the dot product . It tells you how much one vector goes along the other."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "345a9bf164",
+        "text": "Situation Dot product Same direction Large positive Perpendicular (90 ) Zero Opposite direction Large negative"
+      }
+    ]
   },
   {
     "slide_index": 13,
-    "content_id": "a784b97db5",
-    "slide_text": "`solve_poly`: the General Machine Automate it. Write : and are observed points; assume a polynomial of degree . For each point build the row and solve for the coefficients. Return the polynomial's value at — a of the coefficients with the matching powers of . Think: why do points pin down exactly a degree- polynomial — what goes wrong with fewer coefficients, and what freedom is left with more? Hint 1 For each data point, build a row: . That is one equation per point. Hint 2 After solving for the coefficients, evaluate at with . Hint 3 Build powers in a loop: . The prediction row is the same without .",
-    "fragments": []
+    "content_id": "acc3dbf730",
+    "slide_text": "Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "66810ff001",
+        "text": "Hint: use to pair elements, multiply each pair, the results."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "56f06b036b",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 14,
-    "content_id": "8d6a233703",
-    "slide_text": "Part 4: When No Curve Fits A factory reports: input output 1 8 2 11 3 16 4 ?? Try a line through the first two points: slope 3, intercept 5 — but then input 3 predicts 14, not 16. Through points 1 and 3: slope 4, intercept 4 — but input 2 predicts 12, not 11. No line passes through all three points. Real measurements are noisy; perfect solving just broke. New plan: accept an imperfect line, but pick the one that is least wrong . But how do you measure how wrong a line is? You'll figure that out in the next exercise.",
-    "fragments": []
+    "content_id": "37d07d6c43",
+    "slide_text": "The dot product is affected by vector lengths. A vector twice as long gives a dot product twice as big, even if the direction is the same.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "1c167ad240",
+        "text": "To measure direction only , take the dot product of the unit vectors . This gives a number between [math] and [math] called cosine similarity : [math] same direction [math] perpendicular [math] opposite"
+      }
+    ]
   },
   {
     "slide_index": 15,
-    "content_id": "a49b625c23",
-    "slide_text": "`total_error` For a candidate line [math], each data point [math] has an error: the prediction [math] minus the actual [math]. But some errors are positive (prediction too high) and some are negative (prediction too low) — if you just add them up, they cancel out. Think: How do you prevent cancellation? What operation makes all errors positive? Then how do you combine them into a single \"total wrongness\" score? Write where is a list of pairs. Hint 1 Square each error to make it positive: the error for one point is [math]. Then add them all up. Hint 2",
-    "fragments": []
+    "content_id": "8f292bc98b",
+    "slide_text": "Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3b31052d44",
+        "text": "Hint: convert both vectors to unit vectors first, then take their dot product."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d33b4ddcde",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 16,
-    "content_id": "146f083171",
-    "slide_text": "The Best Line, Without Guessing At the minimum of [math], nudging [math] or [math] changes nothing — both partial derivatives (the rate of change of [math] when you tweak just one variable, holding the other fixed) are zero. Your task: Write the partial derivative [math] — differentiate each term of [math] with respect to [math] (treat [math] as a constant). Set it to zero and simplify. You should get a linear equation in [math] and [math]. Do the same for [math]. Plug in the factory data values and use from Part 2 to find [math] and [math]. Use on the two equations you derived. The test also nudges your answer in every direction to confirm no neighbor does better — the definition of a minimum. Hint 1 The derivative of [math] with respect to [math] is [math]. Setting the sum to zero and dividing by 2: [math]. Hint 2 The derivative with respect to [math] is [math]. Setting the sum to zero: [math], where [math] is the number of data points. Hint 3 For the factory data (1,8), (2,11), (3,16): [math], [math], [math], [math], [math]. The two equations are and .",
-    "fragments": []
+    "content_id": "7947e839d4",
+    "slide_text": "Real-world use: Two friends rate five movies on a 1 5 scale: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "ed65386113",
+        "text": "Ratings are vectors. Cosine similarity tells you how aligned two people s tastes are regardless of whether one person rates everything higher than the other."
+      }
+    ]
   },
   {
     "slide_index": 17,
-    "content_id": "9e48dec0ea",
-    "slide_text": "`best_line`: Least Squares for Any Data Wrap it up. Write : From the pairs compute [math], [math], [math], [math] and [math]. Build the two normal equations (the equations you get after setting each derivative to zero — they are called \"normal\" because the error is perpendicular to the fit) and . Return . On data that is perfectly linear it must recover the exact line — least squares contains exact fitting as a special case. Hint 1 Compute the sums from your data: , , , , . Hint 2 The two equations (from the previous exercise) are and . Pass them to and return the result as .",
-    "fragments": []
+    "content_id": "1da6f44b46",
+    "slide_text": "Quick Check: returns 0.0. Why? A. One of the vectors is zero B. The vectors are perpendicular knowing one tells you nothing about the other C. They have different lengths D. Cosine similarity only works for unit vectors",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "568be87ffe",
+        "text": "Answer: B. points purely east; points purely north. They re at 90 , so the cosine is zero. Length doesn t matter."
+      }
+    ]
   },
   {
     "slide_index": 18,
-    "content_id": "beb13e4049",
-    "slide_text": "Quick Check: Why Square the Errors? Quick Check: In the least squares method, you minimize the sum of squared errors. Why not just minimize the sum of raw errors (without squaring)? A. Squaring makes the computation faster B. Raw errors can be positive or negative — a prediction 10 too high and one 10 too low would cancel out, giving a total error of 0 even though both predictions are wrong C. Python cannot handle negative numbers in sums D. Squaring is needed because the data might contain negative values Answer: B. Positive and negative errors cancel each other out. Squaring makes every error positive before you add them up. (Taking absolute values would also work, but squaring is smoother — its derivative is a clean formula, which matters when you want to find the minimum.)",
+    "content_id": "215e42b891",
+    "slide_text": "Part 3: What Is a Matrix?",
     "fragments": []
   },
   {
     "slide_index": 19,
-    "content_id": "4e470001c6",
-    "slide_text": "Part 5: Bonus — Matrices That Move the World So far matrices held data (trips, prices). But has a second life: a matrix can be a machine that moves points . Every video game, every 3D animation, every graphics chip is built on this. Keep points as rows, . Multiplying a stack of points by one 2x2 matrix moves all of them at once with your existing — no new code needed.",
-    "fragments": []
+    "content_id": "9227695bb7",
+    "slide_text": "A matrix is a grid of numbers arranged in rows and columns. In Python, it s a list of lists: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "1e9b9b91cc",
+        "text": "But what does a matrix do ? Think of it as a machine : you feed in a vector, it spits out a new vector. Each row of the matrix computes one element of the output by taking a dot product with the input."
+      }
+    ]
   },
   {
     "slide_index": 20,
-    "content_id": "379fc16757",
-    "slide_text": "The Rotation Matrix The matrix that rotates every point counter-clockwise by angle [math] (with points as rows) is: $[math]$ Write returning that 2x2 list-of-lists. Use to convert, then / . Sanity checks worth predicting before you run: the point (due east) rotated 90 degrees should land at (due north). Rotated 180 degrees, at . Hint 1 Convert degrees to radians: . Then compute and . Hint 2 Return . To test, multiply a point (as a 1-row, 2-column matrix) by this matrix using .",
-    "fragments": []
+    "content_id": "59e498f04f",
+    "slide_text": "Write multiply a matrix by a vector:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "25e45525ee",
+        "text": "Hint: loop over each row of and take the dot product with ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "9c870b5372",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 21,
-    "content_id": "9ba8486f09",
-    "slide_text": "Turn a Whole Shape Here is a kite, five points as rows (the last repeats the first so it draws closed): [code block] Rotate the entire kite by 45 degrees with one call to , storing the result in . Then run the provided plotting cell to see both. A deep property to verify while you're here: rotation moves points but never stretches them. The test checks every point stays the same distance from the origin. Hint That is it — handles all five points at once.",
-    "fragments": []
+    "content_id": "3b858819b1",
+    "slide_text": "Different matrices do different things to points. Let s experiment. Apply these matrices to the point : [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2e9f0bdb21",
+        "text": "[code block] Matrices are transformations : flips, rotations, stretches, skews all encoded in a grid of numbers."
+      }
+    ]
   },
   {
     "slide_index": 22,
-    "content_id": "1fe5e730a7",
-    "slide_text": "What Does a *Random* Matrix Do? Rotation matrices are special. What happens with an arbitrary 2x2 matrix? Build one from random numbers, apply it to the kite with , and plot the result (reuse the plotting code above). Run it several times. Observe, then answer: straight edges stay straight, and parallel edges stay parallel — but lengths and angles change: the kite gets stretched, squashed, sheared, maybe flipped. Every 2x2 matrix is some such linear transformation , and rotations are exactly the ones that preserve all lengths. (When a neural network multiplies data by a learned weight matrix, this stretching and squashing of space is literally what it's doing.)",
-    "fragments": []
+    "content_id": "c55e6bf89d",
+    "slide_text": "Try the same matrices on a different point :",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "6d4b3ab7e1",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 23,
-    "content_id": "1512008de1",
-    "slide_text": "What You Just Invented What you built Its standard name , , , , models are vectors; evaluation is a dot product apple trips, traffic at the junction prediction = set up equations + solve n points -> one degree-(n-1) polynomial , normal equations, least squares — when nothing fits, minimize the squared error",
-    "fragments": []
+    "content_id": "a77328e519",
+    "slide_text": "When you apply one transformation and then another, you can combine them into a single matrix. That s matrix multiplication .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "ff5c009d6f",
+        "text": "In the product [math], each entry [math] is the dot product of row [math] of [math] with column [math] of [math] . To get column [math] of [math]: pick the [math]-th element from every row."
+      }
+    ]
   },
   {
     "slide_index": 24,
-    "content_id": "43e06334a9",
-    "slide_text": "What you just derived is Ordinary Least Squares (OLS), the same closed-form answer computes. So why does the next chapter exist? Two cracks in the ancient method: solving grows like [math] (your Part 2 estimate), and the derive-and-set-to-zero trick needs a formula for the derivative — which complicated models do not offer. Gradient Descent fixes both by walking toward the minimum instead of jumping to it.",
-    "fragments": []
+    "content_id": "e600d9e2fc",
+    "slide_text": "Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "585578dd0c",
+        "text": "Hint: for each row of [math] and each column of [math], take their dot product. Extract column [math] as ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b704d246e1",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 25,
-    "content_id": "b5fa882c4a",
-    "slide_text": "Reflection Take a moment to think about what you built. Write a sentence or two for each question — there are no wrong answers. What was the key idea that let you predict the cost of a 10-apple trip? How is that different from just guessing? Your can fit any number of points exactly. Why, then, did you need to invent least squares? What changed? You squared the errors before adding them. What would go wrong if you used raw (unsquared) errors instead? Can you think of another way to prevent cancellation? The rotation matrix moved every point without stretching. A random matrix stretched and squashed. In one sentence, what is the difference between the two kinds of matrix? The chapter mentioned that solving equations grows like [math]. If a real dataset has a million points, is that practical? What might you do instead?",
-    "fragments": []
+    "content_id": "b3abae8f70",
+    "slide_text": "Quick Check: You flip a point vertically, then rotate it 90 . Can you do both in one step? A. No you must apply them one at a time B. Yes multiply the two matrices to get a single combined matrix C. Only if the matrices are the same size D. Only for 2D vectors",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7988fb70ff",
+        "text": "Answer: B. gives you one matrix that does both transformations at once. This is why matrix multiplication exists it chains transformations ."
+      }
+    ]
   },
   {
     "slide_index": 26,
-    "content_id": "10f0cb387d",
-    "slide_text": "Index Part 1: Vectors — the Arithmetic of Prediction Part 2: Bring Your Solver Part 3: Prediction as Equation Solving Part 4: When No Curve Fits Part 5: Bonus — Matrices That Move the World",
+    "content_id": "16deb1226a",
+    "slide_text": "Part 4: Matrices in Action",
+    "fragments": []
+  },
+  {
+    "slide_index": 27,
+    "content_id": "b7e42288a9",
+    "slide_text": "The matrix that rotates a point counter-clockwise by angle [math] is: [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "d6030b3542",
+        "text": "Build it. Write :"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "a7526bff5f",
+        "text": "Hint: convert degrees to radians with , then use and ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "360ede993f",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 28,
+    "content_id": "2808dc86b4",
+    "slide_text": "A shape is just a list of points. Here s a kite: [code block] Rotate the whole kite by applying the rotation matrix to every point:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "0c5f3a602a",
+        "text": "Hint: build the rotation matrix once, then apply to each point."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b22887f851",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 29,
+    "content_id": "67f4c7229c",
+    "slide_text": "Rotation matrices are special they preserve shape and size. But what does an arbitrary matrix do?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "79ee7bd4f5",
+        "text": "A random matrix stretches, skews, and possibly flips the shape. Only rotation matrices keep everything rigid."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "9a0b64085a",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "content_id": "523e8f412a",
+    "slide_text": "There s one special matrix that does nothing at all: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b03ec12512",
+        "text": "[code block] The identity matrix is like multiplying by 1 it s the do nothing transformation. Every vector passes through unchanged."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "e6a285e608",
+        "text": "Try it: . You get back the identity rotating 45 then 45 cancels out."
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "content_id": "458fd1de9c",
+    "slide_text": "Quick Check: You multiply a 3 2 matrix by a 2 4 matrix. What size is the result? A. 3 4 B. 2 2 C. 4 3 D. Can t multiply sizes don t match",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b84d45eefa",
+        "text": "Answer: A. An [math] matrix times a [math] matrix gives an [math] result. The inner dimensions must match (both are 2 here); the outer dimensions form the result shape: [math]."
+      }
+    ]
+  },
+  {
+    "slide_index": 32,
+    "content_id": "ceae731379",
+    "slide_text": "Part 5: Why This Matters for ML",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "content_id": "9acb8a20a9",
+    "slide_text": "In machine learning, a dataset is a matrix. Each row is one sample; each column is one feature. [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "4cfcc2b633",
+        "text": "A model s job is to learn a weight vector one number per feature that predicts the output. [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "dc1f70021e",
+        "text": "Prediction for one house = ."
+      }
+    ]
+  },
+  {
+    "slide_index": 34,
+    "content_id": "d515a6a82d",
+    "slide_text": "Predict the price of each house using the weight vector:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "830ba54f23",
+        "text": "Hint: you already wrote the function that does this !"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "55ba6d118e",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 35,
+    "content_id": "997aa1eebb",
+    "slide_text": "Predicting one sample at a time works, but there s a faster way. If the dataset is a matrix and the weights are a vector",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3fefd0db50",
+        "text": "predicts all houses at once ! [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "efa948b060",
+        "text": "This is why ML libraries use matrices everywhere. With , computes thousands of predictions in one operation, orders of magnitude faster than a Python loop."
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "content_id": "f04d9d3006",
+    "slide_text": "What if you have multiple sets of weights several models at once?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "83a437125a",
+        "text": "Matrix multiplication = running all predictions for all models in a single operation."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "23ab9bc4a3",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "b43627ecc5",
+    "slide_text": "Quick Check: In the expression , what are and ? A. X is the weights, w is the data B. X is the data matrix (samples features), w is the weight vector C. Both are weight vectors D. X is a single sample, w is all samples",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "6be04ef158",
+        "text": "Answer: B. Each row of [math] is one sample s features. The dot product of each row with [math] gives that sample s prediction. Matrix-vector multiply does all rows at once."
+      }
+    ]
+  },
+  {
+    "slide_index": 38,
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 39,
+    "content_id": "775f954291",
+    "slide_text": "What you built Its real name , Vector addition scalar multiplication Euclidean norm ([math] norm) Unit vector / normalization Dot product (inner product) Cosine similarity Matrix-vector multiplication Matrix multiplication 2D rotation matrix [math] Linear model prediction",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "23a654689a",
+        "text": "Every ML model you ll meet linear regression, neural networks, transformers is built from these exact operations. You just invented the building blocks."
+      }
+    ]
+  },
+  {
+    "slide_index": 40,
+    "content_id": "ad32ecb007",
+    "slide_text": "Reflection what did you just build? Why does the dot product of perpendicular vectors equal zero? Can you explain it without using the word cosine ? If you rotate by 30 and then by 60 , is that the same as rotating by 90 ? How would you verify with ? A neural network layer computes for input . What does each row of represent? Cosine similarity ignores magnitude. When would you want magnitude to matter? (Hint: think about comparing documents of very different lengths.) You used to predict with two models at once. How would this scale to 1000 models?",
+    "fragments": []
+  },
+  {
+    "slide_index": 41,
+    "content_id": "8fad927c08",
+    "slide_text": "Index What Is a Vector? Measuring Vectors What Is a Matrix? Matrices in Action Why This Matters for ML",
     "fragments": []
   }
 ]
