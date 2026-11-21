@@ -31,6 +31,7 @@
     .reveal .slide-title { color: #555; font-style: italic; font-size: 0.9em; }
     .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
     .reveal .code-stack { position: relative; }
+    .reveal .code-stack pre { font-size: 0.48em; }
     .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
     .reveal .progress { display: none !important; }
     .chapter-footer { display: none; }
@@ -331,7 +332,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
         <div class="slide-content">
   <p>Let&rsquo;s automate the counting. Write <code>count_where</code> &mdash;
   it counts rows where all conditions are met:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def count_where(data, conditions):
     # data: list of dicts (one per row)
@@ -375,7 +376,7 @@ print(count_where(data, {"Play":"No"}))                     # 5</code></pre>
         <div class="slide-content">
   <p>Now write <code>probability</code> &mdash; compute
   P(event | given) using <code>count_where</code>:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:9em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def probability(data, event, given):
     # event: {"Outlook": "Sunny"}
@@ -414,7 +415,7 @@ print(probability(data, {"Outlook":"Sunny"}, {"Play":"No"}))
   <p>Write <code>predict_one_feature</code> &mdash; for each label,
   compute Score = P(feature_value | label) &times; P(label), then return
   the winner:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def predict_one_feature(data, feat_name, feat_val, label_col, labels):
     # For each label: score = P(feat_val|label) * P(label)
@@ -508,7 +509,7 @@ print(predict_one_feature(data, "Outlook", "Sunny", "Play", ["Yes","No"]))
         <div class="slide-content">
   <p>Write <code>predict_two_features</code> &mdash; like the one-feature
   version, but multiply two conditional probabilities:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def predict_two_features(data, f1_name, f1_val,
                          f2_name, f2_val, label_col, labels):
@@ -590,7 +591,7 @@ print(predict_two_features(data, "Outlook", "Sunny",
   <p>You&rsquo;ve seen the pattern: for each label, start with the
   prior and multiply by one conditional probability per feature.
   Generalize to any number of features:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def predict(data, features, label_col, labels):
     # features: {"Outlook":"Sunny", "Temp":"Hot", "Humidity":"High"}
@@ -690,7 +691,7 @@ print(predict(data, {"Outlook":"Sunny","Temp":"Hot",
         <div class="slide-content">
   <p>Write <code>probability_smooth</code> &mdash; adds 1 to the
   numerator and k to the denominator:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:9em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def probability_smooth(data, event, given, k):
     # Smoothed: (count_both + 1) / (count_given + k)
@@ -724,7 +725,7 @@ print(probability_smooth(data, {"Outlook":"Sunny"},
         <div class="slide-content">
   <p>Now write <code>predict_smooth</code> &mdash; like <code>predict</code>,
   but with smoothing. Compute k for each feature from the data:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def predict_smooth(data, features, label_col, labels):
     # Like predict(), but use probability_smooth
@@ -810,7 +811,7 @@ print(predict_smooth(data, {"Outlook":"Overcast","Temp":"Hot",
       <section>
         <div class="slide-content">
   <p>Implement the full <code>NaiveBayes</code> class:</p>
-  <div class="code-stack" style="min-height:28em;">
+  <div class="code-stack" style="min-height:14em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>class NaiveBayes:
     def __init__(self, alpha=1):
@@ -888,7 +889,7 @@ print(nb.predict(X_train))  # predictions for all rows</code></pre>
       <section>
         <div class="slide-content">
   <p>Test your class on the tennis data &mdash; compute training accuracy:</p>
-  <div class="code-stack" style="min-height:19em;">
+  <div class="code-stack" style="min-height:13em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code># Build X (list of dicts) and y (list of labels) from the data
 X_train = [{k:v for k,v in row.items() if k != "Play"} for row in data]
@@ -942,7 +943,7 @@ print(nb.predict([{"Outlook":"Sunny","Temp":"Cool",
         <div class="slide-content">
   <p>Add <code>predict_proba</code> &mdash; return the probability of
   each class, not just the winner. Divide each score by the total:</p>
-  <div class="code-stack" style="min-height:19em;">
+  <div class="code-stack" style="min-height:13em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def predict_proba(self, X):
     # Return: list of dicts, e.g. [{"Yes": 0.7, "No": 0.3}, ...]

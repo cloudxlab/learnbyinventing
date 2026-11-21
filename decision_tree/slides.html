@@ -333,10 +333,11 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
   <div class="fragment" data-fragment-index="1">
     <style>
       .reveal .code-stack { position: relative; }
+      .reveal .code-stack pre { font-size: 0.48em; }
       .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
     </style>
     <p><strong>Write a function</strong> <code>list_impurity(items)</code>:</p>
-    <div class="code-stack" style="min-height:9em;">
+    <div class="code-stack" style="min-height:6em;">
       <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def list_impurity(items):
     # count the most common label
@@ -410,7 +411,7 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p>Try every position and pick the one with minimum total impurity:</p>
-  <div class="code-stack" style="min-height:24em;">
+  <div class="code-stack" style="min-height:14em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def total_impurity(left, right):
     n = len(left) + len(right)
@@ -550,7 +551,7 @@ genders = ["F","F","F","F","M","F","M","M","F","M",
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p><strong>Try every unique height</strong> as a threshold:</p>
-  <div class="code-stack" style="min-height:18em;">
+  <div class="code-stack" style="min-height:13em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def split_by_threshold(heights, genders, t):
     left  = [g for h, g in zip(heights, genders) if h &lt;= t]
@@ -608,7 +609,7 @@ best_t, best_imp = find_best_threshold(heights, genders)
     <p>Try every (feature, threshold) pair:</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <div class="code-stack" style="min-height:20em;">
+    <div class="code-stack" style="min-height:14em;">
       <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def find_decision_boundary(data, features, label):
     best_feature, best_threshold = None, None
@@ -691,7 +692,7 @@ best_t, best_imp = find_best_threshold(heights, genders)
       <section>
         <div class="slide-content"><div style="font-size:1.3em;">
   <p>Design a class <code>DecisionTreeNode</code>:</p>
-  <div class="code-stack" style="min-height:20em;">
+  <div class="code-stack" style="min-height:14em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>class DecisionTreeNode:
     def __init__(self, decision=None, boundary=None,
@@ -823,7 +824,7 @@ job_tree.check({"salary": 1500, "distance": 60})  # False ✓</code></pre>
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
   <p><strong><code>build_tree(data, features, label)</code></strong> &mdash; the recursive algorithm:</p>
-  <div class="code-stack" style="min-height:24em;">
+  <div class="code-stack" style="min-height:14em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def majority_label(labels):
     # return the most common label
@@ -920,7 +921,7 @@ def print_tree(node, depth=0):
     <li><code>predict(X)</code> &mdash; return predictions</li>
   </ul>
   <div class="fragment" data-fragment-index="0">
-    <div class="code-stack" style="min-height:15em;">
+    <div class="code-stack" style="min-height:10em;">
       <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>class SimpleDecisionTree:
     def fit(self, X, y):
@@ -1111,6 +1112,8 @@ print(f"Accuracy: {correct}/{len(y)} = {correct/len(y)*100:.0f}%")</code></pre>
           badge.textContent = '✍ Your turn';
           section.style.position = 'relative';
           section.appendChild(badge);
+          var firstP = section.querySelector('.slide-content > p:first-child');
+          if (firstP) firstP.style.paddingRight = '5em';
         }
       });
       document.querySelectorAll('.slide-content p, .slide-content li').forEach(function(el) {
