@@ -1,0 +1,298 @@
+[
+  {
+    "slide_index": 0,
+    "content_id": "30ecf694bc",
+    "slide_text": "K-Nearest Neighbors Don t just watch invent . Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "content_id": "8fe01cdd43",
+    "slide_text": "Part 1: Finding the Nearest Neighbor",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "content_id": "60252cc3a7",
+    "slide_text": "Challenge (skip ahead if you can): Write that classifies a new point by finding its nearest labeled neighbors and taking a majority vote. Already got it? Skip to the end .",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "content_id": "b2706b7d6d",
+    "slide_text": "Imagine you just moved to a new city. You find a fruit you ve never seen and want to know if it s an apple or an orange.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "bd59a57950",
+        "text": "You could measure its weight and color , then compare those numbers to fruits you already know. The closest match is your best guess. That s the whole idea. Let s build it."
+      }
+    ]
+  },
+  {
+    "slide_index": 4,
+    "content_id": "40ef892d7f",
+    "slide_text": "First we need a way to measure how far apart two points are. Write for any number of dimensions:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a0720882d3",
+        "text": "Hint: square the difference for each coordinate, sum them up, take the square root. [math]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "3faa8a74a1",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 5,
+    "content_id": "8ed1433dec",
+    "slide_text": "Now find the single closest point from a list. Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "70529cf756",
+        "text": "Hint: use with a that computes the distance to our target point."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "77c6bf7f91",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 6,
+    "content_id": "94271bf253",
+    "slide_text": "You can now find the nearest point. But in real problems, each point has a label apple or orange , spam or not spam.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "9c32687a18",
+        "text": "[code block] Using just the one nearest neighbor, what would you predict for the point ?"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "87ad4f499c",
+        "text": "The nearest is (orange), so we predict orange. But what if the nearest neighbor happened to be an outlier? One neighbor is fragile"
+      }
+    ]
+  },
+  {
+    "slide_index": 7,
+    "content_id": "8227613481",
+    "slide_text": "Part 2: From 1 Neighbor to K Neighbors",
+    "fragments": []
+  },
+  {
+    "slide_index": 8,
+    "content_id": "b95c5aa35c",
+    "slide_text": "Instead of asking one neighbor, ask the [math] closest neighbors and let them vote . Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "92f20e8d2d",
+        "text": "Hint: sort the labeled data by distance to , then take the first ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "76b9ec7622",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "content_id": "2e1efe6d6e",
+    "slide_text": "Now count the votes. Write that returns the most common label:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "dd4be124ce",
+        "text": "Hint: build a dictionary of , then return the key with the highest value."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "398df49087",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "content_id": "299cff8e2d",
+    "slide_text": "Quick Check: You have 3 nearest neighbors with labels . What does majority vote predict? A. apple (2 votes to 1) B. orange (it s the nearest) C. unknown (can t decide) D. both equally",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "f0a1e8e78b",
+        "text": "Answer: A. Apple wins 2 1. Each neighbor gets one vote regardless of its distance."
+      }
+    ]
+  },
+  {
+    "slide_index": 11,
+    "content_id": "7041445f93",
+    "slide_text": "Part 3: The Complete K-NN Classifier",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "content_id": "8f0b6a4b53",
+    "slide_text": "Combine your two functions into :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "0e9ea2255c",
+        "text": "Hint: it s just two lines call , then ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "4871e07bf2",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 13,
+    "content_id": "c3893d4ebf",
+    "slide_text": "That s a working classifier but how do we know if it s good ? For each point in the dataset, predict its label using the other points and check if we got it right. Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "d668cb4aae",
+        "text": "Hint 1: loop through each index . The training set is everything except index ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b1a53cfa94",
+        "text": "Hint 2: gives you all items except the [math]-th one."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "847b28a22c",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "content_id": "929191ed29",
+    "slide_text": "Try it on a bigger dataset where accuracy won t be perfect: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7a38ebe985",
+        "text": "Points near the boundary between classes are harder to classify. Different values of [math] handle these differently."
+      }
+    ]
+  },
+  {
+    "slide_index": 15,
+    "content_id": "407ba3ae55",
+    "slide_text": "Quick Check: For a two-class problem, why is an odd value of [math] preferred? A. Odd numbers compute faster B. Avoids ties in the majority vote C. Odd [math] is always more accurate D. Even [math] causes errors",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "f50af3bbeb",
+        "text": "Answer: B. With two classes and an odd [math], one class always has strictly more votes. Even [math] can produce a tie like 2 2."
+      }
+    ]
+  },
+  {
+    "slide_index": 16,
+    "content_id": "9c2353cc28",
+    "slide_text": "Part 4: Choosing K and Distance",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "content_id": "6cf95e49c5",
+    "slide_text": "What happens as [math] changes? [math] Behavior 1 Copies the nearest label exactly memorizes noise 3 7 Smooths out outliers usually a sweet spot [math] Always predicts the most common class ignores the data",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "1c44183b03",
+        "text": "[math] overfits (too sensitive to noise). Large [math] underfits (too smooth, loses local patterns). The best [math] is somewhere in between."
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "content_id": "cf65b69be2",
+    "slide_text": "Euclidean distance treats all dimensions equally. But sometimes you want a different measure. Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "24cf0d0a7a",
+        "text": "Hint: same pattern as Euclidean, but use instead of squaring and square-rooting."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "963e2af40b",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 19,
+    "content_id": "007699c80b",
+    "slide_text": "Make the distance function pluggable . Write :",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "006114352d",
+        "text": "Hint: same logic as , but pass wherever you d normally call ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "dc2d5eea7f",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "content_id": "cd6fbd53ba",
+    "slide_text": "Quick Check: K-NN s biggest weakness at scale is: A. It can only handle two classes B. It needs to be retrained when new data arrives C. It computes distance to every training point for each prediction D. It can only work with numbers, not categories",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8b8297a7d0",
+        "text": "Answer: C. With [math] training points and [math] dimensions, each prediction costs [math]. For millions of points, that gets slow. (Techniques like KD-trees help.)"
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "content_id": "48224d28c9",
+    "slide_text": "What you built Its real name Euclidean distance 1-Nearest Neighbor (1-NN) K-Nearest Neighbors query Plurality voting K-NN classifier (leave-one-out) Leave-One-Out Cross-Validation (LOOCV) L1 / Manhattan / Taxicab distance Pluggable Metric space generalization",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "97f28ce3de",
+        "text": "K-NN is one of the simplest ML algorithms and you just built it from scratch. No training phase, no model weights: the data itself is the model ."
+      }
+    ]
+  },
+  {
+    "slide_index": 23,
+    "content_id": "d1ace89bc7",
+    "slide_text": "Reflection what did you just build? K-NN has no training step. Why is that both a strength and a weakness? What happens to K-NN s accuracy if one feature is measured in meters and another in kilometers? How would you fix it? You used leave-one-out to measure accuracy. Can you think of a faster alternative when the dataset is large? When would Manhattan distance be a better choice than Euclidean? (Hint: think about dimensions with very different scales.) How is K-NN related to the recommender system idea of find similar users and use their preferences ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "content_id": "766857e5ff",
+    "slide_text": "Index Finding the Nearest Neighbor From 1 Neighbor to K Neighbors The Complete K-NN Classifier Choosing K and Distance",
+    "fragments": []
+  }
+]

@@ -1,0 +1,630 @@
+[
+  {
+    "slide_index": 0,
+    "content_id": "9413bc3cb0",
+    "slide_text": "Beam Search Don t just watch invent . Navigate: press or Space to advance | to go back",
+    "fragments": []
+  },
+  {
+    "slide_index": 1,
+    "content_id": "8418a72de0",
+    "slide_text": "Part 1: Fair Coin Toss",
+    "fragments": []
+  },
+  {
+    "slide_index": 2,
+    "content_id": "8adc1d6454",
+    "slide_text": "Challenge (skip ahead if you can): Write a Python function that returns or with equal probability (50/50). Then write that returns with probability [math]. Already got it? Skip to Part 3 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 3,
+    "content_id": "4b1b96433d",
+    "slide_text": "Let s start with the simplest random event: a fair coin toss. How would you simulate one in Python?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "586e6b1883",
+        "text": "Python s module gives us , which returns a number between 0 and 1. [code block]"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "257ce6bfa3",
+        "text": "If this number is less than 0.5, call it Heads. Otherwise, Tails. Before coding why does this give each side exactly 50% chance?"
+      }
+    ]
+  },
+  {
+    "slide_index": 4,
+    "content_id": "250dbea17f",
+    "slide_text": "Write it:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "f770c1ea6e",
+        "text": "Hint: compare to 0.5."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "3d77cbeb94",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 5,
+    "content_id": "766f75b41b",
+    "slide_text": "Let s verify it s fair. Flip 10,000 times and count: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "53173e6b47",
+        "text": "It won t be exactly 5000 each time that s randomness. But it should be close . Now, what if the coin isn t fair?"
+      }
+    ]
+  },
+  {
+    "slide_index": 6,
+    "content_id": "ee3439d615",
+    "slide_text": "Part 2: Biased Coin",
+    "fragments": []
+  },
+  {
+    "slide_index": 7,
+    "content_id": "6f24733f6f",
+    "slide_text": "What if Heads should come up 70% of the time? Before coding: if gives a number between 0 and 1, what threshold should you use instead of 0.5?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "5b2214dfc7",
+        "text": "Use 0.7 as the threshold. Numbers below 0.7 (which happens 70% of the time) become Heads."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "7bbecb54f9",
+        "text": "Generalize: write where is the probability of Heads."
+      }
+    ]
+  },
+  {
+    "slide_index": 8,
+    "content_id": "bccf6e1964",
+    "slide_text": "",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b64d3d2c4f",
+        "text": "Hint: same as , but compare to instead of 0.5."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b9c27263fb",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "ae39435e8c",
+        "text": "Notice: is just . The fair coin is a special case of the biased coin!"
+      }
+    ]
+  },
+  {
+    "slide_index": 9,
+    "content_id": "1482e8a975",
+    "slide_text": "Quick sanity check test various biases: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "406b251786",
+        "text": "A coin has only two outcomes. But what if we have more than two choices, each with its own probability?"
+      }
+    ]
+  },
+  {
+    "slide_index": 10,
+    "content_id": "36ad9d8c39",
+    "slide_text": "Part 3: Weighted Random Selection",
+    "fragments": []
+  },
+  {
+    "slide_index": 11,
+    "content_id": "19e87f2cba",
+    "slide_text": "Challenge (skip ahead if you can): Write that picks one item from a list, where each item has a different probability of being chosen. For example, should return about 70% of the time. Got it? Skip to Part 4 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 12,
+    "content_id": "99b5714c6f",
+    "slide_text": "Imagine a spinner divided into sections of different sizes: Item Probability Range on spinner A 0.7 0.0 0.7 B 0.2 0.7 0.9 C 0.1 0.9 1.0",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8b9a424319",
+        "text": "If we pick a random number between 0 and 1, we just check which section it falls into. For example, 0.85 falls in B s range (0.7 0.9)."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "bfb4916655",
+        "text": "The technique: walk through the probabilities, accumulating a running total. Stop when the random number is less than the running total."
+      }
+    ]
+  },
+  {
+    "slide_index": 13,
+    "content_id": "9dfda340a1",
+    "slide_text": "Write it:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "9494e6de1d",
+        "text": "Hint 1: generate one random number. Walk through probabilities keeping a running total."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "812d4a8321",
+        "text": "Hint 2: if , return that item."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "18c7e00116",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "content_id": "6dcbad7d66",
+    "slide_text": "Let s make sure it really works. Verify with an extreme case: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "e02810caa0",
+        "text": "You ve now built a general random selector that respects any probability distribution. This is a core building block. Next: where do these probabilities come from in the real world?"
+      }
+    ]
+  },
+  {
+    "slide_index": 15,
+    "content_id": "862a70c2e1",
+    "slide_text": "Part 4: Generating Text with an LLM",
+    "fragments": []
+  },
+  {
+    "slide_index": 16,
+    "content_id": "aff0f99d91",
+    "slide_text": "Challenge (skip ahead if you can): Use an LLM API to get next-token probabilities for a prompt. Write that always picks the highest-probability token to build a sentence word by word. Got it? Skip to Part 5 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 17,
+    "content_id": "c31ac4f9f3",
+    "slide_text": "A large language model (LLM) does something remarkably simple: Given some text, it predicts probabilities for the next token .",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a23a46a99e",
+        "text": "For example, given , an LLM might output: Token Probability mat 0.35 floor 0.20 roof 0.15 bed 0.10 table 0.08"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "389f69e054",
+        "text": "The simplest strategy: always pick the most probable token . This is called greedy decoding ."
+      }
+    ]
+  },
+  {
+    "slide_index": 18,
+    "content_id": "539f42b2df",
+    "slide_text": "Let s simulate an LLM with a simple dictionary. In practice you d call an API but this lets us focus on the algorithm: [code block]",
+    "fragments": []
+  },
+  {
+    "slide_index": 19,
+    "content_id": "b0b6013a8f",
+    "slide_text": "With a real LLM it works the same way. Here s the equivalent using Hugging Face s and : [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a45930949d",
+        "text": "Same idea: given a prompt, the model returns probabilities for every possible next token. We ll use our so you don t need a GPU, but every algorithm below works identically with a real model."
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "content_id": "b764538ff6",
+    "slide_text": "Try it: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8715f1e83d",
+        "text": "Now write greedy generation always pick the token with the highest probability :"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "367c161866",
+        "text": "[code block] [code block]"
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "c955e7ec7b",
+        "text": "Hint: returns the key with the highest value."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "75ecbf2742",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "content_id": "37a5daa821",
+    "slide_text": "Test it: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c42a9305c0",
+        "text": "It works! But notice a problem greedy decoding often gets stuck in loops . It always picks the same best token, so it repeats itself."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "4cb6a29cfb",
+        "text": "Also, it s boring . Real language is varied. The cat sat on the mat is perfectly fine, but so is The cat sat on the roof. What if we added some randomness ?"
+      }
+    ]
+  },
+  {
+    "slide_index": 22,
+    "content_id": "2e3d94f42b",
+    "slide_text": "Part 5: Sampling with Weighted Choices",
+    "fragments": []
+  },
+  {
+    "slide_index": 23,
+    "content_id": "bcf6bd1ad6",
+    "slide_text": "Challenge (skip ahead if you can): Write that picks each next token randomly according to the LLM s probabilities (using your ). Got it? Skip to Part 6 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 24,
+    "content_id": "ec79fdaec5",
+    "slide_text": "Instead of always picking the best token, we sample from the probability distribution. The most likely token still gets picked most often, but less likely tokens have a chance too.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "5ac2cbdf99",
+        "text": "We already built the tool for this! Remember ? We just need to feed it the LLM s tokens and probabilities."
+      }
+    ]
+  },
+  {
+    "slide_index": 25,
+    "content_id": "839885ed4a",
+    "slide_text": "Write it:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "e2747875ec",
+        "text": "Hint 1: extract tokens and probabilities as separate lists from the dict."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "df2eedb334",
+        "text": "Hint 2: call ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "84374f0702",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 26,
+    "content_id": "2481c1bf99",
+    "slide_text": "Run it several times and compare with greedy: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7c36c6de02",
+        "text": "The greedy output is always the same. But each sampled sentence is different sometimes surprising, sometimes creative."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "c286b5909c",
+        "text": "But there s a problem: sometimes sampling picks very unlikely tokens and produces nonsense. Can we control how random the sampling is?"
+      }
+    ]
+  },
+  {
+    "slide_index": 27,
+    "content_id": "9bb1c4ac2f",
+    "slide_text": "Part 6: Temperature",
+    "fragments": []
+  },
+  {
+    "slide_index": 28,
+    "content_id": "fb53aa558a",
+    "slide_text": "Challenge (skip ahead if you can): Write where [math] controls how sharp the distribution is. Test with [math], [math], and [math]. Then use it to generate text. Got it? Skip to Part 7 .",
+    "fragments": []
+  },
+  {
+    "slide_index": 29,
+    "content_id": "db1ef1b9f7",
+    "slide_text": "We want a knob that controls randomness: Low randomness : almost always pick the best token (like greedy) High randomness : pick more adventurously from unlikely tokens",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2a1a4b36b2",
+        "text": "Remember softmax from the classification chapter? [math] It makes big values bigger and small values smaller."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "7bf82bd37b",
+        "text": "What if we divided the values by a number [math] before applying softmax? [math] What happens when [math] is very small? Very large?"
+      }
+    ]
+  },
+  {
+    "slide_index": 30,
+    "content_id": "ed6a129bc9",
+    "slide_text": "Before coding think through these cases: Suppose values are [math].",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "0b3e33fb92",
+        "text": "[math]: values become [math] normal softmax."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "59d4f7b23a",
+        "text": "[math]: values become [math] huge differences! Softmax will put almost all weight on the largest value."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "e9abe28862",
+        "text": "[math]: values become [math] tiny differences. Softmax will make them nearly equal (uniform)."
+      },
+      {
+        "fragment_index": 3,
+        "content_id": "d23112dc52",
+        "text": "So [math] is a temperature knob: [math]: frozen always pick the best (greedy) [math]: standard sampling [math]: melted pick uniformly at random"
+      }
+    ]
+  },
+  {
+    "slide_index": 31,
+    "content_id": "34b36ce453",
+    "slide_text": "Write softmax with temperature:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8646d7e9ec",
+        "text": "Hint 1: divide each value by [math] first, then apply the normal softmax formula."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "cc3f43b5e3",
+        "text": "Hint 2: subtract the max before exponentiating to avoid overflow."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "c6d9835b9a",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 32,
+    "content_id": "1bd5f7e95e",
+    "slide_text": "Now use temperature in text generation. We need to convert the LLM s probabilities to logits (log-probabilities) first, then apply temperature, then sample:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "77fc9f961a",
+        "text": "Hint 1: use to convert probabilities to logits."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "1af7c07b63",
+        "text": "Hint 2: apply , then sample."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "1680315168",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 33,
+    "content_id": "8b2deba53c",
+    "slide_text": "Compare different temperatures: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "3117630919",
+        "text": "What do you notice? [math]: almost identical each time (like greedy) [math]: varied but sensible [math]: very random, often nonsensical"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "7db58c53c7",
+        "text": "Temperature gives us a smooth dial between safe and repetitive and creative and risky. But there s still a deeper problem"
+      }
+    ]
+  },
+  {
+    "slide_index": 34,
+    "content_id": "d9a965e3b7",
+    "slide_text": "Part 7: The Problem with Greedy Choices",
+    "fragments": []
+  },
+  {
+    "slide_index": 35,
+    "content_id": "0247f70ffc",
+    "slide_text": "Challenge (skip ahead if you can): Instead of keeping just one candidate sentence, keep the top [math] candidates at each step, expanding each one with all possible next tokens, then keeping only the best [math] overall. Write . Got it? Skip to the end .",
+    "fragments": []
+  },
+  {
+    "slide_index": 36,
+    "content_id": "722393a82d",
+    "slide_text": "Consider this scenario. The LLM gives these probabilities: Token A (0.6) Token B (0.4) Then next: A X (0.3) B Y (0.9) Total: [math] [math]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c7668590e6",
+        "text": "Greedy picks A first (0.6 0.4). But the path through B is twice as good overall (0.36 vs 0.18)!"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "04a7b288d9",
+        "text": "The locally best choice isn t always the globally best path. How do we fix this without trying every possible sequence (which grows exponentially)?"
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "a766649640",
+    "slide_text": "The idea: instead of keeping one candidate at each step, keep the top [math] best candidates.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "ac034bdf00",
+        "text": "At each step: Take your [math] current candidates. For each candidate, try all possible next tokens. Score every extension: candidate s score [math] new token s probability. Keep only the top [math] overall."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "a2ed7e532f",
+        "text": "It s like exploring a tree, but instead of one path (greedy) or all paths (exhaustive), you keep [math] beams of light shining through the most promising branches. This is called beam search , and [math] is the beam width ."
+      }
+    ]
+  },
+  {
+    "slide_index": 38,
+    "content_id": "9cffad1756",
+    "slide_text": "Let s trace through an example with beam width [math]. Start: (score = 1.0)",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "7eeeadeb52",
+        "text": "Step 1: expand the with all next tokens: the cat [math] the dog [math] the bird [math] Keep top 2: the cat (0.30) and the dog (0.20)"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "26b37fcf2e",
+        "text": "Step 2: expand both candidates, score all extensions, keep top 2 again. The beam explores two promising paths in parallel!"
+      }
+    ]
+  },
+  {
+    "slide_index": 39,
+    "content_id": "9436b94735",
+    "slide_text": "Write beam search step by step. First, the core loop:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "74ffa179b5",
+        "text": "Hint 1: for each candidate, loop through all next tokens and compute ."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "e349e21573",
+        "text": "Hint 2: sort all candidates by score descending, then slice ."
+      },
+      {
+        "fragment_index": 2,
+        "content_id": "c3d42c01aa",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 40,
+    "content_id": "3055e3daf6",
+    "slide_text": "Test it: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "a49a991957",
+        "text": "Compare with greedy: [code block] Are they the same? If not, beam search found a better overall path that greedy missed!"
+      }
+    ]
+  },
+  {
+    "slide_index": 41,
+    "content_id": "a756de6723",
+    "slide_text": "Let s visualize what beam search does at each step: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "2c8fb46bd8",
+        "text": "Watch how the beams branch out, compete, and get pruned at each step. Some early leaders get overtaken!"
+      }
+    ]
+  },
+  {
+    "slide_index": 42,
+    "content_id": "5a871bf162",
+    "slide_text": "Experiment with different beam widths: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "fb7a147722",
+        "text": "What do you notice? [math] is exactly greedy decoding! Larger [math] finds better (higher-scoring) sequences. But the improvement gets smaller as [math] grows."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "04901ac044",
+        "text": "In practice, [math] to [math] works well. The computational cost grows linearly with [math], so it s a good trade-off between quality and speed."
+      }
+    ]
+  },
+  {
+    "slide_index": 43,
+    "content_id": "c6932a0464",
+    "slide_text": "One refinement using log-probabilities instead of raw probabilities. Multiplying many small probabilities leads to tiny numbers that can underflow. Adding log-probabilities is more stable:",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "907b76fa05",
+        "text": "Hint: start with score (since [math]), and add at each step."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "b8a23de53a",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 44,
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 45,
+    "content_id": "20af2e8783",
+    "slide_text": "Your function Standard name Bernoulli trial ([math]) Bernoulli trial (general) Categorical sampling Greedy decoding Ancestral / random sampling Temperature-scaled softmax Temperature sampling Beam search",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "40bc46d73c",
+        "text": "You started by flipping a fair coin. You built biased coins, then generalized to weighted selection. You used that to sample text from an LLM, added temperature control, and finally invented beam search to find the best overall sequence. All from scratch."
+      }
+    ]
+  },
+  {
+    "slide_index": 46,
+    "content_id": "124668d664",
+    "slide_text": "Reflection what did you just build? Why does greedy decoding get stuck in loops? Can you think of a concrete example where it fails? What does temperature = 0 mean in practice? What about temperature = infinity? Beam search with [math] is exactly greedy decoding. Why? If you double the beam width, do you always get a better result? What s the trade-off? Real LLMs combine beam search with temperature, top-[math] filtering, and top-[math] (nucleus) sampling. How would you combine temperature with beam search?",
+    "fragments": []
+  },
+  {
+    "slide_index": 47,
+    "content_id": "58d4ba72f0",
+    "slide_text": "Index Fair Coin Toss Biased Coin Weighted Random Selection Generating Text with an LLM Sampling with Weighted Choices Temperature The Problem with Greedy Choices",
+    "fragments": []
+  }
+]
