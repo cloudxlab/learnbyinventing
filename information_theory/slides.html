@@ -19,6 +19,7 @@
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
     .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal .code-stack pre { font-size: 0.48em; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -210,7 +211,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
   <div class="fragment" data-fragment-index="0">
     <p>Write <code>encode_ab</code> and <code>decode_ab</code>:</p>
   </div>
-  <div class="code-stack fragment" style="min-height:14em;" data-fragment-index="0">
+  <div class="code-stack fragment" style="min-height:11em;" data-fragment-index="0">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def encode_ab(message):
     # A → "0", B → "1"
@@ -266,7 +267,7 @@ print(decode_ab("00110"))   # "AABBA"</code></pre>
         <div class="slide-content">
   <p>Write <code>is_prefix_free(scheme)</code> that checks whether a
   coding scheme has this property:</p>
-  <div class="code-stack" style="min-height:16em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def is_prefix_free(scheme):
     codes = list(scheme.values())
@@ -316,7 +317,7 @@ print(is_prefix_free({"A": "0", "B": "10", "C": "11"}))  # True</code></pre>
   patterns ($2^2 = 4$) &mdash; more than enough.</p>
   <p>Fixed 2-bit code: A = <code>"00"</code>, B = <code>"01"</code>,
   C = <code>"10"</code>.</p>
-  <div class="code-stack fragment" style="min-height:14em;" data-fragment-index="0">
+  <div class="code-stack fragment" style="min-height:11em;" data-fragment-index="0">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def encode_fixed(message):
     scheme = {"A": "00", "B": "01", "C": "10"}
@@ -360,7 +361,7 @@ print(decode_fixed("000110")) # "ABC"</code></pre>
     <code>"10"</code> or <code>"11"</code>. <code>"10"</code> is not a
     prefix of <code>"11"</code>. Yes &mdash; it&rsquo;s prefix-free!</p>
   </div>
-  <div class="code-stack fragment" style="min-height:16em;" data-fragment-index="1">
+  <div class="code-stack fragment" style="min-height:12em;" data-fragment-index="1">
     <div class="code-step fragment fade-out" data-fragment-index="3">
 <pre><code>def encode_var(message):
     scheme = {"A": "0", "B": "10", "C": "11"}
@@ -464,7 +465,7 @@ print(decode_var("01011"))   # "ABC"
       <section>
         <div class="slide-content">
   <p>Write <code>avg_bits(scheme, frequencies)</code>:</p>
-  <div class="code-stack" style="min-height:14em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def avg_bits(scheme, frequencies):
     # Weighted average of codeword lengths
@@ -546,7 +547,7 @@ print(avg_bits(fixed, freq))  # 2.0 — every symbol uses 2 bits</code></pre>
       <section>
         <div class="slide-content">
   <p>Automate it: <code>build_huffman_tree(frequencies)</code>.</p>
-  <div class="code-stack" style="min-height:21em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def build_huffman_tree(frequencies):
     # Start with a list of (freq, symbol) pairs
@@ -598,7 +599,7 @@ print(tree)
         <div class="slide-content">
   <p>Now walk the tree to assign codes. Left = <code>"0"</code>,
   right = <code>"1"</code>:</p>
-  <div class="code-stack" style="min-height:18em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def assign_codes(tree, prefix=""):
     # If it's a string (leaf), return {symbol: prefix}
@@ -639,7 +640,7 @@ print(codes)
       <section>
         <div class="slide-content">
   <p>Combine them into <code>huffman_scheme(frequencies)</code>:</p>
-  <div class="code-stack" style="min-height:14em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def huffman_scheme(frequencies):
     # Build the tree, then assign codes
@@ -695,7 +696,7 @@ print("Avg bits:", avg_bits(scheme, freq))      # 1.70</code></pre>
       <section>
         <div class="slide-content">
   <p>Write <code>entropy(frequencies)</code>:</p>
-  <div class="code-stack" style="min-height:14em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>import math
 
@@ -766,7 +767,7 @@ print(f"Huffman: {avg_bits(huffman_scheme(freq), freq):.4f} bits/symbol")
         <div class="slide-content">
   <p>Put it all together. Write <code>encode(data, frequencies)</code>
   that builds the optimal code and compresses the message:</p>
-  <div class="code-stack" style="min-height:14em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def encode(data, frequencies):
     # Build Huffman scheme, encode data
@@ -801,7 +802,7 @@ print(scheme)   # {'A': '0', 'B': '10', 'D': '110', 'C': '111'}</code></pre>
         <div class="slide-content">
   <p>Write <code>decode(bits, scheme)</code>. Walk the bits, accumulate a
   buffer, emit a symbol whenever the buffer matches a codeword:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:13em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def decode(bits, scheme):
     rev = {code: symbol for symbol, code in scheme.items()}

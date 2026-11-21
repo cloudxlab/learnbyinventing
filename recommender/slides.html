@@ -19,6 +19,7 @@
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
     .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal .code-stack pre { font-size: 0.48em; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -262,7 +263,7 @@ print(ratings.shape)   # (25, ~15) — a few people dropped</code></pre>
       <section>
         <div class="slide-content">
   <p>Write min-max scaling <strong>per person</strong> (each column):</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code># Scale each person's ratings to [0, 1]
 # scaled = (ratings - ???) / (??? - ???)
@@ -354,7 +355,7 @@ print(filled.isna().sum().sum())   # 0 — no missing values!</code></pre>
       <section>
         <div class="slide-content">
   <p>Write <code>similarity(a, b)</code> using cosine similarity:</p>
-  <div class="code-stack" style="min-height:15em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def similarity(a, b):
     # Cosine similarity: dot(a,b) / (|a| * |b|)
@@ -398,7 +399,7 @@ print(similarity(a, b))   # ~0.91 — very similar!</code></pre>
       <section>
         <div class="slide-content">
   <p>Convert each column to a unit vector (length&nbsp;1):</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>M = filled.values   # shape: (25, 15) — movies × people
 
@@ -547,7 +548,7 @@ print(unrated_movies("SandeepGiri"))
       <section>
         <div class="slide-content">
   <p>Write <code>recommend(person, k=3)</code>:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def recommend(person, k=3):
     candidates = unrated_movies(person)
@@ -624,7 +625,7 @@ print(recommend("SandeepGiri"))   # ['Dangal', ...]</code></pre>
       <section>
         <div class="slide-content">
   <p>Write it:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code># Normalise each ROW to unit length
 row_lengths = np.sqrt((M**2).sum(axis=1, keepdims=True))

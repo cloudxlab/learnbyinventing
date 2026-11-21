@@ -19,6 +19,7 @@
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
     .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal .code-stack pre { font-size: 0.48em; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -248,7 +249,7 @@ print(gray[0, 0])        # e.g., 107 — a medium gray</code></pre>
         <div class="slide-content">
   <p>A color image has three layers stacked together: Red, Green, Blue.
   Write a function to extract just one channel:</p>
-  <div class="code-stack" style="min-height:15em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def extract_channel(color_arr, c):
     """Extract channel c (0=R, 1=G, 2=B) as a 2D array."""
@@ -337,7 +338,7 @@ print(gray.shape)  # (360, 480) — one number per pixel</code></pre>
         <div class="slide-content">
   <p>How do you make an image smaller? One idea: skip every other pixel.
   Write <code>downsample_nearest</code> that halves the size:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def downsample_nearest(img):
     """Shrink (H, W) → (H//2, W//2) by picking every other pixel."""
@@ -369,7 +370,7 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
         <div class="slide-content">
   <p>Skipping pixels throws away information. A better approach:
   <strong>average each 2&times;2 block</strong> into one pixel.</p>
-  <div class="code-stack" style="min-height:15em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def downsample_avg(img):
     """Shrink by averaging each 2×2 block."""
@@ -429,7 +430,7 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
         <div class="slide-content">
   <p>Downsampling shrinks. What about making an image <em>bigger</em>?
   Simplest idea: repeat each pixel into a 2&times;2 block.</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def upsample_nearest(img):
     """Grow (H, W) → (2H, 2W) by repeating each pixel."""
@@ -485,7 +486,7 @@ lerp(100, 200, 1.0)   # 200</code></pre>
       <section>
         <div class="slide-content">
   <p>Write bilinear upsampling:</p>
-  <div class="code-stack" style="min-height:21em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def upsample_bilinear(img):
     """Grow (H, W) → (2H, 2W) with smooth blending."""
@@ -580,7 +581,7 @@ lerp(100, 200, 1.0)   # 200</code></pre>
         <div class="slide-content">
   <p>Write <code>conv(image, weights)</code> &mdash; the core function.
   Slide the kernel over every valid position:</p>
-  <div class="code-stack" style="min-height:19em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def conv(image, weights):
     """2D convolution (valid mode)."""
@@ -698,7 +699,7 @@ edges = np.sqrt(sx**2 + sy**2)</code></pre>
   <p>Our <code>conv</code> shrinks the output &mdash; a 100&times;100
   image with a 3&times;3 kernel gives 98&times;98. To keep the same
   size, <strong>pad</strong> the image with zeros first:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def pad_image(img, pad_size):
     """Add pad_size rows/columns of zeros on all sides."""

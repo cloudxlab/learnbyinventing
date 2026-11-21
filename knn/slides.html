@@ -19,6 +19,7 @@
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
     .reveal pre { font-size: 0.55em; box-shadow: none; }
+    .reveal .code-stack pre { font-size: 0.48em; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -213,7 +214,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
         <div class="slide-content">
   <p>First we need a way to measure &ldquo;how far apart&rdquo; two points
   are. Write <code>distance(a, b)</code> for any number of dimensions:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>import math
 
@@ -245,7 +246,7 @@ print(distance([1, 2, 3], [4, 6, 3]))  # 5.0</code></pre>
         <div class="slide-content">
   <p>Now find the <strong>single closest</strong> point from a list.
   Write <code>find_nearest(point, points)</code>:</p>
-  <div class="code-stack" style="min-height:14em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def find_nearest(point, points):
     # Return the point from `points` closest to `point`
@@ -306,7 +307,7 @@ print(find_nearest([2, 3], [[0, 0], [1, 2], [5, 5], [3, 4]]))
   <p>Instead of asking <em>one</em> neighbor, ask the <strong>$k$ closest
   neighbors</strong> and let them <strong>vote</strong>.</p>
   <p>Write <code>find_k_nearest(point, labeled_data, k)</code>:</p>
-  <div class="code-stack" style="min-height:15em;">
+  <div class="code-stack" style="min-height:12em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def find_k_nearest(point, labeled_data, k):
     # labeled_data is a list of (features, label) tuples
@@ -341,7 +342,7 @@ print(find_k_nearest([5, 3], data, 3))
         <div class="slide-content">
   <p>Now count the votes. Write <code>majority_vote(neighbors)</code>
   that returns the most common label:</p>
-  <div class="code-stack" style="min-height:16em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def majority_vote(neighbors):
     # neighbors is a list of (features, label) tuples
@@ -398,7 +399,7 @@ print(majority_vote(test))  # "orange" (2 votes vs 1)</code></pre>
       <section>
         <div class="slide-content">
   <p>Combine your two functions into <code>knn_predict</code>:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def knn_predict(point, dataset, k):
     # Find k nearest, return majority label
@@ -438,7 +439,7 @@ print(knn_predict([2, 1], dataset, 3))  # "red"</code></pre>
   <em>good</em>? For each point in the dataset, predict its label using
   the <strong>other</strong> points and check if we got it right.</p>
   <p>Write <code>knn_accuracy(dataset, k)</code>:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def knn_accuracy(dataset, k):
     # For each point, predict using all OTHER points
@@ -539,7 +540,7 @@ for k in [1, 3, 5]:
         <div class="slide-content">
   <p>Euclidean distance treats all dimensions equally. But sometimes you
   want a different measure. Write <code>manhattan_distance(a, b)</code>:</p>
-  <div class="code-stack" style="min-height:13em;">
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def manhattan_distance(a, b):
     # Sum of absolute differences
@@ -570,7 +571,7 @@ print(manhattan_distance([1, 5], [4, 1]))  # 7
         <div class="slide-content">
   <p>Make the distance function <strong>pluggable</strong>. Write
   <code>knn_predict_custom</code>:</p>
-  <div class="code-stack" style="min-height:17em;">
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def knn_predict_custom(point, dataset, k, dist_fn=distance):
     # Same as knn_predict, but uses dist_fn instead of distance
