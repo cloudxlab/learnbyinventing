@@ -1,8 +1,8 @@
 [
   {
     "slide_index": 0,
-    "content_id": "ca31bd01e7",
-    "slide_text": "Convolutions Don t just watch invent . Navigate: press or Space to advance | to go back",
+    "content_id": "8b23a2767c",
+    "slide_text": "Convolutions You won t be taught you will discover . Navigate: press or Space to advance | to go back",
     "fragments": []
   },
   {
@@ -13,373 +13,607 @@
   },
   {
     "slide_index": 2,
-    "content_id": "e71ed6668c",
-    "slide_text": "Challenge (skip ahead if you can): Write that slides a 3 3 filter over a grayscale image, producing edge maps, blurs, and sharpening all from the same function. Already got it? Skip to the end .",
-    "fragments": []
-  },
-  {
-    "slide_index": 3,
-    "content_id": "a4e2ead05d",
-    "slide_text": "To a computer, an image is just a grid of numbers: [code block]",
+    "content_id": "7eceac1f2c",
+    "slide_text": "Before anything else pencil and paper. Here is a 5 5 grid of numbers. Each number is a brightness value: 0 = black, 255 = white. [code block] Close your eyes and picture it. What shape do you see?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "659009da45",
-        "text": "Each pixel is three numbers: (Red, Green, Blue) . [code block]"
+        "content_id": "6730b24319",
+        "text": "A white square outline (hollow rectangle) on a black background. That s all an image is to a computer a grid of numbers."
+      }
+    ]
+  },
+  {
+    "slide_index": 3,
+    "content_id": "a7ce9b6a4a",
+    "slide_text": "Before coding: A camera takes a color photo that is 480 pixels wide and 360 pixels tall. When you load it into Python as a NumPy array and print , what three numbers will you see? Write your prediction down before running any code.",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "801a4bac59",
+        "text": "Hint: NumPy puts height first, then width. The third number represents something about color"
       },
       {
         "fragment_index": 1,
-        "content_id": "65922066d4",
-        "text": "A grayscale image is simpler: one number per pixel (0 = black, 255 = white). [code block]"
+        "content_id": "b51e9dead9",
+        "text": "[code block] (360, 480, 3) height, width, and 3 color channels. What are those 3 channels?"
       }
     ]
   },
   {
     "slide_index": 4,
-    "content_id": "9f7e94099b",
-    "slide_text": "Quick Check: An image has shape . What does this tell you? A. 100 colors, 200 pixels wide, 3 pixels tall B. 100 rows, 200 columns, 3 color channels (RGB) C. 100 200 3 = 60,000 images D. A grayscale image of size 100 200",
+    "content_id": "11e2b5ab5b",
+    "slide_text": "Print the value at one pixel: [code block] Three numbers per pixel. What do they mean?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "a9ad1d049d",
-        "text": "Answer: B. Height 100, width 200, with Red, Green, and Blue channels."
+        "content_id": "e49e6e3182",
+        "text": "They re (Red, Green, Blue) . Every color you ve ever seen on a screen is a mix of these three. is pure red. is black. is white."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "d07a74ff73",
+        "text": "A grayscale image needs only one number per pixel (0 = black, 255 = white): [code block]"
       }
     ]
   },
   {
     "slide_index": 5,
-    "content_id": "6d8ce3ef71",
-    "slide_text": "Part 2: Color Channels Grayscale",
-    "fragments": []
+    "content_id": "5f3eb7d040",
+    "slide_text": "Exercise 1.1: Extract just the red channel from a color image using plain Python loops, no NumPy tricks. Before coding: If the image is , what shape should your output be? What index gives you the red value at row , column ? Hint Red is channel 0: .",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "d7aa602d68",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 6,
-    "content_id": "13cbfd6463",
-    "slide_text": "A color image has three layers stacked together: Red, Green, Blue. Write a function to extract just one channel:",
+    "content_id": "da84c97e1a",
+    "slide_text": "That loop is painfully slow on a big image. Can you do it in one line with NumPy?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "7202942f6f",
-        "text": "Hint: NumPy slicing grabs all rows, all columns, channel ."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "4cc8c65ce2",
-        "text": "[code block] [code block]"
+        "content_id": "5158e36b17",
+        "text": "[code block] NumPy slicing replaces nested loops. You ll see this pattern over and over: think in loops first, then discover the shortcut."
       }
     ]
   },
   {
     "slide_index": 7,
-    "content_id": "ee93e28be2",
-    "slide_text": "Now convert a color image to grayscale. The simplest approach is to average R, G, B but human eyes are more sensitive to green than red or blue. The standard formula weights them differently: [math]",
+    "content_id": "23774d2a41",
+    "slide_text": "Quick Check: An image has shape . What does this tell you? A. 100 colors, 200 pixels wide, 3 pixels tall B. 100 rows tall, 200 columns wide, 3 color channels (RGB) C. A grayscale image of size 100 200 D. 100 200 3 = 60,000 separate images",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "2f396c37c2",
-        "text": "Hint: multiply each channel by its weight and sum. Use at the end."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "a229774587",
-        "text": "[code block] [code block]"
+        "content_id": "b055d96d64",
+        "text": "Answer: B. Height 100, width 200, with Red, Green, and Blue channels."
       }
     ]
   },
   {
     "slide_index": 8,
-    "content_id": "ed04f3b751",
-    "slide_text": "Quick Check: Why does the standard formula give green the largest weight (0.587)? A. Green light has the most energy B. The human eye is most sensitive to green C. There are more green pixels in most images D. It s arbitrary any weights would work",
+    "content_id": "ba3f80c35f",
+    "slide_text": "Part 2: Inventing Grayscale",
+    "fragments": []
+  },
+  {
+    "slide_index": 9,
+    "content_id": "6fac57e174",
+    "slide_text": "Before coding think first. A pixel has R=200, G=50, B=50. You need a single gray value. Should it be closer to 200 (because red is high) or closer to 100 (the average of all three)?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "e9fba9c58a",
-        "text": "Answer: B. Human vision has peak sensitivity in the green range. The formula (ITU-R BT.601) matches perceived brightness."
+        "content_id": "fa3c12b9d0",
+        "text": "Neither answer is wrong it depends on what you mean by brightness. Let s try the simplest idea first and see if it s good enough."
       }
     ]
   },
   {
-    "slide_index": 9,
-    "content_id": "a3de241e3c",
-    "slide_text": "Part 3: Shrinking Downsampling",
-    "fragments": []
-  },
-  {
     "slide_index": 10,
-    "content_id": "3e20b94018",
-    "slide_text": "How do you make an image smaller? One idea: skip every other pixel. Write that halves the size:",
+    "content_id": "d4c2a34ca5",
+    "slide_text": "Exercise 2.1: Convert to grayscale by averaging R, G, and B equally. Hint Add all three channels and divide by 3. Cast to first to avoid overflow, then back to .",
     "fragments": [
       {
-        "fragment_index": 0,
-        "content_id": "ebbe8afe5e",
-        "text": "Hint: NumPy stride slicing takes every 2nd row and every 2nd column."
-      },
-      {
         "fragment_index": 1,
-        "content_id": "7f107f46a9",
+        "content_id": "3b7ca5ed82",
         "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 11,
-    "content_id": "28be22fd48",
-    "slide_text": "Skipping pixels throws away information. A better approach: average each 2 2 block into one pixel.",
+    "content_id": "315c84d1e9",
+    "slide_text": "Now experiment. Display your result. It looks okay. But try this thought experiment: Imagine a pure green pixel and a pure red pixel . Both produce the same gray value: [math]. But does green look as bright as red to your eyes?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "1dfe92900a",
-        "text": "Hint: averages all values in the 2 2 slice."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "1be248abdc",
-        "text": "[code block] [code block]"
+        "content_id": "5b2b07a268",
+        "text": "Try it look at a green square and a red square of equal RGB magnitude on your screen. Green looks much brighter. Our simple average treats them the same, but human vision doesn t."
       }
     ]
   },
   {
     "slide_index": 12,
-    "content_id": "02dd46933d",
-    "slide_text": "Quick Check: A 2 2 block contains pixels . What does average pooling produce? A. 20 median of the block B. 110 average of the four values C. 210 max of the block D. 10 min of the block",
+    "content_id": "c05eb991ac",
+    "slide_text": "Exercise 2.2: Can you find weights [math] (that sum to 1) so that the grayscale conversion matches how bright things look to your eyes? Hint Green should get the biggest weight (eyes are most sensitive to green), blue the smallest. Try 0.3, 0.6, 0.1 as a starting point.",
     "fragments": [
       {
-        "fragment_index": 0,
-        "content_id": "7b60fc97f1",
-        "text": "Answer: B. [math]. Average pooling blends all four pixels into one."
+        "fragment_index": 1,
+        "content_id": "0e16b77123",
+        "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 13,
-    "content_id": "e695a6aa5d",
-    "slide_text": "Part 4: Growing Upsampling",
-    "fragments": []
-  },
-  {
-    "slide_index": 14,
-    "content_id": "b6df1cbb13",
-    "slide_text": "Downsampling shrinks. What about making an image bigger ? Simplest idea: repeat each pixel into a 2 2 block.",
+    "content_id": "645ab5e54d",
+    "slide_text": "If you landed near R 0.3 + G 0.6 + B 0.1 , you just rediscovered the formula that TV engineers settled on in 1953: [math] This is the ITU-R BT.601 luminosity standard. It matches human vision because our eyes have far more green-sensitive cone cells than red or blue ones.",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "9b3420c5be",
-        "text": "Hint: output pixel copies from source pixel ."
-      },
+        "content_id": "f5057c0097",
+        "text": "For the rest of this chapter, we ll use this as our : [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 14,
+    "content_id": "138b459d22",
+    "slide_text": "Quick Check: Why does the standard formula give green the largest weight (0.587)? A. Green light has the most energy B. The human eye is most sensitive to green C. There are more green pixels in most images D. It s arbitrary any weights work equally well",
+    "fragments": [
       {
-        "fragment_index": 1,
-        "content_id": "2254067435",
-        "text": "[code block] [code block]"
+        "fragment_index": 0,
+        "content_id": "22f908231c",
+        "text": "Answer: B. Human vision has peak sensitivity in the green range, so green contributes more to perceived brightness."
       }
     ]
   },
   {
     "slide_index": 15,
-    "content_id": "09ee6e91c5",
-    "slide_text": "Nearest-neighbor upsampling is blocky. We can do better by blending between neighbors . First, the building block linear interpolation: [code block]",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "7d7002162b",
-        "text": "Bilinear interpolation does this in both directions: blend horizontally, then vertically (or vice versa). For each output pixel, compute which source coordinate it maps to (a fractional position), then blend the four nearest source pixels."
-      }
-    ]
+    "content_id": "587ade130a",
+    "slide_text": "Part 3: Shrinking Images",
+    "fragments": []
   },
   {
     "slide_index": 16,
-    "content_id": "446e42a808",
-    "slide_text": "Write bilinear upsampling:",
+    "content_id": "d1875f0685",
+    "slide_text": "Before coding paper exercise. Here s a 6 6 grid. Shrink it to 3 3. How many different strategies can you think of? [code block] Write down at least two approaches and what your 3 3 result would be for each. Don t code yet.",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "fc81b83715",
-        "text": "Hint 1: find the four nearest source pixels using and ."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "fd81d43c13",
-        "text": "Hint 2: lerp horizontally across top pair, then bottom pair, then lerp vertically between those two results."
-      },
-      {
-        "fragment_index": 2,
-        "content_id": "450afd50f0",
-        "text": "[code block] [code block]"
+        "content_id": "7b51511e86",
+        "text": "Common ideas: (1) Pick every other pixel, (2) Average each 2 2 block, (3) Take the maximum of each block. Let s try #1 first and see what happens."
       }
     ]
   },
   {
     "slide_index": 17,
-    "content_id": "38d86bfcb8",
-    "slide_text": "Quick Check: Why does bilinear upsampling produce smoother results than nearest-neighbor? A. It uses more memory B. It blends neighboring pixels instead of copying one C. It makes the image brighter D. It adds random noise for smoothness",
+    "content_id": "83cf2cd65c",
+    "slide_text": "Exercise 3.1: Shrink by picking every other pixel (nearest-neighbor downsampling). Hint Output pixel comes from source pixel .",
     "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "e247fb299e",
-        "text": "Answer: B. Bilinear interpolation creates gradual transitions by blending four neighbors. Nearest-neighbor just copies one pixel, creating hard edges."
-      }
-    ]
-  },
-  {
-    "slide_index": 18,
-    "content_id": "10ebd19fb2",
-    "slide_text": "Part 5: The Convolution",
-    "fragments": []
-  },
-  {
-    "slide_index": 19,
-    "content_id": "55b8298979",
-    "slide_text": "The most powerful operation in computer vision is surprisingly simple: slide a small grid of weights over the image, and at each position compute a weighted sum .",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "8c0e8c8f9f",
-        "text": "Example: a 5 5 image, identity kernel : [code block]"
-      },
       {
         "fragment_index": 1,
-        "content_id": "fe523b2892",
-        "text": "Now try an averaging kernel : [code block]"
-      }
-    ]
-  },
-  {
-    "slide_index": 20,
-    "content_id": "04d99da06c",
-    "slide_text": "Write the core function. Slide the kernel over every valid position:",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "dcb7b1889b",
-        "text": "Hint 1: slice out the K K patch at position ."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "a0a4be274e",
-        "text": "Hint 2: element-wise multiply , then ."
-      },
-      {
-        "fragment_index": 2,
-        "content_id": "0421a5928f",
+        "content_id": "4a345f8da5",
         "text": "[code block] [code block]"
       }
     ]
   },
   {
-    "slide_index": 21,
-    "content_id": "40001bd6fd",
-    "slide_text": "Now try different kernels same function, different weights, wildly different results: [code block]",
+    "slide_index": 18,
+    "content_id": "08390d9382",
+    "slide_text": "Now test it on something tricky. Create a checkerboard and downsample it: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "1ceafe0e4d",
-        "text": "The blur smooths out noise. The sharpen makes edges pop. All from the same function only the weights changed!"
+        "content_id": "45df6d4973",
+        "text": "The checkerboard completely disappears! You get a uniform gray (or all black). By picking every other pixel, you grab only the black squares and miss every white one (or vice versa). Can you think of a method that wouldn t lose the checkerboard?"
       }
     ]
   },
   {
-    "slide_index": 22,
-    "content_id": "7547bcec8e",
-    "slide_text": "Edge detection. These two kernels detect edges in different directions: [code block]",
+    "slide_index": 19,
+    "content_id": "3d60b42253",
+    "slide_text": "Exercise 3.2: Instead of picking one pixel, average each 2 2 block. Try it. Hint averages all four values in the 2 2 slice.",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "29b22063b0",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 20,
+    "content_id": "cf611af042",
+    "slide_text": "Experiment: Run both methods on a real photo and the checkerboard. Compare side by side. Which preserves the checkerboard pattern? Which preserves sharp edges better on a photo? Which is faster? Does it matter for a 1000 1000 image?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "ca9d9a8be1",
-        "text": "Sobel-x highlights vertical edges; Sobel-y highlights horizontal edges. The combined magnitude shows all edges the outline of every object in the image."
+        "content_id": "b61b7df8a3",
+        "text": "Averaging is what the ML world calls average pooling . You ll also hear about max pooling (take the brightest pixel in each block) that s used heavily in CNNs. Try implementing it and compare!"
+      }
+    ]
+  },
+  {
+    "slide_index": 21,
+    "content_id": "afa93a038f",
+    "slide_text": "Part 4: Growing Images",
+    "fragments": []
+  },
+  {
+    "slide_index": 22,
+    "content_id": "a19b9f8a28",
+    "slide_text": "Before coding think on paper. You have two adjacent pixels with values 100 and 200 . You need to insert a new pixel between them. What value would look most natural?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "22c07f8e8f",
+        "text": "Now: what if you need to insert two pixels between them, creating three equal steps from 100 to 200?"
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "06f495ef0c",
+        "text": "You re doing interpolation filling in values between known points. 100 125 150 175 200 creates smooth, even spacing."
       }
     ]
   },
   {
     "slide_index": 23,
-    "content_id": "5164531e0f",
-    "slide_text": "Quick Check: What does the kernel detect? A. Vertical edges (left right changes) B. Horizontal edges (top bottom changes) C. Diagonal edges D. Nothing it blurs the image",
+    "content_id": "c8b5d3393a",
+    "slide_text": "Exercise 4.1: The simplest approach just copy each pixel into a 2 2 block: Hint Output pixel copies from .",
     "fragments": [
       {
-        "fragment_index": 0,
-        "content_id": "59279fd712",
-        "text": "Answer: B. Negative weights on top, positive on bottom. It responds to brightness differences between top and bottom rows horizontal edges."
+        "fragment_index": 1,
+        "content_id": "0864cea476",
+        "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 24,
-    "content_id": "ccae012b07",
-    "slide_text": "Part 6: Padding Edge Detection Pipeline",
-    "fragments": []
-  },
-  {
-    "slide_index": 25,
-    "content_id": "b5008e2c47",
-    "slide_text": "Our shrinks the output a 100 100 image with a 3 3 kernel gives 98 98. To keep the same size, pad the image with zeros first:",
+    "content_id": "c468b7890b",
+    "slide_text": "Look at the result. Every pixel became a blocky 2 2 square. Edges that were smooth now look like staircase steps. Can you make the transitions smooth instead? Remember the idea from the paper exercise insert values between the neighbors.",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "c3f0a544d9",
-        "text": "Hint: place inside starting at offset ."
-      },
+        "content_id": "47b0f6266e",
+        "text": "First, the building block linear interpolation: [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 25,
+    "content_id": "dd56cd4cc5",
+    "slide_text": "Exercise 4.2: Use in both directions (bilinear) to make smooth upsampling. Before coding: For output pixel , what fractional source coordinate does it map to? Which four source pixels surround it? Hint 1 Source position is . The four surrounding pixels are at , , , . Hint 2 Lerp across the top two, lerp across the bottom two, then lerp between those two results vertically.",
+    "fragments": [
       {
         "fragment_index": 1,
-        "content_id": "12511492ed",
+        "content_id": "382f7432e8",
         "text": "[code block] [code block]"
       }
     ]
   },
   {
     "slide_index": 26,
-    "content_id": "d4c5f4e492",
-    "slide_text": "Now combine padding and convolution so the output matches the input size:",
+    "content_id": "274f24ebdb",
+    "slide_text": "Experiment: Take a photo, shrink it to tiny (use three times), then blow it back up. Compare nearest vs. bilinear: [code block]",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "b116546657",
-        "text": "Hint: for a K K kernel, you need pixels of padding on each side."
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "a579c2b2e8",
-        "text": "[code block] [code block]"
+        "content_id": "0f8d65f4e6",
+        "text": "Bilinear is smoother but neither can recover lost detail. Information lost during downsampling is gone forever. That s why cameras capture high resolution you can always shrink later, but you can t truly grow."
       }
     ]
   },
   {
     "slide_index": 27,
-    "content_id": "b5b50d8fd1",
-    "slide_text": "The full edge detection pipeline assemble everything you ve built: [code block]",
-    "fragments": [
-      {
-        "fragment_index": 0,
-        "content_id": "d18939a609",
-        "text": "Four lines of code, all using the same function. This is exactly how the first layers of a Convolutional Neural Network (CNN) work except the network learns the kernel weights from data."
-      }
-    ]
+    "content_id": "8217cf3833",
+    "slide_text": "Part 5: Cleaning Up Noise",
+    "fragments": []
   },
   {
     "slide_index": 28,
-    "content_id": "5776c0dc09",
-    "slide_text": "What You Just Invented",
+    "content_id": "c8fb183535",
+    "slide_text": "Here s a problem. Your photo has salt-and-pepper noise random bright and dark spots scattered throughout: [code block] How would you clean it up?",
     "fragments": []
   },
   {
     "slide_index": 29,
-    "content_id": "2b5375b7cc",
-    "slide_text": "What you built Its real name Grid of numbers from an image Image tensor / NumPy array Channel slicing (weighted average) Luminosity (ITU-R BT.601) (2 2 average) Average pooling / Nearest / bilinear interpolation 2D convolution Box blur / sharpen / Sobel kernels Standard convolution kernels + Zero-padding ( same convolution) [math] Sobel edge detector",
+    "content_id": "0752873fb0",
+    "slide_text": "Before coding reason about one pixel. Pixel has value 240 . Its eight neighbors are all around 52 . Is 240 likely a real part of the image, or noise? What value should pixel (50, 73) have? How would you compute a better value using the neighborhood?",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "9b101fa622",
-        "text": "You started with a grid of numbers and ended by detecting edges in a photograph using the same sliding-window function that powers every CNN."
+        "content_id": "24bea80de1",
+        "text": "It s almost certainly noise a bright outlier surrounded by dark pixels. If you averaged the 3 3 neighborhood , the noisy 240 would be drowned out by the nine similar values around it."
       }
     ]
   },
   {
     "slide_index": 30,
-    "content_id": "cda34496d1",
-    "slide_text": "Reflection what did you just build? Why is an image just a grid of numbers, and why does that matter for computation? How does the same function produce blurs, sharpening, and edge detection? Why does Sobel edge detection use two kernels instead of one? In a CNN, the kernels are learned from data instead of hand-designed. Why might that be useful? What would happen if you convolved an edge map with a blur kernel? What about blurring first, then detecting edges?",
-    "fragments": []
+    "content_id": "d7f2f65cf0",
+    "slide_text": "Exercise 5.1: Replace every pixel with the average of its 3 3 neighborhood. Write the double loop from scratch. Hint The 3 3 patch centered at is . Take its .",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "47fb0158ee",
+        "text": "[code block] [code block]"
+      }
+    ]
   },
   {
     "slide_index": 31,
-    "content_id": "50f600e438",
-    "slide_text": "Index What Is an Image? Color Channels Grayscale Shrinking Downsampling Growing Upsampling The Convolution Padding Edge Detection Pipeline",
+    "content_id": "5c2caadb41",
+    "slide_text": "The noise is gone! But look carefully at the edges in the image. What happened to them?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "849572eb6b",
+        "text": "The edges got blurry. Averaging smooths everything noise and real detail alike. The cure damaged the patient. Keep this in mind. We ll come back to it."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "8e59160670",
+        "text": "But first what if instead of removing noise, we wanted to find edges?"
+      }
+    ]
+  },
+  {
+    "slide_index": 32,
+    "content_id": "218d4d9c4e",
+    "slide_text": "Part 6: Finding Edges",
+    "fragments": []
+  },
+  {
+    "slide_index": 33,
+    "content_id": "50c87a0e25",
+    "slide_text": "Before coding paper exercise. Here s a row of pixels: [code block] There s clearly an edge between the dark region (50) and the bright region (200). How would you compute a number that s big where there s an edge and small where it s flat?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "cf5b81ddca",
+        "text": "Idea: For each pixel, subtract its left neighbor from its right neighbor. Where the image is flat, the difference is near zero. At an edge, it s large. [code block] The big numbers (150) mark the edge!"
+      }
+    ]
+  },
+  {
+    "slide_index": 34,
+    "content_id": "d9d77411a0",
+    "slide_text": "Exercise 6.1: For each pixel in a 2D image, compute . This should highlight vertical edges. Hint Right neighbor is , left is . Subtract them.",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "6fe6cad7e5",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 35,
+    "content_id": "9bf49ce777",
+    "slide_text": "Experiment: You should see the outlines of objects but only the vertical edges (places where brightness changes left-to-right). Can you modify your function to find horizontal edges instead (brightness changing top-to-bottom)?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "c195501050",
+        "text": "[code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 36,
+    "content_id": "133c60188a",
+    "slide_text": "Stop and notice something. Look at your two functions so far: : slides a 3 3 window, averages the patch removes noise : slides a window, computes right minus left finds edges",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "444b6a9fda",
+        "text": "Both slide a small window across the image. Both compute a weighted combination of the pixels in the window. The only difference is the weights : [code block] What if we wrote one function that takes the weights as input?"
+      }
+    ]
+  },
+  {
+    "slide_index": 37,
+    "content_id": "ae73489b4d",
+    "slide_text": "Part 7: One Function to Rule Them All",
+    "fragments": []
+  },
+  {
+    "slide_index": 38,
+    "content_id": "58b26b412f",
+    "slide_text": "Exercise 7.1: Write that slides a K K grid of weights over the image. At each position, multiply the patch by the weights element-wise and sum. Hint Element-wise multiply: . Then the result.",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "b99d3c10f4",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 39,
+    "content_id": "1df52967e3",
+    "slide_text": "Verify: your old and are now just special cases: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "6ec016d9fb",
+        "text": "This is called convolution . The small grid of weights is called a kernel or filter . You just invented it."
+      }
+    ]
+  },
+  {
+    "slide_index": 40,
+    "content_id": "7891ad1f6f",
+    "slide_text": "Experiment gallery. For each kernel below, predict what it does before running it. Write your prediction, then check: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "9b17f4889a",
+        "text": "Identity. Only the center pixel survives (multiplied by 1). Output = input. It does nothing but it confirms your works!"
+      }
+    ]
+  },
+  {
+    "slide_index": 41,
+    "content_id": "0ce278dc0f",
+    "slide_text": "[code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "b331d73ed0",
+        "text": "Sharpening. The center has weight 5 and the neighbors have 1. This boosts the center pixel relative to its neighbors the opposite of blurring. Edges get crisper, details pop."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "ce3d6149d0",
+        "text": "Notice the weights sum to 1 (5 4 = 1). What would happen if they summed to more than 1? Less than 1? Try it!"
+      }
+    ]
+  },
+  {
+    "slide_index": 42,
+    "content_id": "fe327c8158",
+    "slide_text": "[code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "cc37eaa4af",
+        "text": "Horizontal edge detector (Sobel-y). Negative weights on top, positive on bottom. It measures the brightness difference between top and bottom rows highlighting horizontal edges."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "8c489ed924",
+        "text": "Challenge: Can you design a kernel that detects diagonal edges (top-left to bottom-right)? Try it and see if it works!"
+      }
+    ]
+  },
+  {
+    "slide_index": 43,
+    "content_id": "913a29161f",
+    "slide_text": "Exercise 7.2: Combine horizontal and vertical edge detection into a full edge map. Before coding: You have (vertical edge strength) and (horizontal edge strength) at each pixel. How would you combine them into one total edge strength number? (Hint: think Pythagoras.) Hint Edge magnitude = [math] the hypotenuse of the two directional components.",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "d746cbdd86",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 44,
+    "content_id": "3fc85933d8",
+    "slide_text": "Design challenge: Invent your own kernel! Can you create: A stronger blur? (Try 5 5 instead of 3 3) An emboss effect? (Hint: light from one direction, shadow on the other) A kernel that detects only corners?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "1226ccb32d",
+        "text": "There s no wrong answer here experiment freely. The power of is that the same code does wildly different things depending on the weights you feed it."
+      }
+    ]
+  },
+  {
+    "slide_index": 45,
+    "content_id": "b3616cf8b2",
+    "slide_text": "Part 8: Padding the Full Pipeline",
+    "fragments": []
+  },
+  {
+    "slide_index": 46,
+    "content_id": "9f1a62ebbd",
+    "slide_text": "Before coding: Your returns a smaller image. A 100 100 image with a 3 3 kernel gives what size?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "47b6d8d817",
+        "text": "98 98. You lose one pixel on each side because the 3 3 window can t center on the border pixels. General formula: input size [math] with kernel size [math] gives output size [math]."
+      },
+      {
+        "fragment_index": 1,
+        "content_id": "04917173d9",
+        "text": "How could you get the output to be the same size as the input? Idea: add extra pixels (zeros) around the border before convolving. How many do you need on each side for a 3 3 kernel? For a 5 5 kernel?"
+      }
+    ]
+  },
+  {
+    "slide_index": 47,
+    "content_id": "095b1b3f08",
+    "slide_text": "Exercise 8.1: Write that surrounds an image with zeros. Hint Place inside at offset using slice assignment.",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "2e63a987c2",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 48,
+    "content_id": "a4c9833e94",
+    "slide_text": "Exercise 8.2: Combine padding and convolution so the output matches the input size. Hint For a K K kernel, pad by on each side, then call your existing .",
+    "fragments": [
+      {
+        "fragment_index": 1,
+        "content_id": "0475001193",
+        "text": "[code block] [code block]"
+      }
+    ]
+  },
+  {
+    "slide_index": 49,
+    "content_id": "3d9c91e310",
+    "slide_text": "The full pipeline. Chain everything you ve built into a complete edge detection system: [code block]",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "4ae8fe9125",
+        "text": "Four lines. All using the same function you wrote."
+      }
+    ]
+  },
+  {
+    "slide_index": 50,
+    "content_id": "73725d2636",
+    "slide_text": "Experiment: Try reversing the order detect edges first, then blur: [code block] Display both. Which gives cleaner edges? Which preserves finer detail? Why does the order matter?",
+    "fragments": []
+  },
+  {
+    "slide_index": 51,
+    "content_id": "f13618dbcd",
+    "slide_text": "The big insight. In all your experiments, you chose the kernel weights: all-1/9 for blur, Sobel for edges, your custom designs. What if a computer could learn the best weights from examples?",
+    "fragments": [
+      {
+        "fragment_index": 0,
+        "content_id": "8ed10e4333",
+        "text": "That s exactly what a Convolutional Neural Network (CNN) does. It starts with random kernel weights and adjusts them using gradient descent until the kernels produce features that solve the task detecting cats, reading handwriting, diagnosing X-rays. The function you wrote is the core operation of modern computer vision."
+      }
+    ]
+  },
+  {
+    "slide_index": 52,
+    "content_id": "5776c0dc09",
+    "slide_text": "What You Just Invented",
+    "fragments": []
+  },
+  {
+    "slide_index": 53,
+    "content_id": "e2d9c5edac",
+    "slide_text": "What you built Its real name Grid of numbers from an image Image tensor / NumPy array (loop, then one-liner) Channel slicing (experiment with weights) Luminosity (ITU-R BT.601) (2 2 average) Average pooling / Nearest / bilinear interpolation (average 3 3 neighbors) Box blur / low-pass filter (right left) Finite difference / gradient 2D convolution Sobel kernels + magnitude Sobel edge detector + Zero-padding ( same convolution)",
+    "fragments": []
+  },
+  {
+    "slide_index": 54,
+    "content_id": "2517eacb7e",
+    "slide_text": "Reflection what did you discover? Why is it powerful that can blur, sharpen, and detect edges all with the same code? When you smoothed the noisy image, what trade-off did you make? Can you think of a smarter way to remove noise without blurring edges? You chose kernel weights by hand. How might a CNN decide what weights to use? What would it optimize for? If you stacked multiple convolution layers (the output of one becomes the input to the next), what might the deeper layers detect?",
+    "fragments": []
+  },
+  {
+    "slide_index": 55,
+    "content_id": "57808f23a7",
+    "slide_text": "Index What Is an Image? Inventing Grayscale Shrinking Images Growing Images Cleaning Up Noise Finding Edges One Function to Rule Them All Padding the Full Pipeline",
     "fragments": []
   }
 ]
