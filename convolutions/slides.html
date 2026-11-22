@@ -179,7 +179,7 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
       <!-- Title slide -->
       <section>
         <h1>Convolutions</h1>
-        <div class="slide-content slide-title">Don&rsquo;t just watch &mdash; <strong>invent</strong>.</div>
+        <div class="slide-content slide-title">You won&rsquo;t be taught &mdash; you will <strong>discover</strong>.</div>
         <p style="font-size:0.45em; color:#999; margin-top:1.5em;">
           Navigate: press <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">&rarr;</kbd>
           or <kbd style="border:1px solid #ccc; padding:0.1em 0.4em; border-radius:3px; background:#f5f3ef;">Space</kbd>
@@ -198,34 +198,115 @@ document.getElementById('bug-report-link').addEventListener('click', function(e)
 
       <section>
         <div class="slide-content">
-  <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-  <p>Write <code>conv(image, weights)</code> that slides a 3&times;3
-  filter over a grayscale image, producing edge maps, blurs, and
-  sharpening &mdash; all from the same function.</p>
-  <p style="font-size:0.85em; color:#888;">Already got it?
-  <a href="#/ending">Skip to the end</a>.</p>
+  <p><strong>Before anything else &mdash; pencil and paper.</strong></p>
+  <p>Here is a 5&times;5 grid of numbers. Each number is a brightness
+  value: 0&nbsp;=&nbsp;black, 255&nbsp;=&nbsp;white.</p>
+<pre><code>  0    0    0    0    0
+  0  255  255  255    0
+  0  255    0  255    0
+  0  255  255  255    0
+  0    0    0    0    0</code></pre>
+  <p>Close your eyes and picture it. What shape do you see?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
+    A white square outline (hollow rectangle) on a black background.
+    That&rsquo;s all an image is to a computer &mdash; a grid of numbers.</p>
+  </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>To a computer, an image is just a grid of numbers:</p>
+  <p><strong>Before coding:</strong> A camera takes a color photo that
+  is 480 pixels wide and 360 pixels tall.</p>
+  <p>When you load it into Python as a NumPy array and print
+  <code>.shape</code>, what three numbers will you see? Write your
+  prediction down before running any code.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Hint:</strong> NumPy puts height first, then width.
+    The third number represents something about color&hellip;</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
 <pre><code>from PIL import Image
 import numpy as np
 
-color_arr = np.array(Image.open("cat.jpg"))
-print(color_arr.shape)   # (360, 480, 3) — height, width, 3 colors
-print(color_arr.dtype)   # uint8 — values 0 to 255</code></pre>
+img = np.array(Image.open("cat.jpg"))
+print(img.shape)   # (360, 480, 3) ← were you right?
+print(img.dtype)   # uint8 — values 0 to 255</code></pre>
+    <p><strong>(360, 480, 3)</strong> &mdash; height, width, and 3 color
+    channels. What are those 3 channels?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>Print the value at one pixel:</p>
+<pre><code>print(img[0, 0])   # e.g., [143, 98, 72]</code></pre>
+  <p>Three numbers per pixel. What do they mean?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Each pixel is three numbers: <strong>(Red, Green, Blue)</strong>.</p>
-<pre><code>print(color_arr[0, 0])   # e.g., [143, 98, 72] — top-left pixel
-# 143 red, 98 green, 72 blue</code></pre>
+    <p>They&rsquo;re <strong>(Red, Green, Blue)</strong>. Every color you&rsquo;ve
+    ever seen on a screen is a mix of these three. <code>[255, 0, 0]</code>
+    is pure red. <code>[0, 0, 0]</code> is black. <code>[255, 255, 255]</code>
+    is white.</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p>A <strong>grayscale</strong> image is simpler: one number per pixel (0 = black, 255 = white).</p>
+    <p>A <strong>grayscale</strong> image needs only one number per pixel
+    (0&nbsp;=&nbsp;black, 255&nbsp;=&nbsp;white):</p>
 <pre><code>gray = np.array(Image.open("cat.jpg").convert("L"))
-print(gray.shape)        # (360, 480) — just height × width
-print(gray[0, 0])        # e.g., 107 — a medium gray</code></pre>
+print(gray.shape)   # (360, 480) — no third dimension</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 1.1:</strong> Extract just the red channel from a
+  color image &mdash; using plain Python loops, no NumPy tricks.</p>
+  <p><strong>Before coding:</strong> If the image is <code>(H, W, 3)</code>,
+  what shape should your output be? What index gives you the red value
+  at row <code>r</code>, column <code>c</code>?</p>
+  <div class="code-stack" style="min-height:11em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def extract_red(color_arr):
+    """Return (H, W) array of just the red channel."""
+    h, w, _ = color_arr.shape
+    out = np.zeros((h, w), dtype=np.uint8)
+    for r in range(h):
+        for c in range(w):
+            out[r, c] = # YOUR CODE — which index is red?
+    return out</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def extract_red(color_arr):
+    h, w, _ = color_arr.shape
+    out = np.zeros((h, w), dtype=np.uint8)
+    for r in range(h):
+        for c in range(w):
+            out[r, c] = color_arr[r, c, 0]
+    return out
+
+red = extract_red(img)
+# Display it as grayscale — bright = lots of red</code></pre>
+    </div>
+  </div>
+  <details><summary>Hint</summary>
+  <p>Red is channel 0: <code>color_arr[r, c, 0]</code>.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>That loop is painfully slow on a big image. Can you do it in
+  <strong>one line</strong> with NumPy?</p>
+  <div class="fragment" data-fragment-index="0">
+<pre><code>red   = img[:, :, 0]   # all rows, all columns, channel 0
+green = img[:, :, 1]
+blue  = img[:, :, 2]</code></pre>
+    <p>NumPy slicing replaces nested loops. You&rsquo;ll see this pattern
+    over and over: <strong>think in loops first, then discover the
+    shortcut.</strong></p>
   </div>
 </div>
       </section>
@@ -234,10 +315,10 @@ print(gray[0, 0])        # e.g., 107 — a medium gray</code></pre>
         <div class="slide-content">
   <p><strong>Quick Check:</strong> An image has shape <code>(100, 200, 3)</code>.
   What does this tell you?</p>
-  <p><strong>A.</strong> 100 colors, 200 pixels wide, 3 pixels tall &nbsp;&nbsp;
-  <strong>B.</strong> 100 rows, 200 columns, 3 color channels (RGB) &nbsp;&nbsp;
-  <strong>C.</strong> 100 &times; 200 &times; 3 = 60,000 images &nbsp;&nbsp;
-  <strong>D.</strong> A grayscale image of size 100 &times; 200</p>
+  <p><strong>A.</strong> 100 colors, 200 pixels wide, 3 pixels tall<br/>
+  <strong>B.</strong> 100 rows tall, 200 columns wide, 3 color channels (RGB)<br/>
+  <strong>C.</strong> A grayscale image of size 100 &times; 200<br/>
+  <strong>D.</strong> 100 &times; 200 &times; 3 = 60,000 separate images</p>
   <div class="fragment" data-fragment-index="0">
     <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
     <strong>Answer: B.</strong> Height 100, width 200, with Red, Green,
@@ -248,89 +329,138 @@ print(gray[0, 0])        # e.g., 107 — a medium gray</code></pre>
 
 
       <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 2: Color Channels & Grayscale                       -->
+      <!--  PART 2: Inventing Grayscale                              -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part2">
-        <h2>Part 2: Color Channels &amp; Grayscale</h2>
+        <h2>Part 2: Inventing Grayscale</h2>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>A color image has three layers stacked together: Red, Green, Blue.
-  Write a function to extract just one channel:</p>
-  <div class="code-stack" style="min-height:12em;">
-    <div class="code-step fragment fade-out" data-fragment-index="1">
-<pre><code>def extract_channel(color_arr, c):
-    """Extract channel c (0=R, 1=G, 2=B) as a 2D array."""
-    h, w, _ = color_arr.shape
-    out = np.zeros((h, w), dtype=np.uint8)
-    for r in range(h):
-        for col in range(w):
-            out[r, col] = color_arr[r, col, c]
-    # YOUR CODE HERE — or can you do it in one line?
-    return out</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="1">
-<pre><code>def extract_channel(color_arr, c):
-    """Extract channel c (0=R, 1=G, 2=B) as a 2D array."""
-    return color_arr[:, :, c]
-
-red   = extract_channel(color_arr, 0)  # shape (360, 480)
-green = extract_channel(color_arr, 1)
-blue  = extract_channel(color_arr, 2)
-# Each is a grayscale image showing one color's intensity</code></pre>
-    </div>
-  </div>
+  <p><strong>Before coding &mdash; think first.</strong></p>
+  <p>A pixel has R=200, G=50, B=50. You need a single gray value.</p>
+  <p>Should it be closer to <strong>200</strong> (because red is high)
+  or closer to <strong>100</strong> (the average of all three)?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Hint: NumPy slicing &mdash; <code>color_arr[:, :, c]</code> grabs
-    all rows, all columns, channel <code>c</code>.</p>
+    <p>Neither answer is &ldquo;wrong&rdquo; &mdash; it depends on what
+    you mean by brightness. Let&rsquo;s try the simplest idea first
+    and see if it&rsquo;s good enough.</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Now convert a color image to grayscale. The simplest approach is to
-  average R, G, B &mdash; but human eyes are more sensitive to green
-  than red or blue. The standard formula weights them differently:</p>
-  <p style="text-align:center;">$\text{gray} = 0.299 R + 0.587 G + 0.114 B$</p>
-  <div class="code-stack" style="min-height:11em;">
+  <p><strong>Exercise 2.1:</strong> Convert to grayscale by averaging
+  R, G, and B equally.</p>
+  <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
-<pre><code>def rgb_to_gray(color_arr):
-    """Convert (H, W, 3) color to (H, W) grayscale."""
-    # Use the luminosity formula above
-    # YOUR CODE HERE
+<pre><code>def gray_avg(color_arr):
+    """Convert (H, W, 3) → (H, W) using simple average."""
+    # YOUR CODE — average the three channels
     pass</code></pre>
     </div>
     <div class="code-step fragment" data-fragment-index="1">
-<pre><code>def rgb_to_gray(color_arr):
-    return (0.299 * color_arr[:,:,0] +
-            0.587 * color_arr[:,:,1] +
-            0.114 * color_arr[:,:,2]).astype(np.uint8)
-
-gray = rgb_to_gray(color_arr)
-print(gray.shape)  # (360, 480) — one number per pixel</code></pre>
+<pre><code>def gray_avg(color_arr):
+    r = color_arr[:,:,0].astype(float)
+    g = color_arr[:,:,1].astype(float)
+    b = color_arr[:,:,2].astype(float)
+    return ((r + g + b) / 3).astype(np.uint8)</code></pre>
     </div>
   </div>
+  <details><summary>Hint</summary>
+  <p>Add all three channels and divide by 3. Cast to <code>float</code>
+  first to avoid overflow, then back to <code>uint8</code>.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Now experiment.</strong> Display your result. It looks
+  &hellip; okay. But try this thought experiment:</p>
+  <p>Imagine a pure green pixel <code>[0, 200, 0]</code> and a pure
+  red pixel <code>[200, 0, 0]</code>. Both produce the same gray
+  value: $(0+200+0)/3 = (200+0+0)/3 = 67$.</p>
+  <p>But does green <em>look</em> as bright as red to your eyes?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Hint: multiply each channel by its weight and sum.
-    Use <code>.astype(np.uint8)</code> at the end.</p>
+    <p>Try it &mdash; look at a green square and a red square of equal
+    RGB magnitude on your screen. <strong>Green looks much brighter.</strong>
+    Our simple average treats them the same, but human vision doesn&rsquo;t.</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Quick Check:</strong> Why does the standard formula give green the
-  largest weight (0.587)?</p>
-  <p><strong>A.</strong> Green light has the most energy &nbsp;&nbsp;
-  <strong>B.</strong> The human eye is most sensitive to green &nbsp;&nbsp;
-  <strong>C.</strong> There are more green pixels in most images &nbsp;&nbsp;
-  <strong>D.</strong> It&rsquo;s arbitrary &mdash; any weights would work</p>
+  <p><strong>Exercise 2.2:</strong> Can you find weights $w_R, w_G, w_B$
+  (that sum to 1) so that the grayscale conversion matches how bright
+  things <em>look</em> to your eyes?</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def gray_weighted(color_arr, wr, wg, wb):
+    """Convert to gray using custom weights."""
+    r = color_arr[:,:,0].astype(float)
+    g = color_arr[:,:,1].astype(float)
+    b = color_arr[:,:,2].astype(float)
+    return (wr*r + wg*g + wb*b).astype(np.uint8)
+
+# Try different weights — which looks most natural?
+# gray_weighted(img, 0.33, 0.33, 0.34)  # equal
+# gray_weighted(img, ?, ?, ?)           # your guess</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def gray_weighted(color_arr, wr, wg, wb):
+    r = color_arr[:,:,0].astype(float)
+    g = color_arr[:,:,1].astype(float)
+    b = color_arr[:,:,2].astype(float)
+    return (wr*r + wg*g + wb*b).astype(np.uint8)
+
+# Most people land somewhere around:
+# green ~0.5–0.6, red ~0.25–0.35, blue ~0.05–0.15
+# Try a few combinations and compare side by side!</code></pre>
+    </div>
+  </div>
+  <details><summary>Hint</summary>
+  <p>Green should get the biggest weight (eyes are most sensitive
+  to green), blue the smallest. Try 0.3, 0.6, 0.1 as a starting point.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>If you landed near <strong>R&times;0.3 + G&times;0.6 + B&times;0.1</strong>,
+  you just rediscovered the formula that TV engineers settled on
+  in 1953:</p>
+  <p style="text-align:center; font-size:1.1em;">
+  $\text{gray} = 0.299\,R + 0.587\,G + 0.114\,B$</p>
+  <p>This is the <strong>ITU-R BT.601</strong> luminosity standard. It
+  matches human vision because our eyes have far more green-sensitive
+  cone cells than red or blue ones.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>For the rest of this chapter, we&rsquo;ll use this as our
+    <code>rgb_to_gray</code>:</p>
+<pre><code>def rgb_to_gray(color_arr):
+    return (0.299 * color_arr[:,:,0] +
+            0.587 * color_arr[:,:,1] +
+            0.114 * color_arr[:,:,2]).astype(np.uint8)</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Quick Check:</strong> Why does the standard formula give
+  green the largest weight (0.587)?</p>
+  <p><strong>A.</strong> Green light has the most energy<br/>
+  <strong>B.</strong> The human eye is most sensitive to green<br/>
+  <strong>C.</strong> There are more green pixels in most images<br/>
+  <strong>D.</strong> It&rsquo;s arbitrary &mdash; any weights work equally well</p>
   <div class="fragment" data-fragment-index="0">
     <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
     <strong>Answer: B.</strong> Human vision has peak sensitivity in the
-    green range. The formula (ITU-R BT.601) matches perceived brightness.</p>
+    green range, so green contributes more to perceived brightness.</p>
   </div>
 </div>
       </section>
@@ -340,46 +470,91 @@ print(gray.shape)  # (360, 480) — one number per pixel</code></pre>
       <!--  PART 3: Shrinking — Downsampling                         -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part3">
-        <h2>Part 3: Shrinking &mdash; Downsampling</h2>
+        <h2>Part 3: Shrinking Images</h2>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>How do you make an image smaller? One idea: skip every other pixel.
-  Write <code>downsample_nearest</code> that halves the size:</p>
-  <div class="code-stack" style="min-height:10em;">
-    <div class="code-step fragment fade-out" data-fragment-index="1">
-<pre><code>def downsample_nearest(img):
-    """Shrink (H, W) → (H//2, W//2) by picking every other pixel."""
-    h, w = img.shape
-    out = np.zeros((h // 2, w // 2))
-    for r in range(h // 2):
-        for c in range(w // 2):
-            out[r, c] = img[2*r, 2*c]  # just grab one pixel
-    # YOUR CODE — or find the one-liner
-    return out</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="1">
-<pre><code>def downsample_nearest(img):
-    return img[::2, ::2].astype(float)
-
-small = downsample_nearest(gray)
-print(gray.shape)   # (360, 480)
-print(small.shape)  # (180, 240) — half the size</code></pre>
-    </div>
-  </div>
+  <p><strong>Before coding &mdash; paper exercise.</strong></p>
+  <p>Here&rsquo;s a 6&times;6 grid. Shrink it to 3&times;3. How many
+  different strategies can you think of?</p>
+<pre><code>10  20  30  40  50  60
+70  80  90 100 110 120
+130 140 150 160 170 180
+190 200 210 220 230 240
+ 10  20  30  40  50  60
+ 70  80  90 100 110 120</code></pre>
+  <p>Write down at least two approaches and what your 3&times;3
+  result would be for each. Don&rsquo;t code yet.</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Hint: NumPy stride slicing &mdash; <code>img[::2, ::2]</code>
-    takes every 2nd row and every 2nd column.</p>
+    <p><strong>Common ideas:</strong> (1) Pick every other pixel,
+    (2) Average each 2&times;2 block, (3) Take the maximum of each
+    block. Let&rsquo;s try #1 first and see what happens.</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Skipping pixels throws away information. A better approach:
-  <strong>average each 2&times;2 block</strong> into one pixel.</p>
-  <div class="code-stack" style="min-height:12em;">
+  <p><strong>Exercise 3.1:</strong> Shrink by picking every other pixel
+  (nearest-neighbor downsampling).</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def downsample_skip(img):
+    """Shrink (H, W) → (H//2, W//2) by skipping pixels."""
+    h, w = img.shape
+    out = np.zeros((h // 2, w // 2))
+    for r in range(h // 2):
+        for c in range(w // 2):
+            out[r, c] = # YOUR CODE — which source pixel?
+    return out</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def downsample_skip(img):
+    h, w = img.shape
+    out = np.zeros((h // 2, w // 2))
+    for r in range(h // 2):
+        for c in range(w // 2):
+            out[r, c] = img[2*r, 2*c]
+    return out
+
+# NumPy shortcut: img[::2, ::2]</code></pre>
+    </div>
+  </div>
+  <details><summary>Hint</summary>
+  <p>Output pixel <code>(r, c)</code> comes from source pixel
+  <code>(2*r, 2*c)</code>.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Now test it on something tricky.</strong> Create a
+  checkerboard and downsample it:</p>
+<pre><code>checker = np.zeros((100, 100))
+for r in range(100):
+    for c in range(100):
+        if (r + c) % 2 == 0:
+            checker[r, c] = 255
+
+small = downsample_skip(checker)
+# Display both side by side. What happened?</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>The checkerboard completely disappears!</strong> You get a
+    uniform gray (or all black). By picking every other pixel, you grab
+    only the black squares and miss every white one (or vice versa).</p>
+    <p>Can you think of a method that wouldn&rsquo;t lose the
+    checkerboard?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 3.2:</strong> Instead of picking one pixel, average
+  each 2&times;2 block. Try it.</p>
+  <div class="code-stack" style="min-height:11em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def downsample_avg(img):
     """Shrink by averaging each 2×2 block."""
@@ -388,7 +563,7 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
     for r in range(h // 2):
         for c in range(w // 2):
             block = img[2*r:2*r+2, 2*c:2*c+2]
-            out[r, c] = # YOUR CODE — average of the block
+            out[r, c] = # YOUR CODE — combine the block
     return out</code></pre>
     </div>
     <div class="code-step fragment" data-fragment-index="1">
@@ -401,28 +576,30 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
             out[r, c] = block.mean()
     return out
 
-# Average pooling produces a smoother result than
-# nearest-neighbor (less aliasing / jagged edges)</code></pre>
+# Try on the checkerboard — what gray value do you get?</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint: <code>block.mean()</code> averages all values in the 2&times;2 slice.</p>
-  </div>
+  <details><summary>Hint</summary>
+  <p><code>block.mean()</code> averages all four values in the 2&times;2
+  slice.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Quick Check:</strong> A 2&times;2 block contains pixels
-  <code>[10, 20, 200, 210]</code>. What does average pooling produce?</p>
-  <p><strong>A.</strong> 20 &mdash; median of the block &nbsp;&nbsp;
-  <strong>B.</strong> 110 &mdash; average of the four values &nbsp;&nbsp;
-  <strong>C.</strong> 210 &mdash; max of the block &nbsp;&nbsp;
-  <strong>D.</strong> 10 &mdash; min of the block</p>
+  <p><strong>Experiment:</strong> Run both methods on a real photo and
+  the checkerboard. Compare side by side.</p>
+  <ul>
+    <li>Which preserves the checkerboard pattern?</li>
+    <li>Which preserves sharp edges better on a photo?</li>
+    <li>Which is faster? Does it matter for a 1000&times;1000 image?</li>
+  </ul>
   <div class="fragment" data-fragment-index="0">
-    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
-    <strong>Answer: B.</strong> $(10 + 20 + 200 + 210) / 4 = 110$.
-    Average pooling blends all four pixels into one.</p>
+    <p>Averaging is what the ML world calls <strong>average pooling</strong>.
+    You&rsquo;ll also hear about <strong>max pooling</strong> (take the
+    brightest pixel in each block) &mdash; that&rsquo;s used heavily in
+    CNNs. Try implementing it and compare!</p>
   </div>
 </div>
       </section>
@@ -432,13 +609,31 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
       <!--  PART 4: Growing — Upsampling                             -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part4">
-        <h2>Part 4: Growing &mdash; Upsampling</h2>
+        <h2>Part 4: Growing Images</h2>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Downsampling shrinks. What about making an image <em>bigger</em>?
-  Simplest idea: repeat each pixel into a 2&times;2 block.</p>
+  <p><strong>Before coding &mdash; think on paper.</strong></p>
+  <p>You have two adjacent pixels with values <strong>100</strong> and
+  <strong>200</strong>. You need to insert a new pixel between them.</p>
+  <p>What value would look most natural?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>Now: what if you need to insert <strong>two</strong> pixels between
+    them, creating three equal steps from 100 to 200?</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>You&rsquo;re doing interpolation &mdash; filling in values between
+    known points. <strong>100 &rarr; 125 &rarr; 150 &rarr; 175 &rarr;
+    200</strong> creates smooth, even spacing.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 4.1:</strong> The simplest approach &mdash; just
+  copy each pixel into a 2&times;2 block:</p>
   <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def upsample_nearest(img):
@@ -459,23 +654,25 @@ print(small.shape)  # (180, 240) — half the size</code></pre>
             out[r, c] = img[r // 2, c // 2]
     return out
 
-big = upsample_nearest(small)
-print(big.shape)   # (360, 480) — back to original size
-# but it looks "blocky" — each pixel became a 2×2 square</code></pre>
+# Try it. Zoom in on an edge — what do you see?</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint: output pixel <code>(r, c)</code> copies from source pixel
-    <code>(r // 2, c // 2)</code>.</p>
-  </div>
+  <details><summary>Hint</summary>
+  <p>Output pixel <code>(r, c)</code> copies from <code>(r // 2, c // 2)</code>.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Nearest-neighbor upsampling is blocky. We can do better by
-  <strong>blending between neighbors</strong>. First, the building block
-  &mdash; linear interpolation:</p>
+  <p><strong>Look at the result.</strong> Every pixel became a
+  blocky 2&times;2 square. Edges that were smooth now look like
+  staircase steps.</p>
+  <p>Can you make the transitions smooth instead? Remember the
+  idea from the paper exercise &mdash; insert values <em>between</em>
+  the neighbors.</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>First, the building block &mdash; linear interpolation:</p>
 <pre><code>def lerp(a, b, t):
     """Blend: t=0 gives a, t=1 gives b, t=0.5 gives midpoint."""
     return a + t * (b - a)
@@ -483,35 +680,32 @@ print(big.shape)   # (360, 480) — back to original size
 lerp(100, 200, 0.0)   # 100
 lerp(100, 200, 0.5)   # 150
 lerp(100, 200, 1.0)   # 200</code></pre>
-  <div class="fragment" data-fragment-index="0">
-    <p><strong>Bilinear interpolation</strong> does this in both directions:
-    blend horizontally, then vertically (or vice versa).</p>
-    <p>For each output pixel, compute which source coordinate it maps to
-    (a fractional position), then blend the four nearest source pixels.</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Write bilinear upsampling:</p>
+  <p><strong>Exercise 4.2:</strong> Use <code>lerp</code> in both
+  directions (bilinear) to make smooth upsampling.</p>
+  <p><strong>Before coding:</strong> For output pixel <code>(3, 5)</code>,
+  what fractional source coordinate does it map to? Which four source
+  pixels surround it?</p>
   <div class="code-stack" style="min-height:12em;">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def upsample_bilinear(img):
     """Grow (H, W) → (2H, 2W) with smooth blending."""
     h, w = img.shape
     out = np.zeros((h * 2, w * 2))
     for r in range(h * 2):
         for c in range(w * 2):
-            src_r = r / 2.0
-            src_c = c / 2.0
+            src_r, src_c = r / 2.0, c / 2.0
             # Find the four surrounding source pixels
-            # Blend with lerp
+            # Blend horizontally (lerp), then vertically
             # YOUR CODE HERE
-            pass
     return out</code></pre>
     </div>
-    <div class="code-step fragment" data-fragment-index="2">
+    <div class="code-step fragment" data-fragment-index="1">
 <pre><code>def upsample_bilinear(img):
     h, w = img.shape
     out = np.zeros((h * 2, w * 2))
@@ -524,76 +718,266 @@ lerp(100, 200, 1.0)   # 200</code></pre>
             top = lerp(img[r0, c0], img[r0, c0+1], tc)
             bot = lerp(img[r0+1, c0], img[r0+1, c0+1], tc)
             out[r, c] = lerp(top, bot, tr)
-    return out
-# Smooth result — no blocky squares!</code></pre>
+    return out</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint 1: find the four nearest source pixels using <code>int(src_r)</code>
-    and <code>int(src_c)</code>.</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Hint 2: lerp horizontally across top pair, then bottom pair,
-    then lerp vertically between those two results.</p>
-  </div>
+  <details><summary>Hint 1</summary>
+  <p>Source position is <code>(r/2, c/2)</code>. The four surrounding
+  pixels are at <code>(r0, c0)</code>, <code>(r0, c0+1)</code>,
+  <code>(r0+1, c0)</code>, <code>(r0+1, c0+1)</code>.</p>
+  </details>
+  <details><summary>Hint 2</summary>
+  <p>Lerp across the top two, lerp across the bottom two, then lerp
+  between those two results vertically.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Quick Check:</strong> Why does bilinear upsampling produce
-  smoother results than nearest-neighbor?</p>
-  <p><strong>A.</strong> It uses more memory &nbsp;&nbsp;
-  <strong>B.</strong> It blends neighboring pixels instead of copying one &nbsp;&nbsp;
-  <strong>C.</strong> It makes the image brighter &nbsp;&nbsp;
-  <strong>D.</strong> It adds random noise for smoothness</p>
+  <p><strong>Experiment:</strong> Take a photo, shrink it to tiny
+  (use <code>downsample_avg</code> three times), then blow it back
+  up. Compare nearest vs. bilinear:</p>
+<pre><code>tiny = downsample_avg(downsample_avg(downsample_avg(gray.astype(float))))
+big_nn = upsample_nearest(upsample_nearest(upsample_nearest(tiny)))
+big_bl = upsample_bilinear(upsample_bilinear(upsample_bilinear(tiny)))
+# Display side by side — which preserves the original better?</code></pre>
   <div class="fragment" data-fragment-index="0">
-    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
-    <strong>Answer: B.</strong> Bilinear interpolation creates gradual
-    transitions by blending four neighbors. Nearest-neighbor just copies
-    one pixel, creating hard edges.</p>
+    <p>Bilinear is smoother but neither can recover lost detail.
+    <strong>Information lost during downsampling is gone forever.</strong>
+    That&rsquo;s why cameras capture high resolution &mdash; you can always
+    shrink later, but you can&rsquo;t truly grow.</p>
   </div>
 </div>
       </section>
 
 
       <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 5: The Convolution                                  -->
+      <!--  PART 5: Cleaning Up Noise                                -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <section id="part5">
-        <h2>Part 5: The Convolution</h2>
+        <h2>Part 5: Cleaning Up Noise</h2>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>The most powerful operation in computer vision is surprisingly
-  simple: slide a small grid of weights over the image, and at each
-  position compute a <strong>weighted sum</strong>.</p>
+  <p>Here&rsquo;s a problem. Your photo has <strong>salt-and-pepper
+  noise</strong> &mdash; random bright and dark spots scattered
+  throughout:</p>
+<pre><code># Add random noise to a grayscale image
+gray_f = gray.astype(float)
+noisy = gray_f.copy()
+for _ in range(5000):
+    r, c = np.random.randint(0, gray_f.shape[0]), np.random.randint(0, gray_f.shape[1])
+    noisy[r, c] = np.random.choice([0, 255])
+# Display noisy — you'll see white and black dots everywhere</code></pre>
+  <p>How would you clean it up?</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Before coding &mdash; reason about one pixel.</strong></p>
+  <p>Pixel <code>(50, 73)</code> has value <strong>240</strong>. Its
+  eight neighbors are all around <strong>52</strong>.</p>
+  <ul>
+    <li>Is 240 likely a real part of the image, or noise?</li>
+    <li>What value <em>should</em> pixel (50, 73) have?</li>
+    <li>How would you compute a better value using the neighborhood?</li>
+  </ul>
   <div class="fragment" data-fragment-index="0">
-    <p>Example: a 5&times;5 image, identity kernel
-    <code>[[0,0,0],[0,1,0],[0,0,0]]</code>:</p>
-<pre><code>Image patch:            Weights:         Result:
-  10  20  30            0  0  0
-  40  50  60      ×     0  1  0     =   50
-  70  80  90            0  0  0
-# Only the center pixel survives (multiplied by 1)</code></pre>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Now try an averaging kernel <code>[[1,1,1],[1,1,1],[1,1,1]] / 9</code>:</p>
-<pre><code># (10+20+30+40+50+60+70+80+90) / 9 = 50
-# Every pixel in the patch contributes equally → blur!</code></pre>
+    <p>It&rsquo;s almost certainly noise &mdash; a bright outlier
+    surrounded by dark pixels. If you <strong>averaged the 3&times;3
+    neighborhood</strong>, the noisy 240 would be drowned out by
+    the nine similar values around it.</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Write <code>conv(image, weights)</code> &mdash; the core function.
-  Slide the kernel over every valid position:</p>
+  <p><strong>Exercise 5.1:</strong> Replace every pixel with the average
+  of its 3&times;3 neighborhood. Write the double loop from scratch.</p>
+  <div class="code-stack" style="min-height:12em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def smooth(img):
+    """Replace each pixel with the average of its 3×3 neighborhood."""
+    H, W = img.shape
+    out = np.zeros((H - 2, W - 2))
+    for r in range(1, H - 1):
+        for c in range(1, W - 1):
+            # Grab the 3×3 patch centered at (r, c)
+            # Compute the average
+            # YOUR CODE HERE
+            pass
+    return out</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def smooth(img):
+    H, W = img.shape
+    out = np.zeros((H - 2, W - 2))
+    for r in range(1, H - 1):
+        for c in range(1, W - 1):
+            patch = img[r-1:r+2, c-1:c+2]
+            out[r-1, c-1] = patch.mean()
+    return out
+
+cleaned = smooth(noisy)
+# Display noisy vs cleaned — did the noise go away?</code></pre>
+    </div>
+  </div>
+  <details><summary>Hint</summary>
+  <p>The 3&times;3 patch centered at <code>(r, c)</code> is
+  <code>img[r-1:r+2, c-1:c+2]</code>. Take its <code>.mean()</code>.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p>The noise is gone! But look carefully at the edges in the image.
+  What happened to them?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>The edges got blurry.</strong> Averaging smooths
+    <em>everything</em> &mdash; noise and real detail alike. The cure
+    damaged the patient.</p>
+    <p>Keep this in mind. We&rsquo;ll come back to it.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>But first &mdash; what if instead of removing noise, we wanted
+    to <strong>find</strong> edges?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 6: Finding Edges                                    -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part6">
+        <h2>Part 6: Finding Edges</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Before coding &mdash; paper exercise.</strong></p>
+  <p>Here&rsquo;s a row of pixels:</p>
+<pre><code>  50   50   50  |  200  200  200</code></pre>
+  <p>There&rsquo;s clearly an edge between the dark region (50)
+  and the bright region (200). How would you <em>compute</em> a number
+  that&rsquo;s big where there&rsquo;s an edge and small where
+  it&rsquo;s flat?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Idea:</strong> For each pixel, subtract its left neighbor
+    from its right neighbor. Where the image is flat, the difference is
+    near zero. At an edge, it&rsquo;s large.</p>
+<pre><code>position:   0    1    2    3    4    5
+ values:   50   50   50  200  200  200
+right-left: 0    0  150  150    0    —</code></pre>
+    <p>The big numbers (150) mark the edge!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 6.1:</strong> For each pixel in a 2D image, compute
+  <code>right_neighbor &minus; left_neighbor</code>. This should highlight
+  vertical edges.</p>
   <div class="code-stack" style="min-height:11em;">
-    <div class="code-step fragment fade-out" data-fragment-index="2">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>def find_vertical_edges(img):
+    """Highlight vertical edges (brightness change left↔right)."""
+    H, W = img.shape
+    out = np.zeros((H, W - 2))
+    for r in range(H):
+        for c in range(1, W - 1):
+            out[r, c-1] = # YOUR CODE — right minus left
+    return out</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>def find_vertical_edges(img):
+    H, W = img.shape
+    out = np.zeros((H, W - 2))
+    for r in range(H):
+        for c in range(1, W - 1):
+            out[r, c-1] = img[r, c+1] - img[r, c-1]
+    return out
+
+vert_edges = find_vertical_edges(gray.astype(float))
+# Display it — what do you see?</code></pre>
+    </div>
+  </div>
+  <details><summary>Hint</summary>
+  <p>Right neighbor is <code>img[r, c+1]</code>, left is
+  <code>img[r, c-1]</code>. Subtract them.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Experiment:</strong> You should see the outlines of objects
+  &mdash; but only the vertical edges (places where brightness changes
+  left-to-right).</p>
+  <p>Can you modify your function to find <strong>horizontal
+  edges</strong> instead (brightness changing top-to-bottom)?</p>
+  <div class="fragment" data-fragment-index="0">
+<pre><code>def find_horizontal_edges(img):
+    H, W = img.shape
+    out = np.zeros((H - 2, W))
+    for r in range(1, H - 1):
+        for c in range(W):
+            out[r-1, c] = img[r+1, c] - img[r-1, c]
+    return out
+
+# Same idea, different direction!
+# Display both side by side</code></pre>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Stop and notice something.</strong></p>
+  <p>Look at your two functions so far:</p>
+  <ul>
+    <li><strong><code>smooth</code></strong>: slides a 3&times;3 window,
+    <em>averages</em> the patch &rarr; removes noise</li>
+    <li><strong><code>find_vertical_edges</code></strong>: slides a window,
+    computes <em>right minus left</em> &rarr; finds edges</li>
+  </ul>
+  <div class="fragment" data-fragment-index="0">
+    <p>Both slide a small window across the image. Both compute a
+    weighted combination of the pixels in the window. The <em>only</em>
+    difference is the <strong>weights</strong>:</p>
+<pre><code>Smoother weights:          Edge-finder weights:
+  1/9  1/9  1/9              -1   0   1
+  1/9  1/9  1/9               0   0   0
+  1/9  1/9  1/9               0   0   0</code></pre>
+    <p>What if we wrote <strong>one function</strong> that takes the
+    weights as input?</p>
+  </div>
+</div>
+      </section>
+
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!--  PART 7: Inventing the Convolution                        -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <section id="part7">
+        <h2>Part 7: One Function to Rule Them All</h2>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 7.1:</strong> Write <code>conv(image, weights)</code>
+  that slides a K&times;K grid of weights over the image. At each
+  position, multiply the patch by the weights element-wise and sum.</p>
+  <div class="code-stack" style="min-height:12em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def conv(image, weights):
-    """2D convolution (valid mode)."""
+    """2D convolution: slide weights over image, compute weighted sum."""
     H, W = image.shape
     K = len(weights)
     out = np.zeros((H - K + 1, W - K + 1))
@@ -603,7 +987,7 @@ lerp(100, 200, 1.0)   # 200</code></pre>
             out[r, c] = # YOUR CODE — weighted sum
     return out</code></pre>
     </div>
-    <div class="code-step fragment" data-fragment-index="2">
+    <div class="code-step fragment" data-fragment-index="1">
 <pre><code>def conv(image, weights):
     H, W = image.shape
     K = len(weights)
@@ -612,102 +996,183 @@ lerp(100, 200, 1.0)   # 200</code></pre>
         for c in range(W - K + 1):
             patch = image[r:r+K, c:c+K]
             out[r, c] = np.sum(patch * weights)
-    return out
-
-# Test with identity kernel:
-identity = np.array([[0,0,0],[0,1,0],[0,0,0]])
-result = conv(gray.astype(float), identity.astype(float))
-# result ≈ original (minus 1-pixel border)</code></pre>
+    return out</code></pre>
     </div>
   </div>
+  <details><summary>Hint</summary>
+  <p>Element-wise multiply: <code>patch * weights</code>. Then
+  <code>np.sum()</code> the result.</p>
+  </details>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Verify:</strong> your old <code>smooth</code> and
+  <code>find_vertical_edges</code> are now just special cases:</p>
+<pre><code># Smoothing = conv with all-ones / 9
+blur_weights = np.ones((3, 3)) / 9.0
+smoothed = conv(noisy, blur_weights)
+
+# Vertical edges = conv with [-1, 0, 1] row
+edge_weights = np.array([[-1, 0, 1],
+                          [-1, 0, 1],
+                          [-1, 0, 1]], dtype=float)
+edges = conv(gray.astype(float), edge_weights)
+
+# Same function, different weights, different results!</code></pre>
   <div class="fragment" data-fragment-index="0">
-    <p>Hint 1: slice out the K&times;K patch at position <code>(r, c)</code>.</p>
+    <p>This is called <strong>convolution</strong>. The small grid of
+    weights is called a <strong>kernel</strong> or <strong>filter</strong>.
+    You just invented it.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Experiment gallery.</strong> For each kernel below,
+  <strong>predict</strong> what it does <em>before</em> running it.
+  Write your prediction, then check:</p>
+<pre><code># Kernel A
+kA = np.array([[0, 0, 0],
+               [0, 1, 0],
+               [0, 0, 0]], dtype=float)
+# Your prediction: _______________</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Identity.</strong> Only the center pixel survives
+    (multiplied by 1). Output = input. It does nothing &mdash; but
+    it confirms your <code>conv</code> works!</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+<pre><code># Kernel B
+kB = np.array([[ 0, -1,  0],
+               [-1,  5, -1],
+               [ 0, -1,  0]], dtype=float)
+# Your prediction: _______________</code></pre>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>Sharpening.</strong> The center has weight 5 and the
+    neighbors have &minus;1. This <em>boosts</em> the center pixel
+    relative to its neighbors &mdash; the opposite of blurring.
+    Edges get crisper, details pop.</p>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p>Hint 2: element-wise multiply <code>patch * weights</code>, then
-    <code>np.sum()</code>.</p>
+    <p>Notice the weights sum to 1 (5 &minus; 4 = 1). What would happen
+    if they summed to more than 1? Less than 1? Try it!</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Now try different kernels &mdash; same function, different weights,
-  wildly different results:</p>
-<pre><code># Box blur (average neighbors)
-blur = np.ones((3, 3)) / 9.0
-blurred = conv(gray.astype(float), blur)
-
-# Sharpen (boost center, subtract neighbors)
-sharpen = np.array([[0, -1, 0],
-                    [-1,  5, -1],
-                    [0, -1, 0]], dtype=float)
-sharpened = conv(gray.astype(float), sharpen)</code></pre>
+<pre><code># Kernel C — Sobel
+kC = np.array([[-1, -2, -1],
+               [ 0,  0,  0],
+               [ 1,  2,  1]], dtype=float)
+# Your prediction: _______________</code></pre>
   <div class="fragment" data-fragment-index="0">
-    <p>The blur smooths out noise. The sharpen makes edges pop.
-    <strong>All from the same <code>conv</code> function</strong> &mdash;
-    only the weights changed!</p>
+    <p><strong>Horizontal edge detector</strong> (Sobel-y). Negative
+    weights on top, positive on bottom. It measures the brightness
+    difference between top and bottom rows &mdash; highlighting
+    horizontal edges.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p><strong>Challenge:</strong> Can you design a kernel that detects
+    <strong>diagonal</strong> edges (top-left to bottom-right)? Try it
+    and see if it works!</p>
   </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Edge detection.</strong> These two kernels detect edges in
-  different directions:</p>
-<pre><code># Sobel-x: detects vertical edges (brightness change left↔right)
-sobel_x = np.array([[-1, 0, 1],
-                     [-2, 0, 2],
-                     [-1, 0, 1]], dtype=float)
-
-# Sobel-y: detects horizontal edges (brightness change top↔bottom)
-sobel_y = np.array([[-1, -2, -1],
-                     [ 0,  0,  0],
-                     [ 1,  2,  1]], dtype=float)
+  <p><strong>Exercise 7.2:</strong> Combine horizontal and vertical edge
+  detection into a full edge map.</p>
+  <p><strong>Before coding:</strong> You have <code>sx</code> (vertical
+  edge strength) and <code>sy</code> (horizontal edge strength) at each
+  pixel. How would you combine them into one &ldquo;total edge
+  strength&rdquo; number? (Hint: think Pythagoras.)</p>
+  <div class="code-stack" style="min-height:10em;">
+    <div class="code-step fragment fade-out" data-fragment-index="1">
+<pre><code>sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=float)
+sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=float)
 
 sx = conv(gray.astype(float), sobel_x)
 sy = conv(gray.astype(float), sobel_y)
+edges = # YOUR CODE — combine sx and sy</code></pre>
+    </div>
+    <div class="code-step fragment" data-fragment-index="1">
+<pre><code>sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=float)
+sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=float)
 
-# Combine both directions into edge magnitude:
-edges = np.sqrt(sx**2 + sy**2)</code></pre>
-  <div class="fragment" data-fragment-index="0">
-    <p>Sobel-x highlights vertical edges; Sobel-y highlights horizontal
-    edges. The combined magnitude shows <em>all</em> edges &mdash; the
-    outline of every object in the image.</p>
+sx = conv(gray.astype(float), sobel_x)
+sy = conv(gray.astype(float), sobel_y)
+edges = np.sqrt(sx**2 + sy**2)
+# Display edges — bright pixels are edges, dark is flat</code></pre>
+    </div>
   </div>
+  <details><summary>Hint</summary>
+  <p>Edge magnitude = $\sqrt{s_x^2 + s_y^2}$ &mdash; the hypotenuse
+  of the two directional components.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Quick Check:</strong> What does the kernel
-  <code>[[-1,-1,-1],[0,0,0],[1,1,1]]</code> detect?</p>
-  <p><strong>A.</strong> Vertical edges (left&ndash;right changes) &nbsp;&nbsp;
-  <strong>B.</strong> Horizontal edges (top&ndash;bottom changes) &nbsp;&nbsp;
-  <strong>C.</strong> Diagonal edges &nbsp;&nbsp;
-  <strong>D.</strong> Nothing &mdash; it blurs the image</p>
+  <p><strong>Design challenge:</strong> Invent your own kernel! Can you
+  create:</p>
+  <ul>
+    <li>A stronger blur? (Try 5&times;5 instead of 3&times;3)</li>
+    <li>An emboss effect? (Hint: light from one direction, shadow on
+    the other)</li>
+    <li>A kernel that detects only corners?</li>
+  </ul>
   <div class="fragment" data-fragment-index="0">
-    <p style="padding:0.5em; background:#e8f5e9; border-radius:5px;">
-    <strong>Answer: B.</strong> Negative weights on top, positive on
-    bottom. It responds to brightness differences between top and bottom
-    rows &mdash; horizontal edges.</p>
+    <p>There&rsquo;s no wrong answer here &mdash; experiment freely.
+    The power of <code>conv</code> is that the <strong>same code</strong>
+    does wildly different things depending on the weights you feed it.</p>
   </div>
 </div>
       </section>
 
 
       <!-- ══════════════════════════════════════════════════════════ -->
-      <!--  PART 6: Padding & Edge Detection Pipeline                -->
+      <!--  PART 8: Padding & The Full Pipeline                      -->
       <!-- ══════════════════════════════════════════════════════════ -->
-      <section id="part6">
-        <h2>Part 6: Padding &amp; Edge Detection Pipeline</h2>
+      <section id="part8">
+        <h2>Part 8: Padding &amp; the Full Pipeline</h2>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Our <code>conv</code> shrinks the output &mdash; a 100&times;100
-  image with a 3&times;3 kernel gives 98&times;98. To keep the same
-  size, <strong>pad</strong> the image with zeros first:</p>
+  <p><strong>Before coding:</strong> Your <code>conv</code> returns a
+  <em>smaller</em> image. A 100&times;100 image with a 3&times;3
+  kernel gives &hellip; what size?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p><strong>98&times;98.</strong> You lose one pixel on each side
+    because the 3&times;3 window can&rsquo;t center on the border pixels.</p>
+    <p>General formula: input size $N$ with kernel size $K$ gives output
+    size $N - K + 1$.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>How could you get the output to be the <strong>same size</strong>
+    as the input?</p>
+    <p>Idea: add extra pixels (zeros) around the border before convolving.
+    How many do you need on each side for a 3&times;3 kernel? For a
+    5&times;5 kernel?</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Exercise 8.1:</strong> Write <code>pad_image</code> that
+  surrounds an image with zeros.</p>
   <div class="code-stack" style="min-height:10em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def pad_image(img, pad_size):
@@ -727,21 +1192,21 @@ edges = np.sqrt(sx**2 + sy**2)</code></pre>
 
 padded = pad_image(gray.astype(float), 1)
 print(gray.shape)    # (360, 480)
-print(padded.shape)  # (362, 482) — 1 pixel of zeros on each side</code></pre>
+print(padded.shape)  # (362, 482)</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint: place <code>img</code> inside <code>out</code> starting at
-    offset <code>(pad_size, pad_size)</code>.</p>
-  </div>
+  <details><summary>Hint</summary>
+  <p>Place <code>img</code> inside <code>out</code> at offset
+  <code>(pad_size, pad_size)</code> using slice assignment.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p>Now combine padding and convolution so the output matches the input
-  size:</p>
-  <div class="code-stack" style="min-height:11em;">
+  <p><strong>Exercise 8.2:</strong> Combine padding and convolution so
+  the output matches the input size.</p>
+  <div class="code-stack" style="min-height:9em;">
     <div class="code-step fragment fade-out" data-fragment-index="1">
 <pre><code>def conv_same(image, weights):
     """Convolution that returns same-size output."""
@@ -758,42 +1223,74 @@ print(padded.shape)  # (362, 482) — 1 pixel of zeros on each side</code></pre>
     padded = pad_image(image, pad_size)
     return conv(padded, weights)
 
-result = conv_same(gray.astype(float), blur)
+result = conv_same(gray.astype(float), np.ones((3,3)) / 9.0)
 print(result.shape)  # (360, 480) — same as input!</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="0">
-    <p>Hint: for a K&times;K kernel, you need <code>K // 2</code> pixels
-    of padding on each side.</p>
-  </div>
+  <details><summary>Hint</summary>
+  <p>For a K&times;K kernel, pad by <code>K // 2</code> on each side,
+  then call your existing <code>conv</code>.</p>
+  </details>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>The full edge detection pipeline</strong> &mdash; assemble
-  everything you&rsquo;ve built:</p>
+  <p><strong>The full pipeline.</strong> Chain everything you&rsquo;ve
+  built into a complete edge detection system:</p>
 <pre><code># 1. Convert to grayscale
-gray = rgb_to_gray(color_arr)
+gray = rgb_to_gray(img)
 
 # 2. Smooth to reduce noise
-blurred = conv_same(gray.astype(float),
-                    np.ones((3,3)) / 9.0)
+blurred = conv_same(gray.astype(float), np.ones((3,3)) / 9.0)
 
 # 3. Detect edges in both directions
 sx = conv_same(blurred, sobel_x)
 sy = conv_same(blurred, sobel_y)
 
 # 4. Combine into edge magnitude
-edges = np.sqrt(sx**2 + sy**2)
-
-# edges is a clean edge map of the original photo —
-# bright pixels are edges, dark pixels are flat regions</code></pre>
+edges = np.sqrt(sx**2 + sy**2)</code></pre>
   <div class="fragment" data-fragment-index="0">
-    <p>Four lines of code, all using the same <code>conv</code> function.
-    This is exactly how the first layers of a Convolutional Neural
-    Network (CNN) work &mdash; except the network <em>learns</em> the
-    kernel weights from data.</p>
+    <p>Four lines. All using the <strong>same <code>conv</code>
+    function</strong> you wrote.</p>
+  </div>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>Experiment:</strong> Try reversing the order &mdash;
+  detect edges first, <em>then</em> blur:</p>
+<pre><code># Order A: blur then edges
+blurred = conv_same(gray.astype(float), np.ones((3,3)) / 9.0)
+edges_A = np.sqrt(conv_same(blurred, sobel_x)**2 +
+                  conv_same(blurred, sobel_y)**2)
+
+# Order B: edges then blur
+sx = conv_same(gray.astype(float), sobel_x)
+sy = conv_same(gray.astype(float), sobel_y)
+raw_edges = np.sqrt(sx**2 + sy**2)
+edges_B = conv_same(raw_edges, np.ones((3,3)) / 9.0)</code></pre>
+  <p>Display both. Which gives cleaner edges? Which preserves finer
+  detail? Why does the order matter?</p>
+</div>
+      </section>
+
+      <section>
+        <div class="slide-content">
+  <p><strong>The big insight.</strong></p>
+  <p>In all your experiments, <em>you</em> chose the kernel weights:
+  all-1/9 for blur, Sobel for edges, your custom designs.</p>
+  <p>What if a computer could <strong>learn</strong> the best weights
+  from examples?</p>
+  <div class="fragment" data-fragment-index="0">
+    <p>That&rsquo;s exactly what a <strong>Convolutional Neural
+    Network</strong> (CNN) does. It starts with random kernel weights
+    and adjusts them using gradient descent until the kernels produce
+    features that solve the task &mdash; detecting cats, reading
+    handwriting, diagnosing X-rays.</p>
+    <p>The <code>conv</code> function you wrote is <em>the</em> core
+    operation of modern computer vision.</p>
   </div>
 </div>
       </section>
@@ -812,44 +1309,42 @@ edges = np.sqrt(sx**2 + sy**2)
     <tr><th>What you built</th><th>Its real name</th></tr>
     <tr><td>Grid of numbers from an image</td>
         <td>Image tensor / NumPy array</td></tr>
-    <tr><td><code>extract_channel</code></td>
+    <tr><td><code>extract_red</code> (loop, then one-liner)</td>
         <td>Channel slicing</td></tr>
-    <tr><td><code>rgb_to_gray</code> (weighted average)</td>
+    <tr><td><code>gray_weighted</code> (experiment with weights)</td>
         <td>Luminosity (ITU-R BT.601)</td></tr>
     <tr><td><code>downsample_avg</code> (2&times;2 average)</td>
         <td>Average pooling</td></tr>
     <tr><td><code>upsample_nearest</code> / <code>upsample_bilinear</code></td>
         <td>Nearest / bilinear interpolation</td></tr>
+    <tr><td><code>smooth</code> (average 3&times;3 neighbors)</td>
+        <td>Box blur / low-pass filter</td></tr>
+    <tr><td><code>find_vertical_edges</code> (right &minus; left)</td>
+        <td>Finite difference / gradient</td></tr>
     <tr><td><code>conv(image, weights)</code></td>
         <td><strong>2D convolution</strong></td></tr>
-    <tr><td>Box blur / sharpen / Sobel kernels</td>
-        <td>Standard convolution kernels</td></tr>
+    <tr><td>Sobel kernels + magnitude</td>
+        <td>Sobel edge detector</td></tr>
     <tr><td><code>pad_image</code> + <code>conv_same</code></td>
         <td>Zero-padding (&ldquo;same&rdquo; convolution)</td></tr>
-    <tr><td>$\sqrt{\text{sobel\_x}^2 + \text{sobel\_y}^2}$</td>
-        <td>Sobel edge detector</td></tr>
   </table>
-  <div class="fragment" data-fragment-index="0">
-    <p>You started with a grid of numbers and ended by detecting edges
-    in a photograph &mdash; using the same sliding-window function that
-    powers every CNN.</p>
-  </div>
 </div>
       </section>
 
       <section>
         <div class="slide-content">
-  <p><strong>Reflection &mdash; what did you just build?</strong></p>
+  <p><strong>Reflection &mdash; what did you discover?</strong></p>
   <ol style="line-height:1.8; font-size:0.95em;">
-    <li>Why is an image just a grid of numbers, and why does that
-    matter for computation?</li>
-    <li>How does the <strong>same</strong> <code>conv</code> function produce
-    blurs, sharpening, <em>and</em> edge detection?</li>
-    <li>Why does Sobel edge detection use two kernels instead of one?</li>
-    <li>In a CNN, the kernels are <em>learned</em> from data instead of
-    hand-designed. Why might that be useful?</li>
-    <li>What would happen if you convolved an edge map with a blur
-    kernel? What about blurring first, then detecting edges?</li>
+    <li>Why is it powerful that <code>conv</code> can blur, sharpen,
+    <em>and</em> detect edges &mdash; all with the same code?</li>
+    <li>When you smoothed the noisy image, what trade-off did you make?
+    Can you think of a smarter way to remove noise without blurring
+    edges?</li>
+    <li>You chose kernel weights by hand. How might a CNN decide what
+    weights to use? What would it optimize for?</li>
+    <li>If you stacked multiple convolution layers (the output of one
+    becomes the input to the next), what might the deeper layers
+    detect?</li>
   </ol>
 </div>
       </section>
@@ -863,11 +1358,13 @@ edges = np.sqrt(sx**2 + sy**2)
         <div class="slide-content" style="text-align:left; max-width:600px; margin:0 auto;">
           <ol style="line-height:2;">
             <li><a href="#/part1">What Is an Image?</a></li>
-            <li><a href="#/part2">Color Channels &amp; Grayscale</a></li>
-            <li><a href="#/part3">Shrinking &mdash; Downsampling</a></li>
-            <li><a href="#/part4">Growing &mdash; Upsampling</a></li>
-            <li><a href="#/part5">The Convolution</a></li>
-            <li><a href="#/part6">Padding &amp; Edge Detection Pipeline</a></li>
+            <li><a href="#/part2">Inventing Grayscale</a></li>
+            <li><a href="#/part3">Shrinking Images</a></li>
+            <li><a href="#/part4">Growing Images</a></li>
+            <li><a href="#/part5">Cleaning Up Noise</a></li>
+            <li><a href="#/part6">Finding Edges</a></li>
+            <li><a href="#/part7">One Function to Rule Them All</a></li>
+            <li><a href="#/part8">Padding &amp; the Full Pipeline</a></li>
           </ol>
         </div>
       </section>
@@ -918,15 +1415,15 @@ edges = np.sqrt(sx**2 + sy**2)
       document.querySelectorAll('.reveal pre code').forEach(function(codeEl) {
         var btn = document.createElement('button');
         btn.className = 'copy-btn';
-        btn.textContent = '\u2398';
+        btn.textContent = '⎘';
         btn.title = 'Copy code';
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
           var text = codeEl.textContent;
           navigator.clipboard.writeText(text).then(function() {
-            btn.textContent = '\u2714';
+            btn.textContent = '✔';
             btn.style.color = '#4CAF50';
-            setTimeout(function() { btn.textContent = '\u2398'; btn.style.color = ''; }, 1500);
+            setTimeout(function() { btn.textContent = '⎘'; btn.style.color = ''; }, 1500);
           });
         });
         codeEl.parentElement.appendChild(btn);
