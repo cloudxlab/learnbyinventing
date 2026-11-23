@@ -134,23 +134,24 @@
   },
   {
     "slide_index": 12,
-    "content_id": "47c4c6f774",
+    "content_id": "1057ddb815",
     "slide_text": "Paper exercise. Imagine 10,000 policy documents, each ~500 words. How many tokens is that? What Value Words per doc 500 Number of docs 10,000 Total words ? Total tokens (~0.75 words/token) ?",
+    "fragments": []
+  },
+  {
+    "slide_index": 13,
+    "content_id": "47e55be42b",
+    "slide_text": "Check your answers: What Value Total words 5,000,000 Total tokens ~6,700,000 vs. 200k context window 33 too large",
     "fragments": [
       {
         "fragment_index": 0,
-        "content_id": "6860ab7b08",
-        "text": "What Value Total words 5,000,000 Total tokens ~6,700,000 vs. 200k context window 33 too large"
-      },
-      {
-        "fragment_index": 1,
-        "content_id": "6bb2c30b64",
+        "content_id": "51cecb9edc",
         "text": "You cannot stuff 10,000 documents into the prompt. You need a smarter approach: send only the relevant ones."
       }
     ]
   },
   {
-    "slide_index": 13,
+    "slide_index": 14,
     "content_id": "1690902ad6",
     "slide_text": "Instead of sending all documents, find the relevant one first , then send only that one to the model.",
     "fragments": [
@@ -162,13 +163,13 @@
     ]
   },
   {
-    "slide_index": 14,
+    "slide_index": 15,
     "content_id": "e5f2b69ca3",
     "slide_text": "Your turn: Write . Split the question into words, count how many appear in each document, return the best match. Hint Use for the question words. For each doc, count how many of those words appear in . Use or a loop.",
     "fragments": []
   },
   {
-    "slide_index": 15,
+    "slide_index": 16,
     "content_id": "ff63632971",
     "slide_text": "Now experiment. Try this question: [code block]",
     "fragments": [
@@ -185,13 +186,13 @@
     ]
   },
   {
-    "slide_index": 16,
+    "slide_index": 17,
     "content_id": "94ba353951",
     "slide_text": "What you just invented: retrieval as a preprocessing step selecting relevant context before sending it to the model. This is the skeleton of RAG. But keyword matching has a fatal flaw. We need a way to measure meaning , not just words.",
     "fragments": []
   },
   {
-    "slide_index": 17,
+    "slide_index": 18,
     "content_id": "bd8ed8cc86",
     "slide_text": "Quick Check Your function uses keyword matching. A user asks: What is the per-night accommodation limit? The travel policy says hotel expenses are capped at $250. Why does your function fail? The function is too slow Accommodation and hotel mean the same thing but share no letters, so the keyword count is zero The function only works for short questions Python s can t handle punctuation",
     "fragments": [
@@ -203,13 +204,13 @@
     ]
   },
   {
-    "slide_index": 18,
+    "slide_index": 19,
     "content_id": "817d04e60c",
     "slide_text": "Part 3: When Words Lie",
     "fragments": []
   },
   {
-    "slide_index": 19,
+    "slide_index": 20,
     "content_id": "af3b24c757",
     "slide_text": "Build a tiny keyword search engine and watch it fail: [code block]",
     "fragments": [
@@ -221,7 +222,7 @@
     ]
   },
   {
-    "slide_index": 20,
+    "slide_index": 21,
     "content_id": "834a5513d6",
     "slide_text": "The key idea: What if you could turn the meaning of a sentence into a list of numbers ?",
     "fragments": [
@@ -233,7 +234,7 @@
     ]
   },
   {
-    "slide_index": 21,
+    "slide_index": 22,
     "content_id": "e6ed53444f",
     "slide_text": "Paper exercise. Given two short vectors, compute their dot product : sum of for all . a b a[i] b[i] i=0 2 3 ? i=1 -1 4 ? i=2 5 1 ? sum = ?",
     "fragments": [
@@ -250,13 +251,13 @@
     ]
   },
   {
-    "slide_index": 22,
+    "slide_index": 23,
     "content_id": "ccfc40aa41",
     "slide_text": "Your turn: Implement in Python. Use a loop no numpy. Hint",
     "fragments": []
   },
   {
-    "slide_index": 23,
+    "slide_index": 24,
     "content_id": "a7daaeac89",
     "slide_text": "Experiment. Add your own sentence and test: [code block]",
     "fragments": [
@@ -273,13 +274,13 @@
     ]
   },
   {
-    "slide_index": 24,
+    "slide_index": 25,
     "content_id": "1884b33251",
     "slide_text": "Your turn: Build embed the query, compute dot products against all corpus embeddings, sort by score. Hint Embed the query once: . Embed the corpus: . Pair each score with its sentence and sort.",
     "fragments": []
   },
   {
-    "slide_index": 25,
+    "slide_index": 26,
     "content_id": "161e3816dd",
     "slide_text": "Check: Do accommodation and lodging sentences now rank above the Python sentence?",
     "fragments": [
@@ -296,19 +297,19 @@
     ]
   },
   {
-    "slide_index": 26,
+    "slide_index": 27,
     "content_id": "5355f690c7",
     "slide_text": "What you just invented: semantic search using vector embeddings the retrieval backbone of every production RAG system. Embeddings turn meaning into numbers. The dot product measures similarity. Hotel, accommodation, and lodging all end up nearby in this number space even though they share no letters.",
     "fragments": []
   },
   {
-    "slide_index": 27,
+    "slide_index": 28,
     "content_id": "5d81bd9969",
     "slide_text": "Part 4: Building a Vector Index",
     "fragments": []
   },
   {
-    "slide_index": 28,
+    "slide_index": 29,
     "content_id": "d009f52f04",
     "slide_text": "Your re-embeds the entire corpus on every query . That s wasteful the documents don t change between questions.",
     "fragments": [
@@ -325,19 +326,19 @@
     ]
   },
   {
-    "slide_index": 29,
+    "slide_index": 30,
     "content_id": "4f8c695794",
     "slide_text": "Your turn: Build an in-memory vector store. embeds all docs once. embeds only the query. Hint 1 For : gives you all embeddings at once. Zip with the docs. Hint 2 For : embed the query once, loop over the index, compute dot products, sort descending, slice .",
     "fragments": []
   },
   {
-    "slide_index": 30,
+    "slide_index": 31,
     "content_id": "3cf6f316f2",
     "slide_text": "What you just invented: a vector index the data structure at the heart of systems like Pinecone, Weaviate, and pgvector. You embed documents once during indexing. At query time you only embed the question one embedding, not thousands.",
     "fragments": []
   },
   {
-    "slide_index": 31,
+    "slide_index": 32,
     "content_id": "5fcfb3161d",
     "slide_text": "Quick Check Document A (hotel rules) has dot product 0.87 with the query. Document B (Python loops) has dot product 0.12. Which is more relevant? Document B lower scores mean better matches Document A higher dot product means more similar meaning Neither dot products don t work with text You can t tell without seeing the vectors",
     "fragments": [
@@ -349,13 +350,13 @@
     ]
   },
   {
-    "slide_index": 32,
+    "slide_index": 33,
     "content_id": "5e50e47869",
     "slide_text": "Part 5: Inventing RAG",
     "fragments": []
   },
   {
-    "slide_index": 33,
+    "slide_index": 34,
     "content_id": "56ec69c810",
     "slide_text": "Connect your two pieces: retrieval (Part 4) + language model (Part 1). [code block]",
     "fragments": [
@@ -367,7 +368,7 @@
     ]
   },
   {
-    "slide_index": 34,
+    "slide_index": 35,
     "content_id": "612237f6fa",
     "slide_text": "Now try this: [code block]",
     "fragments": [
@@ -389,13 +390,13 @@
     ]
   },
   {
-    "slide_index": 35,
+    "slide_index": 36,
     "content_id": "0aa5a38f10",
     "slide_text": "Your turn: Fix in two ways: Improve the prompt: Answer only using the context. If the answer is not there, say so. Add a confidence gate : if the top retrieval score is below 0.35, skip the API call entirely. Hint Check before building the prompt or calling the API.",
     "fragments": []
   },
   {
-    "slide_index": 36,
+    "slide_index": 37,
     "content_id": "ac7ac12e9e",
     "slide_text": "Real documents are long. If you embed a 10-page PDF as one vector, the embedding averages out over too many topics. If you split every sentence separately, each piece loses context. There s a Goldilocks size. Hint . Loop with . Each chunk is .",
     "fragments": [
@@ -407,7 +408,7 @@
     ]
   },
   {
-    "slide_index": 37,
+    "slide_index": 38,
     "content_id": "c0b304f850",
     "slide_text": "Experiment. Try different chunk sizes: [code block]",
     "fragments": [
@@ -419,13 +420,13 @@
     ]
   },
   {
-    "slide_index": 38,
+    "slide_index": 39,
     "content_id": "0044ce2135",
     "slide_text": "What you just invented: Retrieval-Augmented Generation (RAG) retrieve relevant chunks, gate on confidence, generate a grounded answer. This is the dominant architecture for grounding LLMs in private or recent knowledge. The confidence gate prevents hallucination when retrieval fails. Chunking with overlap prevents relevant sentences from being split across boundaries.",
     "fragments": []
   },
   {
-    "slide_index": 39,
+    "slide_index": 40,
     "content_id": "1b4d43716a",
     "slide_text": "Quick Check A user asks What is the speed of light? None of your company documents are about physics. What happens? The model answers correctly from training data The model hallucinates using the closest document The confidence gate blocks it all scores are below 0.35 The system crashes",
     "fragments": [
@@ -437,13 +438,13 @@
     ]
   },
   {
-    "slide_index": 40,
+    "slide_index": 41,
     "content_id": "6c745a8049",
     "slide_text": "Part 6: The Model That Cannot Act",
     "fragments": []
   },
   {
-    "slide_index": 41,
+    "slide_index": 42,
     "content_id": "53b351ebb5",
     "slide_text": "RAG solves the knowledge problem. But what about questions that require doing something? [code block]",
     "fragments": [
@@ -460,7 +461,7 @@
     ]
   },
   {
-    "slide_index": 42,
+    "slide_index": 43,
     "content_id": "4367d982dc",
     "slide_text": "The model is sandboxed . It cannot interact with the outside world. It can only process text and return text.",
     "fragments": [
@@ -477,7 +478,7 @@
     ]
   },
   {
-    "slide_index": 43,
+    "slide_index": 44,
     "content_id": "b742483738",
     "slide_text": "Build three tools the model cannot do itself: [code block]",
     "fragments": [
@@ -489,7 +490,7 @@
     ]
   },
   {
-    "slide_index": 44,
+    "slide_index": 45,
     "content_id": "75992fc646",
     "slide_text": "Before coding: You need the model to output structured text that says call this tool with this input. What format would you invent? Write it on paper first.",
     "fragments": [
@@ -506,13 +507,13 @@
     ]
   },
   {
-    "slide_index": 45,
+    "slide_index": 46,
     "content_id": "3460b89d0a",
     "slide_text": "Your turn: Write code to parse the model s output and run the actual tool: Hint Check . Extract the name by stripping the prefix. The input is on the second line.",
     "fragments": []
   },
   {
-    "slide_index": 46,
+    "slide_index": 47,
     "content_id": "f8540d0522",
     "slide_text": "Try this: [code block]",
     "fragments": [
@@ -529,13 +530,13 @@
     ]
   },
   {
-    "slide_index": 47,
+    "slide_index": 48,
     "content_id": "045586a8f6",
     "slide_text": "What you just invented: tool use (also called function calling ) the mechanism that lets a language model request external actions. The model is a reasoning engine , not an execution engine. It describes what tool to call as text. Your code parses that text, runs the function, and passes the result back.",
     "fragments": []
   },
   {
-    "slide_index": 48,
+    "slide_index": 49,
     "content_id": "7915c37c6a",
     "slide_text": "Quick Check The model outputs / . Who actually runs the calculation? The language model runs it internally Your Python code parses the text, calls , and feeds the result back The API automatically detects math and evaluates it The user manually runs it",
     "fragments": [
@@ -547,25 +548,25 @@
     ]
   },
   {
-    "slide_index": 49,
+    "slide_index": 50,
     "content_id": "d0b036ca61",
     "slide_text": "Part 7: Inventing Agents",
     "fragments": []
   },
   {
-    "slide_index": 50,
+    "slide_index": 51,
     "content_id": "b986d9cd8a",
     "slide_text": "Before coding draw on paper. An agent is a loop . Draw the flowchart: Send the question + history to the model If model says ? If model says ? When do you stop?",
     "fragments": []
   },
   {
-    "slide_index": 51,
+    "slide_index": 52,
     "content_id": "61d66acd9b",
     "slide_text": "Your turn: Build : Hint Keep a list. Append the model s reply, then if it s a tool call, append the tool result as a new user message and loop again.",
     "fragments": []
   },
   {
-    "slide_index": 52,
+    "slide_index": 53,
     "content_id": "6b78b247d3",
     "slide_text": "Experiment. Count how many steps each question takes: [code block]",
     "fragments": [
@@ -577,7 +578,7 @@
     ]
   },
   {
-    "slide_index": 53,
+    "slide_index": 54,
     "content_id": "52b046c932",
     "slide_text": "The problem: Try two separate calls: [code block] Hint Use a plain dict. parses with . does .",
     "fragments": [
@@ -589,25 +590,25 @@
     ]
   },
   {
-    "slide_index": 54,
+    "slide_index": 55,
     "content_id": "b2cbd96987",
     "slide_text": "What you just invented: the agentic loop the core architecture of every AI agent. Also known as the ReAct pattern (Reasoning + Acting). The model itself is stateless. But the system around it the message history, the tool dispatcher, the memory store gives it the ability to reason over multiple steps, remember context, and take actions.",
     "fragments": []
   },
   {
-    "slide_index": 55,
+    "slide_index": 56,
     "content_id": "c93bcaf7da",
     "slide_text": "Part 8: Everything Together",
     "fragments": []
   },
   {
-    "slide_index": 56,
+    "slide_index": 57,
     "content_id": "60189e1ea1",
     "slide_text": "Add a tool that wraps your function. Combine it with calculate, remember, and recall in one agent.",
     "fragments": []
   },
   {
-    "slide_index": 57,
+    "slide_index": 58,
     "content_id": "8c99689230",
     "slide_text": "The multi-hop question from the opening challenge: [code block]",
     "fragments": [
@@ -624,43 +625,43 @@
     ]
   },
   {
-    "slide_index": 58,
+    "slide_index": 59,
     "content_id": "e01d70e810",
     "slide_text": "The complete system you built:",
     "fragments": []
   },
   {
-    "slide_index": 59,
+    "slide_index": 60,
     "content_id": "d6fd06a8da",
     "slide_text": "What You Invented",
     "fragments": []
   },
   {
-    "slide_index": 60,
+    "slide_index": 61,
     "content_id": "c7f8e6759b",
     "slide_text": "Your Inventions vs. Industry Names Ex. What you built Industry name 1.1 Detected unanswerable questions Hallucination detection 2.1 Picked relevant docs by keyword count Keyword retrieval 3.1 Measured meaning with dot products Semantic similarity 3.2 Ranked docs by meaning, not words Semantic search 4.1 Stored embeddings once, queried fast Vector index 5.1 Retrieved, gated, then generated RAG 5.2 Split docs into overlapping windows Chunking 6.2 Made the model describe actions as text Tool use / function calling 7.1 Looped model + tools until done Agentic loop / ReAct 7.2 Added persistent storage to a stateless model Agent memory 8.1 Combined retrieval + tools + memory + loop RAG agent",
     "fragments": []
   },
   {
-    "slide_index": 61,
+    "slide_index": 62,
     "content_id": "8253a7b391",
     "slide_text": "Reflection",
     "fragments": []
   },
   {
-    "slide_index": 62,
+    "slide_index": 63,
     "content_id": "d148cad36a",
     "slide_text": "Reflection Answer in your own words there are no right or wrong answers. In Part 1, you discovered hallucination. Why can t you detect it just by reading the model s output? In Part 3, keyword matching failed on synonyms. How do embeddings fix this? Could you explain a dot product to a friend who has never coded? In Part 5, you added a confidence gate. Why is it important to not call the model when retrieval fails? In Part 7, you turned a single tool call into a loop. What makes the loop an agent ? Explain RAG to someone in one sentence.",
     "fragments": []
   },
   {
-    "slide_index": 63,
+    "slide_index": 64,
     "content_id": "55bd3617a4",
     "slide_text": "Going Further Vector databases. Replace your in-memory index with ChromaDB or Qdrant both have free local modes. Native tool use. The Anthropic API supports structured tool calling the model returns JSON instead of the text protocol you invented. Rewrite your agent using it. The ReAct paper. Read ReAct: Synergizing Reasoning and Acting in Language Models (Yao et al., 2022). It describes the exact loop you built in Exercise 7.1. Evaluation. Use from to measure your agent s accuracy across 15 question-answer pairs. Multi-agent systems. What if one agent specialised in retrieval and another in calculation, with a coordinator deciding which to call?",
     "fragments": []
   },
   {
-    "slide_index": 64,
+    "slide_index": 65,
     "content_id": "d8604d2fdc",
     "slide_text": "Index Part 1: The Amnesiac Oracle Part 2: Stuffing the Prompt Part 3: When Words Lie Part 4: Building a Vector Index Part 5: Inventing RAG Part 6: The Model That Cannot Act Part 7: Inventing Agents Part 8: Everything Together What You Invented Reflection Going Further",
     "fragments": []
