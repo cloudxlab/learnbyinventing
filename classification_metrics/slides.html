@@ -9,12 +9,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css" />
 
   <style>
-    .reveal { font-family: Georgia, serif; margin-top: 25px; }
+    html, body { overflow-x: hidden; max-width: 100vw; }
+    .reveal { font-family: Georgia, serif; margin-top: 25px; overflow: hidden; }
     .reveal .slide-content { font-size: 0.55em; }
-    .reveal h1 { font-size: 1.8em; }
+    .reveal h1 { font-size: 1.8em; max-width: 100%; overflow-wrap: break-word; }
     .reveal h2 { font-size: 1.4em; color: #7a6b3a; border-bottom: 2px solid #c8a96e; padding-bottom: 0.3em; }
     .reveal h3 { font-size: 1.1em; }
-    .reveal pre { position: relative; font-size: 0.55em; box-shadow: none; }
+    .reveal pre { position: relative; font-size: 0.55em; box-shadow: none; overflow-x: auto; }
     .reveal code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
     .reveal p code, .reveal li code {
       background: #f0ede6; padding: 0.1em 0.3em; border-radius: 3px;
@@ -40,12 +41,34 @@
       .reveal h2 { font-size: 0.95em; }
       .reveal h3 { font-size: 0.8em; }
       .reveal pre { font-size: 0.6em; }
-      .reveal table { font-size: 0.6em; }
+      .reveal table { font-size: 0.6em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.65em; }
       .reveal p code, .reveal li code { font-size: 0.85em; }
       .reveal th, .reveal td { padding: 0.2em 0.4em; }
       .slides-topnav { font-size: 11px !important; padding: 2px 8px !important; }
       #bottom-copyright { font-size: 9px; }
+      .reveal h1 { font-size: 1.2em; word-wrap: break-word; max-width: 100%; text-transform: none; }
+      .reveal section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .reveal .slides section { overflow: hidden; }
+
+    }
+    .reveal .slide-number { font-size: 10px; right: 4px !important; bottom: 4px !important; }
+    @media screen and (max-width: 480px) {
+      .reveal .slide-content { font-size: 0.6em; }
+      .reveal h1 { font-size: 1.05em; word-wrap: break-word; max-width: 100%; }
+      .reveal h2 { font-size: 0.9em; }
+      .reveal h3 { font-size: 0.85em; }
+      .reveal pre { font-size: 0.65em; }
+      .reveal table { font-size: 0.55em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
+      .reveal ul, .reveal ol { font-size: 0.75em; }
+      .reveal section { overflow-wrap: break-word; word-break: break-word; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .reveal pre code { overflow-x: auto; white-space: pre; max-width: 100%; }
+      .reveal .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+      .reveal th, .reveal td { padding: 0.15em 0.3em; white-space: nowrap; }
+      .reveal h1, .reveal h2 { text-transform: none; }
+      .reveal .slides { overflow: hidden !important; }
+      .reveal .slides section { max-width: 100vw; overflow: hidden; box-sizing: border-box; }
+
     }
     .reveal pre .copy-btn {
       position: absolute; top: 6px; right: 6px;
@@ -1218,9 +1241,10 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 700 : 1200,
-      height: window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700,
-      minScale: 0.1,
+      width: window.innerWidth <= 480 ? Math.min(window.innerWidth, 480) : (window.innerWidth <= 600 ? 700 : 1200),
+      height: window.innerWidth <= 480 ? (window.innerHeight - 36) : (window.innerWidth <= 600 ? Math.round(700 * window.innerHeight / window.innerWidth) : 700),
+      margin: window.innerWidth <= 480 ? 0 : 0.04,
+      minScale: 0.2,
       maxScale: 2.0,
     });
     function updateProgress() {
