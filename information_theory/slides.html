@@ -40,9 +40,6 @@
     #bottom-copyright { position: fixed; bottom: 6px; left: 12px; font-size: 11px; color: #aaa; font-family: sans-serif; z-index: 200; }
     #bottom-copyright a { color: #aaa; text-decoration: none; }
     #bottom-copyright a:hover { color: #c8a96e; }
-    #bug-report-link { color: #e37400 !important; background: #fff8e7; border: 1px solid #f5c842; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: background 0.2s; }
-    #bug-report-link:hover { background: #fff3d0 !important; color: #c56200 !important; }
-
     .reveal .exercise-badge {
       position: absolute;
       top: 8px;
@@ -133,46 +130,7 @@
     </span>
   </nav>
   <div id="top-progress"><div id="top-progress-bar"></div></div>
-  <div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; <a href="#" id="bug-report-link">Report a Bug</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
-  <script>
-function detectDevice() {
-  var ua = navigator.userAgent;
-  var browser = 'Unknown';
-  if (ua.indexOf('Edg/') > -1) browser = 'Edge';
-  else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) browser = 'Opera';
-  else if (ua.indexOf('Chrome/') > -1) browser = 'Chrome';
-  else if (ua.indexOf('Safari/') > -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
-  else if (ua.indexOf('Firefox/') > -1) browser = 'Firefox';
-  var os = 'Unknown';
-  if (ua.indexOf('Android') > -1) os = 'Android';
-  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
-  else if (ua.indexOf('Windows') > -1) os = 'Windows';
-  else if (ua.indexOf('Mac OS') > -1) os = 'macOS';
-  else if (ua.indexOf('Linux') > -1) os = 'Linux';
-  var screen = window.screen.width + 'x' + window.screen.height;
-  var viewport = window.innerWidth + 'x' + window.innerHeight;
-  return '- Browser: ' + browser + '\n- OS: ' + os + '\n- Screen: ' + screen + ' (viewport ' + viewport + ')';
-}
-document.getElementById('bug-report-link').addEventListener('click', function(e) {
-  e.preventDefault();
-  var idx = Reveal.getIndices();
-  var slideNum = idx.h + 1;
-  var ch = location.pathname.split('/').filter(Boolean);
-  ch = ch.length > 1 ? ch[ch.length - 2] : '';
-  var partName = '';
-  var sections = document.querySelectorAll('.slides > section');
-  for (var j = idx.h; j >= 0; j--) {
-    if (sections[j] && sections[j].id && sections[j].id.match(/^part/)) {
-      var h2 = sections[j].querySelector('h2');
-      partName = h2 ? h2.textContent : sections[j].id;
-      break;
-    }
-  }
-  var body = '**Chapter / Slide**\nChapter: ' + ch + '\nSlide: ' + slideNum + (partName ? ' (' + partName + ')' : '') + '\nURL: ' + location.href + '\n\n**What happened?**\n\n\n**What did you expect?**\n\n\n**Screenshots**\n\n\n**Device**\n' + detectDevice();
-  var url = 'https://github.com/cloudxlab/learnbyinventing/issues/new?title=' + encodeURIComponent('[Bug] ' + ch + ' slide ' + slideNum) + '&body=' + encodeURIComponent(body);
-  window.open(url, '_blank');
-});
-</script>
+  <div id="bottom-copyright"><a href="#/slide-index">Index</a> &middot; &copy; <a href="https://cloudxlab.com">CloudxLab</a></div>
   <div class="reveal">
     <div class="slides">
 
@@ -1020,5 +978,6 @@ print(f"Round-trip OK:    {recovered == msg}")</code></pre>
 </div>
 
 <script src="narration-player.js"></script>
+  <script src="https://bugdrop.neonwatty.workers.dev/widget.v1.59.1.js" data-repo="cloudxlab/learnbyinventing"></script>
 </body>
 </html>
