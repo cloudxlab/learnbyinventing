@@ -275,15 +275,19 @@ print(ask("Who wrote Hamlet?"))</code></pre>
     <p>Read the answer carefully. This memo <em>doesn&rsquo;t exist</em>.
     Acme Corp is made up. Yet the model answers <strong>confidently</strong>.</p>
   </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Fill in this table:</p>
-    <table style="margin:0.5em auto; font-size:0.95em;">
-      <tr><th>Question</th><th>Correct?</th><th>Confident?</th></tr>
-      <tr><td>&ldquo;Capital of France&rdquo;</td><td>?</td><td>?</td></tr>
-      <tr><td>&ldquo;Acme Corp Q3 memo&rdquo;</td><td>?</td><td>?</td></tr>
-    </table>
-  </div>
-  <div class="fragment" data-fragment-index="2">
+        </div>
+      </section>
+
+      <!-- 1.2b — Fill in the table -->
+      <section>
+        <div class="slide-content">
+  <p>Fill in this table:</p>
+  <table style="margin:0.5em auto; font-size:0.95em;">
+    <tr><th>Question</th><th>Correct?</th><th>Confident?</th></tr>
+    <tr><td>&ldquo;Capital of France&rdquo;</td><td>?</td><td>?</td></tr>
+    <tr><td>&ldquo;Acme Corp Q3 memo&rdquo;</td><td>?</td><td>?</td></tr>
+  </table>
+  <div class="fragment" data-fragment-index="0">
     <table style="margin:0.5em auto; font-size:0.95em;">
       <tr><th>Question</th><th>Correct?</th><th>Confident?</th></tr>
       <tr><td>&ldquo;Capital of France&rdquo;</td><td>&#10003; Yes</td><td>&#10003; Yes</td></tr>
@@ -322,6 +326,8 @@ print(ask("Who wrote Hamlet?"))</code></pre>
   </div>
   <div class="fragment" data-fragment-index="1">
     <p>Name two categories of questions the model <strong>cannot</strong> answer correctly:</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <ol>
       <li>Questions about <strong>recent events</strong> (after training cutoff)</li>
       <li>Questions about <strong>private data</strong> (never in training data)</li>
@@ -333,11 +339,11 @@ print(ask("Who wrote Hamlet?"))</code></pre>
       <!-- 1.4 — honest_ask exercise -->
       <section>
         <div class="slide-content">
-  <p><strong>Your turn:</strong> Write a crude patch. Create <code>honest_ask(question)</code>:
+  <p><strong>Your turn:</strong> Create <code>honest_ask(question)</code>:
   if the question contains <code>"internal memo"</code> or <code>"Q3 2024"</code>,
-  return <code>"I don't have access to that document."</code> without calling the API.</p>
+  return a fallback string without calling the API.</p>
 
-  <div class="code-stack" style="min-height:9em;">
+  <div class="code-stack" style="min-height:7.5em;">
     <pre class="code-step fragment fade-out" data-fragment-index="1"><code>def honest_ask(question):
     # YOUR CODE HERE
     pass
@@ -354,10 +360,9 @@ print(honest_ask("According to the Q3 2024 memo, "
 print(honest_ask("What is the capital of France?"))       # Paris
 print(honest_ask("According to the Q3 2024 memo, ..."))   # blocked</code></pre>
   </div>
-  <details style="font-size:0.85em; margin:0.3em 0;">
+  <details style="font-size:0.8em; margin:0.2em 0;">
     <summary>Hint</summary>
-    <p>Use <code>if "internal memo" in question.lower()</code> as your check.
-    Return the fallback string early, before calling the API.</p>
+    <p>Check <code>"internal memo" in question.lower()</code> and return early.</p>
   </details>
         </div>
       </section>
