@@ -178,7 +178,8 @@
   <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
   <p>Write <code>my_sort(arr)</code> that sorts a list in ascending order
   <em>without</em> <code>sorted()</code> or <code>.sort()</code>. It must
-  run in <strong>O(n&middot;log n)</strong> time &mdash; bubble sort won&rsquo;t
+  run in <strong>O(n&middot;log n)</strong> time (you&rsquo;ll discover what
+  this means by the end of this chapter) &mdash; bubble sort won&rsquo;t
   make the cut.</p>
   <p style="font-size:0.85em; color:#888;">Already got it?
   <a href="#/ending">Skip to the end</a>.</p>
@@ -351,16 +352,20 @@ print(x)  # [1, 2, 5, 5, 6, 9]</code></pre>
 
       <section>
         <div class="slide-content">
-  <p>How much work does bubble sort do? Run it on lists of length 10,
-  100, 1000 and count comparisons. When the list gets 10x longer,
-  how much does the count grow?</p>
+  <p>How much work does bubble sort do? Add a counter to your
+  <code>pass_sort</code> that counts every comparison. Run it on lists of
+  length 10, 100, and 1,000. Fill in the table:</p>
   <table>
     <tr><th>n</th><th>comparisons</th><th>comparisons / n&sup2;</th></tr>
-    <tr><td>10</td><td>~45</td><td>~0.45</td></tr>
-    <tr><td>100</td><td>~4,950</td><td>~0.50</td></tr>
-    <tr><td>1,000</td><td>~499,500</td><td>~0.50</td></tr>
+    <tr><td>10</td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~45</span></td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~0.45</span></td></tr>
+    <tr><td>100</td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~4,950</span></td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~0.50</span></td></tr>
+    <tr><td>1,000</td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~499,500</span></td><td><span class="fragment fade-out" data-fragment-index="1">?</span><span class="fragment" data-fragment-index="1">~0.50</span></td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
+    <p>What pattern do you notice? When the list gets 10x longer, how
+    much does the count grow?</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
     <p>The ratio stays near 0.5 &mdash; comparisons grow as $n^2 / 2$.
     This is <strong>O(n&sup2;)</strong>: quadratic time.</p>
     <p>At $10^8$ operations/second, sorting 1,000,000 items would take

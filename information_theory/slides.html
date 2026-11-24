@@ -670,12 +670,31 @@ print("Avg bits:", avg_bits(scheme, freq))      # 1.70</code></pre>
       <section>
         <div class="slide-content">
   <p>Our Huffman code uses 1.70 bits per symbol on average. Is that the
-  best <em>any</em> code can do?</p>
+  best <em>any</em> code can do, or could a cleverer code beat it?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Claude Shannon proved in 1948 that there is an absolute lower bound:
-    the <strong>entropy</strong> of the source.</p>
-    <p style="text-align:center;">$H = - \sum_{s} p(s) \cdot \log_2 p(s)$</p>
-    <p>No lossless code can average fewer than $H$ bits per symbol.</p>
+    <p><strong>Before coding:</strong> Think about one symbol at a time.
+    If a symbol has probability $p$, what&rsquo;s the ideal number of bits
+    for it? We&rsquo;ve seen that a symbol appearing $1/2$ the time
+    should get 1 bit, $1/4$ &rarr; 2 bits, $1/8$ &rarr; 3 bits&hellip;</p>
+    <p>The pattern: a symbol with probability $p$ ideally costs
+    $-\log_2(p)$ bits.</p>
+  </div>
+  <div class="fragment" data-fragment-index="1">
+    <p>Now compute the <strong>weighted average</strong> of ideal costs
+    across all symbols:</p>
+    <p style="text-align:center; font-size:0.95em;">
+    A: $0.50 \times (-\log_2 0.50)$ = 0.50 &nbsp;+&nbsp;
+    B: $0.25 \times (-\log_2 0.25)$ = 0.50 &nbsp;+&nbsp;
+    C: $0.20 \times (-\log_2 0.20)$ &asymp; 0.464 &nbsp;+&nbsp;
+    D: $0.05 \times (-\log_2 0.05)$ &asymp; 0.216</p>
+    <p style="text-align:center;"><strong>Total &asymp; 1.6855 bits/symbol</strong>
+    &mdash; lower than our Huffman code&rsquo;s 1.70!</p>
+  </div>
+  <div class="fragment" data-fragment-index="2">
+    <p>In 1948, Claude Shannon proved this weighted average is an
+    absolute lower bound &mdash; no lossless code can beat it.
+    He called it <strong>entropy</strong>:
+    $H = - \sum_{s} p(s) \cdot \log_2 p(s)$</p>
   </div>
 </div>
       </section>
@@ -870,7 +889,7 @@ print(f"Round-trip OK:    {recovered == msg}")</code></pre>
     <tr><td><code>encode_ab</code> / <code>decode_ab</code></td>
         <td>Fixed-length binary code</td></tr>
     <tr><td><code>is_prefix_free</code></td>
-        <td>Prefix-free (Kraft) condition</td></tr>
+        <td>Prefix-free condition (Kraft&rsquo;s inequality: code lengths must satisfy $\sum 2^{-\ell_i} \le 1$)</td></tr>
     <tr><td><code>avg_bits</code></td>
         <td>Expected code length</td></tr>
     <tr><td>Short codes for common symbols</td>
