@@ -40,7 +40,7 @@
       .reveal .slide-content { font-size: 0.65em; }
       .reveal h2 { font-size: 0.95em; }
       .reveal h3 { font-size: 0.8em; }
-      .reveal pre { font-size: 0.6em; }
+      .reveal pre { font-size: 0.6em; max-width: 100%; box-sizing: border-box; }
       .reveal table { font-size: 0.6em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.65em; }
       .reveal p code, .reveal li code { font-size: 0.85em; }
@@ -63,7 +63,7 @@
       .reveal h1 { font-size: 0.75em; word-wrap: break-word; max-width: 100%; }
       .reveal h2 { font-size: 0.9em; }
       .reveal h3 { font-size: 0.85em; }
-      .reveal pre { font-size: 0.65em; }
+      .reveal pre { font-size: 0.65em; max-width: 100%; box-sizing: border-box; }
       .reveal table { font-size: 0.55em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.75em; }
       .reveal section { overflow-wrap: break-word; word-break: break-word; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -130,16 +130,15 @@ models using ROC curves and AUC.</div>
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.3em;">
+        <div class="slide-content"><div style="font-size:1.1em;">
 <div>
 <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-<p>A <strong>binary classifier</strong> is a model that looks at some input and
-predicts one of two labels &mdash; for example &ldquo;spam&rdquo; or &ldquo;not spam&rdquo;,
-&ldquo;sick&rdquo; or &ldquo;healthy&rdquo;. Given true labels and predicted probabilities,
+<p>A <strong>binary classifier</strong> predicts one of two labels &mdash; e.g. &ldquo;spam&rdquo;/&ldquo;not spam&rdquo;.
+Given true labels and predicted probabilities,
 write <code>best_threshold(y_true, y_prob)</code>. It should try different
-cutoff values and compute the confusion matrix, precision, recall
-and F1 at each one. It should return the cutoff with the highest F1,
-along with the model&rsquo;s ROC AUC. Don&rsquo;t use sklearn.</p>
+cutoff values and compute precision, recall
+and F1 at each one, returning the cutoff with the highest F1
+and the model&rsquo;s ROC AUC. Don&rsquo;t use sklearn.</p>
 <pre><code>def best_threshold(y_true, y_prob):
     # returns (best_t, best_f1, auc)
     ...</code></pre>
@@ -1248,9 +1247,10 @@ print("AUC:      ", roc_auc_score(actual, outputs1))</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? Math.min(window.innerWidth, 600) : 1200,
-      height: window.innerWidth <= 600 ? (window.innerHeight - 36) : 700,
-      margin: 0.04,
+      width: window.innerWidth <= 600 ? 600 : 1200,
+      height: 700,
+      margin: window.innerWidth <= 600 ? 0 : 0.04,
+      center: true,
       minScale: 0.2,
       maxScale: 2.0,
     });
