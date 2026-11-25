@@ -297,33 +297,20 @@
 
       <section>
         <div class="slide-content">
-  <p>It&rsquo;s a <strong>Sunny</strong> day. You know two things:</p>
-  <ul>
-    <li>P(Sunny | No) = 3/5 &nbsp;&nbsp; and &nbsp;&nbsp; P(No) = 5/14</li>
-    <li>P(Sunny | Yes) = 2/9 &nbsp;&nbsp; and &nbsp;&nbsp; P(Yes) = 9/14</li>
-  </ul>
-  <p><strong>Before coding:</strong> How would you combine these two numbers
-  into a single score for each class?</p>
+  <p>It&rsquo;s a <strong>Sunny</strong> day. Is it more likely a Yes day
+  or a No day? Combine the conditional probability with the prior:</p>
+  <p><strong>Before coding:</strong></p>
+  <ol>
+    <li>Score(Yes) = P(Sunny | Yes) &times; P(Yes) = ?</li>
+    <li>Score(No) = P(Sunny | No) &times; P(No) = ?</li>
+    <li>Which score is larger?</li>
+  </ol>
   <div class="fragment" data-fragment-index="0">
-    <p><em>Tempted to add?</em> Try it: 3/5 + 5/14 = 1.0 &mdash;
-    and 2/9 + 9/14 &asymp; 0.86. But adding a conditional probability
-    and a prior gives something &gt; 1 for &ldquo;No&rdquo; &mdash;
-    that&rsquo;s not a meaningful score.</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>What if you <strong>multiply</strong> instead? Try it on paper:
-    Score(Yes) = (2/9) &times; (9/14) = ? &nbsp;&nbsp;
-    Score(No) = (3/5) &times; (5/14) = ?</p>
-  </div>
-  <div class="fragment" data-fragment-index="2">
     <p style="padding:0.4em; background:#e8f5e9; border-radius:5px;">
     Score(Yes) = (2/9) &times; (9/14) = 2/14 &asymp; 0.143<br/>
     Score(No) &thinsp;= (3/5) &times; (5/14) = 3/14 &asymp; 0.214<br/>
     <strong>No wins</strong> &mdash; on a Sunny day, the data leans
     toward not playing.</p>
-    <p>Multiplying works: the score stays between 0 and 1, and the
-    higher score wins. This &ldquo;prior &times; likelihood&rdquo; rule
-    is exactly <strong>Bayes&rsquo; theorem</strong> at work.</p>
   </div>
 </div>
       </section>
@@ -1040,7 +1027,7 @@ print("yours: ", nb.predict(X_train))</code></pre>
     <tr><td>P(feature | class) from counting rows</td>
         <td><strong>Conditional / likelihood probability</strong></td></tr>
     <tr><td>Prior &times; likelihood &rarr; pick highest</td>
-        <td><strong>Bayes&rsquo; theorem (MAP decision rule &mdash; pick the class with the Maximum A Posteriori score)</strong></td></tr>
+        <td><strong>Bayes&rsquo; theorem (MAP decision rule)</strong></td></tr>
     <tr><td>Multiply per-feature likelihoods independently</td>
         <td><strong>Naive independence assumption</strong></td></tr>
     <tr><td>Add 1 to every count to avoid zeros</td>
@@ -1048,7 +1035,7 @@ print("yours: ", nb.predict(X_train))</code></pre>
     <tr><td><code>NaiveBayes.fit()</code> + <code>.predict()</code></td>
         <td><strong>Categorical Naive Bayes classifier</strong></td></tr>
     <tr><td>Normalize scores to sum to 1</td>
-        <td><strong>Posterior probability (<code>predict_proba</code>) &mdash; the updated belief after seeing evidence</strong></td></tr>
+        <td><strong>Posterior probability (<code>predict_proba</code>)</strong></td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
     <p>Nobody taught you these &mdash; <strong>you derived them

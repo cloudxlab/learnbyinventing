@@ -810,9 +810,8 @@ job_tree.check({"salary": 1500, "distance": 60})  # False ✓</code></pre>
 
       <section>
         <div class="slide-content"><div style="font-size:1.2em;">
-  <p><strong>Step A: Helper functions and base cases.</strong>
-  When should a node become a leaf?</p>
-  <div class="code-stack" style="min-height:10em;">
+  <p><strong><code>build_tree(data, features, label)</code></strong> &mdash; the recursive algorithm:</p>
+  <div class="code-stack" style="min-height:14em;">
     <div class="code-step fragment fade-out" data-fragment-index="0">
 <pre><code>def majority_label(labels):
     # return the most common label
@@ -820,32 +819,9 @@ job_tree.check({"salary": 1500, "distance": 60})  # False ✓</code></pre>
 
 def is_pure(labels):
     # return True if all labels are the same
-    pass</code></pre>
-    </div>
-    <div class="code-step fragment" data-fragment-index="0">
-<pre><code>def majority_label(labels):
-    from collections import Counter
-    return Counter(labels).most_common(1)[0][0]
+    pass
 
-def is_pure(labels):
-    return len(set(labels)) &lt;= 1</code></pre>
-    </div>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>A node is a leaf when: all labels are the same (pure), or only one
-    sample remains. The leaf&rsquo;s decision is the majority label.</p>
-  </div>
-</div>
-</div>
-      </section>
-
-      <section>
-        <div class="slide-content"><div style="font-size:1.2em;">
-  <p><strong>Step B: The recursive case.</strong>
-  Find the best split and recurse on each side:</p>
-  <div class="code-stack" style="min-height:14em;">
-    <div class="code-step fragment fade-out" data-fragment-index="0">
-<pre><code>def build_tree(data, features, label):
+def build_tree(data, features, label):
     labels = [row[label] for row in data]
     # Base case: pure or single element → return leaf
     # Recursive case:
@@ -856,7 +832,14 @@ def is_pure(labels):
     pass</code></pre>
     </div>
     <div class="code-step fragment" data-fragment-index="0">
-<pre><code>def build_tree(data, features, label):
+<pre><code>def majority_label(labels):
+    from collections import Counter
+    return Counter(labels).most_common(1)[0][0]
+
+def is_pure(labels):
+    return len(set(labels)) &lt;= 1
+
+def build_tree(data, features, label):
     labels = [row[label] for row in data]
     if len(data) &lt;= 1 or is_pure(labels):
         return DecisionTreeNode(decision=majority_label(labels))
@@ -989,25 +972,25 @@ print(f"Accuracy: {correct}/{len(y)} = {correct/len(y)*100:.0f}%")</code></pre>
 
       <section>
         <div class="slide-content"><div style="font-size:1.4em;">
-  <p><strong>Your tree fits the training data perfectly. But how well does
-  it do on data it hasn&rsquo;t seen?</strong></p>
+  <p><strong>Is 100% training accuracy a good thing?</strong></p>
   <div class="fragment" data-fragment-index="0">
-    <p>Try it: split your data 80/20. Train on the first 80%, test on the
-    remaining 20%. What accuracy do you get on each set?</p>
-<pre><code>train = data[:int(len(data)*0.8)]
-test  = data[int(len(data)*0.8):]
-tree = build_tree(train, ["height", "weight"], "gender")
-train_acc = sum(predict(tree, r) == r["gender"] for r in train) / len(train)
-test_acc  = sum(predict(tree, r) == r["gender"] for r in test)  / len(test)
-print(f"Training: {train_acc:.0%}   Test: {test_acc:.0%}")</code></pre>
+    <p>Not necessarily. The tree has <strong>memorized</strong> the training data
+    &mdash; including its noise and outliers.</p>
+    <svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;">
+      <rect x="10" y="10" width="180" height="80" fill="#e8f5e9" rx="5"/>
+      <text x="100" y="30" font-size="10" fill="#2e7d32" text-anchor="middle" font-weight="bold">Shallow tree</text>
+      <text x="100" y="50" font-size="9" fill="#333" text-anchor="middle">Few splits, simple rules</text>
+      <text x="100" y="65" font-size="9" fill="#333" text-anchor="middle">Training acc: 85%</text>
+      <text x="100" y="80" font-size="9" fill="#2e7d32" text-anchor="middle">Test acc: 83% ✓</text>
+      <rect x="210" y="10" width="180" height="80" fill="#ffebee" rx="5"/>
+      <text x="300" y="30" font-size="10" fill="#c62828" text-anchor="middle" font-weight="bold">Deep tree</text>
+      <text x="300" y="50" font-size="9" fill="#333" text-anchor="middle">Many splits, memorizes</text>
+      <text x="300" y="65" font-size="9" fill="#333" text-anchor="middle">Training acc: 100%</text>
+      <text x="300" y="80" font-size="9" fill="#c62828" text-anchor="middle">Test acc: 60% ✗</text>
+    </svg>
   </div>
   <div class="fragment" data-fragment-index="1">
-    <p>Training accuracy is much higher than test accuracy. The tree has
-    <strong>memorized</strong> the training data &mdash; including its noise.
-    This is called <strong>overfitting</strong>.</p>
-  </div>
-  <div class="fragment" data-fragment-index="2">
-    <p>How might you prevent it?</p>
+    <p>This is <strong>overfitting</strong>. Solutions:</p>
     <ul style="font-size:0.85em;">
       <li><strong>max_depth:</strong> stop splitting after N levels</li>
       <li><strong>min_samples:</strong> don&rsquo;t split groups smaller than K</li>
@@ -1026,9 +1009,9 @@ print(f"Training: {train_acc:.0%}   Test: {test_acc:.0%}")</code></pre>
   <table style="margin:0.5em auto; font-size:0.9em;">
     <tr><th style="padding:0.3em 1em;">You built</th><th style="padding:0.3em 1em;">Real name</th></tr>
     <tr><td>$4pq$ mixing formula</td><td>Gini impurity (scaled)</td></tr>
-    <tr><td>Weighted split score</td><td>Information gain (impurity reduction from a split)</td></tr>
+    <tr><td>Weighted split score</td><td>Information gain</td></tr>
     <tr><td>Try every (feature, threshold)</td><td>Greedy split search</td></tr>
-    <tr><td>Recursive splitting</td><td>CART algorithm (Classification And Regression Trees)</td></tr>
+    <tr><td>Recursive splitting</td><td>CART algorithm</td></tr>
     <tr><td><code>SimpleDecisionTree</code></td><td><code>sklearn.tree.DecisionTreeClassifier</code></td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">

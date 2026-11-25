@@ -244,34 +244,23 @@ print(compute_mean([2, 4, 6, 8]))  # 5.0</code></pre>
 
       <section>
         <div class="slide-content">
-  <p>Two datasets, same mean (5):</p>
-  <p><strong>A:</strong> <code>[5, 5, 5, 5]</code> &nbsp;&nbsp;
-     <strong>B:</strong> <code>[1, 3, 7, 9]</code></p>
-  <p><strong>Before coding:</strong> which is more spread out? Can you
-  <em>invent</em> a single number that captures &ldquo;how spread out&rdquo;
-  the values are?</p>
-  <div class="fragment" data-fragment-index="0">
-    <p>Try this: compute how far each value is from the mean, then add
-    those distances. What goes wrong?</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>The positives and negatives cancel!
-    How could you fix that? (Two common ideas: absolute values, or squaring.)</p>
-  </div>
-  <div class="fragment" data-fragment-index="2">
-    <p>Square each gap, average the squares, then take the square root
-    to get back to the original units. Write <code>compute_sd</code>:</p>
-  </div>
-  <div class="code-stack fragment" style="min-height:8em;" data-fragment-index="3">
-    <div class="code-step fragment fade-out" data-fragment-index="5">
+  <p>Standard deviation measures how spread out values are:</p>
+  <p style="text-align:center;">$\sigma = \sqrt{\frac{1}{n}\sum(x_i - \mu)^2}$</p>
+  <p><strong>Before coding:</strong> break the formula into three steps
+  you can compute one at a time. You already have <code>compute_mean</code>.</p>
+  <div class="code-stack fragment" style="min-height:8em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def compute_sd(numbers):
+    # 1. Compute the mean
+    # 2. Sum (x - mean)**2 for each x
+    # 3. Divide by count, take square root
     # YOUR CODE HERE
     pass
 
 print(compute_sd([2, 4, 4, 4, 5, 5, 7, 9]))  # 2.0
 print(compute_sd([10, 10, 10]))               # 0.0</code></pre>
     </div>
-    <div class="code-step fragment" data-fragment-index="5">
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def compute_sd(numbers):
     mean = compute_mean(numbers)
     total = 0
@@ -283,7 +272,7 @@ print(compute_sd([2, 4, 4, 4, 5, 5, 7, 9]))  # 2.0
 print(compute_sd([10, 10, 10]))               # 0.0</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="4">
+  <div class="fragment" data-fragment-index="1">
     <p>Hint: accumulate <code>(x - mean)**2</code>, divide by <code>len</code>,
     return <code>result ** 0.5</code>.</p>
   </div>
@@ -292,16 +281,12 @@ print(compute_sd([10, 10, 10]))               # 0.0</code></pre>
 
       <section>
         <div class="slide-content">
-  <p>Alice scored 90 on a test (class mean&nbsp;=&nbsp;70, SD&nbsp;=&nbsp;10).
-  Bob scored 85 on a different test (class mean&nbsp;=&nbsp;65, SD&nbsp;=&nbsp;5).</p>
-  <p><strong>Before coding:</strong> who did better <em>relative to their
-  class</em>? How many standard deviations above the mean is each score?</p>
+  <p>The <strong>z-score</strong> tells you how many standard deviations a
+  value is from the mean. In <code>[10, 12, 12, 13, 12, 11, 90]</code>,
+  the value 90 looks suspicious.</p>
+  <p>How far is 90 from the mean, measured in standard deviations?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>Alice: $(90-70)/10 = 2$ SDs above. Bob: $(85-65)/5 = 4$ SDs above.
-    Bob&rsquo;s performance was more exceptional!</p>
-    <p>That ratio &mdash; distance from the mean divided by the SD &mdash;
-    is called the <strong>z-score</strong>. Values with $|z|$ above a
-    threshold are <strong>outliers</strong>.</p>
+    <p>$z = \frac{x - \mu}{\sigma}$. Values with $|z| &gt;$ threshold are <strong>outliers</strong>.</p>
   </div>
   <div class="code-stack fragment" style="min-height:10em;" data-fragment-index="1">
     <div class="code-step fragment fade-out" data-fragment-index="3">
@@ -355,22 +340,16 @@ print(find_outliers([10, 12, 12, 13, 12, 11, 90], 2))  # [90]</code></pre>
       <section>
         <div class="slide-content">
   <p>A model predicts <code>[3, 2, 5]</code> but the actual values are
-  <code>[2, 3, 4]</code>. <strong>Invent a single number</strong> that
-  captures how wrong the model is overall.</p>
-  <p><strong>Before coding:</strong> try adding up the errors
-  <code>actual[i] - predicted[i]</code>. What do you get?
-  Why is that misleading?</p>
-  <div class="fragment" data-fragment-index="0">
-    <p>Errors: $-1, +1, -1$. Sum = $-1$. The positive and negative
-    errors partly cancel &mdash; same problem you solved for spread!
-    How did you fix it there?</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Square each error, average, then square-root to get back to the
-    original units. Write <code>compute_rmse</code>:</p>
-  </div>
-  <div class="code-stack fragment" style="min-height:8em;" data-fragment-index="2">
-    <div class="code-step fragment fade-out" data-fragment-index="4">
+  <code>[2, 3, 4]</code>. How wrong is the model?</p>
+  <p><strong>RMSE</strong> (Root Mean Square Error):</p>
+  <ol>
+    <li>Compute error for each pair: <code>actual[i] - predicted[i]</code></li>
+    <li>Square each error</li>
+    <li>Average the squared errors</li>
+    <li>Take the square root</li>
+  </ol>
+  <div class="code-stack fragment" style="min-height:8em;" data-fragment-index="0">
+    <div class="code-step fragment fade-out" data-fragment-index="2">
 <pre><code>def compute_rmse(actual, predicted):
     # YOUR CODE HERE
     pass
@@ -378,7 +357,7 @@ print(find_outliers([10, 12, 12, 13, 12, 11, 90], 2))  # [90]</code></pre>
 print(compute_rmse([2, 3, 4], [3, 2, 5]))  # 1.0
 print(compute_rmse([1, 2, 3], [1, 2, 3]))  # 0.0</code></pre>
     </div>
-    <div class="code-step fragment" data-fragment-index="4">
+    <div class="code-step fragment" data-fragment-index="2">
 <pre><code>def compute_rmse(actual, predicted):
     total = 0
     for i in range(len(actual)):
@@ -389,7 +368,7 @@ print(compute_rmse([2, 3, 4], [3, 2, 5]))  # 1.0
 print(compute_rmse([1, 2, 3], [1, 2, 3]))  # 0.0</code></pre>
     </div>
   </div>
-  <div class="fragment" data-fragment-index="3">
+  <div class="fragment" data-fragment-index="1">
     <p>Hint: accumulate <code>(actual[i] - predicted[i])**2</code>,
     divide by count, take square root.</p>
   </div>

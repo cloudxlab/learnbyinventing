@@ -171,25 +171,17 @@
 
       <section>
         <div class="slide-content">
-  <p>Look at the expression <code>2 * 3 + 4</code>.
-  Python evaluates <code>2 * 3</code> first, <em>then</em> adds 4.
-  There is a hidden structure here: some operations feed into others.</p>
-  <p><strong>Try this:</strong> can you draw a picture where each
-  <em>operation</em> sits at a fork, and each <em>number</em> sits at a
-  leaf?</p>
-  <div class="fragment" data-fragment-index="0">
+  <p>A <strong>tree</strong> is nodes connected downward: each node holds a
+  value and has up to two children. Here is the expression
+  <code>2 * 3 + 4</code> drawn as a tree:</p>
 <pre><code>        +
        / \
       *   4
      / \
     2   3</code></pre>
-    <p>This is a <strong>tree</strong>: nodes connected downward, each holding
-    a value with up to two children. Notice &mdash; no parentheses needed.
-    The structure <em>is</em> the evaluation order.</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p>Here is a <code>Node</code> class to represent what you just drew
-    &mdash; run it as-is:</p>
+  <p>Leaves are numbers; internal nodes are operators. This is exactly how
+  compilers see your code. Here is the <code>Node</code> class you will use
+  throughout this chapter &mdash; run it as-is:</p>
 <pre><code>class Node:
     def __init__(self, val, left=None, right=None):
         self.val = val
@@ -197,7 +189,6 @@
         self.right = right
 
 expr = Node("+", Node("*", Node(2), Node(3)), Node(4))</code></pre>
-  </div>
 </div>
       </section>
 
@@ -298,23 +289,18 @@ print(evaluate(expr2))  # 30</code></pre>
   <p>You keep a collection of numbers with frequent insert, delete, and
   search. What is the best structure?</p>
   <table>
-    <tr><th>Structure</th><th>find</th><th>insert</th><th>sorted order</th></tr>
-    <tr><td>Unsorted list</td><td>O(n)</td><td>O(1)</td><td>O(n log n) sort</td></tr>
-    <tr><td>Sorted list</td><td>O(log n)</td><td>O(n) shift</td><td>free</td></tr>
-    <tr><td>Dictionary</td><td>O(1)</td><td>O(1)</td><td>no ordering</td></tr>
+    <tr><th>Structure</th><th>find</th><th>insert</th><th>delete</th></tr>
+    <tr><td>Unsorted list</td><td>O(n)</td><td>O(1)</td><td>O(n)</td></tr>
+    <tr><td>Sorted list</td><td>O(log n)</td><td>O(n)</td><td>O(n)</td></tr>
+    <tr><td>Dictionary</td><td>O(1)</td><td>O(1)</td><td>O(1)</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
-    <p>None of these gives fast insert, fast search, <em>and</em> sorted
-    order. But you already know trees have branches&hellip;</p>
-    <p><strong>Think:</strong> if you stored numbers in a tree, what
-    <em>one rule</em> about where to place each new number would let you
-    (a) find any value quickly and (b) read them out in sorted order?</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
+    <p>A dict is fast but loses ordering. Can we get <strong>O(log n) for
+    all three</strong> and keep elements sorted? Yes &mdash; with one rule:</p>
     <blockquote style="border-left:3px solid #c8a96e; padding-left:0.8em; margin:0.5em 0;">
-    <strong>The rule you likely proposed:</strong> put smaller values to the
-    <strong>left</strong>, larger values to the <strong>right</strong>.
-    That&rsquo;s the BST (Binary Search Tree) rule.</blockquote>
+    <strong>BST rule:</strong> everything in a node&rsquo;s <strong>left</strong>
+    subtree is smaller; everything in the <strong>right</strong> subtree is
+    larger.</blockquote>
   </div>
 </div>
       </section>
@@ -543,11 +529,9 @@ print(in_order(root))  # [3, 10, 11, 13]</code></pre>
       ...  → a chain, not a tree!</code></pre>
     <p>Every insert went right &mdash; find is back to O(n).
     <strong>Sorted input is the worst input</strong> for a plain BST.</p>
-    <p>Self-balancing trees (AVL, Red-Black) fix this by automatically
-    rotating nodes after each insert to keep the tree short &mdash; height
-    stays at log n. Databases use B-Trees, the same rebalancing idea made
-    disk-friendly. Both are beyond our scope, but the key insight is:
-    <em>rebalance after every insert</em>.</p>
+    <p>Self-balancing trees (AVL, Red-Black) fix this by rotating nodes
+    to keep the height at log n. Databases use B-Trees &mdash; the same
+    idea, made disk-friendly.</p>
   </div>
 </div>
       </section>
@@ -599,20 +583,13 @@ print(in_order(root))  # [3, 10, 11, 13]</code></pre>
     <tr><td>BST</td><td>O(log n)</td><td>O(log n)</td></tr>
   </table>
   <div class="fragment" data-fragment-index="0">
-    <p>A BST works, but it maintains <em>total</em> order &mdash; and you
-    only ever ask for the min. A structure that promises <strong>less</strong>
-    could be simpler.</p>
-    <p><strong>Think:</strong> you want the smallest item instantly &mdash;
-    O(1) to peek. If you stored values in a tree, what is the
-    <em>simplest rule</em> about parent-child relationships that guarantees
-    the smallest is always at the root?</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
+    <p>A BST works, but it maintains <em>total</em> order and we only ever
+    ask for the min. Can a structure that promises <strong>less</strong> be
+    simpler? Enter the <strong>min-heap</strong>:</p>
     <blockquote style="border-left:3px solid #c8a96e; padding-left:0.8em;">
-    <strong>The rule:</strong> every parent &le; its children. Nothing about
-    left vs right! This is the <strong>min-heap</strong>.</blockquote>
-    <p>The minimum is always at the root &mdash; transitively, every
-    ancestor is &le; every descendant.</p>
+    <strong>Heap rule:</strong> every parent &le; its children. Nothing about
+    left vs right!</blockquote>
+    <p>The minimum is always at the root.</p>
   </div>
 </div>
       </section>

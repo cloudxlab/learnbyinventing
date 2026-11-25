@@ -458,28 +458,16 @@ group_b = [1, 50, 3, 80]           # wild disagreement
       <section id="part4">
         <h2>Part 4: Many Trees Are Better Than One</h2>
 
-        <div class="slide-content"><p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should make you suspicious, not proud &mdash; it memorized.</p>
+        <div class="slide-content"><p>Your deep tree scored a <em>perfect</em> 0.00 RMSE on its training data. That should make you suspicious, not proud --- it memorized.</p>
 
-<p><strong>Before coding:</strong> You have one overtrained tree.
-What if you trained <strong>10 slightly different trees</strong>?
-How might you combine their predictions into one answer?
-Think about it before clicking ahead.</p>
+<p>Here's the big idea: train <strong>many</strong> trees and <strong>average</strong> their predictions. Individual mistakes point in different directions and cancel out; the shared signal survives. (The same reason a crowd's average guess of a jar's jellybean count beats almost every individual guess.)</p>
 
-<div class="fragment" data-fragment-index="0">
-<p>The simplest combination: <strong>average</strong> their predictions.
-Each tree makes different mistakes, and mistakes in different directions cancel out &mdash;
-the shared signal survives. (This is why a crowd&rsquo;s average guess of a jar&rsquo;s jellybean count beats almost every individual guess &mdash; the &ldquo;wisdom of crowds.&rdquo;)</p>
-</div>
-
-<div class="fragment" data-fragment-index="1">
 <p><strong>But wait.</strong> If every tree sees exactly the same data, every tree is <em>identical</em>:</p>
 
 <pre><code>tree1 predicts 50,  tree2 predicts 50,  tree3 predicts 50 ... average: 50
 </code></pre>
 
-<p>Averaging identical trees gives you&hellip; one tree.
-How would you make each tree <strong>different</strong> without collecting new data?</p>
-</div>
+<p>Averaging identical trees gives you... one tree. To benefit from a crowd, the trees must be <strong>different</strong>. Random Forests inject randomness in two places.</p>
 </div>
 
       </section>
@@ -487,34 +475,18 @@ How would you make each tree <strong>different</strong> without collecting new d
 
 
       <section>
-        <h3>Randomize the Rows</h3>
+        <h3>Bootstrap Sampling (randomize the *rows*)</h3>
         <div class="slide-content">
 
-        <p><strong>Before coding:</strong> You need each tree to see a
-        <em>different</em> dataset, but you only have one. How could you
-        create a new dataset of the same size from the original &mdash;
-        without collecting new data?</p>
+        <p>Give each tree its own dataset by sampling <code>n</code> rows from the original <code>n</code> rows <strong>with replacement</strong> --- some rows appear twice, some not at all. This is called a <strong>bootstrap sample</strong>.</p>
+
+<p><strong>Write <code>bootstrap_sample(X, y)</code></strong> that returns a new <code>(X_sample, y_sample)</code> of the same length, where each position holds a uniformly random row of the original data --- and each <code>y</code> stays paired with its <code>X</code> row. Use <code>random.randint</code>.</p>
 
         <div class="fragment" data-fragment-index="0">
-        <p>One idea: pick <code>n</code> rows at random <strong>with
-        replacement</strong> &mdash; some rows appear twice, some not at all.
-        Each draw gives a different mix.</p>
-        </div>
-
-<div class="fragment" data-fragment-index="1">
-<p><strong>Write <code>bootstrap_sample(X, y)</code></strong> that returns a new <code>(X_sample, y_sample)</code> of the same length, where each position holds a uniformly random row of the original data &mdash; and each <code>y</code> stays paired with its <code>X</code> row. Use <code>random.randint</code>.</p>
-</div>
-
-        <div class="fragment" data-fragment-index="2">
         <p><strong>Hint 1:</strong> Generate <code>n</code> random indices (each between 0 and n-1), then gather the corresponding rows.</p>
         </div>
-        <div class="fragment" data-fragment-index="3">
+        <div class="fragment" data-fragment-index="1">
         <p><strong>Hint 2:</strong> <code>indices = [random.randint(0, n-1) for _ in range(n)]</code>, then <code>X_sample = [X[i] for i in indices]</code> and similarly for <code>y_sample</code>.</p>
-        </div>
-
-        <div class="fragment" data-fragment-index="4">
-        <p>Statisticians call this a <strong>bootstrap sample</strong> &mdash;
-        you just invented it.</p>
         </div>
 
         </div>

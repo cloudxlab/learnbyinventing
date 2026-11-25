@@ -330,19 +330,11 @@ print(filled.isna().sum().sum())   # 0 — no missing values!</code></pre>
   with similar taste will have similar columns.</p>
   <p>How do we measure &ldquo;similar direction&rdquo;?</p>
   <div class="fragment" data-fragment-index="0">
-    <p>You already know the dot product measures similarity. But there&rsquo;s
-    a problem &mdash; try it on Alice&nbsp;=&nbsp;[5,5,5] and Bob&nbsp;=&nbsp;[1,1,1].
-    They have <em>identical taste</em> but different magnitudes!</p>
-  </div>
-  <div class="fragment" data-fragment-index="1">
-    <p class="question">How would you fix the dot product so it measures
-    only <strong>direction</strong>, not magnitude?</p>
-  </div>
-  <div class="fragment" data-fragment-index="2">
-    <p>Divide by both lengths &mdash; that&rsquo;s <strong>cosine similarity</strong>:</p>
+    <p><strong>Cosine similarity:</strong></p>
     <p style="text-align:center;">$\text{sim}(\mathbf{a}, \mathbf{b})
     = \dfrac{\mathbf{a} \cdot \mathbf{b}}{|\mathbf{a}|\;|\mathbf{b}|}$</p>
-    <p>Result is between &minus;1 (opposite) and +1 (identical direction).</p>
+    <p>Result is between &minus;1 (opposite) and +1 (identical direction).
+    It ignores magnitude &mdash; only direction matters.</p>
   </div>
 </div>
       </section>
@@ -696,11 +688,11 @@ print(most_similar_movie("3 Idiots"))
     <tr><td>Per-person $(x - \min) / (\max - \min)$</td>
         <td><strong>Min-max normalisation</strong></td></tr>
     <tr><td>Fill NaN with column mean</td>
-        <td>Mean imputation (filling missing values with the column average)</td></tr>
+        <td>Mean imputation</td></tr>
     <tr><td>$\text{dot}(\mathbf{a},\mathbf{b}) / (|\mathbf{a}| \cdot |\mathbf{b}|)$</td>
         <td><strong>Cosine similarity</strong></td></tr>
     <tr><td>$\mathbf{U}^T\mathbf{U}$ on unit-vector columns</td>
-        <td>Gram matrix (the all-pairs similarity matrix you computed with $U^T U$)</td></tr>
+        <td>Gram matrix (all-pairs cosine)</td></tr>
     <tr><td>Similarity-weighted movie scores</td>
         <td><strong>User-user collaborative filtering</strong></td></tr>
     <tr><td>$\mathbf{U}_r\mathbf{U}_r^T$ on unit-vector rows</td>
