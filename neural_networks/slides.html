@@ -45,7 +45,7 @@
       .reveal .slide-content { font-size: 0.65em; }
       .reveal h2 { font-size: 0.95em; }
       .reveal h3 { font-size: 0.8em; }
-      .reveal pre { font-size: 0.6em; max-width: 100%; box-sizing: border-box; }
+      .reveal pre { font-size: 0.6em; }
       .reveal table { font-size: 0.6em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.65em; }
       .reveal p code, .reveal li code { font-size: 0.85em; }
@@ -68,7 +68,7 @@
       .reveal h1 { font-size: 0.75em; word-wrap: break-word; max-width: 100%; }
       .reveal h2 { font-size: 0.9em; }
       .reveal h3 { font-size: 0.85em; }
-      .reveal pre { font-size: 0.65em; max-width: 100%; box-sizing: border-box; }
+      .reveal pre { font-size: 0.65em; }
       .reveal table { font-size: 0.55em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.75em; }
       .reveal section { overflow-wrap: break-word; word-break: break-word; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -145,13 +145,12 @@
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.1em;">
+        <div class="slide-content"><div style="font-size:1.3em;">
 <div>
 <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
 <p>Income tax is not a straight line: <code>0%</code> up to 10, then <code>20%</code> on every rupee above 10. Build a tiny neural network from scratch that learns this from data using gradient descent. No libraries beyond <code>numpy</code>.</p>
-<pre><code>def fit_net(X, y, hidden=2,
-            lr=0.1, epochs=5000):
-    # hidden neurons + output neuron
+<pre><code>def fit_net(X, y, hidden=2, lr=0.1, epochs=5000):
+    # sigmoid or ReLU hidden neurons + one output neuron
     # return a predict(x) function
     ...</code></pre>
 <p>Test: with <code>X = [0, 2, 4, ..., 40]</code> and <code>y = 0.2 * max(0, x - 10)</code>:</p>
@@ -744,10 +743,9 @@ predict(30)  # ≈ 4.0</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 600 : 1200,
-      height: 700,
-      margin: window.innerWidth <= 600 ? 0 : 0.04,
-      center: true,
+      width: window.innerWidth <= 600 ? Math.min(window.innerWidth, 600) : 1200,
+      height: window.innerWidth <= 600 ? (window.innerHeight - 36) : 700,
+      margin: 0.04,
       minScale: 0.2,
       maxScale: 2.0,
     });

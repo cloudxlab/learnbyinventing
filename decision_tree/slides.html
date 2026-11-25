@@ -86,8 +86,7 @@
       .reveal .slide-content { font-size: 0.65em; }
       .reveal h2 { font-size: 0.95em; }
       .reveal h3 { font-size: 0.8em; }
-      .reveal pre { font-size: 0.6em; max-width: 100%; box-sizing: border-box; }
-      .reveal .code-stack { min-height: 0 !important; }
+      .reveal pre { font-size: 0.6em; }
       .reveal table { font-size: 0.6em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.65em; }
       .reveal p code, .reveal li code { font-size: 0.85em; }
@@ -109,8 +108,7 @@
       .reveal .slide-content { font-size: 0.6em; }
       .reveal h2 { font-size: 0.9em; }
       .reveal h3 { font-size: 0.85em; }
-      .reveal pre { font-size: 0.65em; max-width: 100%; box-sizing: border-box; }
-      .reveal .code-stack { min-height: 0 !important; }
+      .reveal pre { font-size: 0.65em; }
       .reveal table { font-size: 0.55em; display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
       .reveal ul, .reveal ol { font-size: 0.75em; }
       .reveal h1 { font-size: 0.75em; word-wrap: break-word; max-width: 100%; }
@@ -181,15 +179,14 @@ repeating this process builds a decision tree.</div>
 
 
       <section>
-        <div class="slide-content"><div style="font-size:1.1em;">
+        <div class="slide-content"><div style="font-size:1.3em;">
 <div>
 <p style="color:#7a6b3a;"><strong>Challenge (skip ahead if you can):</strong></p>
-<p>Build a decision tree classifier from scratch. <code>fit</code> recursively picks the split (feature + threshold) with the lowest weighted Gini impurity, stopping at pure nodes or <code>max_depth</code>. <code>predict</code> walks each row down the tree.</p>
+<p>Build a decision tree classifier from scratch. Given rows of numeric features and labels, <code>fit</code> should recursively choose the split (feature + threshold) that gives the lowest weighted Gini impurity, then stop at pure nodes or <code>max_depth</code>. <code>predict</code> walks each row down the tree.</p>
 <pre><code>class DecisionTree:
     def __init__(self, max_depth=3): ...
-    def fit(self, X, y): ...
-    def predict(self, X): ...
-# X: [[height, weight], ...], y: labels</code></pre>
+    def fit(self, X, y): ...      # X: list of [height, weight], y: labels
+    def predict(self, X): ...     # returns list of labels</code></pre>
 <pre><code>X = [[150, 50], [160, 55], [175, 80], [185, 90]]
 y = ["F", "F", "M", "M"]
 tree = DecisionTree(max_depth=2).fit(X, y)
@@ -237,16 +234,16 @@ tree.predict([[155, 52], [180, 85]])  # ['F', 'M']</code></pre>
         <div class="slide-content"><div style="font-size:1.2em;">
   <p>Let $p$ = fraction of red, $q$ = fraction of blue, and $p + q = 1$.</p>
   <table style="margin:0.5em auto; font-size:0.85em;">
-    <tr><th style="padding:0.2em 0.4em;">Bag</th><th style="padding:0.2em 0.4em;">p</th><th style="padding:0.2em 0.4em;">q</th><th style="padding:0.2em 0.4em;">impurity?</th></tr>
-    <tr><td>A (all red)</td><td>1.0</td><td>0.0</td><td><strong>0</strong></td></tr>
-    <tr><td>B (all blue)</td><td>0.0</td><td>1.0</td><td><strong>0</strong></td></tr>
-    <tr><td>C (half-half)</td><td>0.5</td><td>0.5</td><td><strong>1</strong></td></tr>
-    <tr><td>D (mostly red)</td><td>0.8</td><td>0.2</td><td>0 &lt; _ &lt; 1</td></tr>
+    <tr><th style="padding:0.2em 0.6em;">Bag</th><th style="padding:0.2em 0.6em;">p (red)</th><th style="padding:0.2em 0.6em;">q (blue)</th><th style="padding:0.2em 0.6em;">impurity(p, q) = ?</th></tr>
+    <tr><td>A (all red)</td><td>1.0</td><td>0.0</td><td>should be <strong>0</strong></td></tr>
+    <tr><td>B (all blue)</td><td>0.0</td><td>1.0</td><td>should be <strong>0</strong></td></tr>
+    <tr><td>C (half-half)</td><td>0.5</td><td>0.5</td><td>should be <strong>1</strong></td></tr>
+    <tr><td>D (mostly red)</td><td>0.8</td><td>0.2</td><td>between 0 and 1</td></tr>
   </table>
   <p><strong>Write a function that satisfies all four cases:</strong></p>
 <pre><code>def impurity(p, q):
-    """0 when pure, 1 when maximally mixed.
-    p + q = 1."""
+    """p = fraction of red, q = fraction of blue, p + q = 1.
+    Returns 0 when pure, 1 when maximally mixed."""
     return ???</code></pre>
   <div class="fragment" data-fragment-index="0">
     <p>Try $p \times q$: &nbsp; A: 0 &check; &nbsp; B: 0 &check; &nbsp;
@@ -1097,10 +1094,9 @@ print(f"Training: {train_acc:.0%}   Test: {test_acc:.0%}")</code></pre>
       slideNumber: true,
       progress: true,
       transition: 'slide',
-      width: window.innerWidth <= 600 ? 600 : 1200,
-      height: 700,
-      margin: window.innerWidth <= 600 ? 0 : 0.04,
-      center: true,
+      width: window.innerWidth <= 600 ? Math.min(window.innerWidth, 600) : 1200,
+      height: window.innerWidth <= 600 ? (window.innerHeight - 36) : 700,
+      margin: 0.04,
       minScale: 0.2,
       maxScale: 2.0,
     });
