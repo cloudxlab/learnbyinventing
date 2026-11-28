@@ -752,8 +752,7 @@ print(f"hotel vs lodging: {dot_product(vecs[0], extra):.3f}")</code></pre>
   <p><strong>Your turn:</strong> Build <code>semantic_search(query, corpus)</code> &mdash;
   embed the query, compute dot products against all corpus embeddings, sort by score.</p>
 
-  <div class="code-stack" style="min-height:6em;">
-    <pre class="code-step fragment fade-out" data-fragment-index="1"><code>def semantic_search(query, corpus):
+<pre><code>def semantic_search(query, corpus):
     # YOUR CODE HERE
     # 1. Embed the query
     # 2. Embed all corpus sentences
@@ -763,23 +762,22 @@ print(f"hotel vs lodging: {dot_product(vecs[0], extra):.3f}")</code></pre>
 
 for score, doc in semantic_search("hotel allowance", MINI_CORPUS):
     print(f"{score:.3f}  {doc[:60]}...")</code></pre>
-    <pre class="code-step fragment fade-in" data-fragment-index="1"><code>def semantic_search(query, corpus):
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>Embed the query once: <code>model.encode([query])[0]</code>.
+    Embed the corpus: <code>model.encode(corpus)</code>.
+    Pair each score with its sentence and sort.</p>
+  </details>
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Solution</summary>
+<pre><code>def semantic_search(query, corpus):
     q_vec = model.encode([query])[0]
     c_vecs = model.encode(corpus)
     scores = []
     for i, c_vec in enumerate(c_vecs):
         scores.append((dot_product(q_vec, c_vec), corpus[i]))
     scores.sort(reverse=True)
-    return scores
-
-for score, doc in semantic_search("hotel allowance", MINI_CORPUS):
-    print(f"{score:.3f}  {doc[:60]}...")</code></pre>
-  </div>
-  <details style="font-size:0.85em; margin:0.3em 0;">
-    <summary>Hint</summary>
-    <p>Embed the query once: <code>model.encode([query])[0]</code>.
-    Embed the corpus: <code>model.encode(corpus)</code>.
-    Pair each score with its sentence and sort.</p>
+    return scores</code></pre>
   </details>
         </div>
       </section>
@@ -1161,40 +1159,32 @@ print(ask("What is the current stock price of Apple?"))</code></pre>
       <section>
         <div class="slide-content">
   <p>The model is <strong>sandboxed</strong>. It cannot interact with the
-  outside world. It can only process text and return text.</p>
-  <div class="fragment" data-fragment-index="0">
-    <p>But you <em>can</em> run a calculator. You <em>can</em> check the clock.
-    What if the model could <strong>ask you</strong> to do it?</p>
-    <div style="display:flex; justify-content:center; margin:0.8em 0;">
-      <svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg" style="max-width:500px;">
-        <defs>
-          <marker id="arr6" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#555"/>
-          </marker>
-        </defs>
-        <!-- LLM -->
-        <rect x="10" y="30" width="120" height="60" rx="8" fill="#f5f3ef" stroke="#7a6b3a" stroke-width="2"/>
-        <text x="70" y="52" font-size="14" fill="#333" text-anchor="middle" font-family="Georgia,serif">LLM</text>
-        <text x="70" y="72" font-size="11" fill="#888" text-anchor="middle" font-family="sans-serif">(reasons)</text>
-        <!-- arrow: request -->
-        <line x1="135" y1="50" x2="230" y2="50" stroke="#1565c0" stroke-width="2" marker-end="url(#arr6)"/>
-        <text x="183" y="42" font-size="10" fill="#1565c0" text-anchor="middle" font-family="sans-serif">&ldquo;calculate(7**13)&rdquo;</text>
-        <!-- Your code -->
-        <rect x="235" y="30" width="120" height="60" rx="8" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
-        <text x="295" y="52" font-size="14" fill="#333" text-anchor="middle" font-family="Georgia,serif">Your Code</text>
-        <text x="295" y="72" font-size="11" fill="#888" text-anchor="middle" font-family="sans-serif">(executes)</text>
-        <!-- arrow: result -->
-        <line x1="360" y1="70" x2="455" y2="70" stroke="#4caf50" stroke-width="2" marker-end="url(#arr6)"/>
-        <text x="408" y="62" font-size="10" fill="#4caf50" text-anchor="middle" font-family="sans-serif">result: 96889010407</text>
-        <!-- loop back -->
-        <path d="M455,70 Q480,70 480,30 Q480,-10 240,-10 Q5,-10 5,30 L5,30"
-              stroke="#888" stroke-width="1.5" fill="none" stroke-dasharray="4,3"
-              marker-end="url(#arr6)"/>
-        <text x="240" y="5" font-size="10" fill="#888" text-anchor="middle" font-family="sans-serif">feed result back</text>
-      </svg>
-    </div>
+  outside world. But you <em>can</em> run a calculator, check the clock.
+  What if the model could <strong>ask you</strong> to do it?</p>
+  <div style="display:flex; justify-content:center; margin:0.8em 0;">
+    <svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg" style="max-width:500px;">
+      <defs>
+        <marker id="arr6" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+        </marker>
+      </defs>
+      <rect x="10" y="30" width="120" height="60" rx="8" fill="#f5f3ef" stroke="#7a6b3a" stroke-width="2"/>
+      <text x="70" y="52" font-size="14" fill="#333" text-anchor="middle" font-family="Georgia,serif">LLM</text>
+      <text x="70" y="72" font-size="11" fill="#888" text-anchor="middle" font-family="sans-serif">(reasons)</text>
+      <line x1="135" y1="50" x2="230" y2="50" stroke="#1565c0" stroke-width="2" marker-end="url(#arr6)"/>
+      <text x="183" y="42" font-size="10" fill="#1565c0" text-anchor="middle" font-family="sans-serif">&ldquo;calculate(7**13)&rdquo;</text>
+      <rect x="235" y="30" width="120" height="60" rx="8" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+      <text x="295" y="52" font-size="14" fill="#333" text-anchor="middle" font-family="Georgia,serif">Your Code</text>
+      <text x="295" y="72" font-size="11" fill="#888" text-anchor="middle" font-family="sans-serif">(executes)</text>
+      <line x1="360" y1="70" x2="455" y2="70" stroke="#4caf50" stroke-width="2" marker-end="url(#arr6)"/>
+      <text x="408" y="62" font-size="10" fill="#4caf50" text-anchor="middle" font-family="sans-serif">result: 96889010407</text>
+      <path d="M455,70 Q480,70 480,30 Q480,-10 240,-10 Q5,-10 5,30 L5,30"
+            stroke="#888" stroke-width="1.5" fill="none" stroke-dasharray="4,3"
+            marker-end="url(#arr6)"/>
+      <text x="240" y="5" font-size="10" fill="#888" text-anchor="middle" font-family="sans-serif">feed result back</text>
+    </svg>
   </div>
-  <div class="fragment" data-fragment-index="1">
+  <div class="fragment" data-fragment-index="0">
     <p>The model <strong>reasons</strong>. You <strong>execute</strong>. This is the key insight.</p>
   </div>
         </div>
