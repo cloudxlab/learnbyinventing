@@ -28,6 +28,8 @@
     .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
     .reveal .code-stack { position: relative; }
     .reveal .code-step  { position: absolute; top: 0; left: 0; right: 0; }
+    .reveal .slides section div.fragment:not(.visible) { display: none; }
+    .reveal .slides section div.fragment.visible { display: block; }
     .reveal .progress { display: none !important; }
     .chapter-footer { display: none; }
     #top-progress { position: fixed; top: 26px; left: 0; right: 0; height: 5px; background: #ddd; z-index: 200; }
@@ -1030,38 +1032,33 @@ Question: {question}"""
       <!-- 5.4 — Chunking -->
       <section>
         <div class="slide-content">
-  <p>Real documents are long. If you embed a 10-page PDF as one vector,
-  the embedding averages out over too many topics. If you split every sentence
-  separately, each piece loses context. There&rsquo;s a Goldilocks size.</p>
-  <div class="fragment" data-fragment-index="0">
-    <p><strong>Your turn:</strong> Write <code>chunk_document(text, chunk_size, overlap)</code>:
-    split text into overlapping windows of ~<code>chunk_size</code> words.</p>
-  </div>
+  <p>Real documents are long. There&rsquo;s a Goldilocks size &mdash;
+  not so big that the embedding averages out, not so small that context is lost.</p>
+  <p><strong>Your turn:</strong> Write <code>chunk_document(text, chunk_size, overlap)</code> &mdash;
+  split text into overlapping windows of ~<code>chunk_size</code> words.</p>
 
-  <div class="code-stack" style="min-height:9em;">
-    <pre class="code-step fragment fade-out" data-fragment-index="2"><code>def chunk_document(text, chunk_size=100, overlap=20):
+<pre><code>def chunk_document(text, chunk_size=100, overlap=20):
     # YOUR CODE HERE
     # Split into words, slide forward by (chunk_size - overlap)
     pass
 
 chunks = chunk_document(DOC_A, chunk_size=60, overlap=15)
 print(f"{len(chunks)} chunks")</code></pre>
-    <pre class="code-step fragment fade-in" data-fragment-index="2"><code>def chunk_document(text, chunk_size=100, overlap=20):
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p><code>words = text.split()</code>. Loop with <code>start += chunk_size - overlap</code>.
+    Each chunk is <code>" ".join(words[start : start + chunk_size])</code>.</p>
+  </details>
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Solution</summary>
+<pre><code>def chunk_document(text, chunk_size=100, overlap=20):
     words = text.split()
     chunks = []
     start = 0
     while start < len(words):
         chunks.append(" ".join(words[start : start + chunk_size]))
         start += chunk_size - overlap
-    return chunks
-
-chunks = chunk_document(DOC_A, chunk_size=60, overlap=15)
-print(f"{len(chunks)} chunks")</code></pre>
-  </div>
-  <details style="font-size:0.85em; margin:0.3em 0;">
-    <summary>Hint</summary>
-    <p><code>words = text.split()</code>. Loop with <code>start += chunk_size - overlap</code>.
-    Each chunk is <code>" ".join(words[start : start + chunk_size])</code>.</p>
+    return chunks</code></pre>
   </details>
         </div>
       </section>
@@ -1332,6 +1329,15 @@ def run_tool(name, inp):
   <p>The model is a <em>reasoning engine</em>, not an execution engine.
   It describes what tool to call as text. Your code parses that text,
   runs the function, and passes the result back.</p>
+  <p><strong>Think about it:</strong></p>
+  <ul style="font-size:0.85em;">
+    <li>What if a document says <em>&ldquo;For details, see the data sheet&rdquo;</em> &mdash;
+    the answer is real, but the query will never match it. How would you handle
+    indirect references that point elsewhere?</li>
+    <li>What if the user&rsquo;s question is too vague to answer &mdash;
+    should the system just guess, or could it <em>ask the user</em> to clarify?
+    What tool would you need for that?</li>
+  </ul>
         </div>
       </section>
 
@@ -1483,15 +1489,11 @@ run_agent("What is 15% of days until New Year?")   # ? steps</code></pre>
   <p><strong>The problem:</strong> Try two separate calls:</p>
 <pre><code>run_agent("My monthly budget is $3000.")
 run_agent("How much is 40% of my budget?")  # fails!</code></pre>
-  <div class="fragment" data-fragment-index="0">
-    <p>The second call doesn&rsquo;t know about the first. The agent has
-    <strong>no memory between calls</strong>.</p>
-    <p><strong>Your turn:</strong> Add two new tools: <code>remember(key=value)</code>
-    and <code>recall(key)</code>.</p>
-  </div>
-
-  <div class="code-stack" style="min-height:8em;">
-    <pre class="code-step fragment fade-out" data-fragment-index="2"><code>memory_store = {}
+  <p>The second call doesn&rsquo;t know about the first. The agent has
+  <strong>no memory between calls</strong>.</p>
+  <p><strong>Your turn:</strong> Add two new tools: <code>remember(key=value)</code>
+  and <code>recall(key)</code>.</p>
+<pre><code>memory_store = {}
 
 def remember(key_value):
     # YOUR CODE — parse "key=value", store in memory_store
@@ -1500,7 +1502,14 @@ def remember(key_value):
 def recall(key):
     # YOUR CODE — look up key in memory_store
     pass</code></pre>
-    <pre class="code-step fragment fade-in" data-fragment-index="2"><code>memory_store = {}
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Hint</summary>
+    <p>Use a plain dict. <code>remember</code> parses <code>"key=value"</code>
+    with <code>split("=", 1)</code>. <code>recall</code> does <code>dict.get(key, fallback)</code>.</p>
+  </details>
+  <details style="font-size:0.85em; margin:0.3em 0;">
+    <summary>Solution</summary>
+<pre><code>memory_store = {}
 
 def remember(key_value):
     key, value = key_value.split("=", 1)
@@ -1509,11 +1518,6 @@ def remember(key_value):
 
 def recall(key):
     return memory_store.get(key.strip(), f"Nothing under '{key}'")</code></pre>
-  </div>
-  <details style="font-size:0.85em; margin:0.3em 0;">
-    <summary>Hint</summary>
-    <p>Use a plain dict. <code>remember</code> parses <code>"key=value"</code>
-    with <code>split("=", 1)</code>. <code>recall</code> does <code>dict.get(key, fallback)</code>.</p>
   </details>
         </div>
       </section>
