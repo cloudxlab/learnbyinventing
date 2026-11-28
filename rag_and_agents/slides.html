@@ -204,14 +204,14 @@ agent("Where was Acme's CEO born?", docs, llm)
 
   <div class="fragment" data-fragment-index="0">
     <p>Try it:</p>
-<pre><code>import anthropic
-client = anthropic.Anthropic()
+<pre><code>from openai import OpenAI
+client = OpenAI()
 
 def ask(question):
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=256,
+    r = client.chat.completions.create(
+        model="gpt-4o-mini", max_tokens=256,
         messages=[{"role": "user", "content": question}])
-    return r.content[0].text
+    return r.choices[0].message.content
 
 print(ask("What is the capital of France?"))
 print(ask("Who wrote Hamlet?"))</code></pre>
@@ -387,10 +387,10 @@ DOCUMENTS:
 {combined}
 
 QUESTION: {question}"""
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=256,
+    r = client.chat.completions.create(
+        model="gpt-4o-mini", max_tokens=256,
         messages=[{"role": "user", "content": prompt}])
-    return r.content[0].text</code></pre>
+    return r.choices[0].message.content</code></pre>
   <div class="fragment" data-fragment-index="0">
 <pre><code>print(ask_with_docs("What is the hotel allowance?",
                     [DOC_A, DOC_B, DOC_C]))</code></pre>
@@ -952,10 +952,10 @@ for doc, score in retrieve("meal allowance", idx):
     results = retrieve(question, idx, top_k=2)
     context = "\n".join([doc["text"] for doc, score in results])
     prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=200,
+    r = client.chat.completions.create(
+        model="gpt-4o-mini", max_tokens=200,
         messages=[{"role": "user", "content": prompt}])
-    return r.content[0].text
+    return r.choices[0].message.content
 
 print(naive_rag("How much can I spend on a hotel?"))</code></pre>
   <div class="fragment" data-fragment-index="0">
@@ -1023,10 +1023,10 @@ Context:
 {context}
 
 Question: {question}"""
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=200,
+    r = client.chat.completions.create(
+        model="gpt-4o-mini", max_tokens=200,
         messages=[{"role": "user", "content": prompt}])
-    return r.content[0].text</code></pre>
+    return r.choices[0].message.content</code></pre>
   </div>
   <details style="font-size:0.85em; margin:0.3em 0;">
     <summary>Hint</summary>
@@ -1257,11 +1257,11 @@ ANSWER: your answer
   </div>
   <div class="fragment" data-fragment-index="1">
 <pre><code>def ask_with_tools(question):
-    r = client.messages.create(
-        model="claude-haiku-4-5-20251001", max_tokens=100,
+    r = client.chat.completions.create(
+        model="gpt-4o-mini", max_tokens=100,
         messages=[{"role": "user",
                    "content": TOOL_PROMPT + "\nQuestion: " + question}])
-    return r.content[0].text
+    return r.choices[0].message.content
 
 print(ask_with_tools("What is today's date?"))</code></pre>
     <p>Does the model follow the protocol?</p>
@@ -1446,10 +1446,10 @@ run_agent("How many days until New Year's Day next year?")</code></pre>
     messages = [{"role": "user",
                  "content": TOOL_PROMPT + "\nQuestion: " + question}]
     for step in range(max_steps):
-        r = client.messages.create(
-            model="claude-haiku-4-5-20251001", max_tokens=150,
+        r = client.chat.completions.create(
+            model="gpt-4o-mini", max_tokens=150,
             messages=messages)
-        text = r.content[0].text.strip()
+        text = r.choices[0].message.content.strip()
         messages.append({"role": "assistant", "content": text})
         result = parse_response(text)
         if result[0] == "answer":
@@ -1729,8 +1729,8 @@ run_agent("What is the hotel allowance per night?")
   <ul>
     <li><strong>Vector databases.</strong> Replace your in-memory index with
     ChromaDB or Qdrant &mdash; both have free local modes.</li>
-    <li><strong>Native tool use.</strong> The Anthropic API supports structured
-    tool calling &mdash; the model returns JSON instead of the text protocol you
+    <li><strong>Native tool use.</strong> The OpenAI API supports structured
+    tool calling (function calling) &mdash; the model returns JSON instead of the text protocol you
     invented. Rewrite your agent using it.</li>
     <li><strong>The ReAct paper.</strong> Read <em>ReAct: Synergizing Reasoning
     and Acting in Language Models</em> (Yao et al., 2022). It describes the

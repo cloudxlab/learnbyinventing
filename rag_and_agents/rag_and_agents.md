@@ -6,7 +6,7 @@
 >
 > **Companion files** — download these alongside the curriculum:
 > - `acme_datasets.py` — all datasets used across every exercise. Import what you need: `from acme_datasets import DOCUMENTS, STRUCTURED_DOCUMENTS, QA_EVAL_SET`
-> - `provider_setup.md` — step-by-step instructions for setting up Anthropic or OpenAI, plus a drop-in wrapper so the same code runs on either provider without changes.
+> - `provider_setup.md` — step-by-step instructions for setting up OpenAI or Anthropic, plus a drop-in wrapper so the same code runs on either provider without changes.
 >
 > **How each exercise works.** Each exercise has four parts:
 > 1. **Observe** — run the starter code and see what happens
@@ -26,20 +26,20 @@
 
 **Difficulty:** ★☆☆☆☆
 
-**Observe.** Install the Anthropic SDK and run this code.
+**Observe.** Install the OpenAI SDK and run this code.
 
 ```python
-import anthropic
+from openai import OpenAI
 
-client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+client = OpenAI()  # reads OPENAI_API_KEY from env
 
 def ask(question):
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=256,
         messages=[{"role": "user", "content": question}]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 print(ask("What is the capital of France?"))
 print(ask("Who wrote Hamlet?"))
@@ -103,12 +103,12 @@ DOCUMENTS:
 
 QUESTION: {question}
 """
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=256,
         messages=[{"role": "user", "content": prompt}]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 all_docs = [DOC_A, DOC_B, DOC_C]
 print(ask_with_docs("What is the hotel allowance?", all_docs))
@@ -332,10 +332,10 @@ Step 3 — Think about this: if you had 1 million documents, computing a dot pro
 **Observe.** You now have two working pieces: a retrieval system and a language model. Try connecting them naively.
 
 ```python
-import anthropic
+from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
-client = anthropic.Anthropic()
+client = OpenAI()
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Use the index from Exercise 2.2
@@ -348,12 +348,12 @@ def naive_rag(question):
     
     # Step 2: generate
     prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=200,
         messages=[{"role": "user", "content": prompt}]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 print(naive_rag("How much can I spend on a hotel?"))
 ```
@@ -387,12 +387,12 @@ def grounded_rag(question, confidence_threshold=0.35):
     context = "\n".join([doc["text"] for doc, score in results])
     prompt = # your prompt here
     
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=200,
         messages=[{"role": "user", "content": prompt}]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 # Test both cases
 print(grounded_rag("How much can I spend on a hotel?"))
@@ -518,18 +518,18 @@ for q in questions:
 **Observe.** Ask the model something that requires a real-time action.
 
 ```python
-import anthropic
+from openai import OpenAI
 import datetime
 
-client = anthropic.Anthropic()
+client = OpenAI()
 
 def ask(question):
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=200,
         messages=[{"role": "user", "content": question}]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 print(ask("What time is it right now?"))
 print(ask("What is 10% of 847.33?"))
@@ -617,14 +617,14 @@ Do not include any other text.
 """
 
 def ask_with_tools(question):
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=100,
         messages=[
             {"role": "user", "content": TOOL_PROMPT + "\n\nQuestion: " + question}
         ]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 print(ask_with_tools("What is today's date?"))
 print(ask_with_tools("What is 15% of 1247?"))
@@ -759,12 +759,12 @@ def run_agent(question, max_steps=5):
         print(f"\n--- Step {step + 1} ---")
         
         # Ask the model what to do next
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=150,
             messages=messages
         )
-        model_text = response.content[0].text.strip()
+        model_text = response.choices[0].message.content.strip()
         print(f"Model: {model_text}")
         
         # Add model's response to conversation history
@@ -1029,6 +1029,6 @@ Once you have completed all exercises, the natural next steps are:
 
 - **Proper vector databases.** Replace your in-memory index with ChromaDB or Qdrant — both have free local modes and Python clients.
 - **The ReAct paper.** Read *ReAct: Synergizing Reasoning and Acting in Language Models* (Yao et al., 2022). It formalises the loop you built in Exercise 5.1.
-- **Anthropic's native tool use.** The Anthropic API supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it.
+- **Native tool use.** The OpenAI API (and Anthropic's too) supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it.
 - **Evaluation.** How do you know your RAG system gives good answers? Build a tiny evaluation set: 10 questions with known correct answers from the documents, and measure how often your agent gets them right.
 - **Multi-agent systems.** What if one agent specialised in retrieval and another in calculation, and a coordinator agent decided which to call? That is a multi-agent system — the current frontier.

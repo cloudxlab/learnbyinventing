@@ -52,7 +52,7 @@ blocks:
 
       **Companion files** — download these alongside the curriculum:
       - `acme_datasets.py` — all datasets used across every exercise. Import what you need.
-      - `provider_setup.md` — step-by-step instructions for setting up Anthropic or OpenAI.
+      - `provider_setup.md` — step-by-step instructions for setting up OpenAI or Anthropic.
 
   - type: exercise
     kind: coding
@@ -61,7 +61,7 @@ blocks:
     number: 1
     title: "The Amnesiac Oracle"
     description: |
-      Install the Anthropic SDK and run the observe code below. Both answers come back instantly and correctly.
+      Install the OpenAI SDK and run the observe code below. Both answers come back instantly and correctly.
 
       Now ask the model something it cannot possibly know — an internal company document it has never seen. Read the answer carefully.
 
@@ -73,18 +73,18 @@ blocks:
     provided_code:
       - label: "setup"
         code: |
-          # !pip install anthropic
-          import anthropic
+          # !pip install openai
+          from openai import OpenAI
 
-          client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
+          client = OpenAI()  # reads OPENAI_API_KEY from env
 
           def ask(question):
-              response = client.messages.create(
-                  model="claude-haiku-4-5-20251001",
+              response = client.chat.completions.create(
+                  model="gpt-4o-mini",
                   max_tokens=256,
                   messages=[{"role": "user", "content": question}]
               )
-              return response.content[0].text
+              return response.choices[0].message.content
       - label: "observe"
         code: |
           print(ask("What is the capital of France?"))
@@ -151,12 +151,12 @@ blocks:
 
           QUESTION: {question}
           """
-              response = client.messages.create(
-                  model="claude-haiku-4-5-20251001",
+              response = client.chat.completions.create(
+                  model="gpt-4o-mini",
                   max_tokens=256,
                   messages=[{"role": "user", "content": prompt}]
               )
-              return response.content[0].text
+              return response.choices[0].message.content
 
           all_docs = [DOC_A, DOC_B, DOC_C]
       - label: "observe"
@@ -392,10 +392,10 @@ blocks:
     provided_code:
       - label: "observe — naive RAG"
         code: |
-          import anthropic
+          from openai import OpenAI
           from sentence_transformers import SentenceTransformer
 
-          client = anthropic.Anthropic()
+          client = OpenAI()
           model = SentenceTransformer("all-MiniLM-L6-v2")
 
           # Paste your index_documents and retrieve functions from Exercise 2.2 here
@@ -405,12 +405,12 @@ blocks:
               results = retrieve(question, index, top_k=2)
               context = "\n".join([doc["text"] for doc, score in results])
               prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
-              response = client.messages.create(
-                  model="claude-haiku-4-5-20251001",
+              response = client.chat.completions.create(
+                  model="gpt-4o-mini",
                   max_tokens=200,
                   messages=[{"role": "user", "content": prompt}]
               )
-              return response.content[0].text
+              return response.choices[0].message.content
 
           print(naive_rag("How much can I spend on a hotel?"))
       - label: "starter code"
@@ -424,12 +424,12 @@ blocks:
               context = "\n".join([doc["text"] for doc, score in results])
               prompt = ""  # your prompt here
 
-              response = client.messages.create(
-                  model="claude-haiku-4-5-20251001",
+              response = client.chat.completions.create(
+                  model="gpt-4o-mini",
                   max_tokens=200,
                   messages=[{"role": "user", "content": prompt}]
               )
-              return response.content[0].text
+              return response.choices[0].message.content
 
           # Test both cases
           print(grounded_rag("How much can I spend on a hotel?"))
@@ -456,12 +456,12 @@ blocks:
         Question: {question}
         Answer:"""
 
-            response = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=200,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return response.content[0].text
+            return response.choices[0].message.content
 
   - type: reveal
     text: |
@@ -554,18 +554,18 @@ blocks:
     provided_code:
       - label: "observe"
         code: |
-          import anthropic
+          from openai import OpenAI
           import datetime
 
-          client = anthropic.Anthropic()
+          client = OpenAI()
 
           def ask(question):
-              response = client.messages.create(
-                  model="claude-haiku-4-5-20251001",
+              response = client.chat.completions.create(
+                  model="gpt-4o-mini",
                   max_tokens=200,
                   messages=[{"role": "user", "content": question}]
               )
-              return response.content[0].text
+              return response.choices[0].message.content
 
           print(ask("What time is it right now?"))
           print(ask("What is 10% of 847.33?"))
@@ -617,14 +617,14 @@ blocks:
         """
 
         def ask_with_tools(question):
-            response = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=100,
                 messages=[
                     {"role": "user", "content": TOOL_PROMPT + "\n\nQuestion: " + question}
                 ]
             )
-            return response.content[0].text
+            return response.choices[0].message.content
 
         print(ask_with_tools("What is today's date?"))
         print(ask_with_tools("What is 15% of 1247?"))
@@ -773,12 +773,12 @@ blocks:
               for step in range(max_steps):
                   print(f"\n--- Step {step + 1} ---")
 
-                  response = client.messages.create(
-                      model="claude-haiku-4-5-20251001",
+                  response = client.chat.completions.create(
+                      model="gpt-4o-mini",
                       max_tokens=150,
                       messages=messages
                   )
-                  model_text = response.content[0].text.strip()
+                  model_text = response.choices[0].message.content.strip()
                   print(f"Model: {model_text}")
 
                   messages.append({"role": "assistant", "content": model_text})
@@ -813,12 +813,12 @@ blocks:
             ]
             for step in range(max_steps):
                 print(f"\n--- Step {step + 1} ---")
-                response = client.messages.create(
-                    model="claude-haiku-4-5-20251001",
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
                     max_tokens=150,
                     messages=messages
                 )
-                model_text = response.content[0].text.strip()
+                model_text = response.choices[0].message.content.strip()
                 print(f"Model: {model_text}")
                 messages.append({"role": "assistant", "content": model_text})
 
@@ -1048,6 +1048,6 @@ blocks:
 
       - **Proper vector databases.** Replace your in-memory index with ChromaDB or Qdrant — both have free local modes and Python clients.
       - **The ReAct paper.** Read *ReAct: Synergizing Reasoning and Acting in Language Models* (Yao et al., 2022). It formalises the loop you built in Exercise 5.1.
-      - **Anthropic's native tool use.** The Anthropic API supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it.
+      - **OpenAI's native function calling.** The OpenAI API supports tool/function calling natively — the model returns structured JSON instead of the text protocol you invented. Rewrite your agent using it. (Anthropic offers a similar feature called native tool use.)
       - **Evaluation.** Build a tiny evaluation set: 10 questions with known correct answers, and measure how often your agent gets them right.
       - **Multi-agent systems.** What if one agent specialised in retrieval and another in calculation, and a coordinator decided which to call? That is a multi-agent system — the current frontier.
